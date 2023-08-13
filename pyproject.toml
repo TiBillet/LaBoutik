@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "cashlessv4"
+version = "4.0.1"
+description = "Cashless tenant system - TiBillet.org"
+authors = ["Coopérative Code Commun"]
+license = "AGPLv3"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = "4.2"
+django-solo = "^2.1.0"
+django-extensions = "^3.2.3"
+werkzeug = "^2.3.6"
+djangorestframework = "^3.14.0"
+markdown = "^3.4.4"
+django-filter = "^23.2"
+ipdb = "^0.13.13"
+djangorestframework-api-key = "^2.3.0"
+django-stdimage = "^6.0.1"
+stripe = "^5.5.0"
+coverage = "^7.3.0"
+django-cryptography = "^1.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
