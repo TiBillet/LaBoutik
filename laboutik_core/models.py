@@ -78,6 +78,9 @@ class Product(models.Model):
                       verbose_name="Image du produit",
                       )
 
+    def petit_uuid(self):
+        return str(self.uuid)[:8]
+
     def __str__(self):
         return self.name
 

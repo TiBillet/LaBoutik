@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-{% load static %}
+
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Boutik</title>
-</head>
-<body class="container">
 
+</head>
+<body class="container" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
 {% block content %}
 {% endblock %}
 
 
+<script src="https://unpkg.com/htmx.org@1.9.6"></script>
 </body>
 </html>
