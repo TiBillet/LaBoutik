@@ -937,6 +937,17 @@ python-jose = ["python-jose (==3.3.0)"]
 test = ["cryptography", "freezegun", "pytest", "pytest-cov", "pytest-django", "pytest-xdist", "tox"]
 
 [[package]]
+name = "epsonprinter"
+version = "0.0.9"
+description = "Communication package for Epson Workforce printer"
+optional = false
+python-versions = "*"
+files = [
+    {file = "epsonprinter-0.0.9-py3-none-any.whl", hash = "sha256:ea11a1ff7ee2000a944ccf47bc42551edb2df846f841bfd9a4b4f14db3f95193"},
+    {file = "epsonprinter-0.0.9.tar.gz", hash = "sha256:8c4a2562de75941400215f692072c82cae0a47ac98a34d2fcf3282ffff8e3485"},
+]
+
+[[package]]
 name = "executing"
 version = "2.0.1"
 description = "Get the currently executing AST node of a frame, and other information"
@@ -2309,4 +2320,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.11.6"
-content-hash = "9bc2b14092e284ec8a36e6bc863dad704b1aae63a36b1cf2a312c87b2d491732"
+content-hash = "144408c0cba36ebedc0f43d8602a099bff1a8dade9ecf4d4bbc0a0bd12d47328"
