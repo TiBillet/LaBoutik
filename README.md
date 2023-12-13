@@ -6,12 +6,13 @@ Complete point-of-sale software to manage orders, payments and reservations with
 
 Can federate on a [Fedow system](https://github.com/TiBillet/Fedow) to accept multiple asset like a local currency.
 
-![cashless patchwork usages](/img/patchwork_cashless.jpg)
 
 > [!WARNING]  
 > Migration in progress.
 > ALPHA RELEASE.
 > Go talk with us !
+
+![cashless patchwork usages](/img/patchwork_cashless.jpg)
 
 ## Migration in progress:
 
