@@ -12,7 +12,7 @@ Can federate on a [Fedow system](https://github.com/TiBillet/Fedow) to accept mu
 > ALPHA RELEASE.
 > Go talk with us !
 
-![cashless patchwork usages](/img/patchwork_cashless.jpg)
+![cashless patchwork usages](img/patchwork_cashless.jpg)
 
 ## Migration in progress:
 
