@@ -1,0 +1,86 @@
+services:
+  laboutik_postgres:
+    image: postgres:11.5-alpine
+    restart: always
+    env_file: .env
+    container_name: laboutik_postgres
+    hostname: laboutik_postgres
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  laboutik_redis:
+    image: redis:6-alpine
+    restart: always
+    env_file: .env
+    container_name: laboutik_redis
+    hostname: laboutik_redis
+    networks:
+      - backend
+
+  laboutik_django:
+    build: .
+    restart: always
+    env_file: .env
+    container_name: laboutik_django
+    hostname: laboutik_django
+    volumes:
+      - ./cron:/cron
+      - ./DjangoFiles:/home/tibillet/LaBoutik/DjangoFiles
+      - ./bashrc:/home/tibillet/.bashrc
+      - ./SaveDb:/SaveDb
+    working_dir: /home/tibillet/LaBoutik/DjangoFiles
+    links:
+      - laboutik_postgres:postgres
+      - laboutik_redis:redis
+    depends_on:
+      - laboutik_postgres
+      - laboutik_redis
+    networks:
+      - backend
+      - frontend
+    command: "bash /home/tibillet/LaBoutik/DjangoFiles/launch_prod.sh"
+
+
+  laboutik_celery:
+    build: .
+    restart: always
+    env_file: .env
+    container_name: laboutik_celery
+    hostname: laboutik_celery
+    volumes:
+      - ./DjangoFiles:/home/tibillet/LaBoutik/DjangoFiles
+      - ./bashrc:/home/tibillet/.bashrc
+    working_dir: /home/tibillet/LaBoutik/DjangoFiles
+    links:
+      - laboutik_postgres:postgres
+      - laboutik_redis:redis
+    depends_on:
+      - laboutik_postgres
+      - laboutik_django
+    networks:
+      - backend
+      - frontend
+    command: "bash /home/tibillet/LaBoutik/DjangoFiles/launch_celery_prod.sh"
+
+
+  laboutik_nginx:
+    image: nginx
+    restart: always
+    container_name: laboutik_nginx
+    hostname: laboutik_nginx
+    depends_on:
+      - laboutik_django
+    links:
+      - laboutik_django:laboutik_django
+    volumes:
+      - ./DjangoFiles/www:/DjangoFiles/www
+      - ./DjangoFiles/logs:/DjangoFiles/logs
+      - ./nginx:/etc/nginx/conf.d
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=frontend
+      - traefik.http.routers.laboutik_nginx.tls.certresolver=myresolver
+      - traefik.http.routers.laboutik_nginx.rule=Host(`${DOMAIN}`)
+

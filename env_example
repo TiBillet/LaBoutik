@@ -1,0 +1,41 @@
+NOM_MONNAIE=''
+PRIX_ADHESION=''
+
+DJANGO_SECRET=''
+FERNET_KEY=''
+
+POSTGRES_USER=''
+POSTGRES_PASSWORD=''
+POSTGRES_DB='laboutik'
+
+TZ='Europe/Paris'
+
+DEBUG=0
+TEST=0
+FEDOW=1
+
+DEMO=0
+DEMO_TAGID_CM=''
+DEMO_TAGID_CLIENT1=''
+DEMO_TAGID_CLIENT2=''
+
+# for letsencrypt
+EMAIL=''
+# Sentry Debug
+SENTRY_DNS=""
+
+
+# Utile pour host, pas pour conteneur. saveRepo.sh
+# Le script se lance pour backuper le dépot complet sur l'hote
+PREFIX_SAVE_DB='demeter'
+BORG_PASSPHRASE=""
+
+DOMAIN=''
+FEDOW_URL='https://'
+CASHLESS_URL='https://'
+BILL_TENANT_URL='https://'
+
+EMAIL_HOST=""
+EMAIL_PORT=""
+EMAIL_HOST_USER=""
+EMAIL_HOST_PASSWORD=""
