@@ -1,0 +1,73 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="fr">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="utf-8">
+    <title>Reçu d'adhésion</title>
+    <meta name="description" content="Reçu d'adhésion">
+</head>
+<body>
+
+<h1>Reçu d'adhésion</h1>
+<a href="">Télécharger en pdf</a>
+<aside>
+    <address id="from">
+        <p><strong>Bénéficiaire</strong></p>
+
+        <p>{{ config.structure }}</p>
+        <p>{{ config.adresse }}</p>
+        <p>{{ config.email }}</p>
+    </address>
+
+    <address id="to">
+        <p><strong>Contributeur</strong></p>
+        <p>{{ adhesion.membre.name }} {{ adhesion.membre.prenom }}</p>
+        <p>{{ adhesion.membre.email }}</p>
+    </address>
+</aside>
+
+<dl id="informations">
+    <dt>Numéro d'adhésion</dt>
+    <dd>{{ uuid4 }}</dd>
+    <dt>Date</dt>
+    <dd>{{ adhesion.date_time }}</dd>
+</dl>
+
+<table>
+    <thead>
+    <tr>
+        <th>Description</th>
+        <th>Prix</th>
+        <th>Quantité</th>
+        <th>Sous total</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>{{ adhesion.article.name }}</td>
+        <td>{{ adhesion.prix | floatformat:2 }} €</td>
+        <td>{{ adhesion.qty }}</td>
+        <td>{{ adhesion.total | floatformat:2 }} €</td>
+    </tr>
+    </tbody>
+</table>
+
+<table id="total">
+    <thead>
+    <tr>
+        <th>Payée par</th>
+        <th>Transaction</th>
+        <th>Total</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>{{ adhesion.moyen_paiement }}</td>
+        <td>{{ uuid4 }}</td>
+        <td>{{ adhesion.total | floatformat:2 }} €</td>
+    </tr>
+    </tbody>
+</table>
+<h4></h4>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!-- infos point de vente -->
+<input type="hidden" name="csrfmiddlewaretoken" value="${ window[ctx.nom_module].maj_csrf_token() }"/>
+<div id="article-infos-divers" class="eff" data-total="0"></div>
+<!-- menu -->
+<header class="fond-header l100vw">
+  <!--
+  <div style="position:absolute;top:8px;left:300px;color:#FFFFFF">${ document.querySelector('body').clientWidth }</div>
+   -->
+  <nav class="navbar-horizontal">
+    <div class="navbar-img BF-col curseur-action" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');vue_pv.reloadData();">
+      <img alt="TiBillet" src="../static/webview/images/logo_115x46.png"/>
+    </div>
+    <div id="header-part-left" class="BF-ligne-deb" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');">
+      <div id="header-part-left-temps" class="BF-col">
+        <div id="temps-charge-valeur"></div>
+        <div id="temps-charge-visuel"></div>
+      </div>
+      <div id="header-part-left-titre" class="BF-ligne"></div>
+    </div>
+    <div class="navbar-menu BF-col">
+      <i class="menu-burger-icon fas fa-bars fa-1x curseur-action" onclick="vue_pv.composeMenuPrincipal(1);document.querySelector('#menu-burger-conteneur').classList.toggle('burger-show');"></i>
+    </div>
+  </nav>
+  <div id="menu-burger-conteneur">
+    ${ vue_pv.composeMenuPrincipal(0) }
+  </div>
+</header>
+<!-- fin: menu -->
+
+<div id="page-commandes">
+  <main id="page-commandes-conteneur" class="BF-ligne-deb" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');">
+    <div id="categories" class="BF-col-haut">
+      ${ vue_pv.afficher_categories() }
+    </div>
+
+    <div id="products" class="BF-col">
+      ${ vue_pv.prepareContenuPointsDeVentes() }
+    </div>
+
+    <div id="achats" class="BF-col-haut">
+      <div class="BF-ligne-deb achats-legende">
+        <div class="achats-col-bt"></div>
+        <div class="achats-col-qte" data-i8n="qty,uppercase">QTE</div>
+        <div class="achats-col-produit" data-i8n="product,uppercase">PRODUIT</div>
+        <div class="achats-col-prix" data-i8n="price,uppercase">PRIX</div>
+      </div>
+      <div id="achats-liste" class="BF-col-haut l100p"></div>
+    </div>
+  </main>
+  <footer id="page-commandes-footer" class="BF-ligne" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');">
+    <!-- bouton Reset commandes -->
+    <div class="BF-ligne footer-bt fond-retour test-reset" onclick="vue_pv.rezet_commandes();">
+      <i class="footer-bt-icon fas fa-trash md4px"></i>
+      <div class="BF-col-deb footer-bt-text mg4px">
+        <div data-i8n="reset,uppercase">RESET</div>
+      </div>
+    </div>
+    <!-- bouton CHECK CARTE -->
+    <div class="BF-ligne footer-bt fond-normal test-check-carte" onclick="vue_pv.check_carte()">
+      <i class="footer-bt-icon fas fa-money-check-alt md4px"></i>
+      <div class="BF-col-deb footer-bt-text mg4px">
+        <div data-i8n="check,uppercase">CHECK</div>
+        <div data-i8n="card,uppercase">CARTE</div>
+      </div>
+    </div>
+    ${ vue_pv.majBoutonValiderPointsDeVentes(0) }
+  </footer>
+</div>
+
+<!-- resto -->
+<div id="tables" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');">
+  <div id="tables-contenu" class="BF-ligne">
+    <div id="tables-categories" class="BF-col-haut"></div>
+    <div id="tables-liste" data-etat="affiche"></div>
+  </div>
+  <footer id="tables-footer"></footer>
+</div>
+
+<div id="commandes-table" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');">
+  <div id="commandes-table-contenu" class="BF-ligne-deb">
+    <div id="commandes-table-menu" class="BF-col-haut"></div>
+    <div id="commandes-table-articles"></div>
+    <div id="commandes-table-addition" class="BF-col-haut">
+      <div class="BF-ligne-deb addition-legende">
+        <div class="addition-col-bt"></div>
+        <div class="addition-col-qte" data-i8n="qty,uppercase">QTE</div>
+        <div class="addition-col-produit" data-i8n="product,uppercase">PRODUIT</div>
+        <div class="addition-col-prix" data-i8n="price,uppercase">PRIX</div>
+      </div>
+      <div id="addition-liste-conteneur">
+        <div id="addition-liste-deja-paye"></div>
+        <div id="addition-liste" class="BF-col-haut l100p"></div>
+      </div>
+      <div id="addition-reste-a-payer-ligne" class="BF-ligne-deb">
+        <div class="addition-info-ligne" data-i8n="remainsPayable,capitalize">Reste à payer</div>
+        <div id="addition-reste-a-payer"></div>
+      </div>
+      <div id="addition-reste-a-payer-ligne" class="BF-ligne-deb">
+        <div class="addition-info-ligne" data-i8n="totalOrders,capitalize">Total commande(s)</div>
+        <div id="addition-total-commandes"></div>
+      </div>
+      <div id="addition-vase-communicant" style="display: none;"></div>
+    </div>
+    <div id="commandes-table-gestion"></div>
+  </div>
+
+  <div id="services-table-contenu" class="BF-ligne-deb"></div>
+  <footer id="commandes-table-footer"></footer>
+</div>
+
+<div id="service-commandes" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');"></div>
+<!-- fin: resto -->

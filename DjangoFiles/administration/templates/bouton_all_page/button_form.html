@@ -1,0 +1,22 @@
+{% load i18n static %}
+{% load button_all_page %}
+
+{% if list_pk %}
+
+    <form action="export_csv/" method="POST">
+        {% csrf_token %}
+        <input type="text" id="list_pk" name="list_pk" style="display: none" value='{{ list_pk|js }}'>
+        <input type="text" id="full_url" name="full_url" style="display: none" value="">
+        {% if ecart_temps_mois %}
+            <button type="submit">Exporter ces {{ len_list_pk }} lignes en CSV</button>
+        {% else %}
+            <p>Pour exporter en csv, merci de filtrer sur une période de moins d'un mois.</p>
+        {% endif %}
+    </form>
+    <br>
+    <script>
+        href = window.location.href;
+        document.getElementById('full_url').value = href;
+    </script>
+
+{% endif %}

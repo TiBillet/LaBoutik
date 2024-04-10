@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Badgeuse</title>
+    <link rel="stylesheet" href="{% static 'bootstrap/bootstrap-5.2.3-dist/css/bootstrap.css' %}"/>
+    <link rel="stylesheet" href="{% static 'material-dashbboard-bootsrap5-creativetim/material-dashboard.css' %}"/>
+
+    <link rel="stylesheet" href="{% static 'css/main.css' %}"/>
+
+</head>
+<body class="container dark-version">
+
+<div>
+    <button class="btn btn-dark btn-sm mt-5"
+            _="on click toggle .dark-version on body
+            then toggle .btn-light on me
+            then toggle .btn-dark on me">
+        Dark / Light
+    </button>
+</div>
+
+
+{% block content %}
+{% endblock %}
+
+{% include 'htmx/spinner.html' %}
+
+<script src="{% static 'bootstrap/bootstrap-5.2.3-dist/js/bootstrap.js' %}"></script>
+<script src="{% static 'material-dashbboard-bootsrap5-creativetim/material-dashboard.js' %}"></script>
+<script src="{% static 'js/htmx.min.1.9.6.js' %}"></script>
+<script src="{% static 'js/loading-states.js' %}"></script>
+<script src="{% static 'js/hyperscript.0.9.11.min.js' %}"></script>
+
+
+
+</body>
+
+</html>

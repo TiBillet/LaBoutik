@@ -1,0 +1,64 @@
+{% load i18n %}
+{% if module.error %}
+    <ul>
+        <li>
+            {{ module.error }}
+        </li>
+    </ul>
+
+{% elif module.children %}
+    <div class="padding center fonce">
+        <ul class="inline bordered">
+            {#            <p class="dim">Monnaie disponible.</p>#}
+            {% for childrenlist in module.children %}
+                {% for children in childrenlist %}
+                    <li>
+                        <div class="big">{{ children.value }}</div>
+                        <div class="dim">{{ children.title }}</div>
+                    </li>
+                {% endfor %}
+            {% endfor %}
+        </ul>
+    </div>
+{% else %}
+    <ul>
+        <li>
+            {% trans "Nothing to show" %}
+        </li>
+    </ul>
+{% endif %}
+
+<div style="margin: 1em">
+    <div>
+        <a href="/rapport/TicketZToday/" target="_blank">Ticket Z temporaire</a>
+    </div>
+    <div style="margin-top: 0.5em">
+        <a href="/rapport/RapportToday/" target="_blank">Rapport complet temporaire</a>
+    </div>
+        <div style="margin-top: 0.5em">
+        <a href="/rapport/badgeuse/" target="_blank">Rapport badgeuse</a>
+    </div>
+</div>
+
+<script type="text/javascript">
+    // $('.dashboard-item-header-buttons').remove();
+    var elems = document.getElementsByClassName("dashboard-item-header-buttons");
+    // console.log(elems)
+    for (var i = elems.length - 1; i >= 0; i--) {
+        elems[i].remove();
+    }
+    // elem
+</script>
+<style type="text/css">
+    .fonce {
+        background: #59677e;
+    }
+
+    .big {
+        color: white;
+    }
+
+    .dashboard-item-header-buttons {
+        display: hidden;
+    }
+</style>

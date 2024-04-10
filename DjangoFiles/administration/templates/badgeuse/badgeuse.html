@@ -1,0 +1,77 @@
+{% extends 'badgeuse/base.html' %}
+{% load humanize i18n %}
+{% block content %}
+
+
+    <div>
+        <h1>Passages</h1>
+    </div>
+    <hr class="dark horizontal my-3">
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table align-items-center mb-0">
+                <thead>
+                <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                        Utilisateur & Lieux d'origine
+                    </th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                        Premier passage
+                    </th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                        Second passage
+                    </th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                        Durée
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for passage in passages %}
+                    {% for carte, horaires in passage.items %}
+                        <tr>
+                            <td>
+                                <div class="d-flex px-2 py-1">
+                                    <div>
+                                        <img src=""
+                                             class="avatar avatar-sm me-3">
+                                    </div>
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <h6 class="mb-0 text-xs">{{ carte.membre }}</h6>
+                                        <p class="text-xs text-secondary mb-0">
+                                            {% if carte.origin.place %}
+                                                {{ carte.origin.place }}
+                                            {% else %}
+                                                {{ config.structure }}
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <p class="text-xs font-weight-bold mb-0">{{ horaires.0 }}</p>
+                                <p class="text-xs text-secondary mb-0">{{ horaires.0 | naturaltime }}</p>
+                            </td>
+                            <td>
+                                <p class="text-xs font-weight-bold mb-0">{{ horaires.1 }}</p>
+                                <p class="text-xs text-secondary mb-0">{{ horaires.1 | naturaltime }}</p>
+                            </td>
+                                <td class="align-middle text-center text-sm">
+                            {% if horaires.1 %}
+                                    <span class="">{{ horaires.0 | timesince:horaires.1 }}</span>
+                            {% else %}
+                                <span>Pas de sortie</span>
+                            {% endif %}
+                                </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+{% endblock content %}

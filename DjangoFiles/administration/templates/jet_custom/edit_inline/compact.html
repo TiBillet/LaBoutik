@@ -1,0 +1,276 @@
+{% load i18n admin_urls admin_static %}
+
+<div class="inline-group compact" id="{{ inline_admin_formset.formset.prefix }}-group" data-inline-prefix="{{ inline_admin_formset.formset.prefix }}" data-inline-verbose-name="{{ inline_admin_formset.opts.verbose_name|capfirst }}" data-inline-delete-text="{% trans "Remove" %}">
+    <h2>{{ inline_admin_formset.opts.verbose_name_plural|capfirst }}</h2>
+    {{ inline_admin_formset.formset.management_form }}
+    {{ inline_admin_formset.formset.non_form_errors }}
+
+    <div class="inline-navigation">
+        <div class="inline-navigation-top"></div>
+        <div class="inline-navigation-bottom"></div>
+        <div class="add-row">
+            <a href="#">{% blocktrans with verbose_name=inline_admin_formset.opts.verbose_name|capfirst %}Ajouter {{ verbose_name }}{% endblocktrans %}</a>
+        </div>
+        <div class="inline-navigation-content">
+            <div class="inline-navigation-items">
+                {% for inline_admin_form in inline_admin_formset %}
+                    <a href="#" class="inline-navigation-item{% if forloop.last %} empty{% endif %}" data-inline-related-id="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
+{#                        s'il y a déja des cartes, les afficher dans la liste a gauche, sinon, forloop counter#}
+                        {% if inline_admin_form.original %}
+                            {{ inline_admin_form.original }}
+                        {% else %}
+                            {{ inline_admin_formset.opts.verbose_name|capfirst }} #{{ forloop.counter }}
+                        {% endif %}
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    {% for inline_admin_form in inline_admin_formset %}
+        <div class="inline-related compact{% if inline_admin_form.original or inline_admin_form.show_url %} has_original{% endif %}{% if forloop.last %} empty-form last-related{% endif %}" id="{{ inline_admin_formset.formset.prefix }}-{% if not forloop.last %}{{ forloop.counter0 }}{% else %}empty{% endif %}">
+            <h3>
+                <b>{{ inline_admin_formset.opts.verbose_name|capfirst }}:</b>&nbsp;
+                <span class="inline_label">
+                    {% if inline_admin_form.original %}
+                        {{ inline_admin_form.original }}
+                        {% if inline_admin_form.model_admin.show_change_link and inline_admin_form.model_admin.has_registered_model %}
+                            <a href="{% url "inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote" %}" class="inlinechangelink">{% trans "Change" %}</a>
+                        {% endif %}
+                    {% else %}
+                        Ajoutez une nouvelle carte :
+                        #{{ forloop.counter }}
+                    {% endif %}
+                </span>
+                {% if inline_admin_form.show_url %}<a href="{{ inline_admin_form.absolute_url }}">{% trans "View on site" %}</a>{% endif %}
+                {% if inline_admin_formset.formset.can_delete and inline_admin_form.original %}<span class="delete">{{ inline_admin_form.deletion_field.field }} {{ inline_admin_form.deletion_field.label_tag }}</span>{% endif %}
+            </h3>
+            {% if inline_admin_form.form.non_field_errors %}{{ inline_admin_form.form.non_field_errors }}{% endif %}
+
+            {% for fieldset in inline_admin_form %}
+                {% include "jet_custom/includes/fiedset.html" %}
+            {% endfor %}
+
+            {% if inline_admin_form.needs_explicit_pk_field %}{{ inline_admin_form.pk_field.field }}{% endif %}
+            {{ inline_admin_form.fk_field.field }}
+        </div>
+    {% endfor %}
+</div>
+
+
+
+<script>
+
+var toggle = function (elem) {
+
+	// If the element is visible, hide it
+	if (window.getComputedStyle(elem).display === 'block') {
+		elem.style.display = 'none';
+		return;
+	}
+
+	// Otherwise, show it
+	elem.style.display = 'block';
+
+};
+
+// Listen for click events
+document.addEventListener('click', function (event) {
+
+	// Make sure clicked element is our toggle
+	if (!event.target.classList.contains('toggle')) return;
+	console.log("clic")
+
+	// Prevent default link behavior
+	event.preventDefault();
+
+	// Get the content
+	var content = document.querySelectorAll(".toggle-content");
+	if (!content) return;
+
+	// Toggle the content
+    for (i = 0; i < content.length; i++) {
+	    toggle(content[i]);
+    }
+
+}, false);
+
+</script>
+
+<style>
+
+
+/* General button style */
+.btn {
+    border: none;
+    font-family: 'Lato';
+    font-size: inherit;
+    color: inherit;
+    background: none;
+    cursor: pointer;
+    padding: 15px 40px;
+    display: inline-block;
+    margin: 15px 30px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    outline: none;
+    position: relative;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+.btn:after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    -webkit-transition: all 0.3s;
+    -moz-transition: all 0.3s;
+    transition: all 0.3s;
+}
+
+/* Pseudo elements for icons */
+.btn:before {
+    font-family: 'FontAwesome';
+    speak: none;
+    font-style: normal;
+    font-weight: normal;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+}
+
+
+/* Icon separator
+.btn-sep {
+    padding: 25px 60px 25px 120px;
+}
+*/
+
+.btn-sep:before {
+    background: rgba(0,0,0,0.15);
+}
+
+/* Button 1 */
+.btn-1 {
+    background: #3498db;
+    color: #fff;
+}
+
+.btn-1:hover {
+    background: #2980b9;
+}
+
+.btn-1:active {
+    background: #2980b9;
+    top: 2px;
+}
+
+.btn-1:before {
+    position: absolute;
+    height: 100%;
+    left: 0;
+    top: 0;
+    line-height: 3;
+    font-size: 140%;
+    width: 60px;
+}
+
+/* Button 2 */
+.btn-2 {
+    background: #2ecc71;
+    color: #fff;
+}
+
+.btn-2:hover {
+    background: #27ae60;
+}
+
+.btn-2:active {
+    background: #27ae60;
+    top: 2px;
+}
+
+.btn-2:before {
+    position: absolute;
+    height: 100%;
+    left: 0;
+    top: 0;
+    line-height: 3;
+    font-size: 140%;
+    width: 60px;
+}
+
+/* Button 3 */
+.btn-3 {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.btn-3:hover {
+    background: #c0392b;
+}
+
+.btn-3:active {
+    background: #c0392b;
+    top: 2px;
+}
+
+.btn-3:before {
+    position: absolute;
+    height: 100%;
+    left: 0;
+    top: 0;
+    line-height: 3;
+    font-size: 140%;
+    width: 60px;
+}
+
+/* Button 4 */
+.btn-4 {
+    background: #34495e;
+    color: #fff;
+}
+
+.btn-4:hover {
+    background: #2c3e50;
+}
+
+.btn-4:active {
+    background: #2c3e50;
+    top: 2px;
+}
+
+.btn-4:before {
+    position: absolute;
+    height: 100%;
+    left: 0;
+    top: 0;
+    line-height: 3;
+    font-size: 140%;
+    width: 60px;
+}
+
+{#/* Icons */#}
+{##}
+{#.icon-cart:before {#}
+{#    content: "\f07a";#}
+{#}#}
+{##}
+{#.icon-heart:before {#}
+{#    content: "\f55a";#}
+{#}#}
+{##}
+{#.icon-info:before {#}
+{#    content: "\f05a";#}
+{#}#}
+{##}
+{#.icon-send:before {#}
+{#    content: "\f1d8";#}
+{#}#}
+
+
+</style>
