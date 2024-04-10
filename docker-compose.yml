@@ -84,3 +84,8 @@ services:
       - traefik.http.routers.laboutik_nginx.tls.certresolver=myresolver
       - traefik.http.routers.laboutik_nginx.rule=Host(`${DOMAIN}`)
 
+networks:
+  frontend:
+    external: true
+  backend:
+    internal: true
