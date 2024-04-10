@@ -8,7 +8,8 @@ POSTGRES_USER=''
 POSTGRES_PASSWORD=''
 POSTGRES_DB='laboutik'
 
-TZ='Europe/Paris'
+TIME_ZONE='Europe/Paris'
+LANGUAGE_CODE='fr'
 
 DEBUG=0
 TEST=0

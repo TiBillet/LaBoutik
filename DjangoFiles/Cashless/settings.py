@@ -101,58 +101,6 @@ JET_INDEX_DASHBOARD = 'administration.dashboard.CustomIndexDashboard'
 JET_DEFAULT_THEME = 'default_custom'
 
 JET_SIDE_MENU_ITEMS = {
-    # 'adminroot': [
-    #     # Translators: Sous categorie sur la page root uniquement
-    #     {'app_label': 'APIcashless', 'label': _("Cartes & Membres"), 'items': [
-    #         {'name': 'membre'},
-    #         {'name': 'cartecashless'},
-    #         {'name': 'assets'},
-    #     ]},
-    #     {'app_label': 'APIcashless', 'label': "Articles", 'items': [
-    #         {'name': 'articles'},
-    #         {'name': 'categorie'},
-    #         {'name': 'groupementcategorie'}
-    #     ]},
-    #     {'app_label': 'APIcashless', 'label': "Points de ventes", 'items': [
-    #         {'name': 'cartemaitresse'},
-    #         {'name': 'pointdevente'},
-    #         {'name': 'table'},
-    #     ]},
-    #     {'app_label': 'APIcashless', 'label': "Commandes", 'items': [
-    #         {'name': 'table'},
-    #         {'name': 'categorietable'},
-    #         {'name': 'commandesauvegarde'},
-    #         {'name': 'articlecommandesauvegarde'},
-    #
-    #     ]},
-    #     {'app_label': 'APIcashless', 'label': "Ventes", 'items': [
-    #         {'name': 'articlevendu'},
-    #         {'name': 'commandesauvegarde'},
-    #     ]},
-    #     {'app_label': 'APIcashless', 'label': "Rapports", 'items': [
-    #         {'name': 'cloturecaisse'},
-    #     ]},
-    #     {'app_label': 'APIcashless', 'label': "Configuration", 'items': [
-    #         {'name': 'couleur'},
-    #         {'name': 'configurationsgraphique'},
-    #         {'name': 'configuration'},
-    #         {'name': 'moyenpaiement'},
-    #         {'name': 'informationgenerale'},
-    #         {'name': 'odoologs'},
-    #
-    #     ]},
-    #     {'app_label': 'APIcashless', 'label': "Appareils", 'items': [
-    #         {'name': 'appareil'},
-    #         {'name': 'appairage'},
-    #     ]},
-    #     {'app_label': 'epsonprinter', 'label': "Imprimantes", 'items': [
-    #         {'name': 'printer'},
-    #     ]},
-    #     {'app_label': 'auth', 'items': [
-    #         {'name': 'tibiauth.tibiuser'},
-    #         {'name': 'group'},
-    #     ]},
-    # ],
     'adminstaff': [
         {'app_label': 'APIcashless', 'label': "Membres & Cartes", 'items': [
             {'name': 'membre'},
@@ -207,13 +155,6 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'Cashless.urls'
-
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-#         'LOCATION': 'unique-snowflake-tibillet-deux-deux',
-#     }
-# }
 
 CACHES = {
     'default': {
@@ -271,7 +212,7 @@ DATABASES = {
         'NAME': os.environ.get('POSTGRES_DB'),
         'USER': os.environ.get('POSTGRES_USER'),
         'PASSWORD': os.environ.get('POSTGRES_PASSWORD'),
-        'HOST': 'cashless_postgres',
+        'HOST': 'postgres',
         'PORT': '5432',
     }
 }
@@ -314,9 +255,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = os.environ.get('LANGUAGE_CODE', 'fr')
 TIME_ZONE = os.environ.get('TIME_ZONE', 'Indian/Reunion')
+
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
+
 LOCALE_PATHS = (
     os.path.join(BASE_DIR, 'locale'),
 )
