@@ -1,11 +1,14 @@
 # TiBillet - Federated tools for cooperative networks
 
-> [!IMPORTANT]  
+> [!NOTE]  
 > TLDR; A suite of free applications for managing your social and solidarity venue : Cash register, membership,
 > ticketing,
 > cashless, time currency, order taking and room management.
 > The current git repository is one of the building blocks of the TiBillet ecosystem: LaBoutik
 > To read more and talk with us : https://tibillet.org
+
+![](img/patchwork_cashless.jpg)
+
 
 ### EN : Introduction
 
@@ -49,7 +52,7 @@ solidaire, décentralisée et non spéculative à l'échelle d'un territoire.
 TiBillet est en période de BETA et en expérimentation sur plusieurs lieux sur l'ile de la Réunion. Venez nous voir au
 Bisik, à la Raffinerie, et au Manapany Festival !
 
-## TiBillet / Lespass
+## TiBillet / LaBoutik
 
 The current git repository is one of the building blocks of the TiBillet ecosystem: LaBoutik
 It contains the Cash register, cashless system with RFID / NFC chip and order-taking system.
@@ -79,7 +82,6 @@ EN : [https://tibillet.org]
 FR : [https://tibillet.org/fr]
 
 
-![](Presentation/Design_Front_Cashless_APP.svg)
 
 ## Made by, with and for :
 
