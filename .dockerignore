@@ -1,0 +1,6 @@
+postgresql
+.env
+SaveDb
+img
+DjangoFiles/logs
+DjangoFiles/www

@@ -3,10 +3,10 @@ set -e
 
 if [ "$TEST" = "1" ]
 then
-    python manage.py migrate
-    python manage.py flush --no-input
-    python manage.py popdb --test
-    python manage.py runserver 0.0.0.0:8000
+    poetry run python manage.py migrate
+    poetry run python manage.py flush --no-input
+    poetry run python manage.py popdb --test
+    poetry run python manage.py runserver 0.0.0.0:8000
 else
     echo "TEST environment variable is not set"
 fi

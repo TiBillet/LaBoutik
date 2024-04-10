@@ -20,11 +20,11 @@ ENV POETRY_NO_INTERACTION=1
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="/home/tibillet/.local/bin:$PATH"
 
-COPY --chown=tibillet:tibillet ./ /LaBoutik
-WORKDIR /LaBoutik
+COPY --chown=tibillet:tibillet ./ /home/tibillet/LaBoutik
+WORKDIR /home/tibillet/LaBoutik
 
 
-# RUN poetry install
+RUN poetry install
 
 
 # docker build -t tibillet/laboutik:beta4 .

@@ -2,5 +2,5 @@
 set -e
 
 #sleep infinity
-celery -A Cashless worker -l INFO
+poetry run celery -A Cashless worker -l INFO
 

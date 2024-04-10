@@ -14,11 +14,11 @@ touch /DjangoFiles/www/nginxError.log
 
 cd /DjangoFiles
 
-python manage.py collectstatic --noinput
-python manage.py migrate
-python manage.py popdb --test
+poetry run python manage.py collectstatic --noinput
+poetry run python manage.py migrate
+poetry run python manage.py popdb --test
 
-python manage.py runserver 0.0.0.0:8000
+poetry run python manage.py runserver 0.0.0.0:8000
 #gunicorn Cashless.wsgi --log-level=debug --log-file /DjangoFiles/www/gunicorn.logs -w 3 -b 0.0.0.0:8000
 
 
