@@ -27,8 +27,7 @@ services:
     hostname: laboutik_django
     volumes:
       - ./cron:/cron
-      - ./:/home/tibillet/LaBoutik
-      - ./bashrc:/home/tibillet/.bashrc
+#      - ./:/home/tibillet/LaBoutik
       - ./SaveDb:/SaveDb
     links:
       - laboutik_postgres:postgres
@@ -49,9 +48,8 @@ services:
     env_file: .env
     container_name: laboutik_celery
     hostname: laboutik_celery
-    volumes:
-      - ./:/home/tibillet/LaBoutik
-      - ./bashrc:/home/tibillet/.bashrc
+#    volumes:
+#      - ./:/home/tibillet/LaBoutik
     links:
       - laboutik_postgres:postgres
       - laboutik_redis:redis

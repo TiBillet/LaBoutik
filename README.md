@@ -55,7 +55,7 @@ Bisik, à la Raffinerie, et au Manapany Festival !
 ## TiBillet / LaBoutik
 
 The current git repository is one of the building blocks of the TiBillet ecosystem: LaBoutik
-It contains the Cash register, cashless system with RFID / NFC chip and order-taking system.
+It contains the Cash register, cashless system with RFID / NFC chip reader and order-taking system.
 
 The engines are :
 
@@ -78,10 +78,8 @@ Can federate on a [Fedow system](https://github.com/TiBillet/Fedow) to accept mu
 
 ### Documentation :
 
-EN : [https://tibillet.org]
-FR : [https://tibillet.org/fr]
-
-
+- EN : [https://tibillet.org/docs/category/cashless](https://tibillet.org/docs/category/cashless)
+- FR : [https://tibillet.org/fr/docs/category/cashless](https://tibillet.org/fr/docs/category/cashless)
 
 ## Made by, with and for :
 
