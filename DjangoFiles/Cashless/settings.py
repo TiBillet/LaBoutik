@@ -11,7 +11,6 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import sys
-from django.utils.translation import ugettext_lazy as _
 from django.core.validators import URLValidator
 import os
 import logging
@@ -36,7 +35,6 @@ if len(FERNET_KEY) != 44:
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DEBUG') == 'True' or os.environ.get('DEBUG') == '1'
-FEDOW = os.environ.get('FEDOW') == 'True' or os.environ.get('FEDOW') == '1'
 TEST = os.environ.get('TEST') == 'True' or os.environ.get('TEST') == '1'
 DEMO = os.environ.get('DEMO') == 'True' or os.environ.get('DEMO') == '1'
 
@@ -369,16 +367,36 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_BACKEND', 'redis://redis:6379/0')
 # Déclaration du serveur pour liaison des nouveaux terminaux :
 # Check https://github.com/TiBillet/Discovery
 url_validator = URLValidator()
-DISCOVERY_SERVER = os.environ.get('DISCOVERY_SERVER', 'https://discovery.tibillet.coop/')
-BILL_TENANT_URL = os.environ.get('BILL_TENANT_URL', None)
-CASHLESS_URL = f"https://{os.environ['DOMAIN']}/"
 
+CASHLESS_URL = f"https://{os.environ['DOMAIN']}/"
+try:
+    url_validator(CASHLESS_URL)
+except Exception as e:
+    logger.warning("Error validating CASHLESS_URL")
+    raise e
+
+
+DISCOVERY_SERVER = os.environ.get('DISCOVERY_SERVER', 'https://discovery.tibillet.coop/')
 try:
     url_validator(DISCOVERY_SERVER)
-    url_validator(CASHLESS_URL)
+except Exception as e:
+    logger.error("No DISCOVERY_SERVER = no device")
+    raise e
+
+FEDOW_URL = os.environ.get('FEDOW_URL')
+try:
+    url_validator(FEDOW_URL)
+except Exception as e:
+    logger.error("No FEDOW_URL = No blockchain = No Cashless")
+    raise e
+
+
+BILL_TENANT_URL = os.environ.get('BILL_TENANT_URL')
+try:
     url_validator(BILL_TENANT_URL)
 except Exception as e:
-    raise e
+    logger.warning("No BILL_TENANT_URL = No Lespass = No refill from stripe, no qrcode scan and no user account")
+
 
 
 ## Pour les test unitaires plus rapide : ./manage.py test --tag=fast --tag=no-fedow

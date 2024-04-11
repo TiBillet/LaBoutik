@@ -29,18 +29,18 @@ class Command(BaseCommand):
                             help='Objects pour test front')
 
     def handle(self, *args, **options):
+
+
         class Lieu(object):
             """docstring for Lieu"""
 
-            def __init__(self, data, options):
-                self.data = json.loads(data)
-                self.nom_monnaie = self.data.get('nom_monnaie')
-                # self.nom_monnaies_acceptees = self.data.get('nom_monnaies_acceptees')
-                self.prix_adhesion = Decimal(self.data.get('prix_adhesion'))
+            def __init__(self, options):
+                self.nom_monnaie = os.environ.get('NOM_MONNAIE')
+                if self.nom_monnaie:
+                    self.monnaie_blockchain = self._monnaie_blockchain()
 
-                self.monnaie_blockchain = self._monnaie_blockchain()
-                # self.monnaie_blockchain_exterieure_acceptee = self._monnaie_blockchain_exterieure_acceptee()
                 self.moyens_de_paiements_non_blockchain = self._moyens_de_paiements_non_blockchain()
+
                 self.methode_articles = self._methode_articles()
                 self.configuration = self._configuration()
 
@@ -60,7 +60,6 @@ class Command(BaseCommand):
                     self.config_test()
                     badgeuse_creation()
 
-                # if options.get('fake_assets'):
 
             def _monnaie_blockchain(self):
                 mp = {}
@@ -803,24 +802,7 @@ class Command(BaseCommand):
                     return True
                 return False
 
-        variable_env_system = {
-            'nom_monnaie': os.environ.get('NOM_MONNAIE'),
-            "prix_adhesion": os.environ.get('PRIX_ADHESION'),
-            "root_login": os.environ.get('ROOT_LOGIN'),
-            "root_password": os.environ.get('ROOT_PWD'),
-            "staff_login": os.environ.get('STAFF_LOGIN'),
-            "staff_password": os.environ.get('STAFF_PWD'),
-            "membre_login": os.environ.get('MEMBRE_LOGIN'),
-            "membre_password": os.environ.get('MEMBRE_PWD'),
-        }
-
-        if options.get('flush'):
-            logger.warning(f'Flush de la base de donnée !')
-            call_command('flush', interactive=False)
-
-        try:
-            Cashless = PointDeVente.objects.get(comportement='C')
+        if  PointDeVente.objects.count() > 0 :
             logger.error(f'Cashless {Cashless} existe déja. Pop déja effectué')
-        except PointDeVente.DoesNotExist:
-            logger.info(f'Pas de points de vente Cashless, on lance le popdb - ARG : {args} - OPTION : {options}')
-            Lieu(json.dumps(variable_env_system), options)
+        else :
+            Lieu(options)

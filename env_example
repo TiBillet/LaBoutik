@@ -34,10 +34,11 @@ BORG_PASSPHRASE=""
 
 ########## FOR TEST AND DEBUG ONLY ##########
 
-# Sentry Debug for django back
+# Sentry Debug for django backend
 SENTRY_DNS=""
-# Sentry Debug for front
+# Sentry Debug for js frontend
 SENTRY_FRONT_DNS=""
+SENTRY_FRONT_ASSET=""
 
 ###!!!!!! Don't push to production with debug, test or demo !!!!!!###
 
