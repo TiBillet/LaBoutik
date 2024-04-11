@@ -1,6 +1,3 @@
-NOM_MONNAIE=''
-PRIX_ADHESION=''
-
 DJANGO_SECRET=''
 FERNET_KEY=''
 
@@ -8,35 +5,46 @@ POSTGRES_USER=''
 POSTGRES_PASSWORD=''
 POSTGRES_DB='laboutik'
 
-TIME_ZONE='Europe/Paris'
-LANGUAGE_CODE='fr'
-
-DEBUG=0
-TEST=0
-FEDOW=1
-
-DEMO=0
-DEMO_TAGID_CM=''
-DEMO_TAGID_CLIENT1=''
-DEMO_TAGID_CLIENT2=''
-
-# for letsencrypt
-EMAIL=''
-# Sentry Debug
-SENTRY_DNS=""
-
-
-# Utile pour host, pas pour conteneur. saveRepo.sh
-# Le script se lance pour backuper le dépot complet sur l'hote
-PREFIX_SAVE_DB='demeter'
-BORG_PASSPHRASE=""
-
 DOMAIN=''
-FEDOW_URL='https://'
-CASHLESS_URL='https://'
-BILL_TENANT_URL='https://'
+
+# admin email
+EMAIL=''
 
 EMAIL_HOST=""
 EMAIL_PORT=""
 EMAIL_HOST_USER=""
 EMAIL_HOST_PASSWORD=""
+
+TIME_ZONE='Europe/Paris'
+LANGUAGE_CODE='fr'
+
+########## FOR CASHLESS ##########
+
+# No Cashless if no Fedow nor Lespass tenant manager
+FEDOW_URL='https://'
+BILL_TENANT_URL='https://'
+
+# The name of your asset
+NOM_MONNAIE=''
+
+########## FOR SAVE CRON TASK ##########
+
+# can be empty if you don't backup
+BORG_PASSPHRASE=""
+
+########## FOR TEST AND DEBUG ONLY ##########
+
+# Sentry Debug for django back
+SENTRY_DNS=""
+# Sentry Debug for front
+SENTRY_FRONT_DNS=""
+
+###!!!!!! Don't push to production with debug, test or demo !!!!!!###
+
+DEBUG=0
+TEST=0
+DEMO=0
+
+DEMO_TAGID_CM=''
+DEMO_TAGID_CLIENT1=''
+DEMO_TAGID_CLIENT2=''

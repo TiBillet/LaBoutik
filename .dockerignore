@@ -5,5 +5,3 @@ img
 DjangoFiles/logs/nginxAccess.log
 DjangoFiles/logs/nginxError.log
 DjangoFiles/logs/DjangoLogFile
-
-DjangoFiles/www

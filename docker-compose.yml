@@ -6,7 +6,7 @@ services:
     container_name: laboutik_postgres
     hostname: laboutik_postgres
     volumes:
-      - ./postgresql/data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - backend
 
@@ -26,9 +26,7 @@ services:
     container_name: laboutik_django
     hostname: laboutik_django
     volumes:
-      - ./cron:/cron
-#      - ./:/home/tibillet/LaBoutik
-      - ./SaveDb:/SaveDb
+      - ./:/home/tibillet/LaBoutik
     links:
       - laboutik_postgres:postgres
       - laboutik_redis:redis
@@ -48,8 +46,8 @@ services:
     env_file: .env
     container_name: laboutik_celery
     hostname: laboutik_celery
-#    volumes:
-#      - ./:/home/tibillet/LaBoutik
+    volumes:
+      - ./:/home/tibillet/LaBoutik
     links:
       - laboutik_postgres:postgres
       - laboutik_redis:redis
@@ -91,6 +89,4 @@ networks:
     internal: true
 
 volumes:
-  laboutik-postgresql-data:
-  laboutik-assets:
-  laboutik-logs:
+  postgres_data:

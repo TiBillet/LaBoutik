@@ -22,6 +22,7 @@ ENV PATH="/home/tibillet/.local/bin:$PATH"
 
 COPY --chown=tibillet:tibillet ./ /home/tibillet/LaBoutik
 COPY --chown=tibillet:tibillet ./bashrc /home/tibillet/.bashrc
+COPY --chown=tibillet:tibillet ./cron /cron
 
 WORKDIR /home/tibillet/LaBoutik
 
@@ -29,5 +30,6 @@ WORKDIR /home/tibillet/LaBoutik
 RUN poetry install
 
 
+# Before build : collectstatic
 # docker build -t tibillet/laboutik:beta4 .
 # docker push tibillet/laboutik:beta4 .

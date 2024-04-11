@@ -365,21 +365,24 @@ BROKER_URL = os.environ.get('CELERY_BROKER', 'redis://redis:6379/0')
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER', 'redis://redis:6379/0')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_BACKEND', 'redis://redis:6379/0')
 
-## Pour les test unitaires plus rapide : ./manage.py test --tag=fast --tag=no-fedow
-if 'test' in sys.argv and '--tag=fast' in sys.argv:
-    MIGRATION_MODULES = {
-        'APIcashless': 'APIcashless.migrations_test',
-    }
 
 # Déclaration du serveur pour liaison des nouveaux terminaux :
 # Check https://github.com/TiBillet/Discovery
 url_validator = URLValidator()
 DISCOVERY_SERVER = os.environ.get('DISCOVERY_SERVER', 'https://discovery.tibillet.coop/')
-CASHLESS_URL = os.environ.get('CASHLESS_URL', None)
 BILL_TENANT_URL = os.environ.get('BILL_TENANT_URL', None)
+CASHLESS_URL = f"https://{os.environ['DOMAIN']}/"
+
 try:
     url_validator(DISCOVERY_SERVER)
     url_validator(CASHLESS_URL)
     url_validator(BILL_TENANT_URL)
 except Exception as e:
     raise e
+
+
+## Pour les test unitaires plus rapide : ./manage.py test --tag=fast --tag=no-fedow
+if 'test' in sys.argv and '--tag=fast' in sys.argv:
+    MIGRATION_MODULES = {
+        'APIcashless': 'APIcashless.migrations_test',
+    }

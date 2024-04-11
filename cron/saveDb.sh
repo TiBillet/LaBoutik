@@ -9,7 +9,7 @@ export PGHOST=cashless_postgres
 DATE_NOW=$(date +%Y-%m-%d-%H-%M)
 MIGRATION=$(ls /DjangoFiles/APIcashless/migrations | grep -E '^[0]' | tail -1 | head -c 4)
 
-PREFIX=$PREFIX_SAVE_DB-M$MIGRATION
+PREFIX=$DOMAIN-M$MIGRATION
 
 DUMPS_DIRECTORY="/SaveDb/dumps"
 

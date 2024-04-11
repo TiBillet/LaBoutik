@@ -1,4 +1,5 @@
-# EXEMPLE CRON SUR L'HOTE
+# PUT THIS ON THE DOCKER HOST (not the container)
+# TODO: inside the container ? django-cron ? See contribution task and budget ;)
 
 
 # Django création des rapports, et archive des tables ephemere
