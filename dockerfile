@@ -24,10 +24,10 @@ COPY --chown=tibillet:tibillet ./ /home/tibillet/LaBoutik
 COPY --chown=tibillet:tibillet ./bashrc /home/tibillet/.bashrc
 COPY --chown=tibillet:tibillet ./cron /cron
 
-WORKDIR /home/tibillet/LaBoutik/DjangoFiles
-
-
+WORKDIR /home/tibillet/LaBoutik
 RUN poetry install
+
+WORKDIR /home/tibillet/LaBoutik/DjangoFiles
 
 
 # Before build : collectstatic

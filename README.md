@@ -5,10 +5,10 @@
 > ticketing,
 > cashless, time currency, order taking and room management.
 > The current git repository is one of the building blocks of the TiBillet ecosystem: LaBoutik
-> To read more and talk with us : https://tibillet.org
+>
+> Read more : https://tibillet.org
 
 ![](img/patchwork_cashless.jpg)
-
 
 ### EN : Introduction
 
@@ -61,11 +61,12 @@ The engines are :
 
 - [Lespass](https://github.com/TiBillet/Lespass): ticketing, membership and landing page engines.
 
-- [LaBoutik](https://github.com/TiBillet/LaBoutik): Cash register, cashless system with RFID / NFC chip and order-taking system.
+- [LaBoutik](https://github.com/TiBillet/LaBoutik): Cash register, cashless system with RFID / NFC chip and order-taking
+  system.
 
-- [Fedow](https://github.com/TiBillet/Fedow) : Federated and open wallet, the federation engine. A blockchain to share membership assets, local currencies and
+- [Fedow](https://github.com/TiBillet/Fedow) : Federated and open wallet, the federation engine. A blockchain to share
+  membership assets, local currencies and
   time for several Lespass and LaBoutik instances.
-
 
 # Cashless and cash register server [TiBillet/LaBoutik](https://tibillet.org)
 
@@ -74,7 +75,6 @@ Cashless and Cash registrer for fiat and non fiat currency.
 Complete point-of-sale software to manage orders, payments and reservations with ease. Fast, intuitive and secure.
 
 Can federate on a [Fedow system](https://github.com/TiBillet/Fedow) to accept multiple asset like a local currency.
-
 
 ### Documentation :
 
@@ -95,7 +95,6 @@ Can federate on a [Fedow system](https://github.com/TiBillet/Fedow) to accept mu
 - [JetBrain](https://jb.gg/OpenSourceSupport)
 
 ![logo JetBrain](https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.svg)
-
 
 ## Contact :
 
