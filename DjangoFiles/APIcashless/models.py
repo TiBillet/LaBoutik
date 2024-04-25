@@ -1843,6 +1843,7 @@ class Configuration(SingletonModel):
                                                related_name="configuration_monnaies_acceptees",
                                                blank=True)
 
+    # TODO: a virer, pas utilisé
     emplacement = models.CharField(max_length=50,
                                    null=True, blank=True)
 

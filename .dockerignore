@@ -1,7 +1,7 @@
-postgresql
+database
 .env
-SaveDb
 img
+SaveDb
+DjangoFiles/logs/Djangologfile
 DjangoFiles/logs/nginxAccess.log
 DjangoFiles/logs/nginxError.log
-DjangoFiles/logs/DjangoLogFile

@@ -6,7 +6,7 @@ services:
     container_name: laboutik_postgres
     hostname: laboutik_postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - laboutik_postgres_data:/var/lib/postgresql/data
     networks:
       - backend
 
@@ -58,7 +58,7 @@ services:
       - backend
       - frontend
     command: "sleep infinity"
-#    command: "bash /home/tibillet/LaBoutik/DjangoFiles/launch_celery.sh"
+#    command: "poetry run celery -A Cashless worker -l INFO"
 
 
   laboutik_nginx:
@@ -89,4 +89,4 @@ networks:
     internal: true
 
 volumes:
-  postgres_data:
+  laboutik_postgres_data:

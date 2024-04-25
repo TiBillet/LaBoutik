@@ -10,6 +10,7 @@ DOMAIN=''
 # admin email
 EMAIL=''
 
+# For transactionnal email :
 EMAIL_HOST=""
 EMAIL_PORT=""
 EMAIL_HOST_USER=""

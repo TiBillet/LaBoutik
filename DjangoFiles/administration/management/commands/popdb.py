@@ -49,7 +49,8 @@ class Command(BaseCommand):
                 self.articles_generiques = self._articles_generiques()
                 self.pdv_cashless = self._point_de_vente_cashless()
 
-                self.users = self._user_admin()
+                #TODO: On utilise l'email de l'admin dans le .env
+                # self.users = self._user_admin()
 
                 if options.get('test'):
                     self.pop_membre_articles_cartes_test()
@@ -111,8 +112,7 @@ class Command(BaseCommand):
                 # Crash if doesn't exist. It's OK
                 configuration.domaine_cashless = settings.CASHLESS_URL
 
-
-                configuration.prix_adhesion = self.prix_adhesion
+                # configuration.prix_adhesion = self.prix_adhesion
 
                 configuration.monnaie_principale = self.monnaie_blockchain.get('principale')
                 configuration.monnaie_principale_cadeau = self.monnaie_blockchain.get('cadeau')
@@ -155,7 +155,7 @@ class Command(BaseCommand):
                 configuration.methode_vider_carte = self.methode_articles.get('vider_carte')
                 configuration.methode_paiement_fractionne = self.methode_articles.get('paiement_fractionne')
 
-                configuration.emplacement = self.data.get("nom_monnaie")
+                # configuration.emplacement = self.data.get("nom_monnaie")
 
                 configuration.save()
 
@@ -286,11 +286,12 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
-                d["Adhésion"] = \
-                    Articles.objects.get_or_create(name="Adhésion",
-                                                   prix=self.data.get('prix_adhesion'),
-                                                   methode_choices=Articles.ADHESIONS,
-                                                   methode=self.methode_articles.get('adhesion'))[0]
+                # L'adhésion vient de Fedow maintenant
+                # d["Adhésion"] = \
+                #     Articles.objects.get_or_create(name="Adhésion",
+                #                                    prix=10,
+                #                                    methode_choices=Articles.ADHESIONS,
+                #                                    methode=self.methode_articles.get('adhesion'))[0]
 
                 d["VIDER CARTE"] = \
                     Articles.objects.get_or_create(name="VIDER CARTE",
@@ -343,7 +344,7 @@ class Command(BaseCommand):
                 return couleurs
 
 
-
+            """
             def _user_admin(self):
                 User = get_user_model()
 
@@ -376,6 +377,7 @@ class Command(BaseCommand):
 
                 # on clean les permissions :
                 call_command('check_permissions')
+            """
 
             def pop_membre_articles_cartes_test(self):
                 try:
@@ -803,6 +805,6 @@ class Command(BaseCommand):
                 return False
 
         if  PointDeVente.objects.count() > 0 :
-            logger.error(f'Cashless {Cashless} existe déja. Pop déja effectué')
+            logger.error(f'PointDeVente.objects.count() > 0. Pop déja effectué')
         else :
             Lieu(options)

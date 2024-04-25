@@ -24,7 +24,7 @@ COPY --chown=tibillet:tibillet ./ /home/tibillet/LaBoutik
 COPY --chown=tibillet:tibillet ./bashrc /home/tibillet/.bashrc
 COPY --chown=tibillet:tibillet ./cron /cron
 
-WORKDIR /home/tibillet/LaBoutik
+WORKDIR /home/tibillet/LaBoutik/DjangoFiles
 
 
 RUN poetry install
