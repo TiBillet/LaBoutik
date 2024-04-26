@@ -55,8 +55,7 @@ services:
       - laboutik_django
     networks:
       - laboutik_backend
-    command: "sleep infinity"
-#    command: "poetry run celery -A Cashless worker -l INFO"
+    command: "poetry run celery -A Cashless worker -l INFO"
 
 
   laboutik_nginx:
@@ -69,8 +68,8 @@ services:
     links:
       - laboutik_django:laboutik_django
     volumes:
-      - ./DjangoFiles/www:/DjangoFiles/www
-      - ./DjangoFiles/logs:/DjangoFiles/logs
+      - ./www:/DjangoFiles/www
+      - ./logs:/DjangoFiles/logs
       - ./nginx:/etc/nginx/conf.d
     labels:
       - traefik.enable=true
@@ -79,12 +78,12 @@ services:
       - traefik.http.routers.laboutik_nginx.rule=Host(`${DOMAIN}`)
     networks:
       - frontend
+      - laboutik_backend
 
 networks:
   frontend:
     external: true
   laboutik_backend:
-    internal: true
 
 volumes:
   laboutik_postgres_data:
