@@ -384,13 +384,13 @@ def email_activation(user_uuid: uuid4=None):
         'table_info': {},
         'button_color': "#25c19f",  # for tibillet green : "#25c19f", for red warning : "#E8423FFF"
         'button': {
-            'text': _('Je valide mon email.'),
+            'text': _('Je valide mon email'),
             'url': f'{connexion_url}'
         },
-        'next_text_1': "Si vous recevez cet email par erreur, merci de contacter l'équipe de TiBillet",
+        'next_text_1': _("Si vous recevez cet email par erreur, merci de contacter l'équipe de TiBillet"),
         'next_text_2': None,
-        'end_text': 'A bientôt, et bon voyage',
-        'signature': "L'agence spaciale de TiBillet",
+        'end_text': _('A bientôt, et bon voyage'),
+        'signature': _("L'agence spaciale de TiBillet"),
     }
 
     try :

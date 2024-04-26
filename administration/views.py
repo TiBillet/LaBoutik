@@ -310,7 +310,9 @@ def activate(request, uid, token):
         uid = force_str(urlsafe_base64_decode(uid))
         signer = TimestampSigner()
         user_uuid = signer.unsign(uid, max_age=timedelta(hours=24))
-        user = User.objects.get(uuid=user_uuid)
+
+        user = get_object_or_404(User, uuid=user_uuid)
+        # user = User.objects.get(uuid=user_uuid)
 
         # On utilise le même algo que pour le reset password
         PR = PasswordResetTokenGenerator()
@@ -319,13 +321,18 @@ def activate(request, uid, token):
         if is_token_valid:
             user.is_active = True
             user.save()
+        else :
+            return HttpResponse(_('Token non valide ou expiré'))
+
+
     except Exception as e:
         logger.error(e)
         raise e
 
     if request.method == 'GET':
         return render(request, 'users/password_reset.html', context={'user': user})
-    if request.method == 'POST':
+
+    elif request.method == 'POST':
         data = request.POST
         password = data['password']
         try :
