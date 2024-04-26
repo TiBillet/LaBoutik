@@ -1,0 +1,57 @@
+<!-- info point de vente -->
+<div id="article-infos-divers" class="eff" data-total="0" data-name-pdv="${ ctx.pv_donnees.infos.name }" data-pk-pdv="${ ctx.pv_donnees.infos.id }" data-responsable-uuid="${ ctx.pv_donnees.infos.pk_responsable }" data-responsable-nom="${ ctx.pv_donnees.infos.nom_responsable }"
+  data-accepte-especes="${ ctx.pv_donnees.infos.accepte_especes }" data-accepte-carte-bancaire="${ ctx.pv_donnees.infos.accepte_carte_bancaire }" data-monnaie-principale-name="${ ctx.pv_donnees.infos.monnaie_principale_name }" ></div>
+
+<!-- tous les boutons -->
+<div class="l100p h100p">
+  <!-- contenu du haut -->
+  <div class="BF-ligne l100p m0 pgd8px" style="height:66px">
+    <div class="BF-ligne-g l30p h100p coulBlanc tGras">
+      <div class="BF-col-g">
+        <div>${ ctx.responsable_nom }</div>
+        <div id="articles_heure"></div>
+      </div>
+    </div>
+    <div style="width:calc(70% - 134px);height:100%;"></div>
+    <div class="BF-ligne-d h100p" style="width:134px;">
+      <!-- bouton EXIT -->
+      <bouton-basique texte="EXIT" width="134px" height="62px" couleur-fond="#d9534f" grad1="20" grad2="120" onclick="${ctx.nom_module}.exit()"></bouton-basique>
+    </div>
+  </div>
+  <!-- fin: contenu du haut -->
+
+  <!-- contenu du milieu, artilces -->
+  <div class="BF-ligne l100p" style="height:calc(100% - 164px);">
+    <!-- colonne articles -->
+    <div class="colonne_articles pdep">
+      <div id="visu_base" class="depY" style="scrollbar-color:light;backface-visibility:visible;">
+        <!-- affichage initial des catégories et articles sans catégories -->
+        ${ window[ctx.nom_module].vue_initiale() }
+      </div>
+
+      <!-- affichage du contenu de toutes les catégories -->
+      ${ window[ctx.nom_module].contenu_categories() }
+    </div> <!-- fin: colonne articles -->
+
+    <!-- colonne liste articles -->
+    <div id="visu_infos" class="BF-col l100p b1pxGris ba8px" style="padding:10px 8px;">
+      <div id="visu_infos_liste" class="l98p h90p depY coulBlanc tGras"></div>
+      <div id="visu_infos_total" class="BF-ligne l98p h10p pdep coulBlanc"></div>
+    </div>
+    <!-- fin: colonne liste articles -->
+  </div>
+  <!-- fin: contenu du milieu, artilces -->
+
+  <!-- contenu  du bas -->
+  <div class="BF-ligne t0_8rem tGras mhb4px" style="width:100%;height:89px;">
+      <!-- bouton ANNULER DERNIERE ACTION -->
+      <bouton-basique traiter-texte="1" texte="ANNULER,DERNIERE,ACTION" width="33.3%" height="94%" couleur-fond="#aa3a3a" grad1="20" grad2="120" onclick="${ctx.nom_module}.demander_annulation_derniere_action('${ ctx.pv_donnees.infos.id }','${ ctx.responsable_uuid }')"></bouton-basique>
+      <!-- bouton CHECK CARTE -->
+      <bouton-basique traiter-texte="1" texte="CHECK,CARTE" width="33.33%" height="94%" couleur-fond="#3b4e6c" grad1="10" grad2="120" onclick="${ctx.nom_module}.check_carte()"></bouton-basique>
+      <!-- boutons (VALIDER ESPECE/CB  ou VALIDER ESPECE ou VALIDER CB) et VALIDER CARTE -->
+      <bouton-basique id="bt-valider" traiter-texte="1" texte="VALIDER,TOTAL 0 €|||bt-valider-total" width="33.33%" height="94%" couleur-fond="#339448" grad1="10" grad2="120" onclick="${ctx.nom_module}.valider_etape1()"></bouton-basique>
+  </div>
+  <!-- fin: contenu  du bas -->
+
+</div>
+<!-- tous les boutons -->

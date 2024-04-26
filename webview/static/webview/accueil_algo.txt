@@ -1,0 +1,74 @@
+accueil.js:
+import * as sys from '/static/webview/js/modules/systeme.js'
+import { translate, getTranslate } from '/static/webview/js/modules/i8n.js'
+import * as Fn from "/static/webview/js/modules/fonctions.js"
+
+-----------------------------------------------------------------
+| . affichage icon de chargement:                               |
+|   sys.affCharge({...})                                        |
+| . window.glob = {}                                            |
+| . window.rfid = new Nfc()                                     |
+| . window.ledPossibilite = true                                |
+| . détermine le type de lecteur nfc (interne/serveur/DEMO) :   |
+|   rfid.initModeLectureNfc()                                   |
+| . lance la lecture pour la carte maîtresse:                   |
+|    rfid.muteEtat('message', 'Attente lecture carte primaire') |
+|    rfid.muteEtat('callbackOk', demande_pvs)                   |
+|    rfid.lireTagId()                                           |
+-----------------------------------------------------------------
+                            |
+                     reception tagId
+                            |
+-----------------------------------------------------------------------------------------------
+| POST "/wv/" :                                                                               |
+| data = "type-action": "valider_carte_maitresse", "type-post": "ajax", "tag-id-cm": tagIdCm  |
+-----------------------------------------------------------------------------------------------
+        |                                                                     |
+  réponse POST 200                                                            |---------------- réponse POST autres -----------------------------------------------
+        |                                                                                                                                                         |
+        |                                                                                                                                                         |
+   ----------------------------------------------------------------------------------------------------                                    -------------------------------------------------
+   |                                                                                                  |                                    | . affiche message erreur (popup) :            |
+retour.erreur = 1 (pas carte primaire)                                                     retour.erreur = autres (carte primaire ok)      |   - Erreur, status code = ${status.code}      |
+   |                                                                                                  |                                    |   - JSON.stringify(status.texte, null, '\t')  |
+   |                                                                                                  |                                    |   - Contactez l'administrateur !              |
+   |                                                                                                  |                                    -------------------------------------------------
+   |                                                                                                  |
+   |                                                                                                  |
+-----------------------------------------------------------------------------------------------    -----------------------------------------------------------------------------
+| . Relance la lecture pour la carte primaire:                                                |    | . pour payer le(s) commande(s) en plusieurs sommes :                      |
+|   Pas besoin de callback, c'est celui du premier appel !                                    |    |   glob.uuidArticlePaiementFractionne = retour.article_paiement_fractionne |
+|   rfid.muteEtat('message', 'Ce n'est pas\n une carte primaire \n Attente lecture carte ..') |    | . enregistre carte maitresse :                                            |
+|   rfid.lireTagId()                                                                          |    |   glob.tagIdCm = data.tagId                                               |
+-----------------------------------------------------------------------------------------------    | . enregistre les data :                                                   |
+                                                                                                   |   glob.data = retour.data                                                 |
+                                                                                                   | . converti le prix des articles en décimal :                              |
+                                                                                                   |   ... article.prix = sys.bigToFloat(article.prix) ...                     |
+                                                                                                   | . enregistre des données spécifiques :                                    |
+                                                                                                   |   glob.responsable = retour.responsable                                   |
+                                                                                                   |   glob.monnaie_principale_name = retour.monnaie_principale_name           |
+                                                                                                   |   glob.tables = retour.tables                                             |
+                                                                                                   |   glob.passageModeGerant = retour.responsable.edit_mode                   |
+                                                                                                   |   glob.modeGerant = false                                                 |
+                                                                                                   | . vide la variable retour :                                               |
+                                                                                                   |   retour = null                                                           |
+                                                                                                   | . lance le cashless :                                                     |
+                                                                                                   |   initProgramme()                                                         |
+                                                                                                   -----------------------------------------------------------------------------
+                                                                                                                                     |
+                                                                                                                                     |
+                                                                             |--------------------------------------------------------
+                                                                             |
+                                          ----------------------------------------------------------------------------------
+                                          | . lance le programme :                                                         |
+                                          |   - initialise le contexte du rendu html                                       |
+                                          |      let contexte = {                                                          |
+                                          |        indexPv: 0,                                                             |
+                                          |        csrfToken: glob.csrf_token                                              |
+                                          |      }                                                                         |
+                                          |    - affiche le point de vente indexé 0 :                                      |
+                                          |      fn.init_rendu('vue_pv', '/static/webview/js/points_ventes.js', contexte)  |
+                                          ----------------------------------------------------------------------------------
+
+
+  

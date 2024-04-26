@@ -1,0 +1,102 @@
+points_ventes.js:
+
+fn.init_rendu('vue_pv', '/static/webview/js/points_ventes.js', contexte)
+
+                    -------------------------------------------------------------------------------
+                    | . Initialisation avant rendu :                                              |
+                    |   - importe dynamiquement le module "/static/webview/js/points_ventes.js"   |
+                    -------------------------------------------------------------------------------
+                                                    |
+                                                importation
+                                                    |
+-------------------------------------------------------------------------------------------------------------------------
+| . import "./menuPlugins/addAllMenuPlugin.js"                                                                          |
+| . initialise des variables:                                                                                           |
+|   - window.nomModulePrive = null                                                                                      |
+|   - window.pv_uuid_courant = ''                                                                                       |
+|   - window.pv_uuid_ancien = ''                                                                                        |
+|   - window.testPagePrepa = false                                                                                      |
+|   - window.nombreMaxSelectionArticle = 1000                                                                           |
+|   - if (window.methods_after_render === undefined) {                                                                  |
+|       window.methods_after_render = []                                                                                |
+|   }                                                                                                                   |
+|   - window.etatInitialServiceDirectePVs = []                                                                          |
+|   - let csrf_token = null, serviceDirecte, memorise_data_dernier_achat = {}                                           | 
+| . initialisation de groupes identifiant les boutons ayant une logique de traitement non contradictoire                |
+| . initialiser une liste de méthodes à tester (glob.tabMethodesATester=[......])                                       |
+| . Importation de composant web (BoutonArticle, BoutonCommandeArticle, BoutonBasique, BoutonServiceArticle)            |
+| . import * as restaurant from '/static/webview/js/restaurant.js'                                                      |
+| . import * as ClavierVirtuel from '/static/webview/js/modules/clavier_virtuel.js'                                     |
+| . import * as retourFront from '/static/webview/js/RetourPosts.js'                                                    |
+| . initialisation des composants web (BoutonArticle, BoutonCommandeArticle, BoutonBasique, BoutonServiceArticle)       |
+| . Affichet l'état de la connexion :                                                                                   |
+|   if (navigator.onLine) {                                                                                             |
+|     document.querySelector('#temps-charge-visuel').innerHTML = ``                                                     |
+|   } else {                                                                                                            |
+|     document.querySelector('#temps-charge-visuel').innerHTML = `<i class="fas fa-wifi" style="color:#FF0000;"></i>`   |
+|   }                                                                                                                   |
+| . initialiser les boutons contenant le total des achats :                                                             |
+|   export var liste_id_totaux = ['bt-valider']                                                                         |
+-------------------------------------------------------------------------------------------------------------------------
+                                                    |
+                                                    |
+                ------------------------------------------------------------------------------
+                |   - donne un scope global au module :                                       |
+                |     nom_module = 'vue_pv'                                                   |
+                |     window[nom_module] = module                                             |
+                |   - lance la fonction main du module:                                       |
+                |     let contexte = { indexPv: 0, csrfToken: glob.csrf_token }               |
+                |     let args = [nom_module, contexte]                                       |
+                |     window[nom_module].main.apply(this, args)                               |
+                ------------------------------------------------------------------------------
+                                                    |
+                                                    |
+        -----------------------------------------------------------------------------------------------
+        | fonction main (nom_module, contexte) :                                                      |
+        | . mémorise l'état initiale de la propriété serviceDirecte de chaque point de vente :       |
+        |   etatInitialServiceDirectePVs.push(dataPV.service_direct)                                 |
+        | . initialise le point de vente courant :                                                   |
+        |   pv_uuid_courant = glob.data[contexte.indexPv].id                                         |
+        | . initialise l'état de la variable globale "serviceDirecte" (commande ou achat direct) :   |
+        |   serviceDirecte = glob.data[contexte.indexPv].service_direct                              |
+        | . initialise l'état de la variable globale "csrf_token"                                    |
+        |   csrf_token = contexte.csrfToken                                                          |
+        |   nomModulePrive = nom_module                                                              |
+        | . initialiser la méthode à lancer une fois le rendu html effectué (fonction iniMode) :     |
+        |   window.methods_after_render[0] = { method: initMode }                                    |
+        | . lance le rendu de la page html:                                                          |
+        |   fn.template_render_file(.......)                                                         |
+        -----------------------------------------------------------------------------------------------
+                                                    |
+                                                    |
+                                                rendu html
+                                                    |
+                                                    |
+                    ----------------------------------------------------------------
+                    | Il compose l'ensemble des vues (mais n'affiche rien) :       |
+                    | . header                                                     |
+                    | . menu:                                                      |
+                    |   vue_pv.composeMenuPrincipal(0)                             |
+                    | . service directe (#page-commandes):                         |
+                    |   point de vente 0                                           |
+                    | . commandes, liste de tables:                                |
+                    |   point de vente 0                                           |
+                    ----------------------------------------------------------------
+                                                    |
+                                            ------------------
+                                            | initMode() :   |
+                                            ------------------
+                                                    |
+                    ----------------------------------------------
+                    |                                            |
+          serviceDirecte = true                          serviceDirecte = false
+                    |                                            |
+-------------------------------------------          -------------------------------------
+| . Affichage du point de vente d'index 0 |          | . Affichage d'une liste de tables |
+-------------------------------------------          -------------------------------------
+                                                                |
+                                                       Sélection d'une table
+                                                                |
+                                                    -------------------------------------------
+                                                    | . Affichage du point de vente d'index 0 |
+                                                    -------------------------------------------

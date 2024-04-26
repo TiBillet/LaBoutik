@@ -1,0 +1,42 @@
+login_hardware.js:
+
+-----------------------
+| navigator.userAgent |
+-----------------------
+    |               |
+   ok               |--------error---------------------------------------
+    |                                                                   |
+    |                                                          -----------------------------------
+------------------------------------------------------------   | . affichage:                    |
+| initLogin()                                              |   | "Manque donnée(s) de connexion" |
+| . récupe csrf_token                                      |   -----------------------------------
+| . affichage infos (#fond-contenu):                       |
+|  - front                                                 |
+|  - username                                              |
+|  - attente d'activation                                  |
+|  - Demander à l'administrateur d'activer le périphérique |
+| . post "/wv/login_hardware":                             |
+|   username, password, periph=front, ip_lan=ip_local      |
+-----------------------------------------------------------|
+       |                  |
+réponse POST 200          |---------------- réponse POST autre ---------
+       |                                                               |
+-----------------------------------------------------------            |
+| . redirection sur accueil "/wv" :                       |            |
+|   window.location.href = window.location.origin + '/wv' |            |
+-----------------------------------------------------------            |
+                                                                -----------------------------------------------------------|
+                                                                | . affichage infos (#fond-contenu):                       |
+                                                                |  - front                                                 |
+                                                                |  - username                                              |
+                                                                |  - attente d'activation                                  |
+                                                                |  - Cliquer pour continuer la demande d'activation !      |
+                                                                |  - Demander à l'administrateur d'activer le périphérique |
+                                                                -----------------------------------------------------------|
+                                                                                          |
+                                                                                        clique
+                                                                                          |
+                                                                                  ----------------------------
+                                                                                  | . Recharger page:        |
+                                                                                  | window.location.reload() |
+                                                                                  ----------------------------
