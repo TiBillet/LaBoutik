@@ -2,6 +2,6 @@ database
 .env
 img
 SaveDb
-DjangoFiles/logs/Djangologfile
-DjangoFiles/logs/nginxAccess.log
-DjangoFiles/logs/nginxError.log
+logs/Djangologfile
+logs/nginxAccess.log
+logs/nginxError.log

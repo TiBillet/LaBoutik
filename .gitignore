@@ -159,7 +159,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-DjangoFiles/logs/nginxAccess.log
-DjangoFiles/logs/nginxError.log
-DjangoFiles/logs/DjangoLogFile
-DjangoFiles/www/*
+logs/nginxAccess.log
+logs/nginxError.log
+logs/DjangoLogFile
+www/*

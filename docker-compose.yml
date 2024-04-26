@@ -8,7 +8,7 @@ services:
     volumes:
       - laboutik_postgres_data:/var/lib/postgresql/data
     networks:
-      - backend
+      - laboutik_backend
 
   laboutik_redis:
     image: redis:6-alpine
@@ -17,7 +17,7 @@ services:
     container_name: laboutik_redis
     hostname: laboutik_redis
     networks:
-      - backend
+      - laboutik_backend
 
   laboutik_django:
     build: .
@@ -26,7 +26,7 @@ services:
     container_name: laboutik_django
     hostname: laboutik_django
     volumes:
-      - ./:/home/tibillet/LaBoutik
+      - ./:/DjangoFiles
     links:
       - laboutik_postgres:postgres
       - laboutik_redis:redis
@@ -34,8 +34,7 @@ services:
       - laboutik_postgres
       - laboutik_redis
     networks:
-      - backend
-      - frontend
+      - laboutik_backend
     command: "sleep infinity"
 #    command: "bash /home/tibillet/LaBoutik/DjangoFiles/launch_prod.sh"
 
@@ -47,7 +46,7 @@ services:
     container_name: laboutik_celery
     hostname: laboutik_celery
     volumes:
-      - ./:/home/tibillet/LaBoutik
+      - ./:/DjangoFiles
     links:
       - laboutik_postgres:postgres
       - laboutik_redis:redis
@@ -55,8 +54,7 @@ services:
       - laboutik_postgres
       - laboutik_django
     networks:
-      - backend
-      - frontend
+      - laboutik_backend
     command: "sleep infinity"
 #    command: "poetry run celery -A Cashless worker -l INFO"
 
@@ -85,7 +83,7 @@ services:
 networks:
   frontend:
     external: true
-  backend:
+  laboutik_backend:
     internal: true
 
 volumes:
