@@ -17,6 +17,13 @@ touch /DjangoFiles/logs/gunicorn.logs
 cd /DjangoFiles
 
 poetry run python manage.py collectstatic --noinput
+poetry run python manage.py migrate
+poetry run python manage.py popdb
 
 #sleep infinity
+
+echo "Run GUNICORN"
+echo "You should be able to see your instance at :"
+echo "https://$DOMAIN/"
+
 poetry run gunicorn Cashless.wsgi --log-level=info --access-logfile /DjangoFiles/logs/gunicorn.logs --log-file /DjangoFiles/logs/gunicorn.logs --error-logfile /DjangoFiles/logs/gunicorn.logs --log-level debug --capture-output --reload -w 3 -b 0.0.0.0:8000
