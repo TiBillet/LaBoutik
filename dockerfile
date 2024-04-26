@@ -20,7 +20,7 @@ ENV POETRY_NO_INTERACTION=1
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="/home/tibillet/.local/bin:$PATH"
 
-COPY --chown=tibillet:tibillet ./ /home/tibillet/LaBoutik
+COPY --chown=tibillet:tibillet ./ /DjangoFiles
 COPY --chown=tibillet:tibillet ./bashrc /home/tibillet/.bashrc
 COPY --chown=tibillet:tibillet ./cron /cron
 
