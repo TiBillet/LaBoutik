@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import random
 import socket
 from uuid import UUID
@@ -11,6 +12,7 @@ from django.core.management.base import BaseCommand
 
 from APIcashless.custom_utils import badgeuse_creation, declaration_to_discovery_server
 from APIcashless.models import *
+from APIcashless.tasks import email_activation
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +52,7 @@ class Command(BaseCommand):
                 self.pdv_cashless = self._point_de_vente_cashless()
 
                 #TODO: On utilise l'email de l'admin dans le .env
-                # self.users = self._user_admin()
+                self.users = self._user_admin()
 
                 if options.get('test'):
                     self.pop_membre_articles_cartes_test()
@@ -344,40 +346,25 @@ class Command(BaseCommand):
                 return couleurs
 
 
-            """
             def _user_admin(self):
+                # Création de l'user admin via l'email dans le .env
                 User = get_user_model()
-
-                root, created = User.objects.get_or_create(username=self.data.get('root_login'))
-                if created:
-                    root.set_password(self.data.get('root_password'))
-                    root.is_superuser = True
-                    root.is_staff = True
-                    root.is_superstaff = True
-                    root.save()
-
                 staff_group, created = Group.objects.get_or_create(name="staff")
-
-                staff, created = User.objects.get_or_create(username=self.data.get('staff_login'))
-                if created:
-                    staff.set_password(self.data.get('staff_password'))
-                    staff.is_staff = True
-                    staff.is_superstaff = True
+                email_first_admin = os.environ.get('EMAIL')
+                if email_first_admin :
+                    staff, created = User.objects.get_or_create(
+                        username=email_first_admin,
+                        email=email_first_admin,
+                        is_staff = True,
+                        is_active = False,
+                    )
                     staff.groups.add(staff_group)
                     staff.save()
+                    email_activation(staff.uuid)
 
-                # creation de l'user qui ne peux que créer des membres :
-                creationMembre, created = User.objects.get_or_create(username=self.data.get('membre_login'))
-                if created:
-                    creationMembre.set_password(self.data.get('membre_password'))
-                    creationMembre.is_staff = True
-                    creationMembre.save()
-
-                creationMembre_group, created = creationMembre.groups.get_or_create(name="creationMembre")
-
-                # on clean les permissions :
                 call_command('check_permissions')
-            """
+
+            ### DEMO AND TEST DATA ###
 
             def pop_membre_articles_cartes_test(self):
                 try:

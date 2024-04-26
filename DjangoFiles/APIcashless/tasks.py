@@ -366,10 +366,7 @@ def email_activation(user_uuid: uuid4=None):
     signer = TimestampSigner()
     uid = urlsafe_base64_encode(force_bytes(signer.sign(f'{user_uuid}')))
     token = default_token_generator.make_token(user)
-    connexion_url = f"{settings.CASHLESS_URL}/rapport/activate/{uid}/{token}/"
-
-    #TODO a retirer en prod
-    logger.info(connexion_url)
+    connexion_url = f"{settings.CASHLESS_URL}rapport/activate/{uid}/{token}/"
 
     template_name = "mails_transactionnels/email_activation.html"
     email = user.email
@@ -379,16 +376,16 @@ def email_activation(user_uuid: uuid4=None):
         'user': user,
         'now': timezone.now(),
         'title': subject,
-        'objet': 'Administration Caisse TiBillet',
-        'sub_title': 'Décollage imminent',
+        'objet': _('Administration Caisse TiBillet'),
+        'sub_title': _('Décollage imminent'),
         'svg_sub_title': '',
-        'main_text': f"Vous avez été invité à créer votre compte pour l'administration de l'instance TiBillet de {config.structure}.",
-        'main_text_2': "Merci de valider votre email avec le lien ci-dessous. Vous serez invité à créer un mot de passe.",
+        'main_text': _(f"Vous avez été invité à créer votre compte pour l'administration de l'instance TiBillet de {config.structure}."),
+        'main_text_2': _("Merci de valider votre email avec le lien ci-dessous. Vous serez invité à créer un mot de passe."),
         'table_info': {},
         'button_color': "#25c19f",  # for tibillet green : "#25c19f", for red warning : "#E8423FFF"
         'button': {
-            'text': 'YEAH, Je valide mon email.',
-            'url': f'{connexion_url},'
+            'text': _('Je valide mon email.'),
+            'url': f'{connexion_url}'
         },
         'next_text_1': "Si vous recevez cet email par erreur, merci de contacter l'équipe de TiBillet",
         'next_text_2': None,

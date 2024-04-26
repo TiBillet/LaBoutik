@@ -49,7 +49,9 @@ def login_admin(request):
     if settings.DEBUG:
         # On log automatioquement un admin non root :
         user = get_user_model().objects.filter(is_staff=True, is_superuser=False).first()
-        login(request, user)
+        if user :
+            if user.is_staff:
+                login(request, user)
 
     if not user or user.is_anonymous:
         return render(request, 'login.html', {'erreur': True})
