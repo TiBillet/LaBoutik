@@ -368,19 +368,19 @@ CELERY_RESULT_BACKEND = os.environ.get('CELERY_BACKEND', 'redis://redis:6379/0')
 # Check https://github.com/TiBillet/Discovery
 url_validator = URLValidator()
 
-CASHLESS_URL = f"https://{os.environ['DOMAIN']}/"
+LABOUTIK_URL = f"https://{os.environ['DOMAIN']}/"
 try:
-    url_validator(CASHLESS_URL)
+    url_validator(LABOUTIK_URL)
 except Exception as e:
-    logger.warning("Error validating CASHLESS_URL")
+    logger.warning("Error validating LABOUTIK_URL")
     raise e
 
 
-DISCOVERY_SERVER = os.environ.get('DISCOVERY_SERVER', 'https://discovery.tibillet.coop/')
+DISCOVERY_URL = os.environ.get('DISCOVERY_URL', 'https://discovery.tibillet.coop/')
 try:
-    url_validator(DISCOVERY_SERVER)
+    url_validator(DISCOVERY_URL)
 except Exception as e:
-    logger.error("No DISCOVERY_SERVER = no device")
+    logger.error("No DISCOVERY_URL = no device")
     raise e
 
 FEDOW_URL = os.environ.get('FEDOW_URL')
@@ -391,11 +391,11 @@ except Exception as e:
     raise e
 
 
-BILL_TENANT_URL = os.environ.get('BILL_TENANT_URL')
+LESPASS_TENANT_URL = os.environ.get('LESPASS_TENANT_URL')
 try:
-    url_validator(BILL_TENANT_URL)
+    url_validator(LESPASS_TENANT_URL)
 except Exception as e:
-    logger.warning("No BILL_TENANT_URL = No Lespass = No refill from stripe, no qrcode scan and no user account")
+    logger.warning("No LESPASS_TENANT_URL = No Lespass = No refill from stripe, no qrcode scan and no user account")
 
 
 

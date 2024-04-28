@@ -5,10 +5,11 @@ POSTGRES_USER=''
 POSTGRES_PASSWORD=''
 POSTGRES_DB='laboutik'
 
+# The domain of this instance ex : 'cashless.tibillet.localhost'
 DOMAIN=''
 
 # admin email
-EMAIL=''
+ADMIN_EMAIL=''
 
 # For transactionnal email :
 EMAIL_HOST=""
@@ -22,13 +23,13 @@ LANGUAGE_CODE='fr'
 ########## FOR CASHLESS ##########
 
 # No Cashless if no Fedow nor Lespass tenant manager
-FEDOW_URL='https://'
-BILL_TENANT_URL='https://'
+FEDOW_URL='https://fedow.tibillet.localhost/'
+LESPASS_TENANT_URL='https://demo.tibillet.localhost/'
 
-# The name of your asset
-NOM_MONNAIE=''
+# The name of your cashless asset ex : TestCoin, FestivalCoin, etc ....
+MAIN_ASSET_NAME='TestCoin'
 
-########## FOR SAVE CRON TASK ##########
+########## FOR SAVE CRON TASK ##########dex
 
 # can be empty if you don't backup
 BORG_PASSPHRASE=""

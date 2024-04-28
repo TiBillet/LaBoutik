@@ -22,26 +22,22 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
 
     def add_arguments(self, parser):
-        parser.add_argument('--flush',
+        parser.add_argument('--tdd',
                             action='store_true',
-                            help='Flush la base de donnée')
-
-        parser.add_argument('--test',
-                            action='store_true',
-                            help='Objects pour test front')
+                            help='Demo data for Test drived dev')
 
     def handle(self, *args, **options):
-
-
-        class Lieu(object):
-            """docstring for Lieu"""
-
+        class Install(object):
             def __init__(self, options):
-                self.nom_monnaie = os.environ.get('NOM_MONNAIE')
-                if self.nom_monnaie:
-                    self.monnaie_blockchain = self._monnaie_blockchain()
+                self.main_asset = os.environ['MAIN_ASSET_NAME']
+                self.admin_email = os.environ['ADMIN_EMAIL']
+                self.fedow_url = os.environ['FEDOW_URL']
+                self.lespass_url = os.environ['LESPASS_TENANT_URL']
 
-                self.moyens_de_paiements_non_blockchain = self._moyens_de_paiements_non_blockchain()
+                # Local and gift asset
+                self.assets_fedow = self._assets_fedow()
+                # Cash, Credit card, stripe, oceco
+                self.assets_no_fedow = self._assets_no_fedow()
 
                 self.methode_articles = self._methode_articles()
                 self.configuration = self._configuration()
@@ -51,10 +47,10 @@ class Command(BaseCommand):
                 self.articles_generiques = self._articles_generiques()
                 self.pdv_cashless = self._point_de_vente_cashless()
 
-                #TODO: On utilise l'email de l'admin dans le .env
-                self.users = self._user_admin()
+                self.admin = self._create_admin_from_env_email()
 
-                if options.get('test'):
+                if options.get('tdd'):
+                    self.set_admin_user_active()
                     self.pop_membre_articles_cartes_test()
                     self.pop_articles_test()
                     self.pop_tables_test()
@@ -64,14 +60,14 @@ class Command(BaseCommand):
                     badgeuse_creation()
 
 
-            def _monnaie_blockchain(self):
+            def _assets_fedow(self):
                 mp = {}
-                mp['principale'] = MoyenPaiement.objects.get_or_create(name=self.nom_monnaie,
+                mp['principale'] = MoyenPaiement.objects.get_or_create(name=self.main_asset,
                                                                        blockchain=True,
                                                                        categorie=MoyenPaiement.LOCAL_EURO,
                                                                        )[0]
 
-                mp['cadeau'] = MoyenPaiement.objects.get_or_create(name=f"{self.nom_monnaie} Cadeau",
+                mp['cadeau'] = MoyenPaiement.objects.get_or_create(name=f"{self.main_asset} Cadeau",
                                                                    cadeau=True,
                                                                    blockchain=True,
                                                                    categorie=MoyenPaiement.LOCAL_GIFT,
@@ -79,7 +75,7 @@ class Command(BaseCommand):
 
                 return mp
 
-            def _moyens_de_paiements_non_blockchain(self):
+            def _assets_no_fedow(self):
                 d = {}
                 d['espece'] = \
                     MoyenPaiement.objects.get_or_create(name="Espece", blockchain=False, categorie=MoyenPaiement.CASH)[
@@ -112,36 +108,20 @@ class Command(BaseCommand):
                 cache.clear()
                 configuration = Configuration.get_solo()
                 # Crash if doesn't exist. It's OK
-                configuration.domaine_cashless = settings.CASHLESS_URL
+                configuration.domaine_cashless = settings.LABOUTIK_URL
 
                 # configuration.prix_adhesion = self.prix_adhesion
 
-                configuration.monnaie_principale = self.monnaie_blockchain.get('principale')
-                configuration.monnaie_principale_cadeau = self.monnaie_blockchain.get('cadeau')
-                configuration.moyen_paiement_espece = self.moyens_de_paiements_non_blockchain.get('espece')
-                configuration.moyen_paiement_cb = self.moyens_de_paiements_non_blockchain.get('carte_bancaire')
-                configuration.moyen_paiement_mollie = self.moyens_de_paiements_non_blockchain.get('stripe')
-                configuration.moyen_paiement_oceco = self.moyens_de_paiements_non_blockchain.get('oceco')
-                configuration.moyen_paiement_commande = self.moyens_de_paiements_non_blockchain.get('commande')
+                configuration.monnaie_principale = self.assets_fedow.get('principale')
+                configuration.monnaie_principale_cadeau = self.assets_fedow.get('cadeau')
+                configuration.moyen_paiement_espece = self.assets_no_fedow.get('espece')
+                configuration.moyen_paiement_cb = self.assets_no_fedow.get('carte_bancaire')
+                configuration.moyen_paiement_mollie = self.assets_no_fedow.get('stripe')
+                configuration.moyen_paiement_oceco = self.assets_no_fedow.get('oceco')
+                configuration.moyen_paiement_commande = self.assets_no_fedow.get('commande')
 
-                # Pour PkResponsable Web :
-                Cashless, created = PointDeVente.objects.get_or_create(
-                    name="Cashless",
-                    icon="fa-euro-sign",
-                    comportement='C',
-                    accepte_commandes=False,
-                    service_direct=True,
-                    poid_liste=200,
-                )
-                Membre.objects.get_or_create(name="WEB STRIPE")
-
-                try:
-                    for key, monnaie in self.monnaie_blockchain.items():
-                        configuration.monnaies_acceptes.add(monnaie)
-                except Exception as e:
-                    print(e)
-                    import ipdb;
-                    ipdb.set_trace()
+                for key, monnaie in self.assets_fedow.items():
+                    configuration.monnaies_acceptes.add(monnaie)
 
                 configuration.monnaies_acceptes.add(
                     configuration.monnaie_principale,
@@ -157,7 +137,7 @@ class Command(BaseCommand):
                 configuration.methode_vider_carte = self.methode_articles.get('vider_carte')
                 configuration.methode_paiement_fractionne = self.methode_articles.get('paiement_fractionne')
 
-                # configuration.emplacement = self.data.get("nom_monnaie")
+                # configuration.emplacement = self.data.get("main_asset")
 
                 configuration.save()
 
@@ -313,14 +293,19 @@ class Command(BaseCommand):
                 return d
 
             def _point_de_vente_cashless(self):
-                Cashless = PointDeVente.objects.get(
-                    comportement='C'
+                cashless_pdv = PointDeVente.objects.create(
+                    name="Cashless",
+                    icon="fa-euro-sign",
+                    comportement='C',
+                    accepte_commandes=False,
+                    service_direct=True,
+                    poid_liste=200,
                 )
 
                 for key, art in self.articles_generiques.items():
-                    Cashless.articles.add(art) if art not in Cashless.articles.all() else art
+                    cashless_pdv.articles.add(art) if art not in cashless_pdv.articles.all() else art
 
-                return Cashless
+                return cashless_pdv
 
             def _couleur(self):
                 couleurs = [
@@ -345,28 +330,31 @@ class Command(BaseCommand):
                 ]
                 return couleurs
 
-
-            def _user_admin(self):
+            def _create_admin_from_env_email(self):
                 # Création de l'user admin via l'email dans le .env
                 User = get_user_model()
                 staff_group, created = Group.objects.get_or_create(name="staff")
-                email_first_admin = os.environ.get('EMAIL')
-                if email_first_admin :
-                    staff, created = User.objects.get_or_create(
-                        username=email_first_admin,
-                        email=email_first_admin,
-                        is_staff = True,
-                        is_active = False,
-                    )
-                    staff.groups.add(staff_group)
-                    staff.save()
-                    email_activation(staff.uuid)
-
+                email_first_admin = os.environ['ADMIN_EMAIL']
+                admin, created = User.objects.get_or_create(
+                    username=email_first_admin,
+                    email=email_first_admin,
+                    is_staff = True,
+                    is_active = False,
+                )
+                admin.groups.add(staff_group)
+                admin.save()
+                email_activation(admin.uuid)
                 call_command('check_permissions')
+                return admin
+
 
             ### DEMO AND TEST DATA ###
+            def set_admin_user_active(self):
+                self.admin.is_active = True
+                self.admin.save()
 
             def pop_membre_articles_cartes_test(self):
+
                 try:
                     testMembre, created = Membre.objects.get_or_create(name="TEST",
                                                                        email="test@example.org",
@@ -696,7 +684,8 @@ class Command(BaseCommand):
                 config.validation_service_ecran = True
                 config.remboursement_auto_annulation = True
 
-                config.billetterie_url = os.environ.get('BILL_TENANT_URL', 'https://demo.tibillet.localhost/')
+                config.billetterie_url = os.environ['LESPASS_TENANT_URL']
+
                 # On affiche la string Key sur l'admin de django en message
                 # et django.message capitalize chaque message...
                 # du coup on fait bien gaffe à ce que je la clée générée ai bien une majusculle au début ...
@@ -715,7 +704,7 @@ class Command(BaseCommand):
                 #     env_json = json.load(open(path, 'r'))
                 #     print(f'{60 * "!"}')
                 #     print(f'{key}')
-                #     host = os.environ.get('BILL_TENANT_URL').partition('://')[2]
+                #     host = os.environ.get('LESPASS_TENANT_URL').partition('://')[2]
                 #     sub_addr = host.partition('.')[0]
                 #     env_json['ticketing'][sub_addr]['key_cashless'] = key
                 #     with open(path, 'w') as f:
@@ -791,7 +780,10 @@ class Command(BaseCommand):
                     return True
                 return False
 
+
+
+        ### RUNER ###
         if  PointDeVente.objects.count() > 0 :
             logger.error(f'PointDeVente.objects.count() > 0. Pop déja effectué')
         else :
-            Lieu(options)
+            Install(options)

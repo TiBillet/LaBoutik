@@ -366,7 +366,7 @@ def email_activation(user_uuid: uuid4=None):
     signer = TimestampSigner()
     uid = urlsafe_base64_encode(force_bytes(signer.sign(f'{user_uuid}')))
     token = default_token_generator.make_token(user)
-    connexion_url = f"{settings.CASHLESS_URL}rapport/activate/{uid}/{token}/"
+    connexion_url = f"{settings.LABOUTIK_URL}rapport/activate/{uid}/{token}/"
 
     template_name = "mails_transactionnels/email_activation.html"
     email = user.email
@@ -413,7 +413,7 @@ def email_activation(user_uuid: uuid4=None):
 def email_new_hardware(appareil_pk=None):
     configuration = Configuration.get_solo()
     structure_name = configuration.structure
-    domain = settings.CASHLESS_URL
+    domain = settings.LABOUTIK_URL
     # domain = configuration.domaine_cashless
     email = configuration.email
 

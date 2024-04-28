@@ -2,6 +2,7 @@ import socket
 from io import StringIO
 from uuid import UUID
 
+import requests
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.serializers.json import DjangoJSONEncoder
@@ -9,9 +10,10 @@ from django.db.models import Count
 from django.test import TestCase, tag
 from faker import Faker
 
-from APIcashless.custom_utils import badgeuse_creation
+from APIcashless.custom_utils import badgeuse_creation, jsonb64decode
 from APIcashless.models import *
 from fedow_connect.fedow_api import FedowAPI
+from fedow_connect.utils import data_to_b64
 from fedow_connect.validators import TransactionValidator, AssetValidator
 from fedow_connect.views import handshake
 
@@ -19,7 +21,7 @@ from fedow_connect.views import handshake
 class TiBilletTestCase(TestCase):
 
     def setUp(self):
-        call_command('popdb', stdout=StringIO())
+        call_command('install', stdout=StringIO())
         settings.DEBUG = True
 
         # Handshake avec le serveur FEDOW
@@ -33,7 +35,7 @@ class TiBilletTestCase(TestCase):
         config.adresse = fake.address()
         config.pied_ticket = "Nar'trouv vite' !"
         config.telephone = "+336123456789"
-        config.domaine_cashless = "https://demo.tibillet.localhost/"
+        config.domaine_cashless = "https://cashless.tibillet.localhost/"
         config.email = fake.email()
         config.numero_tva = 666999
         config.prix_adhesion = 42
@@ -43,6 +45,7 @@ class TiBilletTestCase(TestCase):
         config.string_connect = string_fedow_connect
 
         config.billetterie_url = 'https://demo.tibillet.localhost/'
+        config.fedow_domain = 'https://fedow.tibillet.localhost/'
 
         # Ip du serveur cashless et du ngnix dans le même réseau ( env de test )
         self_ip = socket.gethostbyname(socket.gethostname())
@@ -51,6 +54,10 @@ class TiBilletTestCase(TestCase):
         config.ip_cashless = '.'.join([str(ip) for ip in templist])
         config.billetterie_ip_white_list = '.'.join([str(ip) for ip in templist])
 
+        # Parfois l'ip prise est le 192...
+        config.ip_cashless = "172.21.0.1"
+        config.billetterie_ip_white_list = "172.21.0.1"
+        
         config.save()
         return config
 
@@ -67,6 +74,18 @@ class CashlessTest(TiBilletTestCase):
         # Création de la config pour test
         config: Configuration = self.config
         self.fedowAPI = FedowAPI()
+        settings.DEBUG = True
+
+        # Récupération d'une clé de test sur Fedow :
+        session = requests.Session()
+        name_enc = data_to_b64({'name': f'{config.structure}'})
+        url = f'{config.fedow_domain}get_new_place_token_for_test/{name_enc.decode("utf8")}/'
+        request = session.get(url, verify=False, data={'name': f'{config.structure}'}, timeout=1)
+        if request.status_code != 200:
+            raise Exception("Erreur de connexion au serveur de test")
+        string_connect = request.json().get('encoded_data')
+        config.string_connect = string_connect
+        config.save()
 
         # Handshake avec le serveur FEDOW
         handshake_with_fedow = handshake(config)
@@ -93,6 +112,8 @@ class CashlessTest(TiBilletTestCase):
 
     def connect_admin(self):
         User = get_user_model()
+        settings.DEBUG = False
+        self.client.logout()
 
         # Anonymous
         response = self.client.get('/adminroot', follow=True)
@@ -106,24 +127,20 @@ class CashlessTest(TiBilletTestCase):
         self.assertRedirects(response, '/wv/login_hardware?next=/wv/', status_code=301, target_status_code=200)
 
         # Retourne vers l'url de login
-        settings.DEBUG = False
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
         self.assertInHTML('<input name="username" id="username" type="text" placeholder="username"/>', response.content.decode())
         self.assertInHTML('<input name="password" id="password" type="password" placeholder="password"/>', response.content.decode())
 
-        # Log automatiquement sur un admin staff
-        settings.DEBUG = True
-        response = self.client.get('/')
-        self.assertRedirects(response, '/adminstaff', status_code=302, target_status_code=301)
-
         # User ROOT
-        log = self.client.login(username='RootTest', password='zohR5roov6vaeF2thunoo2Ooph8Per')
+        rootuser = User.objects.create_superuser('rootuser', 'root@root.root', 'ROOTUSERPASSWORD')
+        log = self.client.login(username='rootuser', password='ROOTUSERPASSWORD')
         self.assertTrue(log)
 
         # Le root est desomais redirigé vers adminstaff
         response = self.client.get('/', follow=True)
         self.assertEqual(response.status_code, 200)
+        # On est loggué sur la page adminstaff/ avec un code 200 :
         self.assertRedirects(response, '/adminstaff/', status_code=302, target_status_code=200)
 
         response = self.client.get('/adminstaff', follow=True)
@@ -131,7 +148,10 @@ class CashlessTest(TiBilletTestCase):
         self.assertRedirects(response, '/adminstaff/', status_code=301, target_status_code=200)
 
         # User Staff
-        log_admin = self.client.login(username='TestAdmin', password='mi5Iechi')
+        testadmin = User.objects.create(username='testadmin', is_staff=True, is_active=True)
+        testadmin.set_password('TESTADMINPASSWORD')
+        testadmin.save()
+        log_admin = self.client.login(username='testadmin', password='TESTADMINPASSWORD')
         self.assertTrue(log_admin)
 
         response = self.client.get('/', follow=True)
@@ -142,7 +162,41 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(response.status_code, 404)
         # self.assertRedirects(response, '/adminroot/login/?next=/adminroot/', status_code=301, target_status_code=200)
 
-        return log_admin
+        # Log automatiquement sur un admin staff en mode DEBUG
+        self.client.logout()
+        settings.DEBUG = True
+        response = self.client.get('/', follow=True)
+        self.assertEqual(response.status_code, 200)
+        # 302 est la redirection une fois loggé, si t'es pas loggué, c'est un 301
+        self.assertRedirects(response, '/adminstaff/login/?next=/adminstaff/', status_code=302, target_status_code=200)
+
+        # Test avec un user lié à un appareil
+        settings.DEBUG = False
+        self.client.logout()
+        appareil = Appareil.objects.create(name='testappareil')
+        # On le met volontairement en staff pour tester que ça ne lui permette pas d'aller dans l'admin
+        user_terminal = User.objects.create(
+            username='user_terminal',
+            is_active=True,
+            is_staff=True,
+        )
+        user_terminal.set_password('PASSWORDTERMINAL')
+        user_terminal.save()
+
+        appareil.user = user_terminal
+        appareil.save()
+
+        user_terminal.refresh_from_db()
+        self.assertEqual(user_terminal.appareil, appareil)
+
+        appareil.refresh_from_db()
+        self.assertEqual(appareil.user, user_terminal)
+
+        log_user_terminal = self.client.login(username='user_terminal', password='PASSWORDTERMINAL')
+        response = self.client.get('/', follow=True)
+        self.assertEqual(response.status_code, 405)
+
+        return True
 
     def create_pos(self):
         boutique, created = PointDeVente.objects.get_or_create(name="Boutique", poid_liste=4)
@@ -1499,11 +1553,10 @@ class CashlessTest(TiBilletTestCase):
         return cartes
 
     def paiement_complementaire_transactions(self):
-        config = Configuration.get_solo()
         primary_card = CarteMaitresse.objects.filter(
             carte__isnull=False, carte__membre__isnull=False).first()
         self.assertTrue(primary_card)
-        responsable: Membre = primary_card.carte.mttinembre
+        responsable: Membre = primary_card.carte.membre
         pdv = PointDeVente.objects.get(name="Boutique")
         cartes = self.create_2_card_and_charge_it()
 
@@ -1604,6 +1657,7 @@ class CashlessTest(TiBilletTestCase):
         asset_b.save()
 
         from fedow_connect.tasks import after_handshake
+        settings.DEBUG = True
         after_handshake()
 
     def check_all_tokens_value(self):

@@ -285,7 +285,7 @@ class InvoicePdf(WeasyTemplateView):
 
         adhesion = qr_adhesion[0]
         kwargs['config'] = config
-        kwargs['cashless_url'] = settings.CASHLESS_URL
+        kwargs['cashless_url'] = settings.LABOUTIK_URL
         kwargs['membre'] = adhesion.membre
         kwargs['adhesion'] = adhesion
         kwargs['uuid4'] = str(pk_uuid).partition('-')[0]

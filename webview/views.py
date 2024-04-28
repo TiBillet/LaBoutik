@@ -36,7 +36,15 @@ from decimal import Decimal
 
 
 def login_admin(request):
-    user = request.user
+    user: TibiUser = request.user
+
+
+    logger.info(f"User : {user.username}")
+    # Si un modèle appareil est lié (One2One)
+    if hasattr(user, 'appareil'):
+        logger.error(f"Terminal user : {request.user.username}")
+        return HttpResponseNotAllowed(['Terminal user not allowed',])
+
     if request.method == 'POST':
         user = authenticate(
             username=request.POST.get('username'),
@@ -45,20 +53,28 @@ def login_admin(request):
         if user:
             login(request, user)
 
+
     # EN CAS DE DEBUG :
     if settings.DEBUG:
         # On log automatioquement un admin non root :
-        user = get_user_model().objects.filter(is_staff=True, is_superuser=False).first()
+        user = get_user_model().objects.filter(
+            is_staff=True,
+            is_superuser=False,
+            appareil=None,
+        ).first()
         if user :
             if user.is_staff:
+                logger.warning(f"DEBUG MODE, on log automatiquement sur {user.username}")
                 login(request, user)
 
     if not user or user.is_anonymous:
+        logger.warning("User anonyme, redirect to login")
         return render(request, 'login.html', {'erreur': True})
-    # Si un modèle appareil est lié (One2One)
-    if getattr(request.user, 'appareil', None):
-        return HttpResponseNotAllowed("Terminal User")
-    elif user.is_staff:
+
+
+    # Si l'user est staff
+    if user.is_staff:
+        logger.info(f"Staff user login successful : {user.username}")
         return redirect('/adminstaff')
 
     # Un utilisateur sans terminal et non staff ne devrait pas pouvoir arriver ici.

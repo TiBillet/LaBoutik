@@ -14,12 +14,13 @@ touch /DjangoFiles/www/nginxError.log
 
 cd /DjangoFiles
 
-poetry run python manage.py collectstatic --noinput
-poetry run python manage.py migrate
-poetry run python manage.py popdb --test
-
+echo "dev mode : sleep infinity"
+echo "To start the server : rsp or ./flush.sh for scratch"
 sleep infinity
 
+#poetry run python manage.py collectstatic --noinput
+#poetry run python manage.py migrate
+#poetry run python manage.py install --tdd
 #poetry run python manage.py runserver 0.0.0.0:8000
 #gunicorn Cashless.wsgi --log-level=debug --log-file /DjangoFiles/www/gunicorn.logs -w 3 -b 0.0.0.0:8000
 

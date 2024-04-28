@@ -111,14 +111,14 @@ def declaration_to_discovery_server():
     # Discovery this serveur to primary
 
     config = Configuration.get_solo()
-    url = settings.CASHLESS_URL
+    url = settings.LABOUTIK_URL
     if not url:
         raise Exception(_("URL serveur cashless non renseignée"))
 
     # Création s'il n'existe pas
     public_pem = config.get_public_pem()
     # serveur primaire si non renseigné dans les variables d'environnement
-    discovery_serveur = settings.DISCOVERY_SERVER + 'new_server/'
+    discovery_serveur = settings.DISCOVERY_URL + 'new_server/'
     discovery_request = requests.post(f'{discovery_serveur}', data={
         'url': url,
         'public_pem': public_pem,
@@ -140,7 +140,7 @@ def get_pin_on_appareillage(client_name):
     if not config.discovery_key:
         raise Exception(_("Clé discovery non renseignée"))
     # serveur primaire si non renseigné dans les variables d'environnement
-    discovery_serveur = settings.DISCOVERY_SERVER
+    discovery_serveur = settings.DISCOVERY_URL
 
     data = {
         'client_name': client_name
@@ -175,7 +175,7 @@ def test_pin_on_appareillage(pin_code: int):
         'public_pem': public_pem,
         'signature': signature,
     }
-    discovery_url = settings.DISCOVERY_SERVER + 'pin_code/'
+    discovery_url = settings.DISCOVERY_URL + 'pin_code/'
     claim_request = requests.post(f'{discovery_url}',
                   headers={
                       "Content-type": "application/json",
