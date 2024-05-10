@@ -36,8 +36,8 @@ services:
     networks:
       - laboutik_backend
     extra_hosts:
-      - "fedow.tibillet.localhost:172.17.0.1"
-      - "demo.tibillet.localhost:172.17.0.1"
+      - "fedow.filaos.re:172.17.0.1"
+      - "demo.filaos.re:172.17.0.1"
     command: "sleep infinity"
 #    command: "bash /home/tibillet/LaBoutik/DjangoFiles/launch_prod.sh"
 
@@ -59,8 +59,8 @@ services:
     networks:
       - laboutik_backend
     extra_hosts:
-      - "fedow.tibillet.localhost:172.17.0.1"
-      - "demo.tibillet.localhost:172.17.0.1"
+      - "fedow.filaos.re:172.17.0.1"
+      - "demo.filaos.re:172.17.0.1"
     command: "poetry run celery -A Cashless worker -l INFO"
 
 

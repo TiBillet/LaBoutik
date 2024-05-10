@@ -45,7 +45,7 @@ let Nfc = class {
       tagId = 'erreur'
     }
 
-    sys.log('-> verificationTagId, tagId = ' + tagId + ' uuidConnexion = ' + uuidConnexion)
+    // sys.log('-> verificationTagId, tagId = ' + tagId + ' uuidConnexion = ' + uuidConnexion)
 
     // récupération des data enregistrés lors de la demande de lecture
     data = this.etatLecteurNfc.data
@@ -63,24 +63,27 @@ let Nfc = class {
   }
 
   lireTagId() {
-    console.log('-> lireTagId demo.')
-    console.log('this.etatLecteurNfc =', this.etatLecteurNfc)
+    // console.log('-> lireTagId demo., this.etatLecteurNfc =', this.etatLecteurNfc)
 
     // compose le message à afficher
     let message = `<div id="popup-lecteur-nfc" class="BF-col">
       <fieldset style="margin-bottom: 1rem;">
-        <legend>Simulation carte nfc</legend>
+        <legend data-i8n="nfcCardSimulation,capitalize">Simulation carte nfc</legend>
         <div class="BF-ligne-deb">
           <input type="radio" id="nfc-primaire" name="simu-tag-id" value="${DEMO.demoTagIdCm}">
-          <label for="nfc-primaire" class="simu-carte">carte primaire</label>
+          <label for="nfc-primaire" class="simu-carte" data-i8n="primary,capitalize">primaire</label>
         </div>
         <div class="BF-ligne-deb">
           <input type="radio" id="nfc-client1" name="simu-tag-id" value="${DEMO.demoTagIdClient1}">
-          <label for="nfc-client1" class="simu-carte">client 1</label>
+          <label for="nfc-client1" class="simu-carte">Client 1</label>
         </div>
         <div class="BF-ligne-deb">
           <input type="radio" id="nfc-client2" name="simu-tag-id" value="${DEMO.demoTagIdClient2}">
-          <label for="nfc-client2" class="simu-carte">client2</label>
+          <label for="nfc-client2" class="simu-carte">Client2</label>
+        </div>
+        <div class="BF-ligne-deb">
+          <input type="radio" id="nfc-unknown" name="simu-tag-id" value="${DEMO.demoTagIdUnknown}">
+          <label for="nfc-unknown" class="simu-carte" data-i8n="unknown, capitalize">inconnue</label>
         </div>
       </fieldset>
       ${this.etatLecteurNfc.message}
@@ -111,7 +114,7 @@ let Nfc = class {
     this.muteEtat('uuidConnexion', uuidConnexion)
 
     // affectation fonction
-    const ids = ['#nfc-primaire', '#nfc-client1', '#nfc-client2']
+    const ids = ['#nfc-primaire', '#nfc-client1', '#nfc-client2', '#nfc-unknown']
     ids.forEach((id) => {
       document.querySelector(id).addEventListener('click', (event) => {
         this.verificationTagId(event.target.value, this.etatLecteurNfc.uuidConnexion)
@@ -120,7 +123,7 @@ let Nfc = class {
   }
 
   annuleLireTagId() {
-    console.log('-> annuleLireTagId', new Date())
+    // console.log('-> annuleLireTagId', new Date())
     window.clearTimeout(this.etatLecteurNfc.demoTempsActionTimeoutID)
   }
 
@@ -140,6 +143,6 @@ let Nfc = class {
       ip_lan: "127.0.0.1",
       pin_code: 123456
     }
-    console.log('-> initModeLectureNfc, glob.appConfig =', glob.appConfig, '  --  DEMO =', DEMO)
+    // console.log('-> initModeLectureNfc, glob.appConfig =', glob.appConfig, '  --  DEMO =', DEMO)
   }
 }

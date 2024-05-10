@@ -8,7 +8,7 @@
 }*/
 
 export const en = {
-  names: 'English, Anglais',
+  names: 'English / Anglais',
   locale: 'en-US',
   content: {
     waitPrimaryCard: "waiting\nprimary card",
@@ -143,6 +143,13 @@ export const en = {
     paymentMethod: "payment method",
     deviceDisabledDeletedPairAgain: 'Device disabled or deleted.\nMake a new pairing\nand click!',
     errorReadingConfFileClickToRestart: 'error reading\nconfiguration file,\nclick to restart',
-    pairAgainAndClick: 'pair again and click'
+    pairAgainAndClick: 'pair again and click',
+    unknown: "unknown",
+    primary: "primary",
+    nfcCardSimulation: 'Nfc card simulation',
+    cashless: 'cashless',
+    prePurchaseCard: 'pre-purchase card',
+    postPurchaseCard: 'post-purchase card',
+    cardsTotal: 'cards total'
   }
 }

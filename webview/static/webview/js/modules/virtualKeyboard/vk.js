@@ -201,7 +201,8 @@ export class Keyboard {
     }
   }
 
-  run(element) {
+  run(element, options) {
+    this.keySize = options.keySize
     // console.log('-> keyboard.run')
     let keyboardType = 'alpha'
 

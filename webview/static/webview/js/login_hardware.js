@@ -8,25 +8,9 @@ const mobile = isCordovaApp()
 const cordovaFileName = 'configLaboutik.json'
 
 // get configuration save in localstorage
-const confLocalStorage = JSON.parse(localStorage.getItem('laboutik'))
+let confLocalStorage = JSON.parse(localStorage.getItem('laboutik'))
 
-
-Sentry.init({
-  dns: "https://677e4405e6f765888fdec02d174000d6@o262913.ingest.us.sentry.io/4506881155596288",
-  tracesSampleRate: 1.0,
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1.0,
-})
-
-window.cashlessReloadPage = function () {
-  // TODO: traduire, exemple = data-i8n="pairAgainAndClick,capitalize"
-  document.querySelector('#fond-contenu').innerHTML += `<div class="BF-col l100p h100p" style="background-color:#d8773a;color:#000000;" onclick="location.reload();">
-    <h1  data-i8n="errorReadingConfFileClickToRestart,capitalize" style="white-space: pre-line;text-align: center;">Erreur lecture fichier\nde configuration\ncliquer pour relancer</h1>
-  </div>`
-  translate('#fond-contenu')
-}
-
-// read configuration file from pi
+// read configuration file from pi or desktop
 async function readFromFile() {
   try {
     const response = await fetch(`http://localhost:${PORT}/config_file`, {
@@ -83,8 +67,6 @@ async function deleteConfs() {
     configuration.client = null
 
     // sauvegarder le fichier de configuration app
-
-
     if (mobile === true) {
       updateFile = await cordovaWriteToFile(basePath, cordovaFileName, configuration)
     } else {
@@ -101,6 +83,79 @@ async function deleteConfs() {
   }
 }
 
+window.cashlessNewPair = async function () {
+  const result = await deleteConfs()
+  let redirectionUrl = `http://localhost:${PORT}`
+  if (mobile === true) {
+    redirectionUrl = 'http://localhost/index.html'
+  }
+  console.log('result =', result)
+  if (result === true) {
+    // redirection
+    window.location.href = redirectionUrl
+  } else {
+    console.log('newPair, erreur maj configuration')
+  }
+}
+
+function showPairAgain() {
+  localStorage.removeItem('laboutik')
+  document.querySelector('#fond-contenu').innerHTML += `<div class="BF-col l100p h100p" style="background-color:#0000FF;color:#FFFFFF;" onclick="cashlessNewPair();">
+    <h1 data-i8n="pairAgainAndClick,capitalize" style="white-space: pre-line;text-align: center;">Faire un nouvel appairage\net cliquer !</h1>
+  </div>`
+  translate('#fond-contenu')
+}
+
+async function initLogin() {
+  console.log('-> initLogin')
+
+  const configuration = JSON.parse(localStorage.getItem('laboutik'))
+  console.log('-> configuration =', configuration)
+  if (configuration !== null) {
+    const csrf_token = document.querySelector('input[name="csrfmiddlewaretoken"]').value
+    const signature = await signMessage(configuration.keysPemCashlessClient, configuration.password)
+
+    const formData = new FormData()
+    formData.append('username', configuration.client.username)
+    formData.append('password', configuration.client.password)
+    formData.append('periph', configuration.front_type)
+    formData.append('signature', signature.b64encoded)
+    if (mobile === true) {
+      formData.append('ip_lan', configuration.ip)
+    } else {
+      formData.append('ip_lan', configuration.piDevice.ip)
+    }
+
+
+    const response = await fetch(configuration.current_server + 'wv/login_hardware/', {
+      headers: {
+        Accept: 'application/json',
+        'X-CSRFToken': csrf_token
+      },
+      mode: 'cors',
+      method: 'POST',
+      body: formData
+    })
+    // ok
+    if (response.status === 200) {
+      let url = configuration.current_server + 'wv'
+      window.location.href = url
+    }
+
+
+    // console.log('response =', response)
+    if (response.status === 400 || response.status === 401) {
+      document.querySelector('#fond-contenu').innerHTML += `<div class="BF-col l100p h100p" style="background-color:#0000FF;color:#FFFFFF;" onclick="cashlessNewPair();">
+        <h1 data-i8n="deviceDisabledDeletedPairAgain,capitalize" style="white-space: pre-line;text-align: center;">Appareil désactivé ou supprimé.\nFaire un nouvel appairage\net cliquer !</h1>
+      </div>`
+      translate('#fond-contenu')
+    }
+  } else {
+    showPairAgain()
+  }
+}
+
+
 async function activateDevice(configuration) {
   console.log('-> activateDevice, configuration =', configuration)
   const configServer = configuration.servers.find(item => item.server === configuration.current_server)
@@ -115,15 +170,9 @@ async function activateDevice(configuration) {
     configuration['keysPemCashlessClient'] = keysPemCashlessClient
 
     const formData = new FormData()
-    if (mobile === true) {
-      // cordova
-      formData.append('version', configuration.version)
-    } else {
-      // PI et desktop
-      formData.append('version', '4.0.0.0.0.0')
-    }
 
     // payload
+    formData.append('version', configuration.version)
     formData.append('username', configuration.client.username)
     formData.append('password', configuration.client.password)
     formData.append('hostname', configuration.hostname)
@@ -157,147 +206,70 @@ async function activateDevice(configuration) {
     }
 
     if (response.status === 400) {
-      document.querySelector('#fond-contenu').innerHTML += `<div class="BF-col l100p h100p" style="background-color:#0000FF;color:#FFFFFF;" onclick="cashlessNewPair();">
-        <h1 data-i8n="pairAgainAndClick,capitalize" style="white-space: pre-line;text-align: center;">Faire un nouvel appairage\net cliquer !</h1>
-      </div>`
-      translate('#fond-contenu')
+      showPairAgain()
     }
   } catch (error) {
     console.log('-> ActivateDevice,', error)
   }
 }
 
+// main
+function initMain(configuration) {
+  console.log('-> initMain, configuration =', configuration)
 
-window.cashlessNewPair = async function () {
-  const result = await deleteConfs()
-  let redirectionUrl = `http://localhost:${PORT}`
-  if (mobile === true) {
-    redirectionUrl = 'http://localhost/index.html'
-  }
-  console.log('result =', result)
-  if (result === true) {
-    // redirection
-    window.location.href = redirectionUrl
-  } else {
-    console.log('newPair, erreur maj configuration')
-  }
-}
-
-
-async function initLogin() {
-  console.log('-> initLogin')
-
-  const configuration = JSON.parse(localStorage.getItem('laboutik'))
-  console.log('-> configuration =', configuration)
+  // lecture fichier de conf ok
   if (configuration !== null) {
-    const csrf_token = document.querySelector('input[name="csrfmiddlewaretoken"]').value
-    const signature = await signMessage(configuration.keysPemCashlessClient, configuration.password)
 
-    const formData = new FormData()
-    formData.append('username', configuration.client.username)
-    formData.append('password', configuration.client.password)
-    formData.append('periph', configuration.front_type)
-    formData.append('signature', signature.b64encoded)
-    if (mobile === true) {
-      formData.append('ip_lan', configuration.ip)
-    } else {
-      formData.append('ip_lan', configuration.piDevice.ip)
+    // reset confLocalStorage si "login retour" !== "login confLocalStorage"
+    if (confLocalStorage !== null && (configuration.client.password !== confLocalStorage.client.password || configuration.client.username !== confLocalStorage.client.username)) {
+      localStorage.removeItem('laboutik')
+      confLocalStorage = null
     }
 
-
-    const response = await fetch(configuration.server + 'wv/login_hardware', {
-      headers: {
-        Accept: 'application/json',
-        'X-CSRFToken': csrf_token
-      },
-      mode: 'cors',
-      method: 'POST',
-      body: formData
-    })
-    // ok
-    if (response.status === 200) {
-      let url = configuration.current_server + 'wv'
-      window.location.href = url
+    // login error = client null ou pas de serveur courant désigné
+    if (configuration.client === null || configuration.current_server === "") {
+      // nouvel appairage
+      showPairAgain()
+      return
     }
 
-
-    // console.log('response =', response)
-    if (response.status === 400 || response.status === 401) {
-      document.querySelector('#fond-contenu').innerHTML += `<div class="BF-col l100p h100p" style="background-color:#0000FF;color:#FFFFFF;" onclick="cashlessNewPair();">
-        <h1 data-i8n="deviceDisabledDeletedPairAgain,capitalize" style="white-space: pre-line;text-align: center;">Appareil désactivé ou supprimé.\nFaire un nouvel appairage\net cliquer !</h1>
-      </div>`
-      translate('#fond-contenu')
+    // la configuration local n'existe pas
+    if (confLocalStorage === null) {
+      // console.log('. confLocalStorage = null => activateDevice()')
+      activateDevice(configuration)
+      return
     }
-  } else {
-    cashlessReloadPage()
+
+    initLogin()
   }
 }
 
+try {
+  Sentry.init({
+    dns: "https://677e4405e6f765888fdec02d174000d6@o262913.ingest.us.sentry.io/4506881155596288",
+    tracesSampleRate: 1.0,
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+  })
+} catch (error) {
+  console.log('sentry :', error)
+}
+
+// mobile
 if (mobile === true) {
-  // wait mobile device
   document.addEventListener('deviceready', async () => {
+    console.log('-> mobile, deviceready')
     const basePath = cordova.file.dataDirectory
     const pathToFile = basePath + cordovaFileName
 
     // read configuration file
     const configuration = await cordovaReadFileJson(pathToFile)
-    console.log('-> deviceready, configuration =', configuration)
-
-    if (configuration !== null) {
-      console.log('-> configuration !== null')
-      // lecture fichier de configuration de l'application ok
-
-      if (confLocalStorage === null) {
-        // la configuration local n'existe pas
-        console.log('. confLocalStorage = null => activateDevice()')
-        activateDevice(configuration)
-      } else {
-        console.log('. confLocalStorage !== null')
-
-        // la configuration local existe et le fichier de configuration a des données
-        // login incorrect
-        if (configuration.client.password !== confLocalStorage.client.password || configuration.client.username !== confLocalStorage.client.username) {
-          console.log('-> Login incorrecte !')
-        } else {
-          console.log('-> config client du fichier et du local storage  identique.')
-          initLogin()
-        }
-      }
-    } else {
-      console.log("Erreur lecture du fichier de configuration de l'application cordova !")
-      cashlessReloadPage()
-    }
+    initMain(configuration)
   })
-
 } else {
-  // PI ou Desktop
-  // api: readConfigFile, only ip 127.0.0.1
-  console.log('is not a mobile !')
+  // pi, desktop
+
+  // read configuration file
   const configuration = await readFromFile()
-  console.log('configuration =', configuration)
-
-  if (configuration !== null) {
-    console.log('-> configuration !== null')
-    // lecture fichier de configuration de l'application ok
-
-    if (confLocalStorage === null) {
-      // la configuration local n'existe pas
-      console.log('. confLocalStorage = null => activateDevice()')
-      activateDevice(configuration)
-    } else {
-      console.log('. confLocalStorage !== null')
-
-      // la configuration local existe et le fichier de configuration a des données
-      // login incorrect
-      if (configuration.client.password !== confLocalStorage.client.password || configuration.client.username !== confLocalStorage.client.username) {
-        console.log('-> Login incorrecte !')
-      } else {
-        console.log('-> config client du fichier et du local storage  identique.')
-        initLogin()
-      }
-    }
-  } else {
-    console.log("Erreur lecture du fichier de configuration de l'application cordova !")
-    cashlessReloadPage()
-  }
+  initMain(configuration)
 }

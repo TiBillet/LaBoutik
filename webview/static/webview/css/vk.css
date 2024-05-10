@@ -27,7 +27,8 @@
   border: none;
   background-color: rgba(255,255,255,0.2);
   color: #ffffff;
-  font-size: 1.05rem;
+  font-size: 1.4rem;
+  font-weight: bold;
   outline: none;
   cursor: pointer;
   display: flex;

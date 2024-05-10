@@ -5,7 +5,7 @@ window.changeLanguageAction = function () {
   // console.log('selectLanguage =', selectLanguage)
   localStorage.setItem("language", selectLanguage)
   // TODO: infomer le serveur du changement de langue
-  vue_pv.reloadData()
+  window.location.reload()
 }
 
 window.changeLanguageInterface = function () {
@@ -57,5 +57,6 @@ window.changeLanguageInterface = function () {
 export const menu = {
   func: "changeLanguageInterface",
   icon: "fas fa-globe", // font awesome 5.11
-  i8nIndex: "language,uppercase"
+  i8nIndex: "language,uppercase",
+  testClass: 'test-action-change-language'
 }
