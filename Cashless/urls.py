@@ -22,6 +22,7 @@ from django.conf.urls import url, include
 # from APIcashless import urls as APIcashlessUrl
 from webview import views as webviewview
 from webview import urls as webview_url
+from kiosk import urls as kiosk_urls
 
 from APIcashless import urls as cashless_url
 from administration import urls as administration_url
@@ -54,6 +55,9 @@ urlpatterns = [
     url('fedow/', include(fedow_connect_url)),
     url('rapport/', include(administration_url)),
     # path('rapport/<uuid:pk_uuid>', TableauJour.as_view()),
+
+    url('kiosk/', include(kiosk_urls)),
+
 
     #TODO: Utiliser le cache en prod
     path('i18n/', include('django.conf.urls.i18n')),

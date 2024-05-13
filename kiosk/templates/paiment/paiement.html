@@ -17,9 +17,9 @@
                  hx-trigger="load delay:4s"
                  hx-target="this"
             >
-                <input type="hidden" id="uuidPaiment" name="uuid" value="{{ uuid }}"/>
+                <input type="hidden" id="CardUuid" name="uuid" value="{{ card.id }}"/>
                 <input type="hidden" id="totalPaiment" name="total" value="{{ total }}"/>
-                <input type="hidden" id="choiceAmount" name="choice_amount" value="{{ paiment_choice.choice_amount }}"/>
+                <input type="hidden" id="choiceAmount" name="choice_amount" value="{{ paiment_choice.amount }}"/>
                 <input type="hidden" id="deviceAmount" name="device_amount" value="{{ paiment_choice.device_amount }}"/>
                 <input type="hidden" id="paimentUuid" name="paiment_uuid" value="{{ paiment_choice.uuid }}"/>
 

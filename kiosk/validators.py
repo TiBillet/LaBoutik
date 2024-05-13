@@ -17,4 +17,3 @@ class AmountValidator(serializers.Serializer):
         slug_field='id'
     )
     total = serializers.DecimalField(max_digits=8, decimal_places=2)
-
