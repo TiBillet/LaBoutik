@@ -81,6 +81,7 @@ INSTALLED_APPS = [
     'stdimage',
     'more_admin_filters',
     'fedow_connect',
+    'kiosk',
     # 'debug_toolbar',
 ]
 
