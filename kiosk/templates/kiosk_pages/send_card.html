@@ -1,0 +1,9 @@
+<input type="text" id="given_card"
+value="{{ tag_id }}" name="tag_id"/>
+<div
+        hx-post="api/card/scan/"
+        hx-include="#given_card"
+        hx-trigger="load"
+        hx-target="#mainPage"
+>
+</div>

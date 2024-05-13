@@ -1,0 +1,49 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div id="mainPage">
+    
+        
+
+        <div class="center-text" id="main_page">
+            <div class="row">
+                <div class="col-12">
+                    <h4 style="color: red">{{ message }}</h4>
+                </div>
+                <div class="col-12">
+                    <h1>Welcome, please scan your wristband to check or refille your wallet</h1>
+                </div>
+            </div>
+        </div>
+
+
+        <div
+             hx-get="index_bis/"
+             hx-trigger="load  delay:1s"
+             hx-target="this"
+             hx-swap="outerHTML"
+        >
+        </div>
+
+    </div>
+         
+    
+    
+{#    <input type="text" id="given_card" on_input="listen_card()" name="number"/>#}
+{#    <button#}
+{#            hx-post="api/card/scan/"#}
+{#            hx-include="#given_card"#}
+{#            hx-trigger="click"#}
+{#            hx-target="#main_page"#}
+{#            >check</button>#}
+{#    #}
+{#    #}
+    
+
+<script>
+    
+</script>
+    
+
+{% endblock content %}

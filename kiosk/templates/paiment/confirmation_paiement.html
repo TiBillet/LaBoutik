@@ -1,0 +1,34 @@
+{% extends 'base/base.html' %}
+{% block content %}
+
+    {% load static %}
+
+    <div class="center-text">
+
+        <div id="lastPage">
+            <div class="row">
+            <div class="col-10">
+                <h2> Congratulation, your card is been charged!</h2>
+                <h2> You have now {{ card.amount }} euros in your wallet</h2>
+            </div>
+
+
+            <div class="col-10"
+                 hx-get="/"
+                 hx-trigger="load delay:15s"
+                 hx-target="#lastPage"
+            >
+            </div>
+
+        </div>
+        </div>
+    
+    </div>
+
+<script>
+        
+</script>
+
+
+
+{% endblock content %}

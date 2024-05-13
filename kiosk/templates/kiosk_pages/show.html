@@ -1,0 +1,69 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+    <section>
+        <div class="center-text">
+            <div class="col-12">
+            
+                <div class="row">
+                    <div class="col-12">
+                        <h3>You have {{ card.amount }} € on your wallet. </h3>
+                  
+                        <h3>Choose the values that you want to add to your wallet</h3>
+                    </div>
+                </div>
+                <div class="row">    
+     
+                    <div class="col-6">
+                        <button type="button" class="btn btn-success" value="5"
+                        _="on click increment $total by 5 then put it into the next <output/>"
+                        style="width: 150px; height: 60px;"> 5 €</button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-success" value="10"
+                        _="on click increment $total by 10 then put it into the next <output/>"
+                        style="width: 150px; height: 60px;"> 10 €</button>
+                    </div>
+             
+                    <div class="col-6">
+                        <button type="button" class="btn btn-success" value="20"
+                        _="on click increment $total by 20 then put it into the next <output/>"
+                        style="width: 150px; height: 60px;"> 20 €</button>
+                    </div>
+                    <div class="col-6">
+                        <button type="button" class="btn btn-success" value="50"
+                        _="on click increment $total by 50 then put it into the next <output/>"
+                        style="width: 150px; height: 60px;"> 50 €</button>
+                    </div>
+                </div>
+                
+                <div class="row" id="cash_content">
+                   
+                    <div class="col-12" id="total_card">
+                        <input type="hidden" id="cardUuid" value="{{ card.uuid }}" name="uuid"/>
+                        <h4>Total: <output id="total_dj" value="{{ total_dj }}" name="total"> {{ total }}</output></h4>
+                            <button type="button" class="btn btn-success" 
+                                    hx-get="recharge/"
+                                    hx-include="#cardUuid, #total_dj"
+                                    hx-trigger="click"
+                                    hx-target="#cash_content"
+                                    hx-swapping="InnerHTML"
+                            style="width: 90px; height: 50px;"> Pay now</button>
+                    </div>
+                </div>
+                
+                <div>
+                    <a class="btn btn-primary" href="/" style="width: 120px; height: 40px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-right" viewBox="0 0 16 16">
+                          <path fill-rule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5"/>
+                        </svg>
+                        Return
+                    </a>
+                </div>
+            </div>
+            
+        </div>
+    </section>
+
+{% endblock content %}

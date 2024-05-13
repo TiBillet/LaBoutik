@@ -1,0 +1,17 @@
+
+<div id="paimentPage">
+<div class="col-10"
+     hx-post="recharge_paiment_pg/"
+     hx-include="#paimentPage"
+     hx-trigger="load delay:1s"
+     hx-target="#paimentPage"
+>
+    <input type="hidden" id="uuidRecharge" name="uuid" value="{{ uuid }}"/>
+    <input type="hidden" id="totalRecharge" name="total" value="{{ total }}"/>
+    <input type="hidden" id="choiceAmountRecharge" name="choice_amount" value="{{ choice_amount }}"/>
+    <input type="hidden" id="deviceAmountRecharge" name="device_amount" value="{{ device_amount }}"/>
+    <input type="hidden" id="paimentUuid" name="device_amount" value="{{ paiment_uuid }}"/>
+
+    <h3>Given Bill: {{ device_amount }}</h3>
+</div>
+</div>

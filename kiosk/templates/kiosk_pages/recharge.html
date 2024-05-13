@@ -1,0 +1,49 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div id="choosed_sum" value="{{ total }}">
+    
+        <h3> {{ total }} €</h3>
+    
+    </div>
+    <div class="row">
+        <div class="col-4" id="totStripe">
+            <input type="hidden" id="uuidPostStripe" value="{{ uuid }}" name="uuid"/>
+            <input type="hidden" id="totalPostStripe" value="{{ total }}" name="total"/>
+            <a type="button" class="btn btn-success" style="width: 140px;"
+               hx-post="stripe_paiment/"
+               hx-include="#totStripe"
+               hx-trigger="click"
+               hx-target="closest section"
+            
+            >
+                Credit Card
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-credit-card" viewBox="0 0 16 16">
+              <path d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1zm13 4H1v5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1z"/>
+              <path d="M2 10a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v1a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1z"/>
+            </svg>
+            </a>
+        </div>
+           <div class="col-3"></div>
+        <div class="col-4" id="totUuid">
+            <input type="hidden" id="uuidPost" value="{{ uuid }}" name="uuid"/>
+            <input type="hidden" id="totalPost" value="{{ total }}" name="total"/>
+            <a type="button" 
+               class="btn btn-success" style="width: 140px;"
+               hx-post="api/card/paiment/"
+               hx-include="#totUuid"
+               hx-trigger="click"
+               hx-target="closest section"
+            >
+             Cash
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cash" viewBox="0 0 16 16">
+                  <path d="M8 10a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"/>
+                  <path d="M0 4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V4zm3 0a2 2 0 0 1-2 2v4a2 2 0 0 1 2 2h10a2 2 0 0 1 2-2V6a2 2 0 0 1-2-2H3z"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+    
+    
+{% endblock content %}
