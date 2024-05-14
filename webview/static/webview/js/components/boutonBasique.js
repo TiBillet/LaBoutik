@@ -97,7 +97,6 @@ function get_template(ctx) {
       .sous-element:hover{
         background: #15181e;
       }
-
       .sous-element-texte{
         /*display: block;*/
         color: #FFFFFF;
@@ -109,7 +108,6 @@ function get_template(ctx) {
         justify-content: center;
         align-items: center;
       }
-
 
       /* largeur maxi 600 pixels */
       @media only screen and (min-width: 599px){
@@ -189,10 +187,6 @@ export default class BoutonBasique extends HTMLElement {
         if (donnees.length > 2 && donnees[2] !== '') color_style += 'color:' + donnees[2] + ';';
         if (font_style !== '' || color_style !== '') texte_style += 'style="' + font_style + color_style + '"';
 
-        // id de la ligne
-        let texte_id = '';
-        if (donnees.length > 3) texte_id = 'id="' + donnees[3] + '"';
-
         // translate ask
         if (donnees.length === 4) {
           texte_contenu = btTranslate(texte_contenu, donnees[3])
@@ -200,7 +194,7 @@ export default class BoutonBasique extends HTMLElement {
 
         // composition du contenu(intérieur) du bouton
         this.texte += `
-          <div ${texte_id} ${texte_style}>
+          <div ${texte_style}>
             ${texte_contenu}
           </div>
         `;

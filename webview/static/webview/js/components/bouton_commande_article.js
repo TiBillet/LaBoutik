@@ -200,90 +200,87 @@ function getTemplate(ctx) {
         <div class="ele-icon">${ctx.infoIcon}</div>
         ${ctx.afficherPrix()}
         <div class="ele-nombre BF-ligne">
-          <span id="rep-nb-article${ctx.articleUuid}" class="badge">${
-    ctx.nbCommande
-  }</span>
+          <span id="rep-nb-article${ctx.articleUuid}" class="badge">${ctx.nbCommande
+    }</span>
         </div>
       </div>
       <div id="bt-rideau"></div>
       ${ctx.vaseCommunicant()}
     </div>
-  `;
-  return template;
+  `
+  return template
 }
 
 export default class BoutonCommandeArticle extends HTMLElement {
   static get observedAttributes() {
-    return ["nb-commande"];
+    return ["nb-commande"]
   }
 
   connectedCallback() {
-    let data = this.getAttribute("data");
-    let article = JSON.parse(unescape(data));
+    let data = this.getAttribute("data")
+    let article = JSON.parse(unescape(data))
     // sys.logJson('article -> ',article);
     // console.log('-----------------------------------------------')
 
-    this.articleUuid = article.uuid;
-    this.prix = article.prix;
-    this.nom = article.name;
-    this.img = article.urlImage;
-    this.nbCommande = article.nbMax;
-    this.methode = article.methodeName;
-    this.nomModule = article.nomModule;
-    this.commandes = article.commandes;
-    this.uuidArticlePaiementFractionne = article.uuidArticlePaiementFractionne;
-    this.resteAservir = article.resteAservir;
-    this.statut = article.statut;
+    this.articleUuid = article.uuid
+    this.prix = article.prix
+    this.nom = article.name
+    this.img = article.urlImage
+    this.nbCommande = article.nbMax
+    this.methode = article.methodeName
+    this.nomModule = article.nomModule
+    this.commandes = article.commandes
+    this.uuidArticlePaiementFractionne = article.uuidArticlePaiementFractionne
+    this.resteAservir = article.resteAservir
+    this.statut = article.statut
 
     // couleur de fond de la categorie
     // par défaut
-    this.couleurFond = "#189ac8";
+    this.couleurFond = "#189ac8"
     // icon
-    this.infoIcon = "";
+    this.infoIcon = ""
     if (article.categorie !== undefined && article.categorie !== null) {
       // affiche ou pas le fond
       if (article.categorie.couleur_backgr !== null) {
-        this.couleurFond = article.categorie.couleur_backgr;
+        this.couleurFond = article.categorie.couleur_backgr
       }
       // couleur du texte par défaut
-      this.infoIcon = '  <i class="fas ' + article.categorie.icon + '"></i>';
-      this.couleurTexte = article.categorie.couleurTexte;
+      this.infoIcon = '  <i class="fas ' + article.categorie.icon + '"></i>'
+      this.couleurTexte = article.categorie.couleurTexte
     }
 
     // couleur du texte de l'article prioritaire pour mieux resortir sur l'image
-    if (article.couleurTexte !== null) this.couleurTexte = article.couleurTexte;
+    if (article.couleurTexte !== null) this.couleurTexte = article.couleurTexte
     if (this.couleurTexte === undefined || this.couleurTexte === null)
-      this.couleurTexte = "#FFFFFF";
+      this.couleurTexte = "#FFFFFF"
 
-    this.setAttribute("nb-commande", this.nbCommande);
-    this.setAttribute("ajout-article", "");
+    this.setAttribute("nb-commande", this.nbCommande)
+    this.setAttribute("ajout-article", "")
 
-    this.attachShadow({ mode: "open" }).innerHTML = getTemplate(this);
+    this.attachShadow({ mode: "open" }).innerHTML = getTemplate(this)
 
-    this.addEventListener("click", this.decrement, false);
-    this.classList.add("bouton-commande-article");
+    this.addEventListener("click", this.decrement, false)
+    this.classList.add("bouton-commande-article")
 
-    this.removeAttribute("data");
+    this.removeAttribute("data")
   }
 
   vaseCommunicant() {
-    let fragVase = `
-      <div id="vase-communicant-article${this.articleUuid}">
-    `;
+    let fragVase = `<div id="vase-communicant-article${this.articleUuid}">`
     for (let i = 0; i < this.commandes.length; i++) {
-      let commande = this.commandes[i];
+      let commande = this.commandes[i]
       // console.log('commande = ', commande)
       for (let j = 0; j < commande.qty; j++) {
         fragVase += `
           <div class="article-commande" data-methode="${this.methode}" data-uuid-article="${this.articleUuid}" data-uuid-commande="${commande.uuidCommande}" 
           data-responsable="${commande.responsable}" data-date-commande="${commande.dateCommande}"
           data-prix="${this.prix}" data-nom="${this.nom}"></div>
-        `;
+        `
       }
     }
 
-    fragVase += "</div>";
-    return fragVase;
+    fragVase += "</div>"
+    return fragVase
   }
 
   /*
@@ -296,28 +293,26 @@ export default class BoutonCommandeArticle extends HTMLElement {
       SV: "#339448",
       PY: "#0048ff",
       SP: "#bfc9c9",
-    };
+    }
     return `
-      <!-- <div class="article-statut BF-ligne" style="background-color: ${
-        couleurs[this.statut]
+      <!-- <div class="article-statut BF-ligne" style="background-color: ${couleurs[this.statut]
       }"> -->
       <div class="article-statut BF-ligne"> 
-        <i class="article-statut-icon fas fa-concierge-bell" style="color: ${
-          couleurs[this.statut]
-        }"></i>
+        <i class="article-statut-icon fas fa-concierge-bell" style="color: ${couleurs[this.statut]
+      }"></i>
       </div>
       <div class="article-statut BF-ligne">
         ${this.resteAservir}
       </div>
-    `;
+    `
   }
 
   afficherPrix() {
     return `
        <div class="ele-prix BF-ligne-g">
-          ${this.prix} €
+          ${this.prix} ${getTranslate('currencySymbol')}
        </div>
-    `;
+    `
   }
 
   /**
@@ -330,38 +325,30 @@ export default class BoutonCommandeArticle extends HTMLElement {
           <div class="ele-img BF-ligne">
             <img src="${this.img}" loading="lazy" onerror="this.style.display='none'">
           </div>
-     `;
+     `
     }
-    return "";
+    return ""
   }
 
   decrement() {
     // vérifier que l'ajout de cet article dans l'addition en cours ne dépasse pas la somme à payer
-    let resteAPayer = parseFloat(
-      document
-        .querySelector("#commandes-table-contenu")
-        .getAttribute("data-reste-a-payer")
-    );
-    let additionEncours = parseFloat(
-      document
-        .querySelector("#commandes-table-contenu")
-        .getAttribute("data-total-addition-en-cours")
-    );
+    let resteAPayer = parseFloat(document.querySelector("#commandes-table-contenu").getAttribute("data-reste-a-payer"))
+    let additionEncours = parseFloat(document.querySelector("#commandes-table-contenu").getAttribute("data-total-addition-en-cours"))
 
     // console.log('-> fonc decrement de bouton_commande_article.js')
     // console.log('resteAPayer = ', resteAPayer)
     // console.log('additionEncours = ', additionEncours)
 
-    let depassementResteAPayer = 0;
+    let depassementResteAPayer = 0
     if (this.prix + additionEncours > resteAPayer) {
-      depassementResteAPayer = 1;
+      depassementResteAPayer = 1
       // fait un paiement fractionné avec ce qui reste à payer
 
-      let cible = document.querySelector("#commandes-table-contenu");
-      let idTable = cible.getAttribute("data-idTable");
-      let nomTable = cible.getAttribute("data-nomTable");
+      let cible = document.querySelector("#commandes-table-contenu")
+      let idTable = cible.getAttribute("data-idTable")
+      let nomTable = cible.getAttribute("data-nomTable")
 
-      let actionAValider = "addition_fractionnee";
+      let actionAValider = "addition_fractionnee"
       let options = {
         url: "paiement",
         actionAValider: actionAValider,
@@ -369,51 +356,51 @@ export default class BoutonCommandeArticle extends HTMLElement {
         valeurEntree: resteAPayer,
         idTable: idTable,
         nomTable: nomTable,
-      };
+      }
       // les articles sélectionnés
-      let achats = vue_pv.obtenirAchats(actionAValider, options);
-      options.achats = achats;
-      vue_pv.validerEtape1(options);
+      let achats = vue_pv.obtenirAchats(actionAValider, options)
+      options.achats = achats
+      vue_pv.validerEtape1(options)
     }
     // console.log('depassementResteAPayer = ', depassementResteAPayer)
 
     // vérifie que le nombre d'article est supérieur à 0 (non null)
     let premierEnfant = this.shadowRoot.querySelector(
       `.ele-conteneur #vase-communicant-article${this.articleUuid}`
-    ).firstElementChild;
+    ).firstElementChild
     if (premierEnfant !== null && depassementResteAPayer === 0) {
       // clone le premier élément
-      let clone = premierEnfant.cloneNode(true);
+      let clone = premierEnfant.cloneNode(true)
 
       // copier dans le vase communicant de l'addition
-      document.querySelector("#addition-vase-communicant").append(clone);
+      document.querySelector("#addition-vase-communicant").append(clone)
 
       // Supprime le premier enfant
-      premierEnfant.parentNode.removeChild(premierEnfant);
+      premierEnfant.parentNode.removeChild(premierEnfant)
 
       // décrément le nbCommande
-      this.nbCommande--;
-      this.setAttribute("nb-commande", this.nbCommande);
+      this.nbCommande--
+      this.setAttribute("nb-commande", this.nbCommande)
     }
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "nb-commande") {
-      this.nbCommande = this.getAttribute("nb-commande");
+      this.nbCommande = this.getAttribute("nb-commande")
       if (this.shadowRoot !== null) {
         // maj nombre article
         this.shadowRoot.querySelector(
           `#rep-nb-article${this.articleUuid}`
-        ).innerHTML = this.nbCommande;
+        ).innerHTML = this.nbCommande
         // maj liste addition
-        restau.majListeAddition();
+        restau.majListeAddition()
       }
 
       // cache l'élément
       if (this.nbCommande === "0") {
-        this.style.display = "none";
+        this.style.display = "none"
       } else {
-        this.style.display = "block";
+        this.style.display = "block"
       }
     }
   }

@@ -165,6 +165,7 @@ body {
 .l100vw {
     width: 100vw;
 }
+
 /* hauteur % */
 .h100p {
     height: 100%;
@@ -359,7 +360,8 @@ body {
     top: 51px;
     transition: all 1s ease-in-out !important;
     background-color: #1a1e25;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .burger-show {
@@ -368,7 +370,7 @@ body {
 }
 
 .menu-burger-item {
-    width: 100%;
+    width: 95%;
     height: 60px;
     color: #ffffff;
     border-bottom: 1px solid #303b44;
@@ -387,7 +389,7 @@ body {
 }
 
 .menu-burger-item div {
-    width: 1000px;
+    width: 100%;
     height: 60px;
     font-size: 30px;
     line-height: 60px;
@@ -1675,27 +1677,27 @@ footer {
     width: 100%;
     padding: 5px 0;
     background-color: #004134;
-    box-shadow: 0 0 50px rgba(0,0,0,0.5);
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
     user-select: none;
     transition: bottom 0.4s;
-  }
-  
-  .keyboard-hidden {
+}
+
+.keyboard-hidden {
     bottom: -100%;
-  }
-  
-  .keyboard-line {
+}
+
+.keyboard-line {
     display: flex;
     flex-direction: row;
     align-items: center;
     justify-content: center;
-  }
-  
-  .keyboard-key {
+}
+
+.keyboard-key {
     position: relative;
     border-radius: 4px;
     border: none;
-    background-color: rgba(255,255,255,0.2);
+    background-color: rgba(255, 255, 255, 0.2);
     color: #ffffff;
     font-size: 1.05rem;
     outline: none;
@@ -1703,23 +1705,29 @@ footer {
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-  
-  .keyboard-key:active {
-    background-color: rgba(255,255,255,0.12);
-  }
-  
-  .keyboard-key-activatable::after {
+}
+
+.keyboard-key:active {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+.keyboard-key-activatable::after {
     content: '';
     position: absolute;
     top: 8px;
     right: 8px;
     width: 8px;
     height: 8px;
-    background-color: rgba(0,0,0,0.4);
+    background-color: rgba(0, 0, 0, 0.4);
     border-radius: 50%;
-  }
-  
-  .keyboard-key-active::after {
+}
+
+.keyboard-key-active::after {
     background-color: #00FF00;
-  }
+}
+
+@media screen and (orientation: landscape) {
+    #menu-burger-conteneur {
+        height: calc(100vh - 50px)
+    }
+}

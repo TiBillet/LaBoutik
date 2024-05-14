@@ -144,6 +144,13 @@ export const fr = {
     paymentMethod: "mode de paiement",
     deviceDisabledDeletedPairAgain: 'Appareil désactivé ou supprimé.\nFaire un nouvel appairage\net cliquer !',
     errorReadingConfFileClickToRestart: 'Erreur lecture\nfichier de configuration\ncliquer pour relancer',
-    pairAgainAndClick: 'faire un nouvel appairage\net cliquer'
+    pairAgainAndClick: 'faire un nouvel appairage\net cliquer',
+    unknown: "inconnu(e)",
+    primary: "primaire",
+    nfcCardSimulation: "simulation carte nfc",
+    cashless: 'cashless',
+    prePurchaseCard: 'carte avant achats',
+    postPurchaseCard: 'carte après achats',
+    cardsTotal: 'total des cartes'
   }
 }

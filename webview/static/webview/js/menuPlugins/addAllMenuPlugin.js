@@ -8,7 +8,11 @@ window.addPluginFunctionsToMenu = function () {
 
 listMenuToAdd.forEach(async (plug) => {
   const { menu } = await import("./" + plug + "/index.js")
-  menuAddHtmlFragment += `<div class="menu-burger-item BF-ligne-deb" onclick="${menu.func}();">
+  let addClass = ''
+  if (menu.testClass !== undefined) {
+    addClass = ' ' + menu.testClass 
+  }
+  menuAddHtmlFragment += `<div class="menu-burger-item BF-ligne-deb${addClass}" onclick="${menu.func}();">
     <i class="${menu.icon}"></i>
     <div data-i8n="${menu.i8nIndex}"></div>
   </div>`

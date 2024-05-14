@@ -5,7 +5,7 @@
  *@return {string} rgb = coluleur format rgb
  * by Craig Buckler
  */
-function colorLuminance (hex, lum) {
+function colorLuminance(hex, lum) {
   // validate hex string
   hex = String(hex).replace(/[^0-9a-f]/gi, '')
   if (hex.length < 6) {
@@ -24,7 +24,7 @@ function colorLuminance (hex, lum) {
   return rgb
 }
 
-function get_template (ctx) {
+function get_template(ctx) {
   // console.log('couleur_texte = '+ctx.couleur_texte + '  --  type = ' + typeof ctx.couleur_texte+ '  --  nom = '+ctx.nom);
   let template = `
     <style>
@@ -213,11 +213,11 @@ function get_template (ctx) {
 }
 
 export default class BoutonArticle extends HTMLElement {
-  static get observedAttributes () {
+  static get observedAttributes() {
     return ['nb-commande']
   }
 
-  connectedCallback () {
+  connectedCallback() {
     this.classList.add('bouton-article')
 
     let data = this.getAttribute('data')
@@ -225,6 +225,8 @@ export default class BoutonArticle extends HTMLElement {
     // sys.log_json('data -> ',article);
     // this.nb_commande  = article.nb_commande;
     this.uuid = article.id
+    // retour consigne en absolut
+    // this.prix = article.methode_name !== "RetourConsigne" ? article.prix : Math.abs(article.prix)
     this.prix = article.prix
     this.afficher_les_prix = article.afficher_les_prix
     this.largeur = article.largeur
@@ -285,11 +287,11 @@ export default class BoutonArticle extends HTMLElement {
     this.removeAttribute('data')
   }
 
-  afficher_prix () {
+  afficher_prix() {
     if (this.afficher_les_prix === true) {
       return `
         <div class="ele-prix BF-ligne-g">
-          ${this.prix} €
+          ${this.prix} ${getTranslate('currencySymbol')}
         </div>
       `
     }
@@ -300,7 +302,7 @@ export default class BoutonArticle extends HTMLElement {
    * Affiche une image dans le bouton article
    * @returns {string} template div contenant une image
    */
-  afficher_image () {
+  afficher_image() {
     if (typeof this.img === 'string') {
       return `
           <div class="ele-img BF-ligne">
@@ -311,7 +313,7 @@ export default class BoutonArticle extends HTMLElement {
     return ''
   }
 
-  set_groupe_actif (groupe_actif) {
+  set_groupe_actif(groupe_actif) {
     // met le nombre d'article commander de tous les articles à 0
     let eles = document.querySelectorAll('.bouton-article')
     for (let i = 0; i < eles.length; i++) {
@@ -324,8 +326,8 @@ export default class BoutonArticle extends HTMLElement {
     }
   }
 
-  // icrémente les commandes
-  increment () {
+  // incrémente les commandes
+  increment() {
     // console.log(`-> fonction increment de 'bouton-article.js'`)
     // gère l'activation d'un groupe de bouton
     let groupe_actif = this.getAttribute('groupe-actif')
@@ -373,7 +375,7 @@ export default class BoutonArticle extends HTMLElement {
           </div>
           <div class="achats-col-prix">
             <div class="achats-col-prix-contenu">
-              ${this.prix}€
+              ${this.prix}${getTranslate('currencySymbol')}
             </div>
           </div> 
         </div>
@@ -384,8 +386,9 @@ export default class BoutonArticle extends HTMLElement {
 
   }
 
-  attributeChangedCallback (name, oldValue, newValue) {
+  attributeChangedCallback(name, oldValue, newValue) {
     if (name === 'nb-commande') {
+      // console.log('nb-command change, oldValue =', oldValue, '  --  newValue =', newValue)
       this.nb_commande = this.getAttribute('nb-commande')
     }
   }

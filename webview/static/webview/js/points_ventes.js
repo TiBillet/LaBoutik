@@ -153,7 +153,8 @@ export function main(nom_module, contexte) {
     nom_module: nom_module
   }
 
-  window.methods_after_render[0] = { method: initMode }
+  // window.methods_after_render[0] = { method: initMode }
+  window.methods_after_render = [{ method: initMode }]
 
   // lance le rendu de la page html
   fn.template_render_file('/static/webview/templates/points_ventes.html', params, window.methods_after_render)
@@ -665,8 +666,8 @@ export function composeMenuPrincipal(typeMaj) {
 
 export function decrementer_nombre_produit(uuid_bt_article) {
   //liste_ligne_article
-  // console.log('uuid article = '+uuid_bt_article)
-  let bt = document.querySelector('bouton-article[uuid="' + uuid_bt_article + '"]')
+  // console.log('uuid article = ' + uuid_bt_article)
+  let bt = document.querySelector(`#pv${pv_uuid_courant} bouton-article[uuid="${uuid_bt_article}"]`)
   let nb_commande = parseInt(bt.getAttribute('nb-commande'))
   let prix_article = parseFloat(bt.getAttribute('prix'))
 
@@ -1205,6 +1206,9 @@ export function testPaiementPossible(actionAValider) {
   // console.log('actionAValider = ', actionAValider)
   glob['actionAValider'] = actionAValider
 
+  // supprime les anciennes données pour des achats avec fond insuffisants
+  glob['dataCarte1'] = undefined
+
   if (actionAValider === 'vente_directe' || actionAValider === 'prendre_commande') {
     let achatPossible = parseInt(document.querySelector('#article-infos-divers').getAttribute('achat-possible'))
     if (achatPossible === 1) {
@@ -1236,6 +1240,30 @@ export function testPaiementPossible(actionAValider) {
       afficherMessageArticlesNonSelectionnes()
     }
   }
+}
+
+/**
+ * Test la présence de la méthode "RetourConsigne" dans les achats
+ * @param {object} achats 
+ * @returns 
+ */
+function depositIsPresent(achats) {
+  let retour = false
+  for (let j in achats.articles) {
+    const article = achats.articles[j]
+    const articlesCurrentPS = glob.data.find(item => item.id === article.pk_pdv).articles
+    for (let i in articlesCurrentPS) {
+      const articleItem = articlesCurrentPS[i]
+      if (articleItem.id === article.pk && articleItem.methode_name === "RetourConsigne") {
+        retour = true
+        break
+      }
+    }
+    if (retour === true) {
+      break
+    }
+  }
+  return retour
 }
 
 export function validerEtape1(options) {
@@ -1298,14 +1326,19 @@ export function validerEtape1(options) {
         if (obtenirPvCashless === 'C' && testAchatsArticlesAdhesion > 0) {
           // ne pas afficher le cashless , adhésion sur point de vente cashless
         } else {
-          boutons += `<bouton-basique traiter-texte="1" texte="CASHLESS|2rem|,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-address-card||2.5rem" onclick="fn.popupAnnuler();vue_pv.obtenirIdentiteClientSiBesoin('nfc')" style="margin-top:16px;"></bouton-basique>`
+          boutons += `<bouton-basique class="test-ref-cashless" traiter-texte="1" texte="CASHLESS|2rem|,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-address-card||2.5rem" onclick="fn.popupAnnuler();vue_pv.obtenirIdentiteClientSiBesoin('nfc')" style="margin-top:16px;"></bouton-basique>`
         }
       }
       if (moyens_paiement_tab[i] === 'espece') {
-        boutons += `<bouton-basique traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-coins||2.5rem" onclick="fn.popupConfirme('espece', 'ESPECE', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
+
+        if (depositIsPresent(options.achats) === false) {
+          boutons += `<bouton-basique class="test-ref-cash" traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-coins||2.5rem" onclick="fn.popupConfirme('espece', 'ESPECE', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
+        } else {
+          boutons += `<bouton-basique class="test-ref-cash" traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-coins||2.5rem" onclick="fn.popupAnnuler();vue_pv.obtenirIdentiteClientSiBesoin('espece')" style="margin-top:16px;"></bouton-basique>`
+        }
       }
       if (moyens_paiement_tab[i] === 'carte_bancaire') {
-        boutons += `<bouton-basique traiter-texte="1" texte="CB|2rem|,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-credit-card||2.5rem" onclick="fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
+        boutons += `<bouton-basique class="test-ref-cb" traiter-texte="1" texte="CB|2rem||cb-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-credit-card||2.5rem" onclick="fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
       }
     }
 
@@ -1448,8 +1481,8 @@ export function validerEtapeMoyenComplementaire(moyenPaiement, sommeDonnee) {
 }
 
 export function validerEtape2(data) {
-  // console.log('-> fonction validerEtape2 !')
-  // sys.logJson('data = ', data)
+  console.log('-> fonction validerEtape2 !')
+  sys.logJson('data = ', data)
   let options = {}
 
   // L'utilisation du lecteur nfc, impose un format de données différent.
@@ -1472,6 +1505,8 @@ export function validerEtape2(data) {
   }
 
   let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value
+
+  options.achats.total = Math.abs(options.achats.total)
 
   let requete = {
     type: 'post',

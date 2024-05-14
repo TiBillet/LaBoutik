@@ -148,11 +148,11 @@ export function assignerTableEphemere() {
   if (translatePlaceHolder !== '') {
     placeHolder = translatePlaceHolder
   }
-  let entreeClavier = `<input id="entree-nom-table" class="input-nom-table" placeholder="${placeHolder}" keyboard-type="alpha" onclick="keyboard.run(this)" autofocus style="margin-top:2.5rem;" autofocus>
+  let entreeClavier = `<input id="entree-nom-table" class="input-nom-table" placeholder="${placeHolder}" keyboard-type="alpha" onclick="keyboard.run(this, {keySize: 90})" autofocus style="margin-top:2.5rem;" autofocus>
     <small id="entree-nom-table-msg-erreur" style="margin-bottom:0.5rem;"></small>`
 
   // Sans clavier virtuel pour les autres fronts
-  if (glob.appConfig.periph !== 'FPI') {
+  if (glob.appConfig.front_type !== 'FPI') {
     entreeClavier = `<input id="entree-nom-table" class="input-nom-table" placeholder="${placeHolder}" autofocus>
       <small id="entree-nom-table-msg-erreur" style="margin-bottom:0.5rem;"></small>`
   }
@@ -392,19 +392,19 @@ export function demanderValeurAdditionFractionnee() {
   if (resteAPayer > 0) {
     // --- compose le message à afficher du poppup ---
     // Avec clavier virtuel pour raspberry pi
-    let message = `<input id="addition-fractionnee" class="addition-fractionnee-input" onclick="clavierVirtuel.obtPosition('addition-fractionnee');clavierVirtuel.afficher('addition-fractionnee','numSolo')">
+    let message = `<input id="addition-fractionnee" class="addition-fractionnee-input keyboard-use" keyboard-type="numpad" onclick="keyboard.run(this,{keySize: 90})">
     <small id="addition-fractionnee-msg-erreur"></small>`
 
     // Sans clavier virtuel pour les autres fronts
     // console.log('glob.storage = ', glob.storage)
-    if (glob.appConfig.periph !== 'FPI') {
+    if (glob.appConfig.front_type !== 'FPI') {
       message = `<input id="addition-fractionnee" class="addition-fractionnee-input">
       <small id="addition-fractionnee-msg-erreur"></small>`
     }
 
     // compose le bouton retour à afficher
-    let boutons = `<bouton-basique traiter-texte="1" texte="VALIDER|1.5rem||validate-uppercase" width="400px" height="120px" couleur-fond="#339448" icon="fa-check-circle||2.5rem" onclick="sys.supElement('#clavier-virtuel-conteneur');restau.obtenirValeurAdditionFractionnee();" style="margin-top:16px;"></bouton-basique>
-    <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="sys.supElement('#clavier-virtuel-conteneur');fn.popupAnnuler();" style="margin-top:16px;"></bouton-basique>`
+    let boutons = `<bouton-basique traiter-texte="1" texte="VALIDER|1.5rem||validate-uppercase" width="400px" height="120px" couleur-fond="#339448" icon="fa-check-circle||2.5rem" onclick="keyboard.hide();restau.obtenirValeurAdditionFractionnee();" style="margin-top:16px;"></bouton-basique>
+    <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="keyboard.hide();fn.popupAnnuler();" style="margin-top:16px;"></bouton-basique>`
 
     fn.popup({
       titre: '<h1 data-i8n="sum,capitalize">Somme</h1>',
@@ -456,6 +456,9 @@ export function majListeAddition() {
   let eles = document.querySelectorAll('#addition-vase-communicant .article-commande')
   // let totalAddition = 0
   let totalAddition = new Big(0)
+  // monnaie
+  const monnaie = getTranslate('currencySymbol')
+
   for (let i = 0; i < eles.length; i++) {
     let ele = eles[i]
     let eleUuidArticle = ele.getAttribute('data-uuid-article')
@@ -482,7 +485,7 @@ export function majListeAddition() {
             <div>${eleNomArticle}</div>
           </div>
           <div class="addition-col-prix">
-            <div>${elePrixArticle}€</div>
+            <div>${elePrixArticle}${monnaie}</div>
           </div>
         </div>
       `
@@ -571,7 +574,7 @@ function dejaPayeeDansCommandes(commandes) {
               <div>${article.name}</div>
             </div>
             <div class="addition-col-prix">
-              <div>${prix}€</div>
+              <div>${prix}<span data-i8n="currencySymbol">€</span></div>
             </div>
           </div>
         `
@@ -591,7 +594,7 @@ function dejaPayeeDansCommandes(commandes) {
               <div>${article.name}</div>
             </div>
             <div class="addition-col-prix">
-              <div>${prix}€</div>
+              <div>${prix}<span data-i8n="currencySymbol">€</span></div>
             </div>
           </div>
         `
@@ -601,6 +604,7 @@ function dejaPayeeDansCommandes(commandes) {
   }
   if (listFragHtml !== '') {
     document.querySelector('#addition-liste-deja-paye').innerHTML = listFragHtml
+    translate('#contenu')
     document.querySelector('#addition-liste-deja-paye').classList.add('addition-ldp-bordure-basse', 'fond-ok')
   } else {
     document.querySelector('#addition-liste-deja-paye').innerHTML = ''
@@ -750,7 +754,7 @@ export function validerSuppressionArtilcesCommande(uuidCommande, pkGroupCategori
   } else {
     // sys.logJson('donnees = ', donnees)
     // validation
-    let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+    let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value
     let requete = {
       type: "post",
       url: "preparation",
@@ -851,7 +855,7 @@ export function actionSurCommande(typeAction, mode, uuidCommande, pkGroupCategor
     vue_pv.afficherMessageArticlesNonSelectionnes()
   } else {
     // validation
-    let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+    let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value
     let requete = {
       type: "post",
       url: "preparation",
@@ -906,7 +910,7 @@ export function actionSurCommande(typeAction, mode, uuidCommande, pkGroupCategor
  */
 export function imprimerTicket(uuidCommande, pkGroupementCategories) {
   console.log('-> fonction imprimerTicket !')
-  let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+  let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value
   let requete = {
     type: "post",
     url: "reprint",
@@ -953,12 +957,15 @@ export function ajouterOpacite(idElementDom) {
  * @param {Object <ajax>} retour - données, commandes de la table
  */
 export function visualiserEtatCommandes(retour) {
-  // console.log('-> fonction visualiserEtatCommandes !')
+  console.log('-> fonction visualiserEtatCommandes !')
   // sys.logJson('retour =',retour)
 
   // TODO: à vérifier avant lancement prod
   // attention, dev = true; stop actu prépa !!! / prod = false
-  window.testPagePrepa = false
+  window.testPagePrepa = true
+
+  // local
+  const local = getLanguages().find(item => item.language === localStorage.getItem("language")).locale
 
   // info (html title)
   const printTicket = getTranslate('printTicket') === '' ? "Imprimer ticket." : getTranslate('printTicket', 'capitalize')
@@ -1035,6 +1042,9 @@ export function visualiserEtatCommandes(retour) {
       if (maxNbArticleAServir > 0) {
         // ------------ entête ------------
         let dateStringTmp = new Date(commande.datetime)
+        // let dateStringTmp = new Date.parse(commande.datetime)
+        let heureLocaleTab = dateStringTmp.toLocaleTimeString(local, { hour12: false }).split(':')
+        const heureCommande = heureLocaleTab[0] + ':' + heureLocaleTab[1]
         let dateJour = dateStringTmp.toLocaleDateString()
         let dateDuJour = (new Date()).toLocaleDateString()
         let styleCouleurAlerteDate = '', couleurIconTable = ''
@@ -1050,7 +1060,7 @@ export function visualiserEtatCommandes(retour) {
                 <i class="fas ${groupement.icon}"></i>
               </div>
               <div class="com-titre-heure BF-ligne">
-                <div>${dateStringTmp.toLocaleTimeString(local).substring(0, 5)}</div>
+                <div class="test-ref-time-value">${heureCommande}</div>
               </div> <!-- fin: .com-titre-heure -->
         `
         // signale jour différent
@@ -1074,16 +1084,16 @@ export function visualiserEtatCommandes(retour) {
             for (const [pos, nombre] of Object.entries(commande.numero_du_ticket_imprime)) {
               fragmentHtml += `
                   <i class="fas fa-receipt md4px"></i>
-                  <div class="md16px">${pos} ${nombre}</div>
+                  <div class="md16px test-ref-location">${pos} ${nombre}</div>
               `
             }
           }
           fragmentHtml += `
                 <img class="icon-table-ronde-svg md4px" alt="table" src="../static/webview/images/table_ronde0.svg" />
-                <div>${commande.table_name}</div>
+                <div class="test-ref-table-name">${commande.table_name}</div>
               </div> <!-- fin: com-titre-partie-centre -->
               <div class="com-titre-partie-droite BF-ligne">
-                <div class="mg4px">${statutLisible[commande.statut]}</div>
+                <div class="mg4px test-ref-status-order">${statutLisible[commande.statut]}</div>
           `
           // impression si ticket et mode gérant activé
           if (Object.entries(commande.numero_du_ticket_imprime).length !== 0 && glob.modeGerant === true) {
@@ -1107,7 +1117,7 @@ export function visualiserEtatCommandes(retour) {
             for (const [pos, nombre] of Object.entries(commande.numero_du_ticket_imprime)) {
               fragmentHtml += `
                   <i class="fas fa-receipt md4px"></i>
-                  <div class="md16px">${pos} ${nombre}</div>
+                  <div class="md16px test-ref-location">${pos} ${nombre}</div>
               `
             }
           }
@@ -1132,8 +1142,8 @@ export function visualiserEtatCommandes(retour) {
             <div class="com-titre-conteneur-plus coulBlanc l100p" ${styleCouleurAlerteDate}>
               <div class="BF-ligne">
                 <img class="icon-table-ronde-svg md4px ${couleurIconTable}" alt="table" src="../static/webview/images/table_ronde0.svg" />
-                <div class="test-moins800-nom">${commande.table_name}</div>
-                <div class="mg4px test-moins800-etat">${statutLisible[commande.statut]}</div>
+                <div class="test-moins800-nom test-ref-table-name">${commande.table_name}</div>
+                <div class="mg4px test-moins800-etat test-ref-status-order">${statutLisible[commande.statut]}</div>
           `
           if (glob.modeGerant === true) {
             fragmentHtml += `
@@ -1169,8 +1179,8 @@ export function visualiserEtatCommandes(retour) {
           if (glob.modeGerant === false) {
             fragmentHtml += `
                 <div class="com-article-infos BF-ligne-deb" data-reste-servir-init="${objArticle.reste_a_servir}" data-article-id="${objArticle.article.id}">
-                  <div class="md16px test-reste-servir">${objArticle.reste_a_servir}</div>
-                  <div class="md16px test-nom">${objArticle.article.name}</div>
+                  <div class="md16px test-rest-serve-qty">${objArticle.reste_a_servir}</div>
+                  <div class="md16px test-rest-serve-name">${objArticle.article.name}</div>
                 </div>
             `
           } else {
@@ -1184,8 +1194,8 @@ export function visualiserEtatCommandes(retour) {
                 </div>
                 <div class="com-article-infos BF-ligne-deb">
                   <div id="com-article-infos-reste-servir-modifier${objArticle.article.id}-${uuidCommande}" class="md4px ">0</div>
-                  <div class="md16px test-reste-servir">sur ${objArticle.reste_a_servir}</div>
-                  <div class="md16px test-nom">${objArticle.article.name}</div>
+                  <div class="md16px test-rest-serve-qty">sur ${objArticle.reste_a_servir}</div>
+                  <div class="md16px test-rest-serve-name">${objArticle.article.name}</div>
                 </div>
               </div> <!-- fin com-block1-article-conteneur -->
             `
@@ -1198,7 +1208,7 @@ export function visualiserEtatCommandes(retour) {
           fragmentHtml += `
               </div> <!-- fin: com-articles-conteneur -->
                <div class="com-articles-valider BF-col">
-                <div class="com-bt-valider-normal BF-col fond-ok" title="${titleValidatePreparation}" onclick="restau.actionSurCommande('valider', 'normal', '${uuidCommande}', ${groupement.pk})">
+                <div class="com-bt-valider-normal BF-col fond-ok test-action-validate-prepa" title="${titleValidatePreparation}" onclick="restau.actionSurCommande('valider', 'normal', '${uuidCommande}', ${groupement.pk})">
                   <i class="fas fa-check"></i>
                 </div>
                </div>
@@ -1221,8 +1231,8 @@ export function visualiserEtatCommandes(retour) {
                </div>
             </div> <!-- fin: div contenant les articles en mode gérant -->
             <div class="com-article-footer BF-ligne-deb">
-              <div class="BF-ligne com-ident-supp fond-retour" onclick="restau.actionSurCommande('supprimer', 'edition', '${uuidCommande}', ${groupement.pk})" data-i8n="deleteArticles,uppercase">SUPPRIMER ARTICLE(S)</div>
-              <div class="BF-ligne com-ident-val fond-ok" onclick="restau.actionSurCommande('valider', 'edition', '${uuidCommande}', ${groupement.pk})" data-i8n="validatePreparation,uppercase">VALIDER PREPARATION</div>
+              <div class="BF-ligne com-ident-supp fond-retour test-action-delete-article" onclick="restau.actionSurCommande('supprimer', 'edition', '${uuidCommande}', ${groupement.pk})" data-i8n="deleteArticles,uppercase">SUPPRIMER ARTICLE(S)</div>
+              <div class="BF-ligne com-ident-val fond-ok test-action-validate-article" onclick="restau.actionSurCommande('valider', 'edition', '${uuidCommande}', ${groupement.pk})" data-i8n="validatePreparation,uppercase">VALIDER PREPARATION</div>
             </div>  
           `
         }
@@ -1245,6 +1255,8 @@ export function visualiserEtatCommandes(retour) {
       let dateStringTmp = new Date(commande.datetime)
       let dateJour = dateStringTmp.toLocaleDateString()
       let dateDuJour = (new Date()).toLocaleDateString()
+      let heureLocaleTab = dateStringTmp.toLocaleTimeString(local, { hour12: false }).split(':')
+      const heureCommande = heureLocaleTab[0] + ':' + heureLocaleTab[1]
 
       // si aucun article à servir, n'affiche pas la commande
       let maxNbArticleAServir = 0
@@ -1269,7 +1281,7 @@ export function visualiserEtatCommandes(retour) {
               <div class="com-titre-icon BF-ligne">
                 <i class="fas ${groupement.icon}"></i>
               </div>
-              <div class="com-titre-heure">${dateStringTmp.toLocaleTimeString(local).substring(0, 5)}</div>
+              <div class="com-titre-heure test-ref-time-value">${heureCommande}</div>
         `
         // signale jour différent
         if (dateJour !== dateDuJour) {
@@ -1295,16 +1307,16 @@ export function visualiserEtatCommandes(retour) {
             for (const [pos, nombre] of Object.entries(commande.numero_du_ticket_imprime)) {
               fragmentHtml += `
                 <i class="fas fa-receipt md4px"></i>
-                <div class="md16px">${pos} ${nombre}</div>
+                <div class="md16px test-ref-location">${pos} ${nombre}</div>
               `
             }
           }
           fragmentHtml += `
                 <img class="icon-table-ronde-svg md4px" alt="table" src="../static/webview/images/table_ronde0.svg" />
-                <div>${commande.table_name}</div>
+                <div class="test-ref-table-name">${commande.table_name}</div>
               </div> <!-- fin: com-titre-partie-centre -->
               <div id="statu-commande${uuidCommande}-${groupement.pk}" class="com-titre-partie-droite  BF-ligne">
-                <div class="mg4px">${statutLisible[commande.statut]}</div>
+                <div class="mg4px test-ref-status-order">${statutLisible[commande.statut]}</div>
           `
           // impression si ticket et mode gérant activé
           if (Object.entries(commande.numero_du_ticket_imprime).length !== 0 && glob.modeGerant === true) {
@@ -1328,7 +1340,7 @@ export function visualiserEtatCommandes(retour) {
             for (const [pos, nombre] of Object.entries(commande.numero_du_ticket_imprime)) {
               fragmentHtml += `
                   <i class="fas fa-receipt md4px"></i>
-                  <div class="md16px">${pos} ${nombre}</div>
+                  <div class="md16px test-ref-location">${pos} ${nombre}</div>
               `
             }
           }
@@ -1357,8 +1369,8 @@ export function visualiserEtatCommandes(retour) {
             <div class="com-titre-conteneur-plus BF-ligne-deb coulBlanc l100p">
               <div class="BF-ligne">
                 <img class="icon-table-ronde-svg md4px" alt="table" src="../static/webview/images/table_ronde0.svg" style="color:#FFF;"/>
-                <div>${commande.table_name}</div>
-                <div class="mg4px test-moins800-etat">${statutLisible[commande.statut]}</div>
+                <div class="test-ref-table-name">${commande.table_name}</div>
+                <div class="mg4px test-moins800-etat test-ref-status-order">${statutLisible[commande.statut]}</div>
           `
           if (glob.modeGerant === true) {
             fragmentHtml += `
@@ -1384,8 +1396,8 @@ export function visualiserEtatCommandes(retour) {
             let objArticle = commande.articles[idArticle]
             fragmentHtml += `
                 <div class="com-article-infos BF-ligne-deb" data-reste-servir-init="${objArticle.reste_a_servir}" data-article-id="${objArticle.article.id}">
-                  <div class="md16px test-quantite">${objArticle.qty}</div>
-                  <div class="md16px test-nom">${objArticle.article.name}</div>
+                  <div class="md16px test-article-qty">${objArticle.qty}</div>
+                  <div class="md16px test-article-name">${objArticle.article.name}</div>
                 </div>
             `
           }
@@ -1413,8 +1425,8 @@ export function visualiserEtatCommandes(retour) {
                 </div>
                 <div class="com-article-infos BF-ligne-deb">
                   <div id="com-article-infos-reste-servir-modifier${objArticle.article.id}-${uuidCommande}" class="md4px ">0</div>
-                  <div class="md16px test-quantite">sur ${objArticle.qty}</div>
-                  <div class="md16px test-nom">${objArticle.article.name}</div>
+                  <div class="md16px test-article-qty">sur ${objArticle.qty}</div>
+                  <div class="md16px test-article-name">${objArticle.article.name}</div>
                 </div>
               </div> <!-- fin com-block1-article-conteneur -->
             `
@@ -1511,7 +1523,7 @@ export function serviceAfficherCommandesTable(groupementCategories, idTable, pro
     typeLoading = 'defaut'
   }
 
-  let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value;
+  let csrfToken = document.querySelector('input[name="csrfmiddlewaretoken"]').value
   let urlRequete = 'preparation'
   if (provenance === 'articles_table') {
     urlRequete = `preparation/${idTable}`
@@ -1625,7 +1637,7 @@ export function afficherCommandesTable(idTable) {
       // sys.logJson('table = ', retour.table)
 
       // titre vue
-      const titreVue = getTranslate('articles') === '' ? `article(s) ${table.name}` : `${getTranslate('articles', 'capitalize')} ${table.name}`
+      const titreVue = getTranslate('articles') === '' ? `Articles ${table.name}` : `${getTranslate('articles', 'capitalize')} ${table.name}`
       vue_pv.asignerTitreVue(titreVue)
 
       let cible = document.querySelector('#commandes-table-contenu')
@@ -1645,11 +1657,11 @@ export function afficherCommandesTable(idTable) {
 
       let totalCommandesTable = totalPrixCommandesTable(table.commandes, idTable)
       document.querySelector('#commandes-table-contenu').setAttribute('data-total-commandes', totalCommandesTable)
-      document.querySelector('#addition-total-commandes').innerHTML = totalCommandesTable
+      document.querySelector('#addition-total-commandes').innerHTML = totalCommandesTable + getTranslate('currencySymbol')
 
       let resteAPayer = table.reste_a_payer
       document.querySelector('#commandes-table-contenu').setAttribute('data-reste-a-payer', resteAPayer)
-      document.querySelector('#addition-reste-a-payer').innerHTML = resteAPayer
+      document.querySelector('#addition-reste-a-payer').innerHTML = resteAPayer + getTranslate('currencySymbol')
 
       let listeArticles = []
       let commandes = table.commandes
