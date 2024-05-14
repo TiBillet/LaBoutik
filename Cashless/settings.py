@@ -383,6 +383,9 @@ except Exception as e:
     logger.error("No DISCOVERY_URL = no device")
     raise e
 
+#TODO: A virer pour la nouvelle version
+FEDOW=0
+
 FEDOW_URL = os.environ.get('FEDOW_URL')
 try:
     url_validator(FEDOW_URL)
