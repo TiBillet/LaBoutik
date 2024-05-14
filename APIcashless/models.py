@@ -2108,7 +2108,7 @@ class Configuration(SingletonModel):
     '''
     FEDOW
     '''
-    string_connect = models.CharField(max_length=300, blank=True, null=True,
+    string_connect = models.CharField(max_length=500, blank=True, null=True,
                                       verbose_name=_("Entrez la clé FEDOW pour activer le modèle fédéré :"))
     onboard_url = models.URLField(blank=True, null=True, verbose_name=_("Validez votre compte stripe :"),
                                   editable=False)
