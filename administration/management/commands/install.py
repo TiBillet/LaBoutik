@@ -417,7 +417,6 @@ class Command(BaseCommand):
                 cypher_json_key_to_cashless = handshake_lespass.json()['cypher_json_key_to_cashless']
 
                 decryptor = Fernet(fernet_key)
-                import ipdb; ipdb.set_trace()
                 config.string_connect = decryptor.decrypt(cypher_json_key_to_cashless.encode('utf-8')).decode('utf8')
 
                 config.save()
