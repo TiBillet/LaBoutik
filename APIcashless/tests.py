@@ -83,6 +83,7 @@ class CashlessTest(TiBilletTestCase):
         request = session.get(url, verify=False, data={'name': f'{config.structure}'}, timeout=1)
         if request.status_code != 200:
             raise Exception("Erreur de connexion au serveur de test")
+
         string_connect = request.json().get('encoded_data')
         config.string_connect = string_connect
         config.save()
@@ -1069,6 +1070,9 @@ class CashlessTest(TiBilletTestCase):
                 fedowAPI.NFCcard.link_user(email=membre.email, card=cartemembre)
             except Exception as e:
                 self.assertEqual(e.args[0], "Card already linked to another member")
+            else:
+                # on test que l'exception a bien été levé. Ceci ne devrait jamais se produire :
+                self.assertFalse("L'exception précédente n'a pas été levé.")
 
             # Link de l'email à la carte via le code nfc
             before_fusions_serialized_card = fedowAPI.NFCcard.retrieve(carte.tag_id)
