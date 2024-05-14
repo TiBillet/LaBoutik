@@ -539,7 +539,7 @@ class Command(BaseCommand):
 
                 ### FIN DE CREATION DE CARTES
 
-                if os.environ.get('NOM_MONNAIE') == 'Bilstou':
+                if os.environ.get('MAIN_ASSET_NAME') == 'Bilstou':
                     # On mets des valeurs d'assets au pif pour le cashless2
                     mp_primary = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
                     mp_gift = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_GIFT)
