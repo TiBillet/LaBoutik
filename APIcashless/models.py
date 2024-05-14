@@ -2156,6 +2156,7 @@ class Configuration(SingletonModel):
 
         ])
 
+    #TODO: Chiffrer avec Fernet :
     def get_private_key(self):
         if not self.private_pem:
             private_pem, public_pem = rsa_generator()

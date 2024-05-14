@@ -3,8 +3,11 @@ import logging
 import os
 import random
 import socket
+from time import sleep
 from uuid import UUID
 
+import requests
+from cryptography.fernet import Fernet
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
@@ -13,6 +16,7 @@ from django.core.management.base import BaseCommand
 from APIcashless.custom_utils import badgeuse_creation, declaration_to_discovery_server
 from APIcashless.models import *
 from APIcashless.tasks import email_activation
+from fedow_connect.utils import get_public_key, rsa_encrypt_string, rsa_decrypt_string
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +51,9 @@ class Command(BaseCommand):
                 self.articles_generiques = self._articles_generiques()
                 self.pdv_cashless = self._point_de_vente_cashless()
 
+                self.lespass_handshake = self._lespass_handshake()
+                self.fedow_handshake = self._fedow_handshake()
+
                 self.admin = self._create_admin_from_env_email()
 
                 if options.get('tdd'):
@@ -58,7 +65,6 @@ class Command(BaseCommand):
                     self.printer_test()
                     self.config_test()
                     badgeuse_creation()
-
 
             def _assets_fedow(self):
                 mp = {}
@@ -338,8 +344,8 @@ class Command(BaseCommand):
                 admin, created = User.objects.get_or_create(
                     username=email_first_admin,
                     email=email_first_admin,
-                    is_staff = True,
-                    is_active = False,
+                    is_staff=True,
+                    is_active=False,
                 )
                 admin.groups.add(staff_group)
                 admin.save()
@@ -347,6 +353,73 @@ class Command(BaseCommand):
                 call_command('check_permissions')
                 return admin
 
+            def _fedow_handshake(self):
+                # On ping Fedow
+                fedow_url = self.fedow_url
+                fedow_state = None
+                ping_count = 0
+                while not fedow_state:
+                    hello_fedow = requests.get(f'{fedow_url}helloworld/',
+                                               verify=bool(not settings.DEBUG))
+                    # Returns True if :attr:`status_code` is less than 400, False if not
+                    if hello_fedow.ok:
+                        fedow_state = hello_fedow.status_code
+                        logger.info(f'ping fedow at {fedow_url} OK')
+                    else:
+                        ping_count += 1
+                        logger.warning(
+                            f'ping fedow at {fedow_url}helloworld/ without succes. sleep(1) : count {ping_count}')
+                        sleep(1)
+
+            def _lespass_handshake(self):
+                # On ping LesPass
+                config = Configuration.get_solo()
+                lespass_url = self.lespass_url
+                lespass_state = None
+                ping_count = 0
+
+                while not lespass_state:
+                    # On récupère la clé publique de l'admin commun
+                    hello_lespass = requests.post(f'{lespass_url}api/get_user_pub_pem/',
+                                                  data={
+                                                      "email":f"{os.environ['ADMIN_EMAIL']}",
+                                                  },
+                                                 verify=bool(not settings.DEBUG))
+                    # Returns True if :attr:`status_code` is less than 400, False if not
+                    if hello_lespass.ok:
+                        lespass_state = hello_lespass.status_code
+                        logger.info(f'ping lespass_url at {lespass_url} OK')
+                    else:
+                        ping_count += 1
+                        logger.warning(
+                            f'ping lespass_url at {lespass_url} without succes. sleep(1) : count {ping_count}')
+                        sleep(1)
+
+                # noinspection PyUnboundLocalVariable
+                lespass_admin_pub_pem = hello_lespass.json()['public_pem']
+                lespass_admin_public_key = get_public_key(lespass_admin_pub_pem)
+
+                api_key, key = APIKey.objects.create_key(name="billetterie_key")
+                config.key_billetterie = api_key
+
+                # Handshake Lespass :
+                handshake_lespass = requests.post(f'{lespass_url}api/onboard_laboutik/',
+                              data={
+                                  "server_cashless": f"https://{os.environ['DOMAIN']}",
+                                  "key_cashless": f"{rsa_encrypt_string(utf8_string=key, public_key=lespass_admin_public_key)}",
+                                  "pum_pem_cashless": f"{config.get_public_pem()}",
+                              },
+                              verify=bool(not settings.DEBUG))
+
+                # La clé fernet qui déchiffre le json :
+                cypher_rand_key = handshake_lespass.json()['cypher_rand_key']
+                fernet_key = rsa_decrypt_string(utf8_enc_string=cypher_rand_key, private_key=config.get_private_key())
+                cypher_json_key_to_cashless = handshake_lespass.json()['cypher_json_key_to_cashless']
+
+                decryptor = Fernet(fernet_key)
+                config.string_connect = decryptor.decrypt(cypher_json_key_to_cashless.encode('utf-8'))
+
+                config.save()
 
             ### DEMO AND TEST DATA ###
             def set_admin_user_active(self):
@@ -442,7 +515,8 @@ class Command(BaseCommand):
                          "6172BACA"],
                         ["https://demo.tibillet.localhost/qr/a84133d3-7855-4cb9-ae2c-f54dee027301", "A84133D3",
                          "F3892ACB"],
-                        ["https://billetistan.tibillet.localhost/qr/86dc433c-00ac-479c-93c4-b7a0710246af", "86DC433C",
+                        ["https://billetistan.tibillet.localhost/qr/86dc433c-00ac-479c-93c4-b7a0710246af",
+                         "86DC433C",
                          "8E144CE8"],
                     ]
                     for i in range(100):
@@ -581,7 +655,8 @@ class Command(BaseCommand):
                                                                        tva=tva20)
 
                 CatBierre, created = Categorie.objects.get_or_create(name="Bieres Btl",
-                                                                     couleur_backgr=Couleur.objects.get(name='Lime'),
+                                                                     couleur_backgr=Couleur.objects.get(
+                                                                         name='Lime'),
                                                                      icon='fa-wine-bottle',
                                                                      tva=tva20)
 
@@ -591,7 +666,8 @@ class Command(BaseCommand):
                                                                    tva=tva85)
 
                 CatDessert, created = Categorie.objects.get_or_create(name="Dessert",
-                                                                      couleur_backgr=Couleur.objects.get(name='Orange'),
+                                                                      couleur_backgr=Couleur.objects.get(
+                                                                          name='Orange'),
                                                                       icon='fa-birthday-cake',
                                                                       tva=tva21)
 
@@ -608,7 +684,8 @@ class Command(BaseCommand):
                                                                methode_choices=Articles.VENTE,
                                                                methode=vente_article, categorie=CatSoft)[0])
                 articles.append(
-                    Articles.objects.get_or_create(name="Café", prix=1, prix_achat=0.5, methode_choices=Articles.VENTE,
+                    Articles.objects.get_or_create(name="Café", prix=1, prix_achat=0.5,
+                                                   methode_choices=Articles.VENTE,
                                                    methode=vente_article, categorie=CatSoft)[0])
                 articles.append(Articles.objects.get_or_create(name="Soft P", prix=1, prix_achat=0.5,
                                                                methode_choices=Articles.VENTE,
@@ -638,8 +715,9 @@ class Command(BaseCommand):
                 articles.append(Articles.objects.get_or_create(name="CdBoeuf", prix=25, prix_achat=12,
                                                                methode_choices=Articles.VENTE,
                                                                methode=vente_article, categorie=CatMenu)[0])
-                articles.append(Articles.objects.get_or_create(name="Gateau", prix=8, methode_choices=Articles.VENTE,
-                                                               methode=vente_article, categorie=CatDessert)[0])
+                articles.append(
+                    Articles.objects.get_or_create(name="Gateau", prix=8, methode_choices=Articles.VENTE,
+                                                   methode=vente_article, categorie=CatDessert)[0])
 
                 Resto = PointDeVente.objects.get(name="Resto")
                 bar1 = PointDeVente.objects.get(name="Bar 1")
@@ -690,13 +768,13 @@ class Command(BaseCommand):
                 # et django.message capitalize chaque message...
                 # du coup on fait bien gaffe à ce que je la clée générée ai bien une majusculle au début ...
 
-                api_key = None
-                key = " "
-                while key[0].isupper() == False:
-                    api_key, key = APIKey.objects.create_key(name="billetterie_key")
-                    if key[0].isupper() == False:
-                        api_key.delete()
-                config.key_billetterie = api_key
+                # api_key = None
+                # key = " "
+                # while key[0].isupper() == False:
+                #     api_key, key = APIKey.objects.create_key(name="billetterie_key")
+                #     if key[0].isupper() == False:
+                #         api_key.delete()
+                # config.key_billetterie = api_key
 
                 # try:
                 #     # env.json lisible par la billetterie de test
@@ -780,10 +858,8 @@ class Command(BaseCommand):
                     return True
                 return False
 
-
-
         ### RUNER ###
-        if  PointDeVente.objects.count() > 0 :
+        if PointDeVente.objects.count() > 0:
             logger.error(f'PointDeVente.objects.count() > 0. Pop déja effectué')
-        else :
+        else:
             Install(options)
