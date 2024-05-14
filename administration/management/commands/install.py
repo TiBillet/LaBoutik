@@ -397,7 +397,7 @@ class Command(BaseCommand):
 
                 cards = []
                 # pour cashless_test1
-                if os.environ.get('NOM_MONNAIE') == 'TestCoin':
+                if os.environ.get('MAIN_ASSET_NAME') == 'TestCoin':
                     cards = [
                         ["https://demo.tibillet.localhost/qr/76dc433c-00ac-479c-93c4-b7a0710246af", "76DC433C",
                          "EE144CE8"],
