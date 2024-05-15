@@ -21,9 +21,8 @@ from fedow_connect.views import handshake
 class TiBilletTestCase(TestCase):
 
     def setUp(self):
-        call_command('install', stdout=StringIO())
         settings.DEBUG = True
-
+        call_command('install', stdout=StringIO())
         # Handshake avec le serveur FEDOW
         self.config = self.create_config()
 
@@ -91,7 +90,7 @@ class CashlessTest(TiBilletTestCase):
         config.save()
 
         # Handshake avec le serveur FEDOW
-        handshake_with_fedow = handshake(config, first_handshake=False)
+        handshake_with_fedow = handshake(config)
         if not handshake_with_fedow:
             raise Exception("Erreur de handshake")
 

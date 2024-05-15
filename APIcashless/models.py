@@ -676,7 +676,7 @@ class MoyenPaiement(models.Model):
     Et Asset devrait s'appeller Wallet (portefeuille du client)
     """
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False, db_index=True)
-    name = models.CharField(db_index=True, max_length=30, unique=True)
+    name = models.CharField(db_index=True, max_length=100, unique=True)
     currency_code = models.CharField(max_length=3, null=True, blank=True)
 
     blockchain = models.BooleanField(default=False)
@@ -2152,8 +2152,6 @@ class Configuration(SingletonModel):
             self.private_pem,
             self.public_pem,
             self.fedow_synced,
-            settings.FEDOW,
-
         ])
 
     #TODO: Chiffrer avec Fernet :
