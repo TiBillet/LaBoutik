@@ -3,6 +3,7 @@ import logging
 import os
 import random
 import socket
+import sys
 from time import sleep
 from uuid import UUID
 
@@ -16,6 +17,7 @@ from django.core.management.base import BaseCommand
 from APIcashless.custom_utils import badgeuse_creation, declaration_to_discovery_server, jsonb64decode
 from APIcashless.models import *
 from APIcashless.tasks import email_activation
+from fedow_connect.tasks import after_handshake
 from fedow_connect.utils import get_public_key, rsa_encrypt_string, rsa_decrypt_string
 from fedow_connect.views import handshake
 
@@ -37,7 +39,17 @@ class Command(BaseCommand):
                 self.main_asset = os.environ['MAIN_ASSET_NAME']
                 self.admin_email = os.environ['ADMIN_EMAIL']
                 self.fedow_url = os.environ['FEDOW_URL']
+
+                # Au format https://fedow.tibillet.localhost/
+                if not self.fedow_url.endswith("/"):
+                    self.fedow_url += "/"
+                if not self.fedow_url.startswith("https://"):
+                    raise Exception("Fedow URL must start with https://")
+
                 self.lespass_url = os.environ['LESPASS_TENANT_URL']
+
+                # Les variables du fichier env dans config
+                self.base_config = self._base_config()
 
                 # Local and gift asset
                 self.assets_fedow = self._assets_fedow()
@@ -52,8 +64,8 @@ class Command(BaseCommand):
                 self.articles_generiques = self._articles_generiques()
                 self.pdv_cashless = self._point_de_vente_cashless()
 
-                # self.lespass_handshake = self._lespass_handshake()
-                # self.fedow_handshake = self._fedow_handshake()
+                self.lespass_handshake = self._lespass_handshake()
+                self.fedow_handshake = self._fedow_handshake()
 
                 self.admin = self._create_admin_from_env_email()
 
@@ -66,6 +78,11 @@ class Command(BaseCommand):
                     self.printer_test()
                     self.config_test()
                     badgeuse_creation()
+
+            def _base_config(self):
+                config = Configuration.get_solo()
+                config.structure = os.environ.get('STRUCTURE', "Demo")
+                config.save()
 
             def _assets_fedow(self):
                 mp = {}
@@ -403,10 +420,9 @@ class Command(BaseCommand):
                 decryptor = Fernet(fernet_key)
                 # import ipdb; ipdb.set_trace()
                 config.string_connect = decryptor.decrypt(cypher_json_key_to_cashless.encode('utf-8')).decode('utf8')
-
+                config.billetterie_url = self.lespass_url
                 config.save()
                 logger.info("Lespass Plugged !")
-
 
             def _fedow_handshake(self):
                 # On ping Fedow
@@ -427,14 +443,45 @@ class Command(BaseCommand):
                             f'ping fedow at {fedow_url}helloworld/ without succes. sleep(1) : count {ping_count}')
                         sleep(1)
 
+                # Récupération de l'adresse IP du serveur Laboutik :
+                # obligatoire pour le handshake fedow :
+                if settings.DEBUG or 'test' in sys.argv :
+                    # Ip du serveur cashless et du ngnix dans le même réseau ( env de test )
+                    self_ip = socket.gethostbyname(socket.gethostname())
+                    templist: list = self_ip.split('.')
+                    templist[-1] = 1
+                    config.ip_cashless = '.'.join([str(ip) for ip in templist])
+                    config.billetterie_ip_white_list = '.'.join([str(ip) for ip in templist])
+                else :
+                    config.ip_cashless = requests.get('https://ipinfo.io/ip').content.decode('utf8')
+
                 # Lancement du handshake
                 # first_handshake lance des fonctions celery pour envoyer les assets
-                # handshake_with_fedow = handshake(config, first_handshake=True)
-                # string_connect = config.string_connect
-                # decoded_data = jsonb64decode(string_connect)
-                #
+                decoded_data = jsonb64decode(config.string_connect)
+                if decoded_data['domain'] not in fedow_url:
+                    raise Exception('Bad Fedow domain. Check env file on both system.')
+
+                # Validé et vérifié, on entre l'RUL -> avec https://fedow.tibillet.localhost/
+                config.fedow_domain = fedow_url
+                config.save()
+
+
                 # import ipdb; ipdb.set_trace()
 
+                # Si on est dans un env de test
+                # Dans les test unitaires, on fait les handshake un par un
+                if not 'test' in sys.argv :
+                    # Handshake pour échange de clé rsa et api
+                    handshake_with_fedow = handshake(config)
+                    # Fonction qui envoie les assets, cartes déja générées à Fedow
+                    after_handshake()
+
+
+                config.refresh_from_db()
+                if not config.can_fedow():
+                    raise Exception('Error handhsake Fedow. Please double check all you environnement and relaunch from scratch '
+                                    '(./flush.sh on Fedow, after Lespass and after LaBoutik)')
+                logger.info(f'Fedow handhshake OK !!!!!!!!!!!!')
 
 
             ### DEMO AND TEST DATA ###
@@ -478,6 +525,7 @@ class Command(BaseCommand):
                     mike_membre, created = Membre.objects.get_or_create(name="Mike",
                                                                         email="mike@billetistant.coop",
                                                                         cotisation=100)
+
                 except Exception as e:
                     mike_membre = Membre.objects.get(name="Mike")
                     pass
@@ -546,6 +594,8 @@ class Command(BaseCommand):
                 for card in cards:
                     part = card[0].partition('/qr/')
                     uuid_url = UUID(part[2])
+                    logger.info("Create card : ")
+                    logger.info(card)
                     CC, created = CarteCashless.objects.get_or_create(
                         number=card[1],
                         tag_id=card[2],
@@ -764,7 +814,6 @@ class Command(BaseCommand):
 
             def config_test(self):
                 config = Configuration.get_solo()
-                config.structure = os.environ.get('STRUCTURE', "Demo")
                 config.siret = "123465789101112"
                 config.adresse = "Troisième dune à droite, Tatouine"
                 config.pied_ticket = "Nar'trouv vite' !"
@@ -778,49 +827,7 @@ class Command(BaseCommand):
                 config.validation_service_ecran = True
                 config.remboursement_auto_annulation = True
 
-                config.billetterie_url = os.environ['LESPASS_TENANT_URL']
-
-                # On affiche la string Key sur l'admin de django en message
-                # et django.message capitalize chaque message...
-                # du coup on fait bien gaffe à ce que je la clée générée ai bien une majusculle au début ...
-
-                # api_key = None
-                # key = " "
-                # while key[0].isupper() == False:
-                #     api_key, key = APIKey.objects.create_key(name="billetterie_key")
-                #     if key[0].isupper() == False:
-                #         api_key.delete()
-                # config.key_billetterie = api_key
-
-                # try:
-                #     # env.json lisible par la billetterie de test
-                #     path = "/populate/env.json"
-                #     env_json = json.load(open(path, 'r'))
-                #     print(f'{60 * "!"}')
-                #     print(f'{key}')
-                #     host = os.environ.get('LESPASS_TENANT_URL').partition('://')[2]
-                #     sub_addr = host.partition('.')[0]
-                #     env_json['ticketing'][sub_addr]['key_cashless'] = key
-                #     with open(path, 'w') as f:
-                #         json.dump(env_json, f)
-                #     print(f'{60 * "!"}')
-                # except Exception as e:
-                #     logger.error(f'Impossible de modifier le fichier env.json : {e}')
-
-                ### END TODO
-
-                # Ip du serveur cashless et du ngnix dans le même réseau ( env de test )
-                self_ip = socket.gethostbyname(socket.gethostname())
-                templist: list = self_ip.split('.')
-                templist[-1] = 1
-                config.ip_cashless = '.'.join([str(ip) for ip in templist])
-                config.billetterie_ip_white_list = '.'.join([str(ip) for ip in templist])
-
                 config.save()
-
-                # env_test = env_json.get('cashlessServer').get(sub)
-                # env_root = env_json.get('ticketing').get('root')
-                # env_bill = env_json.get('ticketing').get(sub)
 
             def preparation_test(self):
                 prepa_cuisine, created = GroupementCategorie.objects.get_or_create(name="CUISINE")

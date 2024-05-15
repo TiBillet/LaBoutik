@@ -27,6 +27,7 @@ def get_fedow():
     fedow_domain = fedowAPI.config.fedow_domain
     fedow_place_admin_apikey = config.fedow_place_admin_apikey
     logger.info(f"fedow domain : {fedow_domain}")
+    count = 0
     while not fedow_domain or not fedow_place_admin_apikey:
         config.clear_cache()
         config = Configuration.get_solo()
@@ -37,7 +38,10 @@ def get_fedow():
         fedow_domain = fedowAPI.config.fedow_domain
         fedow_place_admin_apikey = config.fedow_place_admin_apikey
         logger.info("Waiting for handshake to be done")
+        count += 1
         sleep(1)
+        if count == 20:
+            raise Exception("Waiting for handshake to be done")
 
     logger.info(f"fedow domain : {fedow_domain}")
     return fedowAPI
@@ -140,19 +144,17 @@ def set_primary_card(card_pk):
 def create_card_to_fedow(card_pk):
     cache.clear()
     config = Configuration.get_solo()
+
     if config.can_fedow():
         carte = CarteCashless.objects.get(pk=card_pk)
         fedowAPI = FedowAPI()
         response = fedowAPI.NFCcard.create([carte])
-        # import ipdb; ipdb.set_trace()
-        # TODO: A TESTER
         logger.info(f"create_card_to_fedow ->{carte.membre} {carte.number} : {response}")
 
 
 
 @app.task
 def after_handshake():
-    # pass
     send_assets()
     Origin.objects.all().delete()
     Place.objects.all().delete()

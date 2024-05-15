@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def handshake(config: Configuration, first_handshake=True):
+def handshake(config: Configuration):
     # Le handshake se lance lorsqu'une clé FEDOW est entré dans le menu de configuration
     # On récupère la clé publique de cette instance LaBoutik.
     # Si elle n'existe pas, la fonction la génère
@@ -79,19 +79,18 @@ def handshake(config: Configuration, first_handshake=True):
         decoded_return_handshake = jsonb64decode(request_fedow.content)
         place_admin_apikey = decoded_return_handshake.get('place_admin_apikey')
         url_onboard = decoded_return_handshake.get('url_onboard')
-        place_wallet_public_pem = decoded_return_handshake.get('place_wallet_public_pem')
         place_wallet_uuid = decoded_return_handshake.get('place_wallet_uuid')
 
         if key and url_onboard:
-            # on va faire le after_handshake a la main
-            # False pour les test.
-            # Fonction qui envoie les assets, cartes déja générées à Fedow
-            if first_handshake:
-                after_handshake.delay()
+            config.fedow_place_admin_apikey = place_admin_apikey
+            config.onboard_url = url_onboard
+            config.fedow_domain = fedow_domain
+            config.fedow_place_uuid = fedow_place_uuid
+            config.fedow_place_wallet_uuid = place_wallet_uuid
+            config.save()
 
             return {
                 'place_admin_apikey': place_admin_apikey,
-                'place_wallet_public_pem': place_wallet_public_pem,
                 'fedow_place_wallet_uuid': place_wallet_uuid,
                 'url_onboard': url_onboard,
                 'fedow_domain': fedow_domain,

@@ -915,7 +915,7 @@ class ConfigurationAdmin(SingletonModelAdmin):
         }),
         ('Federation', {
             'fields': (
-                'string_connect',
+                # 'string_connect',
                 'monnaies_acceptes',
                 'federated_with',
             ),
@@ -1090,22 +1090,22 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 messages.add_message(request, messages.ERROR, f"ODOO ERROR : {e}")
 
         # On lance la connexion à la fédération FEDOW
-        if instance.string_connect and not instance.stripe_connect_account and not instance.onboard_url:
-            handshake_with_fedow = handshake(instance, first_handshake=True)
-
-            if handshake_with_fedow:
-                instance.fedow_place_admin_apikey = handshake_with_fedow['place_admin_apikey']
-                # instance.fedow_place_wallet_public_pem = handshake_with_fedow['place_wallet_public_pem']
-                instance.onboard_url = handshake_with_fedow['url_onboard']
-                instance.fedow_domain = handshake_with_fedow['fedow_domain']
-                instance.fedow_place_uuid = handshake_with_fedow['fedow_place_uuid']
-                instance.fedow_place_wallet_uuid = handshake_with_fedow['fedow_place_wallet_uuid']
-
-                messages.add_message(request, messages.SUCCESS,
-                                     _("Connexion FEDOW réussie, merci de valider votre compte Stripe"))
-            else:
-                messages.add_message(request, messages.ERROR, f"Erreur handshake")
-                instance.string_connect = None
+        # if instance.string_connect and not instance.stripe_connect_account and not instance.onboard_url:
+        #     handshake_with_fedow = handshake(instance, first_handshake=True)
+        #
+        #     if handshake_with_fedow:
+        #         instance.fedow_place_admin_apikey = handshake_with_fedow['place_admin_apikey']
+        #         # instance.fedow_place_wallet_public_pem = handshake_with_fedow['place_wallet_public_pem']
+        #         instance.onboard_url = handshake_with_fedow['url_onboard']
+        #         instance.fedow_domain = handshake_with_fedow['fedow_domain']
+        #         instance.fedow_place_uuid = handshake_with_fedow['fedow_place_uuid']
+        #         instance.fedow_place_wallet_uuid = handshake_with_fedow['fedow_place_wallet_uuid']
+        #
+        #         messages.add_message(request, messages.SUCCESS,
+        #                              _("Connexion FEDOW réussie, merci de valider votre compte Stripe"))
+        #     else:
+        #         messages.add_message(request, messages.ERROR, f"Erreur handshake")
+        #         instance.string_connect = None
 
         if ex_api_key:
             ex_api_key.delete()
@@ -1152,9 +1152,9 @@ class ConfigurationAdmin(SingletonModelAdmin):
             # 1 - On demande la string généré par Fedow lors de la création d'un nouveau lieu
             # 2 - Nouvelles clé API et génération de clé publique RSA entre serveurs
             # 3 - Génération du lien onboard Stripe Connect qui vérifie l'identité
-            if obj.string_connect:
-                if obj.onboard_url and not obj.stripe_connect_account:
-                    replace['string_connect'] = '_onboarding'
+            # if obj.string_connect:
+            #     if obj.onboard_url and not obj.stripe_connect_account:
+            #         replace['string_connect'] = '_onboarding'
                 # elif obj.stripe_connect_valid:
                 #     replace['string_connect'] = 'federated_with'
 
