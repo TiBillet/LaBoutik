@@ -91,7 +91,7 @@ class CashlessTest(TiBilletTestCase):
         config.save()
 
         # Handshake avec le serveur FEDOW
-        handshake_with_fedow = handshake(config)
+        handshake_with_fedow = handshake(config, first_handshake=False)
         if not handshake_with_fedow:
             raise Exception("Erreur de handshake")
 

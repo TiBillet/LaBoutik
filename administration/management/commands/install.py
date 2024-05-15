@@ -13,10 +13,11 @@ from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from APIcashless.custom_utils import badgeuse_creation, declaration_to_discovery_server
+from APIcashless.custom_utils import badgeuse_creation, declaration_to_discovery_server, jsonb64decode
 from APIcashless.models import *
 from APIcashless.tasks import email_activation
 from fedow_connect.utils import get_public_key, rsa_encrypt_string, rsa_decrypt_string
+from fedow_connect.views import handshake
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +52,8 @@ class Command(BaseCommand):
                 self.articles_generiques = self._articles_generiques()
                 self.pdv_cashless = self._point_de_vente_cashless()
 
-                self.lespass_handshake = self._lespass_handshake()
-                self.fedow_handshake = self._fedow_handshake()
+                # self.lespass_handshake = self._lespass_handshake()
+                # self.fedow_handshake = self._fedow_handshake()
 
                 self.admin = self._create_admin_from_env_email()
 
@@ -353,24 +354,6 @@ class Command(BaseCommand):
                 call_command('check_permissions')
                 return admin
 
-            def _fedow_handshake(self):
-                # On ping Fedow
-                fedow_url = self.fedow_url
-                fedow_state = None
-                ping_count = 0
-                while not fedow_state:
-                    hello_fedow = requests.get(f'{fedow_url}helloworld/',
-                                               verify=bool(not settings.DEBUG))
-                    # Returns True if :attr:`status_code` is less than 400, False if not
-                    if hello_fedow.ok:
-                        fedow_state = hello_fedow.status_code
-                        logger.info(f'ping fedow at {fedow_url} OK')
-                    else:
-                        ping_count += 1
-                        logger.warning(
-                            f'ping fedow at {fedow_url}helloworld/ without succes. sleep(1) : count {ping_count}')
-                        sleep(1)
-
             def _lespass_handshake(self):
                 # On ping LesPass
                 config = Configuration.get_solo()
@@ -411,15 +394,48 @@ class Command(BaseCommand):
                               },
                               verify=bool(not settings.DEBUG))
 
+                # Le serveur LesPass renvoie la clé pour se connecter à Fedow, chiffrée avec une clé Fernet aléatoire
                 # La clé fernet qui déchiffre le json :
                 cypher_rand_key = handshake_lespass.json()['cypher_rand_key']
                 fernet_key = rsa_decrypt_string(utf8_enc_string=cypher_rand_key, private_key=config.get_private_key())
                 cypher_json_key_to_cashless = handshake_lespass.json()['cypher_json_key_to_cashless']
 
                 decryptor = Fernet(fernet_key)
+                # import ipdb; ipdb.set_trace()
                 config.string_connect = decryptor.decrypt(cypher_json_key_to_cashless.encode('utf-8')).decode('utf8')
 
                 config.save()
+                logger.info("Lespass Plugged !")
+
+
+            def _fedow_handshake(self):
+                # On ping Fedow
+                config = Configuration.get_solo()
+                fedow_url = self.fedow_url
+                fedow_state = None
+                ping_count = 0
+                while not fedow_state:
+                    hello_fedow = requests.get(f'{fedow_url}helloworld/',
+                                               verify=bool(not settings.DEBUG))
+                    # Returns True if :attr:`status_code` is less than 400, False if not
+                    if hello_fedow.ok:
+                        fedow_state = hello_fedow.status_code
+                        logger.info(f'ping fedow at {fedow_url} OK')
+                    else:
+                        ping_count += 1
+                        logger.warning(
+                            f'ping fedow at {fedow_url}helloworld/ without succes. sleep(1) : count {ping_count}')
+                        sleep(1)
+
+                # Lancement du handshake
+                # first_handshake lance des fonctions celery pour envoyer les assets
+                # handshake_with_fedow = handshake(config, first_handshake=True)
+                # string_connect = config.string_connect
+                # decoded_data = jsonb64decode(string_connect)
+                #
+                # import ipdb; ipdb.set_trace()
+
+
 
             ### DEMO AND TEST DATA ###
             def set_admin_user_active(self):

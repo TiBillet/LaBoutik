@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 
-def handshake(config: Configuration, first_handshake=False):
+def handshake(config: Configuration, first_handshake=True):
     # Le handshake se lance lorsqu'une clé FEDOW est entré dans le menu de configuration
     # On récupère la clé publique de cette instance LaBoutik.
     # Si elle n'existe pas, la fonction la génère
@@ -84,6 +84,8 @@ def handshake(config: Configuration, first_handshake=False):
 
         if key and url_onboard:
             # on va faire le after_handshake a la main
+            # False pour les test.
+            # Fonction qui envoie les assets, cartes déja générées à Fedow
             if first_handshake:
                 after_handshake.delay()
 
