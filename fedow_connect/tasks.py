@@ -144,12 +144,11 @@ def set_primary_card(card_pk):
 def create_card_to_fedow(card_pk):
     cache.clear()
     config = Configuration.get_solo()
+
     if config.can_fedow():
         carte = CarteCashless.objects.get(pk=card_pk)
         fedowAPI = FedowAPI()
         response = fedowAPI.NFCcard.create([carte])
-        # import ipdb; ipdb.set_trace()
-        # TODO: A TESTER
         logger.info(f"create_card_to_fedow ->{carte.membre} {carte.number} : {response}")
 
 

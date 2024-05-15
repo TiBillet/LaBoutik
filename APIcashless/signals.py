@@ -1,10 +1,10 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
-from APIcashless.models import ArticleVendu, Configuration, Appareil
+from APIcashless.models import ArticleVendu, Configuration, Appareil, CarteCashless
 from epsonprinter.tasks import direct_to_print
 from APIcashless.tasks import adhesion_to_odoo, cashback, badgeuse_to_dokos, fidelity_task, email_new_hardware
-from fedow_connect.tasks import badgeuse_to_fedow
+from fedow_connect.tasks import badgeuse_to_fedow, create_card_to_fedow
 
 import logging
 
@@ -94,3 +94,9 @@ def set_category_from_article(sender, instance: ArticleVendu, **kwargs):
     if instance.article:
         instance.categorie = instance.article.categorie
 
+
+@receiver(post_save, sender=CarteCashless)
+def send_card_to_fedow(sender, instance: CarteCashless, created, **kwargs):
+    if created :
+        # On le fait en synchrone, comme ça si ça plante, on le voit dans l'admin
+        create_card_to_fedow(instance.pk)

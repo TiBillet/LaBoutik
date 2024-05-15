@@ -465,6 +465,9 @@ class Command(BaseCommand):
                 config.fedow_domain = fedow_url
                 config.save()
 
+
+                # import ipdb; ipdb.set_trace()
+
                 # Si on est dans un env de test
                 # Dans les test unitaires, on fait les handshake un par un
                 if not 'test' in sys.argv :
@@ -473,9 +476,11 @@ class Command(BaseCommand):
                     # Fonction qui envoie les assets, cartes déja générées à Fedow
                     after_handshake()
 
+
                 config.refresh_from_db()
                 if not config.can_fedow():
-                    raise Exception('Error handhsake Fedow. Please double check all you environnement and relaunch from scratch (./flush.sh on Fedow, after Lespass and after laboutik)')
+                    raise Exception('Error handhsake Fedow. Please double check all you environnement and relaunch from scratch '
+                                    '(./flush.sh on Fedow, after Lespass and after LaBoutik)')
                 logger.info(f'Fedow handhshake OK !!!!!!!!!!!!')
 
 
@@ -520,6 +525,7 @@ class Command(BaseCommand):
                     mike_membre, created = Membre.objects.get_or_create(name="Mike",
                                                                         email="mike@billetistant.coop",
                                                                         cotisation=100)
+
                 except Exception as e:
                     mike_membre = Membre.objects.get(name="Mike")
                     pass
@@ -588,6 +594,8 @@ class Command(BaseCommand):
                 for card in cards:
                     part = card[0].partition('/qr/')
                     uuid_url = UUID(part[2])
+                    logger.info("Create card : ")
+                    logger.info(card)
                     CC, created = CarteCashless.objects.get_or_create(
                         number=card[1],
                         tag_id=card[2],
