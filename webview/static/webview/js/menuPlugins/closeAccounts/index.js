@@ -81,6 +81,9 @@ window.closeAccountsConfirmation = function () {
 
 export const menu = {
   func: "closeAccountsConfirmation",
-  icon: "fas fa-money", // font awesome 5.11
+  icons: [
+    { icon: "fas fa-money-bill", size: 1.2, posX: '8px', posY: '10px'},
+    { icon:"fas fa-ban", size: 2.4, false: true, color: "#ff0000"}
+  ],
   i8nIndex: "closeAccounts,uppercase"
 }
