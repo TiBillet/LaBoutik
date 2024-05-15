@@ -474,7 +474,9 @@ class Command(BaseCommand):
                     after_handshake()
 
                 config.refresh_from_db()
-                logger.info(f'Fedow handhshake : {config.can_fedow()}')
+                if not config.can_fedow():
+                    raise Exception('Error handhsake Fedow. Please double check all you environnement and relaunch from scratch (./flush.sh on Fedow, after Lespass and after laboutik)')
+                logger.info(f'Fedow handhshake OK !!!!!!!!!!!!')
 
 
             ### DEMO AND TEST DATA ###
