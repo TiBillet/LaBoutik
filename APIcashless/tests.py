@@ -21,9 +21,8 @@ from fedow_connect.views import handshake
 class TiBilletTestCase(TestCase):
 
     def setUp(self):
-        call_command('install', stdout=StringIO())
         settings.DEBUG = True
-
+        call_command('install', stdout=StringIO())
         # Handshake avec le serveur FEDOW
         self.config = self.create_config()
 
@@ -80,9 +79,12 @@ class CashlessTest(TiBilletTestCase):
         session = requests.Session()
         name_enc = data_to_b64({'name': f'{config.structure}'})
         url = f'{config.fedow_domain}get_new_place_token_for_test/{name_enc.decode("utf8")}/'
+
+
         request = session.get(url, verify=False, data={'name': f'{config.structure}'}, timeout=1)
         if request.status_code != 200:
             raise Exception("Erreur de connexion au serveur de test")
+
         string_connect = request.json().get('encoded_data')
         config.string_connect = string_connect
         config.save()
@@ -1069,6 +1071,9 @@ class CashlessTest(TiBilletTestCase):
                 fedowAPI.NFCcard.link_user(email=membre.email, card=cartemembre)
             except Exception as e:
                 self.assertEqual(e.args[0], "Card already linked to another member")
+            else:
+                # on test que l'exception a bien été levé. Ceci ne devrait jamais se produire :
+                self.assertFalse("L'exception précédente n'a pas été levé.")
 
             # Link de l'email à la carte via le code nfc
             before_fusions_serialized_card = fedowAPI.NFCcard.retrieve(carte.tag_id)
@@ -1141,6 +1146,9 @@ class CashlessTest(TiBilletTestCase):
     def remboursement_front(self):
         config = Configuration.get_solo()
         primary_card = CarteMaitresse.objects.first()
+        if not primary_card:
+            import ipdb; ipdb.set_trace()
+
         responsable: Membre = primary_card.carte.membre
         pdv = PointDeVente.objects.get(name="Boutique")
         carte, carte_bis = self.create_2_card_and_charge_it()
@@ -1150,6 +1158,9 @@ class CashlessTest(TiBilletTestCase):
         article_vider_carte: Articles = Articles.objects.get(
             methode_choices=Articles.VIDER_CARTE,
         )
+
+        if not responsable:
+            import ipdb; ipdb.set_trace()
 
         json_achats = {"articles": [{"pk": f"{article_vider_carte.pk}", "qty": 1}],
                        "pk_responsable": f"{responsable.pk}",

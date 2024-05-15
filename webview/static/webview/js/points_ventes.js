@@ -616,7 +616,7 @@ export function composeMenuPrincipal(typeMaj) {
 
   // points de ventes
   frag += `<div class="menu-burger-item BF-ligne-deb" onclick="vue_pv.afficherMenuPV()">
-      <i class="fas fa-cash-register"></i>
+      <i class="fas fa-store"></i>
       <div data-i8n="pointOfSales,uppercase">POINTS DE VENTES</div>
     </div>`
 

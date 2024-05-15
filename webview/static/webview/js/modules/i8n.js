@@ -5,15 +5,16 @@ import { fr } from './languages/languageFr.js'
 
 const lang = { en, fr }
 let local = localStorage.getItem("language")
-if (local === null) {
-  localStorage.setItem("language", language)
-  local = language
+const defaultLanguage = (language === '' || language === null ) ? 'en' : language
+if (local === null || local === '') {
+  localStorage.setItem("language", defaultLanguage)
+  local = defaultLanguage
 }
 
 export function getLanguages() {
   let arrayLanguages = []
-  Object.keys(lang).forEach( function(key) {
-    arrayLanguages.push({language: key, infos: lang[key].names, locale: lang[key].locale })
+  Object.keys(lang).forEach(function (key) {
+    arrayLanguages.push({ language: key, infos: lang[key].names, locale: lang[key].locale })
   })
   return arrayLanguages
 }
@@ -58,7 +59,7 @@ export function translate(selector) {
  * @param {string} option - option de traduction : capitalize, uppercase
  * @returns 
  */
-export function getTranslate(index, option) {  
+export function getTranslate(index, option) {
   try {
     let trad = lang[local].content[index]
     // option existe

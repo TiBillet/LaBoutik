@@ -3,16 +3,23 @@ import logging
 import os
 import random
 import socket
+import sys
+from time import sleep
 from uuid import UUID
 
+import requests
+from cryptography.fernet import Fernet
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 
-from APIcashless.custom_utils import badgeuse_creation, declaration_to_discovery_server
+from APIcashless.custom_utils import badgeuse_creation, declaration_to_discovery_server, jsonb64decode
 from APIcashless.models import *
 from APIcashless.tasks import email_activation
+from fedow_connect.tasks import after_handshake
+from fedow_connect.utils import get_public_key, rsa_encrypt_string, rsa_decrypt_string
+from fedow_connect.views import handshake
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +39,17 @@ class Command(BaseCommand):
                 self.main_asset = os.environ['MAIN_ASSET_NAME']
                 self.admin_email = os.environ['ADMIN_EMAIL']
                 self.fedow_url = os.environ['FEDOW_URL']
+
+                # Au format https://fedow.tibillet.localhost/
+                if not self.fedow_url.endswith("/"):
+                    self.fedow_url += "/"
+                if not self.fedow_url.startswith("https://"):
+                    raise Exception("Fedow URL must start with https://")
+
                 self.lespass_url = os.environ['LESPASS_TENANT_URL']
+
+                # Les variables du fichier env dans config
+                self.base_config = self._base_config()
 
                 # Local and gift asset
                 self.assets_fedow = self._assets_fedow()
@@ -47,6 +64,9 @@ class Command(BaseCommand):
                 self.articles_generiques = self._articles_generiques()
                 self.pdv_cashless = self._point_de_vente_cashless()
 
+                self.lespass_handshake = self._lespass_handshake()
+                self.fedow_handshake = self._fedow_handshake()
+
                 self.admin = self._create_admin_from_env_email()
 
                 if options.get('tdd'):
@@ -59,6 +79,10 @@ class Command(BaseCommand):
                     self.config_test()
                     badgeuse_creation()
 
+            def _base_config(self):
+                config = Configuration.get_solo()
+                config.structure = os.environ.get('STRUCTURE', "Demo")
+                config.save()
 
             def _assets_fedow(self):
                 mp = {}
@@ -338,14 +362,126 @@ class Command(BaseCommand):
                 admin, created = User.objects.get_or_create(
                     username=email_first_admin,
                     email=email_first_admin,
-                    is_staff = True,
-                    is_active = False,
+                    is_staff=True,
+                    is_active=False,
                 )
                 admin.groups.add(staff_group)
                 admin.save()
                 email_activation(admin.uuid)
                 call_command('check_permissions')
                 return admin
+
+            def _lespass_handshake(self):
+                # On ping LesPass
+                config = Configuration.get_solo()
+                lespass_url = self.lespass_url
+                lespass_state = None
+                ping_count = 0
+
+                while not lespass_state:
+                    # On récupère la clé publique de l'admin commun
+                    hello_lespass = requests.post(f'{lespass_url}api/get_user_pub_pem/',
+                                                  data={
+                                                      "email":f"{os.environ['ADMIN_EMAIL']}",
+                                                  },
+                                                 verify=bool(not settings.DEBUG))
+                    # Returns True if :attr:`status_code` is less than 400, False if not
+                    if hello_lespass.ok:
+                        lespass_state = hello_lespass.status_code
+                        logger.info(f'ping lespass_url at {lespass_url} OK')
+                    else:
+                        ping_count += 1
+                        logger.warning(
+                            f'ping lespass_url at {lespass_url} without succes. sleep(1) : count {ping_count}')
+                        sleep(1)
+
+                # noinspection PyUnboundLocalVariable
+                lespass_admin_pub_pem = hello_lespass.json()['public_pem']
+                lespass_admin_public_key = get_public_key(lespass_admin_pub_pem)
+
+                api_key, key = APIKey.objects.create_key(name="billetterie_key")
+                config.key_billetterie = api_key
+
+                # Handshake Lespass :
+                handshake_lespass = requests.post(f'{lespass_url}api/onboard_laboutik/',
+                              data={
+                                  "server_cashless": f"https://{os.environ['DOMAIN']}",
+                                  "key_cashless": f"{rsa_encrypt_string(utf8_string=key, public_key=lespass_admin_public_key)}",
+                                  "pum_pem_cashless": f"{config.get_public_pem()}",
+                              },
+                              verify=bool(not settings.DEBUG))
+
+                # Le serveur LesPass renvoie la clé pour se connecter à Fedow, chiffrée avec une clé Fernet aléatoire
+                # La clé fernet qui déchiffre le json :
+                cypher_rand_key = handshake_lespass.json()['cypher_rand_key']
+                fernet_key = rsa_decrypt_string(utf8_enc_string=cypher_rand_key, private_key=config.get_private_key())
+                cypher_json_key_to_cashless = handshake_lespass.json()['cypher_json_key_to_cashless']
+
+                decryptor = Fernet(fernet_key)
+                # import ipdb; ipdb.set_trace()
+                config.string_connect = decryptor.decrypt(cypher_json_key_to_cashless.encode('utf-8')).decode('utf8')
+                config.billetterie_url = self.lespass_url
+                config.save()
+                logger.info("Lespass Plugged !")
+
+            def _fedow_handshake(self):
+                # On ping Fedow
+                config = Configuration.get_solo()
+                fedow_url = self.fedow_url
+                fedow_state = None
+                ping_count = 0
+                while not fedow_state:
+                    hello_fedow = requests.get(f'{fedow_url}helloworld/',
+                                               verify=bool(not settings.DEBUG))
+                    # Returns True if :attr:`status_code` is less than 400, False if not
+                    if hello_fedow.ok:
+                        fedow_state = hello_fedow.status_code
+                        logger.info(f'ping fedow at {fedow_url} OK')
+                    else:
+                        ping_count += 1
+                        logger.warning(
+                            f'ping fedow at {fedow_url}helloworld/ without succes. sleep(1) : count {ping_count}')
+                        sleep(1)
+
+                # Récupération de l'adresse IP du serveur Laboutik :
+                # obligatoire pour le handshake fedow :
+                if settings.DEBUG or 'test' in sys.argv :
+                    # Ip du serveur cashless et du ngnix dans le même réseau ( env de test )
+                    self_ip = socket.gethostbyname(socket.gethostname())
+                    templist: list = self_ip.split('.')
+                    templist[-1] = 1
+                    config.ip_cashless = '.'.join([str(ip) for ip in templist])
+                    config.billetterie_ip_white_list = '.'.join([str(ip) for ip in templist])
+                else :
+                    config.ip_cashless = requests.get('https://ipinfo.io/ip').content.decode('utf8')
+
+                # Lancement du handshake
+                # first_handshake lance des fonctions celery pour envoyer les assets
+                decoded_data = jsonb64decode(config.string_connect)
+                if decoded_data['domain'] not in fedow_url:
+                    raise Exception('Bad Fedow domain. Check env file on both system.')
+
+                # Validé et vérifié, on entre l'RUL -> avec https://fedow.tibillet.localhost/
+                config.fedow_domain = fedow_url
+                config.save()
+
+
+                # import ipdb; ipdb.set_trace()
+
+                # Si on est dans un env de test
+                # Dans les test unitaires, on fait les handshake un par un
+                if not 'test' in sys.argv :
+                    # Handshake pour échange de clé rsa et api
+                    handshake_with_fedow = handshake(config)
+                    # Fonction qui envoie les assets, cartes déja générées à Fedow
+                    after_handshake()
+
+
+                config.refresh_from_db()
+                if not config.can_fedow():
+                    raise Exception('Error handhsake Fedow. Please double check all you environnement and relaunch from scratch '
+                                    '(./flush.sh on Fedow, after Lespass and after LaBoutik)')
+                logger.info(f'Fedow handhshake OK !!!!!!!!!!!!')
 
 
             ### DEMO AND TEST DATA ###
@@ -389,6 +525,7 @@ class Command(BaseCommand):
                     mike_membre, created = Membre.objects.get_or_create(name="Mike",
                                                                         email="mike@billetistant.coop",
                                                                         cotisation=100)
+
                 except Exception as e:
                     mike_membre = Membre.objects.get(name="Mike")
                     pass
@@ -397,7 +534,7 @@ class Command(BaseCommand):
 
                 cards = []
                 # pour cashless_test1
-                if os.environ.get('NOM_MONNAIE') == 'TestCoin':
+                if os.environ.get('MAIN_ASSET_NAME') == 'TestCoin':
                     cards = [
                         ["https://demo.tibillet.localhost/qr/76dc433c-00ac-479c-93c4-b7a0710246af", "76DC433C",
                          "EE144CE8"],
@@ -442,7 +579,8 @@ class Command(BaseCommand):
                          "6172BACA"],
                         ["https://demo.tibillet.localhost/qr/a84133d3-7855-4cb9-ae2c-f54dee027301", "A84133D3",
                          "F3892ACB"],
-                        ["https://billetistan.tibillet.localhost/qr/86dc433c-00ac-479c-93c4-b7a0710246af", "86DC433C",
+                        ["https://billetistan.tibillet.localhost/qr/86dc433c-00ac-479c-93c4-b7a0710246af",
+                         "86DC433C",
                          "8E144CE8"],
                     ]
                     for i in range(100):
@@ -456,6 +594,8 @@ class Command(BaseCommand):
                 for card in cards:
                     part = card[0].partition('/qr/')
                     uuid_url = UUID(part[2])
+                    logger.info("Create card : ")
+                    logger.info(card)
                     CC, created = CarteCashless.objects.get_or_create(
                         number=card[1],
                         tag_id=card[2],
@@ -539,7 +679,7 @@ class Command(BaseCommand):
 
                 ### FIN DE CREATION DE CARTES
 
-                if os.environ.get('NOM_MONNAIE') == 'Bilstou':
+                if os.environ.get('MAIN_ASSET_NAME') == 'Bilstou':
                     # On mets des valeurs d'assets au pif pour le cashless2
                     mp_primary = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
                     mp_gift = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_GIFT)
@@ -581,7 +721,8 @@ class Command(BaseCommand):
                                                                        tva=tva20)
 
                 CatBierre, created = Categorie.objects.get_or_create(name="Bieres Btl",
-                                                                     couleur_backgr=Couleur.objects.get(name='Lime'),
+                                                                     couleur_backgr=Couleur.objects.get(
+                                                                         name='Lime'),
                                                                      icon='fa-wine-bottle',
                                                                      tva=tva20)
 
@@ -591,7 +732,8 @@ class Command(BaseCommand):
                                                                    tva=tva85)
 
                 CatDessert, created = Categorie.objects.get_or_create(name="Dessert",
-                                                                      couleur_backgr=Couleur.objects.get(name='Orange'),
+                                                                      couleur_backgr=Couleur.objects.get(
+                                                                          name='Orange'),
                                                                       icon='fa-birthday-cake',
                                                                       tva=tva21)
 
@@ -608,7 +750,8 @@ class Command(BaseCommand):
                                                                methode_choices=Articles.VENTE,
                                                                methode=vente_article, categorie=CatSoft)[0])
                 articles.append(
-                    Articles.objects.get_or_create(name="Café", prix=1, prix_achat=0.5, methode_choices=Articles.VENTE,
+                    Articles.objects.get_or_create(name="Café", prix=1, prix_achat=0.5,
+                                                   methode_choices=Articles.VENTE,
                                                    methode=vente_article, categorie=CatSoft)[0])
                 articles.append(Articles.objects.get_or_create(name="Soft P", prix=1, prix_achat=0.5,
                                                                methode_choices=Articles.VENTE,
@@ -638,8 +781,9 @@ class Command(BaseCommand):
                 articles.append(Articles.objects.get_or_create(name="CdBoeuf", prix=25, prix_achat=12,
                                                                methode_choices=Articles.VENTE,
                                                                methode=vente_article, categorie=CatMenu)[0])
-                articles.append(Articles.objects.get_or_create(name="Gateau", prix=8, methode_choices=Articles.VENTE,
-                                                               methode=vente_article, categorie=CatDessert)[0])
+                articles.append(
+                    Articles.objects.get_or_create(name="Gateau", prix=8, methode_choices=Articles.VENTE,
+                                                   methode=vente_article, categorie=CatDessert)[0])
 
                 Resto = PointDeVente.objects.get(name="Resto")
                 bar1 = PointDeVente.objects.get(name="Bar 1")
@@ -670,7 +814,6 @@ class Command(BaseCommand):
 
             def config_test(self):
                 config = Configuration.get_solo()
-                config.structure = os.environ.get('STRUCTURE', "Demo")
                 config.siret = "123465789101112"
                 config.adresse = "Troisième dune à droite, Tatouine"
                 config.pied_ticket = "Nar'trouv vite' !"
@@ -684,49 +827,7 @@ class Command(BaseCommand):
                 config.validation_service_ecran = True
                 config.remboursement_auto_annulation = True
 
-                config.billetterie_url = os.environ['LESPASS_TENANT_URL']
-
-                # On affiche la string Key sur l'admin de django en message
-                # et django.message capitalize chaque message...
-                # du coup on fait bien gaffe à ce que je la clée générée ai bien une majusculle au début ...
-
-                api_key = None
-                key = " "
-                while key[0].isupper() == False:
-                    api_key, key = APIKey.objects.create_key(name="billetterie_key")
-                    if key[0].isupper() == False:
-                        api_key.delete()
-                config.key_billetterie = api_key
-
-                # try:
-                #     # env.json lisible par la billetterie de test
-                #     path = "/populate/env.json"
-                #     env_json = json.load(open(path, 'r'))
-                #     print(f'{60 * "!"}')
-                #     print(f'{key}')
-                #     host = os.environ.get('LESPASS_TENANT_URL').partition('://')[2]
-                #     sub_addr = host.partition('.')[0]
-                #     env_json['ticketing'][sub_addr]['key_cashless'] = key
-                #     with open(path, 'w') as f:
-                #         json.dump(env_json, f)
-                #     print(f'{60 * "!"}')
-                # except Exception as e:
-                #     logger.error(f'Impossible de modifier le fichier env.json : {e}')
-
-                ### END TODO
-
-                # Ip du serveur cashless et du ngnix dans le même réseau ( env de test )
-                self_ip = socket.gethostbyname(socket.gethostname())
-                templist: list = self_ip.split('.')
-                templist[-1] = 1
-                config.ip_cashless = '.'.join([str(ip) for ip in templist])
-                config.billetterie_ip_white_list = '.'.join([str(ip) for ip in templist])
-
                 config.save()
-
-                # env_test = env_json.get('cashlessServer').get(sub)
-                # env_root = env_json.get('ticketing').get('root')
-                # env_bill = env_json.get('ticketing').get(sub)
 
             def preparation_test(self):
                 prepa_cuisine, created = GroupementCategorie.objects.get_or_create(name="CUISINE")
@@ -780,10 +881,8 @@ class Command(BaseCommand):
                     return True
                 return False
 
-
-
         ### RUNER ###
-        if  PointDeVente.objects.count() > 0 :
+        if PointDeVente.objects.count() > 0:
             logger.error(f'PointDeVente.objects.count() > 0. Pop déja effectué')
-        else :
+        else:
             Install(options)

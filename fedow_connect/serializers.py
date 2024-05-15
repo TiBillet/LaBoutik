@@ -36,8 +36,9 @@ class CardSerializer(serializers.ModelSerializer):
     def get_generation(self, carte: CarteCashless):
         if not carte.origin:
             config = Configuration.get_solo()
-            place = Place.objects.get(name=f"{config.structure}")
-            origin, created = Origin.objects.get_or_create(place=place, generation=1)
+            # Le moyen de paiement local cashless est forcément celui de la place origin
+            self_place = MoyenPaiement.objects.get(categorie='LE').place_origin
+            origin, created = Origin.objects.get_or_create(place=self_place, generation=1)
             carte.origin = origin
             carte.save()
         return carte.origin.generation

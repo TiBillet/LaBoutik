@@ -60,6 +60,6 @@ window.pettyCashInterface = function () {
 
 export const menu = {
   func: "pettyCashInterface",
-  icon: "fas fa-money", // font awesome 5
+  icon: "fas fa-cash-register", // font awesome 5
   i8nIndex: "pettyCash,uppercase"
 }
