@@ -1,4 +1,5 @@
 database
+postgresql
 .env
 img
 SaveDb
