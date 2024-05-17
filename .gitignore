@@ -164,3 +164,5 @@ cython_debug/
 /logs/Djangologfile
 www/*
 tempo/
+/exist_cards
+/qrcode_url_and_number_for_print_yourplace.csv
