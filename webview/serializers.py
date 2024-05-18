@@ -42,6 +42,7 @@ class AssetSerializer(serializers.ModelSerializer):
             'monnaie_name',
             'qty',
             'last_date_used',
+            'categorie',
         )
 
         read_only_fields = fields
