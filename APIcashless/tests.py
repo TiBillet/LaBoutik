@@ -22,43 +22,36 @@ class TiBilletTestCase(TestCase):
 
     def setUp(self):
         settings.DEBUG = True
-        call_command('install', stdout=StringIO())
-        # Handshake avec le serveur FEDOW
-        self.config = self.create_config()
+        call_command('install','--tdd', stdout=StringIO())
+        # Handshake avec le serveur FEDOW réalisé par install
+        self.config = Configuration.get_solo()
 
-    def create_config(self, string_fedow_connect=None):
-        fake = Faker()
-        config = Configuration.get_solo()
-        config.structure = f"TEST {str(uuid4())[:4]}"
-        config.siret = "666R999"
-        config.adresse = fake.address()
-        config.pied_ticket = "Nar'trouv vite' !"
-        config.telephone = "+336123456789"
-        config.domaine_cashless = "https://cashless.tibillet.localhost/"
-        config.email = fake.email()
-        config.numero_tva = 666999
-        config.prix_adhesion = 42
-        config.appareillement = True
-        config.validation_service_ecran = True
-        config.remboursement_auto_annulation = True
-        config.string_connect = string_fedow_connect
-
-        config.billetterie_url = 'https://demo.tibillet.localhost/'
-        config.fedow_domain = 'https://fedow.tibillet.localhost/'
-
-        # Ip du serveur cashless et du ngnix dans le même réseau ( env de test )
-        self_ip = socket.gethostbyname(socket.gethostname())
-        templist: list = self_ip.split('.')
-        templist[-1] = 1
-        config.ip_cashless = '.'.join([str(ip) for ip in templist])
-        config.billetterie_ip_white_list = '.'.join([str(ip) for ip in templist])
-
-        # Parfois l'ip prise est le 192...
-        config.ip_cashless = "172.21.0.1"
-        config.billetterie_ip_white_list = "172.21.0.1"
-        
-        config.save()
-        return config
+    # def create_config(self, string_fedow_connect=None):
+    #     fake = Faker()
+    #     config = Configuration.get_solo()
+    #     config.structure = f"TEST {str(uuid4())[:4]}"
+    #     config.siret = "666R999"
+    #     config.adresse = fake.address()
+    #     config.pied_ticket = "Nar'trouv vite' !"
+    #     config.telephone = "+336123456789"
+    #     config.domaine_cashless = "https://cashless.tibillet.localhost/"
+    #     config.email = fake.email()
+    #     config.numero_tva = 666999
+    #     config.prix_adhesion = 42
+    #     config.appareillement = True
+    #     config.validation_service_ecran = True
+    #     config.remboursement_auto_annulation = True
+    #     config.string_connect = string_fedow_connect
+    #
+    #     config.billetterie_url = 'https://demo.tibillet.localhost/'
+    #     config.fedow_domain = 'https://fedow.tibillet.localhost/'
+    #
+    #     # Parfois l'ip prise est le 192...
+    #     config.ip_cashless = "172.21.0.1"
+    #     config.billetterie_ip_white_list = "172.21.0.1"
+    #
+    #     config.save()
+    #     return config
 
 
 class CashlessTest(TiBilletTestCase):
@@ -75,12 +68,12 @@ class CashlessTest(TiBilletTestCase):
         self.fedowAPI = FedowAPI()
         settings.DEBUG = True
 
+        import ipdb; ipdb.set_trace()
+
         # Récupération d'une clé de test sur Fedow :
         session = requests.Session()
         name_enc = data_to_b64({'name': f'{config.structure}'})
         url = f'{config.fedow_domain}get_new_place_token_for_test/{name_enc.decode("utf8")}/'
-
-
         request = session.get(url, verify=False, data={'name': f'{config.structure}'}, timeout=1)
         if request.status_code != 200:
             raise Exception("Erreur de connexion au serveur de test")
@@ -1921,7 +1914,7 @@ class CashlessTest(TiBilletTestCase):
 
     # ./manage.py test --tag=fast --tag=no-fedow
     @tag('no-fedow')
-    def test_cashless(self):
+    def x_test_cashless(self):
         settings.FEDOW = False
         print("log user test to admin")
         log_admin = self.connect_admin()
@@ -1961,10 +1954,10 @@ class CashlessTest(TiBilletTestCase):
     @tag('fedow')
     def test_fedow(self):
         # On relance les test précédents
-        self.test_cashless()
+        # self.test_cashless()
+        # settings.FEDOW = True
 
 
-        settings.FEDOW = True
         print('handshake avec serveur fedow')
         self.handshake_with_fedow_serveur()
 

@@ -18,8 +18,9 @@ from APIcashless.custom_utils import badgeuse_creation, declaration_to_discovery
 from APIcashless.models import *
 from APIcashless.tasks import email_activation
 from fedow_connect.tasks import after_handshake
-from fedow_connect.utils import get_public_key, rsa_encrypt_string, rsa_decrypt_string
+from fedow_connect.utils import get_public_key, rsa_encrypt_string, rsa_decrypt_string, data_to_b64
 from fedow_connect.views import handshake
+from faker import Faker
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class Command(BaseCommand):
                 self.lespass_url = os.environ['LESPASS_TENANT_URL']
 
                 # Les variables du fichier env dans config
-                self.base_config = self._base_config()
+                self.config = self._base_config(options)
 
                 # Local and gift asset
                 self.assets_fedow = self._assets_fedow()
@@ -76,13 +77,55 @@ class Command(BaseCommand):
                     self.pop_tables_test()
                     self.preparation_test()
                     self.printer_test()
-                    self.config_test()
                     badgeuse_creation()
 
-            def _base_config(self):
+            def _base_config(self, options):
                 config = Configuration.get_solo()
-                config.structure = os.environ.get('STRUCTURE', "Demo")
+                config.structure = os.environ.get('STRUCTURE', 'Demo')
+                config.email = os.environ['ADMIN_EMAIL']
+                config.billetterie_url = os.environ['LESPASS_TENANT_URL']
+                config.fedow_domain = os.environ['FEDOW_URL']
+
+                if not options.get('tdd'):
+                    config.save()
+                    return config
+
+                # MODE DEV/DEMO
+                config.structure = "Demo"
+                config.siret = "123465789101112"
+                config.adresse = "Troisième dune à droite, Tatouine"
+                config.pied_ticket = "Nar'trouv vite' !"
+                config.telephone = "123456"
+                config.numero_tva = "456789"
+                config.prix_adhesion = os.environ.get('PRIX_ADHESION', 13)
+                config.appareillement = True
+                config.validation_service_ecran = True
+                config.remboursement_auto_annulation = True
+
+                # Ip du serveur cashless et du ngnix dans le même réseau ( env de test )
+                self_ip = socket.gethostbyname(socket.gethostname())
+                templist: list = self_ip.split('.')
+                templist[-1] = 1
+                config.ip_cashless = '.'.join([str(ip) for ip in templist])
+                config.billetterie_ip_white_list = '.'.join([str(ip) for ip in templist])
+
+                # Parfois l'ip prise est le 192...
+                # config.ip_cashless = "172.21.0.1"
+                # config.billetterie_ip_white_list = "172.21.0.1"
+
+                if not 'test' in sys.argv:
+                    config.save()
+                    return config
+
+                # MODE TEST
+                fake = Faker()
+                config.structure = f"TEST {str(uuid4())[:4]}"
+                config.email = fake.email()
+                config.prix_adhesion = 42
+
                 config.save()
+                return config
+
 
             def _assets_fedow(self):
                 mp = {}
@@ -382,9 +425,9 @@ class Command(BaseCommand):
                     # On récupère la clé publique de l'admin commun
                     hello_lespass = requests.post(f'{lespass_url}api/get_user_pub_pem/',
                                                   data={
-                                                      "email":f"{os.environ['ADMIN_EMAIL']}",
+                                                      "email": f"{os.environ['ADMIN_EMAIL']}",
                                                   },
-                                                 verify=bool(not settings.DEBUG))
+                                                  verify=bool(not settings.DEBUG))
                     # Returns True if :attr:`status_code` is less than 400, False if not
                     if hello_lespass.ok:
                         lespass_state = hello_lespass.status_code
@@ -404,12 +447,12 @@ class Command(BaseCommand):
 
                 # Handshake Lespass :
                 handshake_lespass = requests.post(f'{lespass_url}api/onboard_laboutik/',
-                              data={
-                                  "server_cashless": f"https://{os.environ['DOMAIN']}",
-                                  "key_cashless": f"{rsa_encrypt_string(utf8_string=key, public_key=lespass_admin_public_key)}",
-                                  "pum_pem_cashless": f"{config.get_public_pem()}",
-                              },
-                              verify=bool(not settings.DEBUG))
+                                                  data={
+                                                      "server_cashless": f"https://{os.environ['DOMAIN']}",
+                                                      "key_cashless": f"{rsa_encrypt_string(utf8_string=key, public_key=lespass_admin_public_key)}",
+                                                      "pum_pem_cashless": f"{config.get_public_pem()}",
+                                                  },
+                                                  verify=bool(not settings.DEBUG))
 
                 # Le serveur LesPass renvoie la clé pour se connecter à Fedow, chiffrée avec une clé Fernet aléatoire
                 # La clé fernet qui déchiffre le json :
@@ -418,7 +461,6 @@ class Command(BaseCommand):
                 cypher_json_key_to_cashless = handshake_lespass.json()['cypher_json_key_to_cashless']
 
                 decryptor = Fernet(fernet_key)
-                # import ipdb; ipdb.set_trace()
                 config.string_connect = decryptor.decrypt(cypher_json_key_to_cashless.encode('utf-8')).decode('utf8')
                 config.billetterie_url = self.lespass_url
                 config.save()
@@ -445,14 +487,29 @@ class Command(BaseCommand):
 
                 # Récupération de l'adresse IP du serveur Laboutik :
                 # obligatoire pour le handshake fedow :
-                if settings.DEBUG or 'test' in sys.argv :
+                if settings.DEBUG or 'test' in sys.argv:
                     # Ip du serveur cashless et du ngnix dans le même réseau ( env de test )
                     self_ip = socket.gethostbyname(socket.gethostname())
                     templist: list = self_ip.split('.')
                     templist[-1] = 1
                     config.ip_cashless = '.'.join([str(ip) for ip in templist])
                     config.billetterie_ip_white_list = '.'.join([str(ip) for ip in templist])
-                else :
+
+                    # On est en mode test, on va chercher une clé de test pour le handshake
+                    # En mode demo/dev, cela se fait par le flush.sh
+                    # Récupération d'une clé de test sur Fedow :
+                    name_enc = data_to_b64({'name': f'{config.structure}'})
+                    url = f'{config.fedow_domain}get_new_place_token_for_test/{name_enc.decode("utf8")}/'
+                    request = requests.get(url, verify=False, data={'name': f'{config.structure}'}, timeout=1)
+                    if request.status_code != 200:
+                        raise Exception("Erreur de connexion au serveur de test")
+
+                    string_connect = request.json().get('encoded_data')
+                    config.string_connect = string_connect
+                    config.save()
+
+
+                else:
                     config.ip_cashless = requests.get('https://ipinfo.io/ip').content.decode('utf8')
 
                 # Lancement du handshake
@@ -465,24 +522,20 @@ class Command(BaseCommand):
                 config.fedow_domain = fedow_url
                 config.save()
 
-
-                # import ipdb; ipdb.set_trace()
-
-                # Si on est dans un env de test
-                # Dans les test unitaires, on fait les handshake un par un
-                if not 'test' in sys.argv :
-                    # Handshake pour échange de clé rsa et api
-                    handshake_with_fedow = handshake(config)
-                    # Fonction qui envoie les assets, cartes déja générées à Fedow
+                if handshake(config):
                     after_handshake()
-
 
                 config.refresh_from_db()
                 if not config.can_fedow():
-                    raise Exception('Error handhsake Fedow. Please double check all you environnement and relaunch from scratch '
-                                    '(./flush.sh on Fedow, after Lespass and after LaBoutik)')
-                logger.info(f'Fedow handhshake OK !!!!!!!!!!!!')
+                    logger.error(
+                        'Error handhsake Fedow. Please double check all you environnement and relaunch from scratch '
+                        '(./flush.sh on Fedow, after Lespass and after LaBoutik)')
+                    import ipdb; ipdb.set_trace()
+                    raise Exception(
+                        'Error handhsake Fedow. Please double check all you environnement and relaunch from scratch '
+                        '(./flush.sh on Fedow, after Lespass and after LaBoutik)')
 
+                logger.info(f'Fedow handhshake OK !!!!!!!!!!!!')
 
             ### DEMO AND TEST DATA ###
             def set_admin_user_active(self):
@@ -811,23 +864,6 @@ class Command(BaseCommand):
                 Table.objects.get_or_create(name="Ex03")
                 Table.objects.get_or_create(name="Ex04")
                 Table.objects.get_or_create(name="Ex05")
-
-            def config_test(self):
-                config = Configuration.get_solo()
-                config.siret = "123465789101112"
-                config.adresse = "Troisième dune à droite, Tatouine"
-                config.pied_ticket = "Nar'trouv vite' !"
-                config.telephone = "123456"
-                config.email = "contact@tibillet.re"
-                config.numero_tva = "456789"
-
-                config.prix_adhesion = os.environ.get('PRIX_ADHESION', 13)
-
-                config.appareillement = True
-                config.validation_service_ecran = True
-                config.remboursement_auto_annulation = True
-
-                config.save()
 
             def preparation_test(self):
                 prepa_cuisine, created = GroupementCategorie.objects.get_or_create(name="CUISINE")
