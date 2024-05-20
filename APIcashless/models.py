@@ -29,7 +29,6 @@ from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt
 
 from cryptography.hazmat.backends import default_backend
 
-
 # import requests, json
 # from requests.auth import HTTPBasicAuth
 
@@ -53,7 +52,7 @@ class Appareil(models.Model):
 
     name = models.CharField(max_length=100, verbose_name=_("Nom"), blank=True, null=True)
     pin_code = models.PositiveIntegerField(verbose_name=_("Code PIN"),
-                                                blank=True, null=True)
+                                           blank=True, null=True)
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True)
@@ -78,7 +77,7 @@ class Appareil(models.Model):
                               null=True, choices=PERIPH_CHOICES)
 
     def last_login(self):
-        if self.user :
+        if self.user:
             # noinspection PyUnresolvedReferences
             return self.user.last_login
         return None
@@ -96,6 +95,7 @@ class Appareil(models.Model):
     class Meta:
         verbose_name = _('Appareil')
         verbose_name_plural = _('Appareils')
+
 
 # @receiver(pre_save, sender=Appareil)
 # def appareil_actif_trigger(sender, instance: Appareil, *args, **kwargs):
@@ -434,7 +434,7 @@ class Categorie(models.Model):
     cashless = models.BooleanField(default=False)
 
     def __str__(self):
-        if self.tva :
+        if self.tva:
             return f"{self.name} - TVA : {self.tva.taux}%"
         return f"{self.name} - TVA : 0%"
 
@@ -1785,6 +1785,7 @@ class Configuration(SingletonModel):
     horaire_ouverture = models.TimeField(null=True, blank=True)
     horaire_fermeture = models.TimeField(null=True, blank=True)
 
+    #TODO: utiliser settings.TIME_ZONE
     TZ_REUNION, TZ_PARIS = "Indian/Reunion", "Europe/Paris"
     TZ_CHOICES = [
         (TZ_REUNION, _('Indian/Reunion')),
@@ -1795,6 +1796,12 @@ class Configuration(SingletonModel):
                                       max_length=50,
                                       choices=TZ_CHOICES,
                                       )
+
+    def timezone(self):
+        return settings.TIME_ZONE
+
+    def language(self):
+        return settings.LANGUAGE_CODE
 
     '''configuration des moyens de paiements par default'''
 
@@ -2097,7 +2104,9 @@ class Configuration(SingletonModel):
     DISCOVERY SERVER
     '''
     # Serveur pour découverte de nouveaux terminaux android ou pi
-    discovery_key = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Clé API Serveur de découverte"), editable=False)
+    discovery_key = models.CharField(max_length=200, blank=True, null=True,
+                                     verbose_name=_("Clé API Serveur de découverte"), editable=False)
+
     def set_discovery_key(self, key):
         self.discovery_key = fernet_encrypt(key)
         self.save()
@@ -2154,7 +2163,7 @@ class Configuration(SingletonModel):
             self.fedow_synced,
         ])
 
-    #TODO: Chiffrer avec Fernet :
+    # TODO: Chiffrer avec Fernet :
     def get_private_key(self):
         if not self.private_pem:
             private_pem, public_pem = rsa_generator()
@@ -2187,7 +2196,7 @@ class Configuration(SingletonModel):
             # import ipdb; ipdb.set_trace()
             return format_html(f"<a href={self.onboard_url}>Please valid your stripe account</a>")
         return ""
-    
+
     def federated_with(self):
         if self.can_fedow():
             dashboard_fedow = f"https://{self.fedow_domain}/dashboard/place/{self.fedow_place_uuid}/"

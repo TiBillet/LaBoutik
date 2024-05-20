@@ -89,13 +89,14 @@ def handshake(config: Configuration):
             config.fedow_place_wallet_uuid = place_wallet_uuid
             config.save()
 
-            return {
-                'place_admin_apikey': place_admin_apikey,
-                'fedow_place_wallet_uuid': place_wallet_uuid,
-                'url_onboard': url_onboard,
-                'fedow_domain': fedow_domain,
-                'fedow_place_uuid': fedow_place_uuid,
-            }
+            return True
+            # return {
+            #     'place_admin_apikey': place_admin_apikey,
+            #     'fedow_place_wallet_uuid': place_wallet_uuid,
+            #     'url_onboard': url_onboard,
+            #     'fedow_domain': fedow_domain,
+            #     'fedow_place_uuid': fedow_place_uuid,
+            # }
 
 
     # Raise erreur si le code n'est pas 202

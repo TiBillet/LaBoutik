@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+
+from django.conf import settings
 from django.db.models import Q, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -32,6 +34,17 @@ def debut_fin_journee():
         return debut_jour - timedelta(days=1), debut_jour
     else:
         return debut_jour, lendemain_quatre_heure
+
+class ConfigurationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Configuration
+        fields = (
+            'structure',
+            'horaire_ouverture',
+            'horaire_fermeture',
+            'timezone',
+            'language',
+        )
 
 
 class AssetSerializer(serializers.ModelSerializer):

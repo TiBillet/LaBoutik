@@ -27,7 +27,7 @@ from epsonprinter.tasks import print_command_epson_tm20, ticketZ_tasks_printer
 from fedow_connect.fedow_api import FedowAPI
 from tibiauth.models import TibiUser
 from webview.serializers import CarteCashlessSerializer, PointDeVenteSerializer, \
-    TableSerializerWithCommand, GroupCategorieSerializer, TableSerializer
+    TableSerializerWithCommand, GroupCategorieSerializer, TableSerializer, ConfigurationSerializer
 from webview.validators import DataAchatDepuisClientValidator, PreparationValidator, LoginHardwareValidator, \
     NewPeriphPinValidator
 
@@ -237,6 +237,7 @@ def index(request):
                     # noinspection PyDictCreation
                     data = {'data': PointDeVenteSerializer(carte_m.points_de_vente.all(), many=True).data,
                             'tables': TableSerializer(Table.objects.filter(archive=False), many=True).data,
+                            'configuration': ConfigurationSerializer(Configuration.get_solo()).data,
                             'responsable': {},
                             'article_paiement_fractionne': f"{article_paiement_fractionne.pk}",
                             }
