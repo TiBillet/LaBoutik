@@ -49,7 +49,7 @@ export const en = {
     confirmClosureCrates: "Confirm the closure of the crates",
     onceValidatedNoReturn: "attention, once validated, no return possible",
     return: "return",
-    currencySymbol: "$",
+    currencySymbol: "€",
     stausCodeError: "staus code error",
     canceledTransaction: "canceled transaction",
     no: "no",
