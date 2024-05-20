@@ -118,8 +118,11 @@ class Command(BaseCommand):
                     return config
 
                 # MODE TEST
+                # On ajoute un random à TestCoin
                 fake = Faker()
-                config.structure = f"TEST {str(uuid4())[:4]}"
+                rand_uuid = str(uuid4())[:4]
+                config.structure = f"TEST {rand_uuid}"
+                self.main_asset = os.environ['MAIN_ASSET_NAME'] + f" {rand_uuid}"
                 config.email = fake.email()
                 config.prix_adhesion = 42
 
@@ -586,8 +589,15 @@ class Command(BaseCommand):
                 origin = Origin.objects.get_or_create(generation=1)[0]
 
                 cards = []
-                # pour cashless_test1
-                if os.environ.get('MAIN_ASSET_NAME') == 'TestCoin':
+                if 'test' in sys.argv:
+                    for i in range(10):
+                        fake_uuid = str(uuid4()).upper()
+                        cards.append(
+                            [f"https://demo.tibillet.localhost/qr/{fake_uuid}", fake_uuid[:8],
+                             str(uuid4())[:8].upper()]
+                        )
+                # pour cashless demo 1
+                elif os.environ.get('MAIN_ASSET_NAME') == 'TestCoin':
                     cards = [
                         ["https://demo.tibillet.localhost/qr/76dc433c-00ac-479c-93c4-b7a0710246af", "76DC433C",
                          "EE144CE8"],
@@ -667,8 +677,8 @@ class Command(BaseCommand):
                 cards_db[3].save()
                 cards_db[4].membre = framboise_membre
                 cards_db[4].save()
-                cards_db[22].membre = mike_membre
-                cards_db[22].save()
+                # cards_db[22].membre = mike_membre
+                # cards_db[22].save()
 
                 bar1, created = PointDeVente.objects.get_or_create(
                     name="Bar 1",
@@ -722,13 +732,13 @@ class Command(BaseCommand):
                 carteM5.points_de_vente.add(Boutique)
                 carteM5.points_de_vente.add(self.pdv_cashless)
 
-                carteM6, created = CarteMaitresse.objects.get_or_create(carte=cards_db[22], edit_mode=True)
-                carteM6.points_de_vente.add(Resto)
-                carteM6.points_de_vente.add(bar1)
-                carteM6.points_de_vente.add(Boutique)
-                carteM6.points_de_vente.add(PvEspece)
-                carteM6.points_de_vente.add(PvCb)
-                carteM6.points_de_vente.add(self.pdv_cashless)
+                # carteM6, created = CarteMaitresse.objects.get_or_create(carte=cards_db[22], edit_mode=True)
+                # carteM6.points_de_vente.add(Resto)
+                # carteM6.points_de_vente.add(bar1)
+                # carteM6.points_de_vente.add(Boutique)
+                # carteM6.points_de_vente.add(PvEspece)
+                # carteM6.points_de_vente.add(PvCb)
+                # carteM6.points_de_vente.add(self.pdv_cashless)
 
                 ### FIN DE CREATION DE CARTES
 
