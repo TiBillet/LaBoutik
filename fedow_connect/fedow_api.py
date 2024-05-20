@@ -695,7 +695,7 @@ class FedowAPI():
         for message in assets_to_send:
             request_fedow = _post(self.config, 'asset', message)
             if request_fedow.status_code != 201:
-                raise Exception(f"Erreur lors de l'envoi des assets : {request_fedow.content}")
+                raise Exception(f"Erreur lors de l'envoi des assets : {request_fedow.content} - POUR : {message}")
             responses.append(request_fedow)
 
         return responses
