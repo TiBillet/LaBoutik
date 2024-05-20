@@ -25,7 +25,8 @@ COPY --chown=tibillet:tibillet ./bashrc /home/tibillet/.bashrc
 COPY --chown=tibillet:tibillet ./cron /cron
 
 WORKDIR /DjangoFiles
-RUN poetry install
+#RUN poetry install
+RUN poetry update
 
 # Before build : collectstatic
 # docker build -t tibillet/laboutik:beta4 .
