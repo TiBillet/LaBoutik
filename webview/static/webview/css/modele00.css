@@ -1,11 +1,20 @@
+/* http://luciole-vision.com/#top */
 @font-face {
-    font-family: "Source Sans";
-    /*src: url("/static/webview/css/googlefonts/SourceSansPro-Regular.ttf")*/
-    src: url("./googlefonts/SourceSansPro-Regular.ttf") format("truetype");
+    font-family: "Luciole-regular";
+    src: url("./fonts/Luciole-Regular.ttf") format("truetype");
+    font-weight: normal;
 }
+
+
+/* @font-face {
+    font-family: "Luciole-bold";
+    src: url("./fonts/Luciole-Bold.ttf") format("truetype");
+    font-weight: bold;
+} */
 
 * {
     box-sizing: border-box;
+    font-family: "Luciole-regular";
 }
 
 body {
@@ -370,7 +379,7 @@ body {
 }
 
 .menu-burger-item {
-    width: 95%;
+    width: 100%;
     height: 60px;
     color: #ffffff;
     border-bottom: 1px solid #303b44;
@@ -383,18 +392,20 @@ body {
     color: #000000;
 }
 
-.menu-burger-item i {
+.menu-burger-item i, .menu-burger-item span {
+    width: 15%;
     font-size: 1.4rem;
-    margin-left: 8px;
+    /* margin-left: 8px; */
+    padding-left: 8px;
 }
 
 .menu-burger-item div {
-    width: 100%;
+    width: 85%;
     height: 60px;
-    font-size: 30px;
+    font-size: 1.4rem;
     line-height: 60px;
     text-transform: uppercase;
-    margin-left: 8px;
+    padding-left: 8px;
 }
 
 /* prise de commandes et paiements */
@@ -1726,8 +1737,9 @@ footer {
     background-color: #00FF00;
 }
 
+
 @media screen and (orientation: landscape) {
     #menu-burger-conteneur {
-        height: calc(100vh - 50px)
+        height: calc(100vh - 140px)
     }
 }

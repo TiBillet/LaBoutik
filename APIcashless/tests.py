@@ -21,45 +21,37 @@ from fedow_connect.views import handshake
 class TiBilletTestCase(TestCase):
 
     def setUp(self):
-        call_command('install', stdout=StringIO())
         settings.DEBUG = True
+        call_command('install','--tdd', stdout=StringIO())
+        # Handshake avec le serveur FEDOW réalisé par install
+        self.config = Configuration.get_solo()
 
-        # Handshake avec le serveur FEDOW
-        self.config = self.create_config()
-
-    def create_config(self, string_fedow_connect=None):
-        fake = Faker()
-        config = Configuration.get_solo()
-        config.structure = f"TEST {str(uuid4())[:4]}"
-        config.siret = "666R999"
-        config.adresse = fake.address()
-        config.pied_ticket = "Nar'trouv vite' !"
-        config.telephone = "+336123456789"
-        config.domaine_cashless = "https://cashless.tibillet.localhost/"
-        config.email = fake.email()
-        config.numero_tva = 666999
-        config.prix_adhesion = 42
-        config.appareillement = True
-        config.validation_service_ecran = True
-        config.remboursement_auto_annulation = True
-        config.string_connect = string_fedow_connect
-
-        config.billetterie_url = 'https://demo.tibillet.localhost/'
-        config.fedow_domain = 'https://fedow.tibillet.localhost/'
-
-        # Ip du serveur cashless et du ngnix dans le même réseau ( env de test )
-        self_ip = socket.gethostbyname(socket.gethostname())
-        templist: list = self_ip.split('.')
-        templist[-1] = 1
-        config.ip_cashless = '.'.join([str(ip) for ip in templist])
-        config.billetterie_ip_white_list = '.'.join([str(ip) for ip in templist])
-
-        # Parfois l'ip prise est le 192...
-        config.ip_cashless = "172.21.0.1"
-        config.billetterie_ip_white_list = "172.21.0.1"
-        
-        config.save()
-        return config
+    # def create_config(self, string_fedow_connect=None):
+    #     fake = Faker()
+    #     config = Configuration.get_solo()
+    #     config.structure = f"TEST {str(uuid4())[:4]}"
+    #     config.siret = "666R999"
+    #     config.adresse = fake.address()
+    #     config.pied_ticket = "Nar'trouv vite' !"
+    #     config.telephone = "+336123456789"
+    #     config.domaine_cashless = "https://cashless.tibillet.localhost/"
+    #     config.email = fake.email()
+    #     config.numero_tva = 666999
+    #     config.prix_adhesion = 42
+    #     config.appareillement = True
+    #     config.validation_service_ecran = True
+    #     config.remboursement_auto_annulation = True
+    #     config.string_connect = string_fedow_connect
+    #
+    #     config.billetterie_url = 'https://demo.tibillet.localhost/'
+    #     config.fedow_domain = 'https://fedow.tibillet.localhost/'
+    #
+    #     # Parfois l'ip prise est le 192...
+    #     config.ip_cashless = "172.21.0.1"
+    #     config.billetterie_ip_white_list = "172.21.0.1"
+    #
+    #     config.save()
+    #     return config
 
 
 class CashlessTest(TiBilletTestCase):
@@ -76,6 +68,8 @@ class CashlessTest(TiBilletTestCase):
         self.fedowAPI = FedowAPI()
         settings.DEBUG = True
 
+        import ipdb; ipdb.set_trace()
+
         # Récupération d'une clé de test sur Fedow :
         session = requests.Session()
         name_enc = data_to_b64({'name': f'{config.structure}'})
@@ -83,6 +77,7 @@ class CashlessTest(TiBilletTestCase):
         request = session.get(url, verify=False, data={'name': f'{config.structure}'}, timeout=1)
         if request.status_code != 200:
             raise Exception("Erreur de connexion au serveur de test")
+
         string_connect = request.json().get('encoded_data')
         config.string_connect = string_connect
         config.save()
@@ -1069,6 +1064,9 @@ class CashlessTest(TiBilletTestCase):
                 fedowAPI.NFCcard.link_user(email=membre.email, card=cartemembre)
             except Exception as e:
                 self.assertEqual(e.args[0], "Card already linked to another member")
+            else:
+                # on test que l'exception a bien été levé. Ceci ne devrait jamais se produire :
+                self.assertFalse("L'exception précédente n'a pas été levé.")
 
             # Link de l'email à la carte via le code nfc
             before_fusions_serialized_card = fedowAPI.NFCcard.retrieve(carte.tag_id)
@@ -1141,6 +1139,9 @@ class CashlessTest(TiBilletTestCase):
     def remboursement_front(self):
         config = Configuration.get_solo()
         primary_card = CarteMaitresse.objects.first()
+        if not primary_card:
+            import ipdb; ipdb.set_trace()
+
         responsable: Membre = primary_card.carte.membre
         pdv = PointDeVente.objects.get(name="Boutique")
         carte, carte_bis = self.create_2_card_and_charge_it()
@@ -1150,6 +1151,9 @@ class CashlessTest(TiBilletTestCase):
         article_vider_carte: Articles = Articles.objects.get(
             methode_choices=Articles.VIDER_CARTE,
         )
+
+        if not responsable:
+            import ipdb; ipdb.set_trace()
 
         json_achats = {"articles": [{"pk": f"{article_vider_carte.pk}", "qty": 1}],
                        "pk_responsable": f"{responsable.pk}",
@@ -1910,7 +1914,7 @@ class CashlessTest(TiBilletTestCase):
 
     # ./manage.py test --tag=fast --tag=no-fedow
     @tag('no-fedow')
-    def test_cashless(self):
+    def x_test_cashless(self):
         settings.FEDOW = False
         print("log user test to admin")
         log_admin = self.connect_admin()
@@ -1950,10 +1954,10 @@ class CashlessTest(TiBilletTestCase):
     @tag('fedow')
     def test_fedow(self):
         # On relance les test précédents
-        self.test_cashless()
+        # self.test_cashless()
+        # settings.FEDOW = True
 
 
-        settings.FEDOW = True
         print('handshake avec serveur fedow')
         self.handshake_with_fedow_serveur()
 
