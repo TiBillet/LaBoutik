@@ -15,14 +15,6 @@ from kiosk.validators import AmountValidator, CardValidator
 from kiosk.models import ScannedNfcCard, Payment
 
 
-# saving the scanned data:
-@csrf_exempt
-def saving_scanned_card(request):
-    if request.method == 'POST':
-        card = get_object_or_404(CarteCashless, tag_id=request.POST['scanded_tag_id'])
-        ScannedNfcCard.objects.create(card=card)
-        return HttpResponse('ok')
-
 
 @csrf_exempt
 def given_bill(request):
@@ -36,21 +28,24 @@ def given_bill(request):
 
 # First page
 def index(request):
-    return render(request, 'kiosk_pages/first_page.html')
-
-
-def index_bis(request):
     last_scanned = ScannedNfcCard.objects.all().order_by('created_at').last()
     if last_scanned:
         # Check if the last card has been scaned the last 2 seconds
         if last_scanned.created_at >= timezone.now() - timezone.timedelta(seconds=2):
-            return render(request, 'kiosk_pages/send_card.html'
+            return render(request, 'kiosk_pages/show.html'
                           , {'tag_id': last_scanned.card.tag_id})
 
-    return render(request, 'kiosk_pages/first_page_bis.html')
+    return render(request, 'kiosk_pages/first_page.html')
 
 
 class CardViewset(viewsets.ViewSet):
+    # save scanded card:
+    @action(detail=False, methods=['POST'])
+    def save_scanded_card(self, request):
+        scanned_card_id = request.POST.get('scanded_tag_id')
+        ScannedNfcCard.objects.create(reeded_card=scanned_card_id)
+        return HttpResponse(scanned_card_id)
+
     # post from card scan /
     @action(detail=False, methods=['POST'])
     def scan(self, request):
