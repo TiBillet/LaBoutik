@@ -1,9 +1,10 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
-from APIcashless.models import ArticleVendu, Configuration, Appareil, CarteCashless, CarteMaitresse
+from APIcashless.models import ArticleVendu, Configuration, Appareil, CarteCashless, CarteMaitresse, MoyenPaiement
 from epsonprinter.tasks import direct_to_print
 from APIcashless.tasks import adhesion_to_odoo, cashback, badgeuse_to_dokos, fidelity_task, email_new_hardware
+from fedow_connect.fedow_api import FedowAPI
 from fedow_connect.tasks import badgeuse_to_fedow, create_card_to_fedow, set_primary_card
 
 import logging
@@ -106,3 +107,20 @@ def send_primarycard_to_fedow(sender, instance: CarteMaitresse, created, **kwarg
     if created :
         # On le fait en synchrone, comme ça si ça plante, on le voit dans l'admin
         set_primary_card(instance.carte.pk)
+
+@receiver(post_save, sender=MoyenPaiement)
+def send_new_asset_to_fedow(sender, instance: MoyenPaiement, created, **kwargs):
+    if created :
+        # Si c'est dans les catégories acceptés par Fedow
+        if instance.fedow_category():
+            config = Configuration.get_solo()
+            if config.can_fedow():
+                fedowAPI = FedowAPI()
+                asset, created = fedowAPI.asset.get_or_create_asset(instance)
+
+
+@receiver(post_save, sender=MoyenPaiement)
+def create_article_badge_and_membership(sender, instance: MoyenPaiement, created, **kwargs):
+    if created :
+        logger.info(f'MoyenPaiement {instance.get_categorie_display()} created ! Create product and price here ??? ')
+        pass

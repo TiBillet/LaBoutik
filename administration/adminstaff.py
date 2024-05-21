@@ -1116,10 +1116,11 @@ class ConfigurationAdmin(SingletonModelAdmin):
             fedowAPI = FedowAPI()
             # Verification des synchros asset fedelitée
             try:
+                #TODO: Tester la fidelitée
                 if instance.fidelity_active:
                     fidelity, created = MoyenPaiement.objects.get_or_create(categorie=MoyenPaiement.FIDELITY,
                                                                             name="Fidelity")
-                    asset_serialized = fedowAPI.asset.get_or_create_asset(fidelity)
+                    asset_serialized, created = fedowAPI.asset.get_or_create_asset(fidelity)
                     messages.add_message(request, messages.SUCCESS, "Asset Fidelity OK")
             except Exception as e:
                 messages.add_message(request, messages.ERROR, _(f"Fedow non connecté. Asset non mis à jour : {e}"))

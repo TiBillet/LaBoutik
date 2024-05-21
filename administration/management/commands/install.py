@@ -52,6 +52,11 @@ class Command(BaseCommand):
                 # Les variables du fichier env dans config
                 self.config = self._base_config(options)
 
+                # Avant toute installation, on vérifie que Lespass et Fedow existent
+
+                self.lespass_handshake = self._lespass_handshake()
+                self.fedow_handshake = self._fedow_handshake()
+
                 # Local and gift asset
                 self.assets_fedow = self._assets_fedow()
                 # Cash, Credit card, stripe, oceco
@@ -64,9 +69,6 @@ class Command(BaseCommand):
 
                 self.articles_generiques = self._articles_generiques()
                 self.pdv_cashless = self._point_de_vente_cashless()
-
-                self.lespass_handshake = self._lespass_handshake()
-                self.fedow_handshake = self._fedow_handshake()
 
                 self.admin = self._create_admin_from_env_email()
 
@@ -81,7 +83,6 @@ class Command(BaseCommand):
 
             def _base_config(self, options):
                 config = Configuration.get_solo()
-                config.structure = os.environ.get('STRUCTURE', 'Demo')
                 config.email = os.environ['ADMIN_EMAIL']
                 config.billetterie_url = os.environ['LESPASS_TENANT_URL']
                 config.fedow_domain = os.environ['FEDOW_URL']
@@ -91,13 +92,7 @@ class Command(BaseCommand):
                     return config
 
                 # MODE DEV/DEMO
-                config.structure = "Demo"
-                config.siret = "123465789101112"
-                config.adresse = "Troisième dune à droite, Tatouine"
-                config.pied_ticket = "Nar'trouv vite' !"
-                config.telephone = "123456"
-                config.numero_tva = "456789"
-                config.prix_adhesion = os.environ.get('PRIX_ADHESION', 13)
+                # config.prix_adhesion = os.environ.get('PRIX_ADHESION', 13)
                 config.appareillement = True
                 config.validation_service_ecran = True
                 config.remboursement_auto_annulation = True
@@ -121,10 +116,10 @@ class Command(BaseCommand):
                 # On ajoute un random à TestCoin
                 fake = Faker()
                 rand_uuid = str(uuid4())[:4]
-                config.structure = f"TEST {rand_uuid}"
+                config.structure = f"{config.structure} {rand_uuid}"
                 self.main_asset = os.environ['MAIN_ASSET_NAME'] + f" {rand_uuid}"
                 config.email = fake.email()
-                config.prix_adhesion = 42
+                # config.prix_adhesion = 42
 
                 config.save()
                 return config
@@ -165,7 +160,7 @@ class Command(BaseCommand):
                 d = {}
                 d['vente_article'] = Methode.objects.get_or_create(name="VenteArticle")[0]
                 d['vider_carte'] = Methode.objects.get_or_create(name="ViderCarte")[0]
-                d['adhesion'] = Methode.objects.get_or_create(name="Adhesion")[0]
+                # d['adhesion'] = Methode.objects.get_or_create(name="Adhesion")[0]
                 d['ajout_monnaie_virtuelle'] = Methode.objects.get_or_create(name="AjoutMonnaieVirtuelle")[0]
                 d['ajout_monnaie_virtuelle_cadeau'] = Methode.objects.get_or_create(
                     name="AjoutMonnaieVirtuelleCadeau")[0]
@@ -202,7 +197,7 @@ class Command(BaseCommand):
                 configuration.methode_ajout_monnaie_virtuelle = self.methode_articles.get('ajout_monnaie_virtuelle')
                 configuration.methode_ajout_monnaie_virtuelle = self.methode_articles.get(
                     'ajout_monnaie_virtuelle_cadeau')
-                configuration.methode_adhesion = self.methode_articles.get('adhesion')
+                # configuration.methode_adhesion = self.methode_articles.get('adhesion')
                 configuration.methode_retour_consigne = self.methode_articles.get('retour_consigne')
                 configuration.methode_vider_carte = self.methode_articles.get('vider_carte')
                 configuration.methode_paiement_fractionne = self.methode_articles.get('paiement_fractionne')
@@ -459,13 +454,24 @@ class Command(BaseCommand):
 
                 # Le serveur LesPass renvoie la clé pour se connecter à Fedow, chiffrée avec une clé Fernet aléatoire
                 # La clé fernet qui déchiffre le json :
-                cypher_rand_key = handshake_lespass.json()['cypher_rand_key']
+                handshake_lespass_data =handshake_lespass.json()
+                cypher_rand_key = handshake_lespass_data['cypher_rand_key']
                 fernet_key = rsa_decrypt_string(utf8_enc_string=cypher_rand_key, private_key=config.get_private_key())
-                cypher_json_key_to_cashless = handshake_lespass.json()['cypher_json_key_to_cashless']
+                cypher_json_key_to_cashless = handshake_lespass_data['cypher_json_key_to_cashless']
 
                 decryptor = Fernet(fernet_key)
                 config.string_connect = decryptor.decrypt(cypher_json_key_to_cashless.encode('utf-8')).decode('utf8')
                 config.billetterie_url = self.lespass_url
+                # Le nom de la structure est le même que le tenant
+
+                config.structure = handshake_lespass_data.get('organisation_name')
+                config.siret = handshake_lespass_data.get('siren')
+                config.adresse = (f"{handshake_lespass_data.get('adress')} "
+                                  f"{handshake_lespass_data.get('postal_code')} "
+                                  f"{handshake_lespass_data.get('city')}")
+                config.telephone = handshake_lespass_data.get('phone')
+                config.numero_tva = handshake_lespass_data.get('tva_number')
+
                 config.save()
                 logger.info("Lespass Plugged !")
 
@@ -490,14 +496,7 @@ class Command(BaseCommand):
 
                 # Récupération de l'adresse IP du serveur Laboutik :
                 # obligatoire pour le handshake fedow :
-                if settings.DEBUG or 'test' in sys.argv:
-                    # Ip du serveur cashless et du ngnix dans le même réseau ( env de test )
-                    self_ip = socket.gethostbyname(socket.gethostname())
-                    templist: list = self_ip.split('.')
-                    templist[-1] = 1
-                    config.ip_cashless = '.'.join([str(ip) for ip in templist])
-                    config.billetterie_ip_white_list = '.'.join([str(ip) for ip in templist])
-
+                if 'test' in sys.argv:
                     # On est en mode test, on va chercher une clé de test pour le handshake
                     # En mode demo/dev, cela se fait par le flush.sh
                     # Récupération d'une clé de test sur Fedow :
@@ -511,6 +510,14 @@ class Command(BaseCommand):
                     config.string_connect = string_connect
                     config.save()
 
+                # Mode debug, l'ip est surement localhost
+                if settings.DEBUG:
+                    # Ip du serveur cashless et du ngnix dans le même réseau ( env de test )
+                    self_ip = socket.gethostbyname(socket.gethostname())
+                    templist: list = self_ip.split('.')
+                    templist[-1] = 1
+                    config.ip_cashless = '.'.join([str(ip) for ip in templist])
+                    config.billetterie_ip_white_list = '.'.join([str(ip) for ip in templist])
 
                 else:
                     config.ip_cashless = requests.get('https://ipinfo.io/ip').content.decode('utf8')
