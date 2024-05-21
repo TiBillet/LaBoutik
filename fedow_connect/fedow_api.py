@@ -547,7 +547,7 @@ class AssetFedow():
     def get_or_create_asset(self, mp: MoyenPaiement):
         try :
             asset_serialized = self.retrieve(f"{mp.pk}")
-            return asset_serialized
+            return asset_serialized, False
         except Exception as e:
             asset = {
                     "uuid": f"{mp.pk}",
@@ -563,7 +563,7 @@ class AssetFedow():
             if response_asset.status_code == 201:
                 serialized_assets = AssetValidator(data=response_asset.json(), many=False)
                 if serialized_assets.is_valid():
-                    return serialized_assets.validated_data
+                    return serialized_assets.validated_data, True
                 logger.error(serialized_assets.errors)
                 raise Exception(f"{serialized_assets.errors}")
             logger.error(response_asset)
@@ -695,7 +695,7 @@ class FedowAPI():
         for message in assets_to_send:
             request_fedow = _post(self.config, 'asset', message)
             if request_fedow.status_code != 201:
-                raise Exception(f"Erreur lors de l'envoi des assets : {request_fedow.content}")
+                raise Exception(f"Erreur lors de l'envoi des assets : {request_fedow.content} - POUR : {message}")
             responses.append(request_fedow)
 
         return responses

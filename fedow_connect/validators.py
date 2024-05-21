@@ -108,6 +108,8 @@ class AssetValidator(serializers.Serializer):
                 cadeau=True if cat == MoyenPaiement.EXTERIEUR_GIFT else False,
             )
             logger.info(f"New asset created : {moyen_paiement}")
+            # Le signal MoyenPaiement va s'enclencher si c'est une badgeuse
+            # ou une adhésion pour aller chercher les articles correspondant dans Lespass
         except Exception as e:
             raise serializers.ValidationError(f"Erreur lors de la récupération du moyen de paiement : {e}")
 
