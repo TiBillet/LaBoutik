@@ -108,19 +108,6 @@ class Command(BaseCommand):
                 # config.ip_cashless = "172.21.0.1"
                 # config.billetterie_ip_white_list = "172.21.0.1"
 
-                if not 'test' in sys.argv:
-                    config.save()
-                    return config
-
-                # MODE TEST
-                # On ajoute un random à TestCoin
-                fake = Faker()
-                rand_uuid = str(uuid4())[:4]
-                config.structure = f"{config.structure} {rand_uuid}"
-                self.main_asset = os.environ['MAIN_ASSET_NAME'] + f" {rand_uuid}"
-                config.email = fake.email()
-                # config.prix_adhesion = 42
-
                 config.save()
                 return config
 
@@ -465,6 +452,7 @@ class Command(BaseCommand):
                 # Le nom de la structure est le même que le tenant
 
                 config.structure = handshake_lespass_data.get('organisation_name')
+
                 config.siret = handshake_lespass_data.get('siren')
                 config.adresse = (f"{handshake_lespass_data.get('adress')} "
                                   f"{handshake_lespass_data.get('postal_code')} "
@@ -478,6 +466,7 @@ class Command(BaseCommand):
             def _fedow_handshake(self):
                 # On ping Fedow
                 config = Configuration.get_solo()
+
                 fedow_url = self.fedow_url
                 fedow_state = None
                 ping_count = 0
@@ -497,6 +486,16 @@ class Command(BaseCommand):
                 # Récupération de l'adresse IP du serveur Laboutik :
                 # obligatoire pour le handshake fedow :
                 if 'test' in sys.argv:
+                    # MODE TEST
+                    # On doit changer le nom de la structure
+                    # sinon erreur de création coté Fedow
+                    fake = Faker()
+                    rand_uuid = str(uuid4())[:4]
+                    config.structure = f"{config.structure} {rand_uuid}"
+                    # On ajoute un random à TestCoin
+                    self.main_asset = os.environ['MAIN_ASSET_NAME'] + f" {rand_uuid}"
+                    config.email = fake.email()
+
                     # On est en mode test, on va chercher une clé de test pour le handshake
                     # En mode demo/dev, cela se fait par le flush.sh
                     # Récupération d'une clé de test sur Fedow :

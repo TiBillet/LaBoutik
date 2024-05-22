@@ -81,7 +81,7 @@ def handshake(config: Configuration):
         url_onboard = decoded_return_handshake.get('url_onboard')
         place_wallet_uuid = decoded_return_handshake.get('place_wallet_uuid')
 
-        if key and url_onboard:
+        if key and place_wallet_uuid :
             config.fedow_place_admin_apikey = place_admin_apikey
             config.onboard_url = url_onboard
             config.fedow_domain = fedow_domain
@@ -90,13 +90,6 @@ def handshake(config: Configuration):
             config.save()
 
             return True
-            # return {
-            #     'place_admin_apikey': place_admin_apikey,
-            #     'fedow_place_wallet_uuid': place_wallet_uuid,
-            #     'url_onboard': url_onboard,
-            #     'fedow_domain': fedow_domain,
-            #     'fedow_place_uuid': fedow_place_uuid,
-            # }
 
 
     # Raise erreur si le code n'est pas 202

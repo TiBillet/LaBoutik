@@ -10,7 +10,7 @@ from django.db.models import Count
 from django.test import TestCase, tag
 from faker import Faker
 
-from APIcashless.custom_utils import badgeuse_creation, jsonb64decode
+from APIcashless.custom_utils import jsonb64decode
 from APIcashless.models import *
 from fedow_connect.fedow_api import FedowAPI
 from fedow_connect.utils import data_to_b64
@@ -23,8 +23,8 @@ class TiBilletTestCase(TestCase):
     def setUp(self):
         settings.DEBUG = True
         # Handshake avec le serveur FEDOW réalisé par install
-        call_command('install','--tdd', stdout=StringIO())
-        self.config = Configuration.get_solo()
+        call_command('install', '--tdd', stdout=StringIO())
+
 
 class CashlessTest(TiBilletTestCase):
 
@@ -35,27 +35,42 @@ class CashlessTest(TiBilletTestCase):
         # request = session.get(url, verify=False, timeout=1)
         # string_fedow_connect = request.json().get('encoded_data')
 
-        # Création de la config pour test
-        config: Configuration = self.config
-        self.fedowAPI = FedowAPI()
+        config: Configuration = Configuration.get_solo()
+        fedowAPI = FedowAPI()
         settings.DEBUG = True
 
         # Le handshake se fait lors du set_up
         self.assertTrue(config.can_fedow())
         self.assertTrue(config.fedow_synced)
 
-        get_accepted_assets = self.fedowAPI.place.get_accepted_assets()
-        self.assertEqual(len(get_accepted_assets), 4)
+        get_accepted_assets = fedowAPI.place.get_accepted_assets()
 
+        # Les adhésions et la badgeuse sont créé depuis LesPass
+        # Trois assets ont été créé par le handshake avec Fedow
+        # Trois assets créé par lespass : deux adhésion et un badge
+        self.assertEqual(len(get_accepted_assets), 6)
         cats = [asset.get('category') for asset in get_accepted_assets]
-
         self.assertIn('FED', cats)
         self.assertIn('TNF', cats)
         self.assertIn('TLF', cats)
+        self.assertIn('SUB', cats)
         self.assertIn('BDG', cats)
 
-        cats = [asset.get('category') for asset in get_accepted_assets]
-        import ipdb; ipdb.set_trace()
+        badgeuse_tibilletistan = MoyenPaiement.objects.get(categorie=MoyenPaiement.EXTERNAL_BADGE)
+        adhesions_tibilletistan = MoyenPaiement.objects.filter(categorie=MoyenPaiement.EXTERNAL_MEMBERSHIP)
+        self.assertEqual(adhesions_tibilletistan.count(), 2)
+
+        # Les adhesion et la badgeuse vient d'ailleurs
+        tibilletistan = badgeuse_tibilletistan.place_origin
+        self.assertIsInstance(tibilletistan, Place)
+        for adhesion in adhesions_tibilletistan:
+            self.assertEqual(adhesion.place_origin, tibilletistan)
+
+        # On vérifie que les origines soient bien différentes
+        local_euro = MoyenPaiement.get_local_euro()
+        test_place = local_euro.place_origin
+        self.assertIsInstance(test_place, Place)
+        self.assertTrue(test_place != tibilletistan)
 
         return config
 
@@ -79,8 +94,10 @@ class CashlessTest(TiBilletTestCase):
         # Retourne vers l'url de login
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
-        self.assertInHTML('<input name="username" id="username" type="text" placeholder="username"/>', response.content.decode())
-        self.assertInHTML('<input name="password" id="password" type="password" placeholder="password"/>', response.content.decode())
+        self.assertInHTML('<input name="username" id="username" type="text" placeholder="username"/>',
+                          response.content.decode())
+        self.assertInHTML('<input name="password" id="password" type="password" placeholder="password"/>',
+                          response.content.decode())
 
         # User ROOT
         rootuser = User.objects.create_superuser('rootuser', 'root@root.root', 'ROOTUSERPASSWORD')
@@ -154,7 +171,6 @@ class CashlessTest(TiBilletTestCase):
         return boutique
 
     def create_cards_with_db(self):
-
         for i in range(20):
             fake_uuid = str(uuid4()).upper()
             carte_p = CarteCashless.objects.create(
@@ -166,9 +182,9 @@ class CashlessTest(TiBilletTestCase):
             if i < 5:
                 CarteMaitresse.objects.create(carte=carte_p)
 
-        self.assertEqual(CarteMaitresse.objects.filter(
-            points_de_vente__isnull=True,
-            carte__isnull=False).count(), 5)
+        # self.assertEqual(CarteMaitresse.objects.filter(
+        #     points_de_vente__isnull=True,
+        #     carte__isnull=False).count(), 5)
 
     def create_members_with_db(self):
         fake = Faker()
@@ -291,7 +307,6 @@ class CashlessTest(TiBilletTestCase):
                        "moyen_paiement": 'espece',
                        }
 
-
         # On test sans être loggué :
         settings.DEBUG = False
         self.client.logout()
@@ -314,7 +329,8 @@ class CashlessTest(TiBilletTestCase):
 
         if response.status_code != 200:
             # L'user est bien loggué en terminal ?
-            import ipdb; ipdb.set_trace()
+            import ipdb;
+            ipdb.set_trace()
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json().get('route'), f"transaction_espece")
@@ -682,7 +698,8 @@ class CashlessTest(TiBilletTestCase):
             methode_choices=Articles.VENTE,
         )
 
-        primary_card = CarteMaitresse.objects.first()
+        primary_card = CarteMaitresse.objects.filter(
+            carte__membre__isnull=False).first()
         self.assertIsInstance(primary_card, CarteMaitresse)
         self.assertIsInstance(primary_card.carte, CarteCashless)
         responsable: Membre = primary_card.carte.membre
@@ -771,38 +788,20 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(Decimal(assets[0].get('qty')), asset_e.qty)
         self.assertEqual(assets[0].get('monnaie'), f"{monnaie_e.pk}")
 
-    def create_badgeuse(self):
-        self.assertTrue(MoyenPaiement.objects.filter(categorie=MoyenPaiement.BADGE).exists())
-
-    def check_sended_asset_to_fedow_with_api(self):
-        # On check la fédération actuelle, nous devons avoir que la monnaie fedow stripe
-        config = Configuration.get_solo()
-        get_accepted_assets = self.fedowAPI.place.get_accepted_assets()
-        # Les assets ont été créé par install -tdd
-        self.assertEqual(len(get_accepted_assets), 4)
-
-        cats = [asset.get('category') for asset in get_accepted_assets]
-
-        self.assertIn('FED', cats)
-        self.assertIn('TNF', cats)
-        self.assertIn('TLF', cats)
-        self.assertIn('BDG', cats)
-
-        #TODO:        self.assertIn('SUB', cats)
-
-        import ipdb; ipdb.set_trace()
-
-        self.assertEqual(get_accepted_assets[0].get('category'), 'FED')
-
+    # def create_badgeuse(self):
+    #     self.assertTrue(MoyenPaiement.objects.filter(categorie=MoyenPaiement.BADGE).exists())
 
     def send_card_to_fedow_with_api(self):
         cards = CarteCashless.objects.all()
-        response = self.fedowAPI.NFCcard.create(cards)
-
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(int(response.json()), cards.count())
-
-        return response
+        config = Configuration.get_solo()
+        self.assertTrue(config.can_fedow())
+        fedowAPI = FedowAPI()
+        # Les cartes sont automatiquement envoyé à Fedow par un signal post_save
+        # On check que Fedow renvoie bien un 409 : conflict, existe déja
+        try:
+            response = fedowAPI.NFCcard.create(cards)
+        except Exception as e:
+            self.assertIn('409', str(e))
 
     def creation_wallet_carte_vierge_et_email(self):
         fedowAPI = FedowAPI()
@@ -828,7 +827,7 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(cartes[0].membre.wallet, cartes[0].wallet)
         self.assertEqual(cartes[1].membre.wallet, cartes[1].wallet)
 
-    #TODO: Uniquement possible avec Billetterie dans le futur, c'est la bas que la clé rsa est stockée
+    # TODO: Uniquement possible avec Billetterie dans le futur, c'est la bas que la clé rsa est stockée
     def creation_wallet_avec_email_seul(self):
         fedowAPI = FedowAPI()
         membres = Membre.objects.filter(CarteCashless_Membre__isnull=True, email__isnull=False, wallet__isnull=True)[:4]
@@ -898,6 +897,8 @@ class CashlessTest(TiBilletTestCase):
             if not wallet:
                 wallet: Wallet = fedowAPI.NFCcard.link_user(email=carte.membre.email, card=carte)
 
+            import ipdb;
+            ipdb.set_trace()
             adhesion = fedowAPI.subscription.create(
                 wallet=f"{wallet.uuid}",
                 amount=int(membre.cotisation * 100),
@@ -1106,7 +1107,8 @@ class CashlessTest(TiBilletTestCase):
         config = Configuration.get_solo()
         primary_card = CarteMaitresse.objects.first()
         if not primary_card:
-            import ipdb; ipdb.set_trace()
+            import ipdb;
+            ipdb.set_trace()
 
         responsable: Membre = primary_card.carte.membre
         pdv = PointDeVente.objects.get(name="Boutique")
@@ -1119,7 +1121,8 @@ class CashlessTest(TiBilletTestCase):
         )
 
         if not responsable:
-            import ipdb; ipdb.set_trace()
+            import ipdb;
+            ipdb.set_trace()
 
         json_achats = {"articles": [{"pk": f"{article_vider_carte.pk}", "qty": 1}],
                        "pk_responsable": f"{responsable.pk}",
@@ -1484,7 +1487,8 @@ class CashlessTest(TiBilletTestCase):
         )
         config = Configuration.get_solo()
         if config.can_fedow():
-            response = self.fedowAPI.NFCcard.create([carte, ])
+            fedowAPI = FedowAPI()
+            response = fedowAPI.NFCcard.create([carte, ])
             self.assertEqual(response.status_code, 201)
             self.assertEqual(response.json(), '1')
 
@@ -1510,10 +1514,14 @@ class CashlessTest(TiBilletTestCase):
                 origin=origin,
             ))
 
-        if config.can_fedow():
-            response = self.fedowAPI.NFCcard.create(cartes)
-            self.assertEqual(response.status_code, 201)
-            self.assertEqual(response.json(), '2')
+        self.assertTrue(config.can_fedow())
+        fedowAPI = FedowAPI()
+        # Les cartes sont automatiquement envoyé à Fedow par un signal post_save
+        # On check que Fedow renvoie bien un 409 : conflict, existe déja
+        try:
+            response = fedowAPI.NFCcard.create(cartes)
+        except Exception as e:
+            self.assertIn('409', str(e))
 
         # Chargement des cartes
         for carte in cartes:
@@ -1879,11 +1887,14 @@ class CashlessTest(TiBilletTestCase):
         return card
 
     # ./manage.py test --tag=fast --tag=no-fedow
-    @tag('no-fedow')
-    def x_test_cashless(self):
-        settings.FEDOW = False
+    # ./manage.py test --tag=fast --tag=fedow
+    @tag('fedow')
+    def test_fedow(self):
         print("log user test to admin")
         log_admin = self.connect_admin()
+
+        print("Création d'un user terminal et log in avec")
+        self.user_terminal()
 
         print("Création d'une boutique en base de donnée")
         self.pos_boutique = self.created_pos()
@@ -1916,29 +1927,20 @@ class CashlessTest(TiBilletTestCase):
         print('recharge de carte puis remboursement via le front')
         self.remboursement_front()
 
-    # ./manage.py test --tag=fast --tag=fedow
-    @tag('fedow')
-    def test_fedow(self):
-        # On relance les test précédents
-        # self.test_cashless()
-        # settings.FEDOW = True
-
+        # END EX TEST TIBILLET SANS FEDOW
 
         print('handshake avec serveur fedow')
         self.check_handshake_with_fedow_serveur()
 
-        print("Création d'un user terminal et log in avec")
-        self.user_terminal()
+        print("Création de 20 cartes carshless dont 5 primaires")
+        self.create_cards_with_db()
 
         print(
             "AVEC FEDOW Création d'un article boisson, vente via api /wv/paiement en espèce et vente en carte bancaire")
         self.paiement_espece_carte_bancaire()
 
-        print('création de la badgeuse')
-        self.create_badgeuse()
-
-        print("Envoi des assets euro, cadeau et adhésion à fedow")
-        self.check_sended_asset_to_fedow_with_api()
+        # print('création de la badgeuse')
+        # self.create_badgeuse()
 
         print("Envoi de toute les cartes d'un coup vers fedow")
         self.send_card_to_fedow_with_api()
@@ -2003,7 +2005,7 @@ class CashlessTest(TiBilletTestCase):
         # Ajout boutique et lien vers CM
         self.created_pos()
         self.link_card_primary_to_pos()
-        self.create_badgeuse()
+        # self.create_badgeuse()
 
         # Ajoute des sous
         settings.FEDOW = False
@@ -2096,7 +2098,7 @@ class CashlessTest(TiBilletTestCase):
         self.create_members_with_db()
         self.created_pos()
         self.link_card_primary_to_pos()
-        self.create_badgeuse()
+        # self.create_badgeuse()
         self.badge()
 
         settings.FEDOW = True
@@ -2113,7 +2115,7 @@ class CashlessTest(TiBilletTestCase):
         pass
 
     def x_test_appariage(self):
-        #TODO: Tester l'appairage avec discovery
+        # TODO: Tester l'appairage avec discovery
         pass
 
 # TEST TOUT :

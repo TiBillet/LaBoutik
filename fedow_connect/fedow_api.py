@@ -359,7 +359,12 @@ class NFCCard():
         return self.refund(user_card_firstTagId, primary_card_fisrtTagId, void=True)
 
     def link_user(self, email: str = None, card: CarteCashless = None):
-        membre = Membre.objects.get(email=email)
+        try :
+            membre = Membre.objects.get(email=email)
+        except Exception as e :
+            print(e)
+            import ipdb; ipdb.set_trace()
+
         # Check if card is already linked to the good member
         if card.membre is not None:
             if card.membre != membre:
