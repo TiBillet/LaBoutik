@@ -640,7 +640,7 @@ class Command(BaseCommand):
                         ["https://m.tibillet.re/qr/d70fe430-439d-4ca5-a3ab-58fa21cac23e", "D70FE430", "BD8A0F40"],
                         ["https://m.tibillet.re/qr/312d83fd-bf04-4712-a082-0671b59c91c2", "312D83FD", "1D51AE3F"],
                         ["https://m.tibillet.re/qr/147701d4-747b-4934-93f2-597449bcde22", "147701D4", "BDCE2140"],
-                        ["https://m.tibillet.re/qr/58515F52-747b-4934-93f2-597449bcde22", "58515F52", "C42BC42A"],
+                        ["https://m.tibillet.re/qr/58515F52-747b-4934-93f2-597449bcde22", "58515F52", "52BE6543"],
                     ]
                 else:
                     # Pour cashless_test2
