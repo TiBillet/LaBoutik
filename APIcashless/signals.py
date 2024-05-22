@@ -127,7 +127,7 @@ def send_new_asset_to_fedow(sender, instance: MoyenPaiement, created, **kwargs):
 @receiver(post_save, sender=MoyenPaiement)
 def create_article_membership(sender, instance: MoyenPaiement, created, **kwargs):
     if created:
-        logger.info(f'MoyenPaiement {instance.get_categorie_display()} created ! Create product and price here ??? ')
+        logger.info(f'MoyenPaiement {instance.get_categorie_display()} created !')
         if instance.categorie in [
             MoyenPaiement.ADHESION,
             MoyenPaiement.MEMBERSHIP,
@@ -157,7 +157,7 @@ def create_article_membership(sender, instance: MoyenPaiement, created, **kwargs
 @receiver(post_save, sender=MoyenPaiement)
 def create_article_badge(sender, instance: MoyenPaiement, created, **kwargs):
     if created:
-        logger.info(f'MoyenPaiement {instance.get_categorie_display()} created ! Create product and price here ??? ')
+        logger.info(f'MoyenPaiement {instance.get_categorie_display()} created !')
         if instance.categorie in [
             MoyenPaiement.BADGE,
             MoyenPaiement.EXTERNAL_BADGE,
