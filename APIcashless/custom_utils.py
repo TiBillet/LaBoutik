@@ -200,6 +200,8 @@ def test_pin_on_appareillage(pin_code: int):
 
 
 def badgeuse_creation():
+    # L'article badgeuse vient de lespass
+    """
     if not MoyenPaiement.objects.filter(categorie=MoyenPaiement.BADGE).exists():
         mp_badge = MoyenPaiement.objects.create(
             categorie=MoyenPaiement.BADGE,
@@ -214,3 +216,5 @@ def badgeuse_creation():
         article_badgeur, created = Articles.objects.get_or_create(name=_("Badger"),
                                                                   methode_choices=Articles.BADGEUSE,
                                                                   categorie=categorie_badge)
+    """
+    pass

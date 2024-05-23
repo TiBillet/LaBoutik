@@ -359,7 +359,12 @@ class NFCCard():
         return self.refund(user_card_firstTagId, primary_card_fisrtTagId, void=True)
 
     def link_user(self, email: str = None, card: CarteCashless = None):
-        membre = Membre.objects.get(email=email)
+        try :
+            membre = Membre.objects.get(email=email)
+        except Exception as e :
+            print(e)
+            import ipdb; ipdb.set_trace()
+
         # Check if card is already linked to the good member
         if card.membre is not None:
             if card.membre != membre:
@@ -547,7 +552,7 @@ class AssetFedow():
     def get_or_create_asset(self, mp: MoyenPaiement):
         try :
             asset_serialized = self.retrieve(f"{mp.pk}")
-            return asset_serialized
+            return asset_serialized, False
         except Exception as e:
             asset = {
                     "uuid": f"{mp.pk}",
@@ -563,7 +568,7 @@ class AssetFedow():
             if response_asset.status_code == 201:
                 serialized_assets = AssetValidator(data=response_asset.json(), many=False)
                 if serialized_assets.is_valid():
-                    return serialized_assets.validated_data
+                    return serialized_assets.validated_data, True
                 logger.error(serialized_assets.errors)
                 raise Exception(f"{serialized_assets.errors}")
             logger.error(response_asset)

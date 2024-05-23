@@ -682,7 +682,7 @@ export function decrementer_nombre_produit(uuid_bt_article) {
     // obtenir l'enregistrement de la variable "total" du DOM
     let total = parseFloat(document.querySelector('#article-infos-divers').getAttribute('data-total'))
     // soustraire le prix de l'article sélectionné
-    total = total - prix_article
+    total = new Big(total).minus(prix_article)
     // enregistre la nouvelle valeur dans le DOM
     document.querySelector('#article-infos-divers').setAttribute('data-total', total)
     // maj bouton valider

@@ -802,7 +802,7 @@ class MoyenPaiement(models.Model):
             MoyenPaiement.LOCAL_EURO: 'TLF',
             MoyenPaiement.LOCAL_GIFT: 'TNF',
             MoyenPaiement.FIDELITY: 'FID',
-            MoyenPaiement.BADGE: 'BADGE',
+            MoyenPaiement.BADGE: 'BDG',
         }
         return self_category_map.get(self.categorie, None)
 
@@ -1057,7 +1057,7 @@ class CarteMaitresse(models.Model):
     def __str__(self):
         if self.carte.membre:
             return f"{(self.carte.membre.prenom if self.carte.membre.prenom else '')} {self.carte.membre.name}"
-        return _("Erreur : aucun membre")
+        return "No member linked"
 
     def points_de_ventes(self):
         return ", ".join([pdv["name"] for pdv in self.points_de_vente.values('name')])
@@ -1065,7 +1065,7 @@ class CarteMaitresse(models.Model):
     def membre(self):
         if self.carte.membre:
             return f"{(self.carte.membre.prenom if self.carte.membre.prenom else '')} {self.carte.membre.name}"
-        return _("Erreur : aucun membre")
+        return "No member linked"
 
     class Meta:
         verbose_name = _('Carte primaire')
@@ -1764,7 +1764,7 @@ class Configuration(SingletonModel):
 
     email = models.EmailField(null=True, blank=True)
 
-    numero_tva = models.PositiveIntegerField(null=True, blank=True)
+    numero_tva = models.CharField(max_length=20, null=True, blank=True)
 
     taux_tva = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
 
