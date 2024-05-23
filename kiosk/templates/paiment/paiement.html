@@ -9,34 +9,16 @@
             <div class="col-10">
                 <h2> You can insert yur bills in the device!</h2>
             </div>
+        </div>
 
-
-            <div class="col-10"
-                 hx-post="recharge_paiment_pg/"
-                 hx-include="this"
-                 hx-trigger="load delay:4s"
-                 hx-target="this"
-            >
-                <input type="hidden" id="CardUuid" name="uuid" value="{{ card.id }}"/>
-                <input type="hidden" id="totalPaiment" name="total" value="{{ total }}"/>
-                <input type="hidden" id="choiceAmount" name="choice_amount" value="{{ paiment_choice.amount }}"/>
-                <input type="hidden" id="deviceAmount" name="device_amount" value="{{ paiment_choice.device_amount }}"/>
-                <input type="hidden" id="paimentUuid" name="paiment_uuid" value="{{ paiment_choice.uuid }}"/>
-
-                
-                
-{#                <input type="hidden" id="uuidFlask" name="uuid" value="{{ uuid }}"/>#}
-{#                <input type="hidden" id="totalFlask" name="total" value="{{ total }}"/>#}
-            </div>
-
+        <div class="row"
+             hx-get="api/card/return_device/"
+             hx-trigger="every 1s"
+             hx-target="this"
+        >
         </div>
     
     </div>
-
-<script>
-        
-</script>
-
 
 
 {% endblock content %}

@@ -1,9 +1,38 @@
-<input type="text" id="given_card"
-value="{{ tag_id }}" name="tag_id"/>
-<div
-        hx-post="api/card/scan/"
-        hx-include="#given_card"
-        hx-trigger="load"
-        hx-target="#mainPage"
->
-</div>
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+    <div id="mainPage2">
+
+
+        <div class="center-text" id="main_page">
+            <div class="row">
+                <div class="col-12">
+                    <h4 style="color: red">{{ message }}</h4>
+                </div>
+                <div class="col-12">
+                    <h1>Welcome, please scan your wristband to check or refille your wallet</h1>
+                </div>
+            </div>
+        </div>
+
+
+        <input type="text" id="given_card"
+        value="{{ tag_id }}" name="tag_id"/>
+        <div
+                hx-post="api/card/scan/"
+                hx-include="#given_card"
+                hx-trigger="load"
+                hx-target="#mainPage2"
+        >
+        </div>
+
+    </div>
+
+
+<script>
+
+</script>
+
+
+{% endblock content %}

@@ -44,7 +44,7 @@
                         <input type="hidden" id="cardUuid" value="{{ card.uuid }}" name="uuid"/>
                         <h4>Total: <output id="total_dj" value="{{ total_dj }}" name="total"> {{ total }}</output></h4>
                             <button type="button" class="btn btn-success" 
-                                    hx-get="recharge/"
+                                    hx-get="api/card/recharge/"
                                     hx-include="#cardUuid, #total_dj"
                                     hx-trigger="click"
                                     hx-target="#cash_content"

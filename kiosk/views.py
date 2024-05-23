@@ -32,7 +32,7 @@ def index(request):
     if last_scanned:
         # Check if the last card has been scaned the last 2 seconds
         if last_scanned.created_at >= timezone.now() - timezone.timedelta(seconds=2):
-            return render(request, 'kiosk_pages/show.html'
+            return render(request, 'kiosk_pages/send_card.html'
                           , {'tag_id': last_scanned.card.tag_id})
 
     return render(request, 'kiosk_pages/first_page.html')
@@ -45,6 +45,7 @@ class CardViewset(viewsets.ViewSet):
         scanned_card_id = request.POST.get('scanded_tag_id')
         ScannedNfcCard.objects.create(reeded_card=scanned_card_id)
         return HttpResponse(scanned_card_id)
+
 
     # post from card scan /
     @action(detail=False, methods=['POST'])
@@ -61,6 +62,25 @@ class CardViewset(viewsets.ViewSet):
                       'kiosk_pages/show.html',
                       {'card': card})
 
+
+    # On this part we gather the total of amount selected
+    @action(detail=False, methods=['POST'])
+    def recharge(self,request):
+        selected_data = AmountValidator(data=request.data)
+        # If it happens that the uuid or the total is wrong
+        if not selected_data.is_valid():
+            message = "Error, please try again!"
+
+            return render(request, 'kiosk_pages/first_page.html',
+                          {'message':message})
+
+        uuid = selected_data.validated_data.get('uuid')
+        total = selected_data.validated_data.get('total')
+
+        return render(request,
+        'kiosk_pages/recharge.html',
+        {'total':total, 'uuid': uuid})
+
     # post from paiment
     @action(detail=False, methods=['POST'])
     def paiment(self, request):
@@ -75,10 +95,16 @@ class CardViewset(viewsets.ViewSet):
         total: Decimal = choosed_data.validated_data.get('total')
 
         paiment_choice = Payment.objects.create(amount=total, card=card)
-
         context = {'card': card, 'total': total, 'paiment_choice': paiment_choice}
 
         return render(request, 'paiment/paiement.html', context=context)
+
+
+    # Amoount of bills recived from the device
+    @action(detail=False, methods=['POST'])
+    def devices_bill(self,request):
+        pass
+
 
     @action(detail=False, methods=['POST'])
     def confirmation_paiment(self, request):
@@ -121,15 +147,15 @@ def recharge_paiment_pg(request):
     return render(request, 'paiment/recharge_paiment_pg.html', context=context)
 
 
-# recharging value
-def recharge(request):
-    if request.method == 'GET':
-        total = request.GET.get('total')
-        uuid = request.GET.get('uuid')
-
-        return render(request,
-                      'kiosk_pages/recharge.html',
-                      {'total': total, 'uuid': uuid})
+# # recharging value
+# def recharge(request):
+#     if request.method == 'GET':
+#         total = request.GET.get('total')
+#         uuid = request.GET.get('uuid')
+#
+#         return render(request,
+#                       'kiosk_pages/recharge.html',
+#                       {'total': total, 'uuid': uuid})
 
 
 # Stripe ----------------

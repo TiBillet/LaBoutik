@@ -6,3 +6,4 @@ class CardSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarteCashless
         fields = '__all__'
+
