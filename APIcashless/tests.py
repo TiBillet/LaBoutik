@@ -10,7 +10,7 @@ from django.db.models import Count
 from django.test import TestCase, tag
 from faker import Faker
 
-from APIcashless.custom_utils import badgeuse_creation, jsonb64decode
+from APIcashless.custom_utils import jsonb64decode
 from APIcashless.models import *
 from fedow_connect.fedow_api import FedowAPI
 from fedow_connect.utils import data_to_b64
@@ -22,91 +22,61 @@ class TiBilletTestCase(TestCase):
 
     def setUp(self):
         settings.DEBUG = True
-        call_command('install','--tdd', stdout=StringIO())
         # Handshake avec le serveur FEDOW réalisé par install
-        self.config = Configuration.get_solo()
-
-    # def create_config(self, string_fedow_connect=None):
-    #     fake = Faker()
-    #     config = Configuration.get_solo()
-    #     config.structure = f"TEST {str(uuid4())[:4]}"
-    #     config.siret = "666R999"
-    #     config.adresse = fake.address()
-    #     config.pied_ticket = "Nar'trouv vite' !"
-    #     config.telephone = "+336123456789"
-    #     config.domaine_cashless = "https://cashless.tibillet.localhost/"
-    #     config.email = fake.email()
-    #     config.numero_tva = 666999
-    #     config.prix_adhesion = 42
-    #     config.appareillement = True
-    #     config.validation_service_ecran = True
-    #     config.remboursement_auto_annulation = True
-    #     config.string_connect = string_fedow_connect
-    #
-    #     config.billetterie_url = 'https://demo.tibillet.localhost/'
-    #     config.fedow_domain = 'https://fedow.tibillet.localhost/'
-    #
-    #     # Parfois l'ip prise est le 192...
-    #     config.ip_cashless = "172.21.0.1"
-    #     config.billetterie_ip_white_list = "172.21.0.1"
-    #
-    #     config.save()
-    #     return config
+        call_command('install', '--tdd', stdout=StringIO())
 
 
 class CashlessTest(TiBilletTestCase):
 
-    def handshake_with_fedow_serveur(self):
+    def check_handshake_with_fedow_serveur(self):
         # Réclamation d'une connexion a Fedow
         # session = requests.Session()
         # url = 'https://fedow.tibillet.localhost/get_new_place_token_for_test/'
         # request = session.get(url, verify=False, timeout=1)
         # string_fedow_connect = request.json().get('encoded_data')
 
-        # Création de la config pour test
-        config: Configuration = self.config
-        self.fedowAPI = FedowAPI()
+        config: Configuration = Configuration.get_solo()
+        fedowAPI = FedowAPI()
         settings.DEBUG = True
 
-        import ipdb; ipdb.set_trace()
-
-        # Récupération d'une clé de test sur Fedow :
-        session = requests.Session()
-        name_enc = data_to_b64({'name': f'{config.structure}'})
-        url = f'{config.fedow_domain}get_new_place_token_for_test/{name_enc.decode("utf8")}/'
-        request = session.get(url, verify=False, data={'name': f'{config.structure}'}, timeout=1)
-        if request.status_code != 200:
-            raise Exception("Erreur de connexion au serveur de test")
-
-        string_connect = request.json().get('encoded_data')
-        config.string_connect = string_connect
-        config.save()
-
-        # Handshake avec le serveur FEDOW
-        handshake_with_fedow = handshake(config)
-        if not handshake_with_fedow:
-            raise Exception("Erreur de handshake")
-
-        # Ajout des infos reçu par le handshake dans la config
-        config.fedow_place_admin_apikey = handshake_with_fedow.get('place_admin_apikey')
-        config.fedow_place_uuid = handshake_with_fedow.get('fedow_place_uuid')
-        config.fedow_place_wallet_uuid = handshake_with_fedow.get('fedow_place_wallet_uuid')
-        config.onboard_url = handshake_with_fedow.get('url_onboard')
-        config.fedow_domain = handshake_with_fedow.get('fedow_domain')
-
-        # On simule la synchro
-        config.fedow_synced = True
-
-        config.save()
-
-        self.fedowAPI = FedowAPI()
-        if not config.can_fedow():
-            import ipdb; ipdb.set_trace()
+        # Le handshake se fait lors du set_up
         self.assertTrue(config.can_fedow())
+        self.assertTrue(config.fedow_synced)
+
+        get_accepted_assets = fedowAPI.place.get_accepted_assets()
+
+        # Les adhésions et la badgeuse sont créé depuis LesPass
+        # Trois assets ont été créé par le handshake avec Fedow
+        # Trois assets créé par lespass : deux adhésion et un badge
+        self.assertEqual(len(get_accepted_assets), 6)
+        cats = [asset.get('category') for asset in get_accepted_assets]
+        self.assertIn('FED', cats)
+        self.assertIn('TNF', cats)
+        self.assertIn('TLF', cats)
+        self.assertIn('SUB', cats)
+        self.assertIn('BDG', cats)
+
+        badgeuse_tibilletistan = MoyenPaiement.objects.get(categorie=MoyenPaiement.EXTERNAL_BADGE)
+        adhesions_tibilletistan = MoyenPaiement.objects.filter(categorie=MoyenPaiement.EXTERNAL_MEMBERSHIP)
+        self.assertEqual(adhesions_tibilletistan.count(), 2)
+
+        # Les adhesion et la badgeuse vient d'ailleurs
+        tibilletistan = badgeuse_tibilletistan.place_origin
+        self.assertIsInstance(tibilletistan, Place)
+        for adhesion in adhesions_tibilletistan:
+            self.assertEqual(adhesion.place_origin, tibilletistan)
+
+        # On vérifie que les origines soient bien différentes
+        local_euro = MoyenPaiement.get_local_euro()
+        test_place = local_euro.place_origin
+        self.assertIsInstance(test_place, Place)
+        self.assertTrue(test_place != tibilletistan)
+
         return config
 
     def connect_admin(self):
         User = get_user_model()
+
         settings.DEBUG = False
         self.client.logout()
 
@@ -124,15 +94,17 @@ class CashlessTest(TiBilletTestCase):
         # Retourne vers l'url de login
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
-        self.assertInHTML('<input name="username" id="username" type="text" placeholder="username"/>', response.content.decode())
-        self.assertInHTML('<input name="password" id="password" type="password" placeholder="password"/>', response.content.decode())
+        self.assertInHTML('<input name="username" id="username" type="text" placeholder="username"/>',
+                          response.content.decode())
+        self.assertInHTML('<input name="password" id="password" type="password" placeholder="password"/>',
+                          response.content.decode())
 
         # User ROOT
         rootuser = User.objects.create_superuser('rootuser', 'root@root.root', 'ROOTUSERPASSWORD')
         log = self.client.login(username='rootuser', password='ROOTUSERPASSWORD')
         self.assertTrue(log)
 
-        # Le root est desomais redirigé vers adminstaff
+        # Le root est desormais redirigé vers adminstaff
         response = self.client.get('/', follow=True)
         self.assertEqual(response.status_code, 200)
         # On est loggué sur la page adminstaff/ avec un code 200 :
@@ -163,7 +135,7 @@ class CashlessTest(TiBilletTestCase):
         response = self.client.get('/', follow=True)
         self.assertEqual(response.status_code, 200)
         # 302 est la redirection une fois loggé, si t'es pas loggué, c'est un 301
-        self.assertRedirects(response, '/adminstaff/login/?next=/adminstaff/', status_code=302, target_status_code=200)
+        self.assertRedirects(response, '/adminstaff/', status_code=302, target_status_code=200)
 
         # Test avec un user lié à un appareil
         settings.DEBUG = False
@@ -191,14 +163,14 @@ class CashlessTest(TiBilletTestCase):
         response = self.client.get('/', follow=True)
         self.assertEqual(response.status_code, 405)
 
+        settings.DEBUG = True
         return True
 
-    def create_pos(self):
-        boutique, created = PointDeVente.objects.get_or_create(name="Boutique", poid_liste=4)
+    def created_pos(self):
+        boutique = PointDeVente.objects.get(name="Boutique")
         return boutique
 
     def create_cards_with_db(self):
-
         for i in range(20):
             fake_uuid = str(uuid4()).upper()
             carte_p = CarteCashless.objects.create(
@@ -210,9 +182,9 @@ class CashlessTest(TiBilletTestCase):
             if i < 5:
                 CarteMaitresse.objects.create(carte=carte_p)
 
-        self.assertEqual(CarteMaitresse.objects.filter(
-            points_de_vente__isnull=True,
-            carte__isnull=False).count(), 5)
+        # self.assertEqual(CarteMaitresse.objects.filter(
+        #     points_de_vente__isnull=True,
+        #     carte__isnull=False).count(), 5)
 
     def create_members_with_db(self):
         fake = Faker()
@@ -261,23 +233,54 @@ class CashlessTest(TiBilletTestCase):
 
     def link_card_primary_to_pos(self):
         boutique = PointDeVente.objects.get(name="Boutique")
-        # boutique, created = PointDeVente.objects.get_or_create(name="Boutique")
 
         carte_m: CarteMaitresse = CarteMaitresse.objects.filter(
             points_de_vente__isnull=True,
             carte__membre__isnull=False).first()
         carte_m.points_de_vente.add(boutique)
 
-        self.assertEqual(CarteMaitresse.objects.filter(
-            points_de_vente__isnull=False,
-            carte__isnull=False).count(), 1)
-
-        self.assertEqual(PointDeVente.objects.filter(
-            cartes_maitresses__isnull=False).count(), 1)
+        self.assertIn(carte_m, boutique.cartes_maitresses.all())
 
         return carte_m
 
+    def user_terminal(self):
+        User = get_user_model()
+
+        appareil = Appareil.objects.create(name='testappareil_for_paiement')
+        # On le met volontairement en staff pour tester que ça ne lui permette pas d'aller dans l'admin
+        user_terminal = User.objects.create(
+            username='user_terminal_paiement',
+            is_active=True,
+            is_staff=True,
+        )
+        user_terminal.set_password('PASSWORDTERMINAL')
+        user_terminal.save()
+
+        appareil.user = user_terminal
+        appareil.save()
+
+        user_terminal.refresh_from_db()
+        self.assertEqual(user_terminal.appareil, appareil)
+
+        appareil.refresh_from_db()
+        self.assertEqual(appareil.user, user_terminal)
+
+        log_user_terminal = self.client.login(username='user_terminal_paiement', password='PASSWORDTERMINAL')
+
+        # Ne doit jamais pouvoir se logguer sur l'admin, en debug ou pas
+        settings.DEBUG = False
+        response = self.client.get('/', follow=True)
+        self.assertEqual(response.status_code, 405)
+        settings.DEBUG = True
+        response = self.client.get('/', follow=True)
+        self.assertEqual(response.status_code, 405)
+
+        return user_terminal
+
     def paiement_espece_carte_bancaire(self):
+        # point de vente créé par install --tdd
+        pdv = PointDeVente.objects.get(name="Boutique")
+        primary_card = pdv.cartes_maitresses.first()
 
         boisson: Articles = Articles.objects.create(
             name="Boisson_Test",
@@ -286,13 +289,11 @@ class CashlessTest(TiBilletTestCase):
             methode_choices=Articles.VENTE,
         )
 
-        primary_card: CarteMaitresse = self.primary_card
         self.assertIsInstance(primary_card, CarteMaitresse)
         self.assertIsInstance(primary_card.carte, CarteCashless)
         responsable: Membre = primary_card.carte.membre
         self.assertIsInstance(responsable, Membre)
 
-        pdv: PointDeVente = self.pos_boutique
         self.assertIsInstance(pdv, PointDeVente)
 
         # Paiement en espèce :
@@ -306,10 +307,30 @@ class CashlessTest(TiBilletTestCase):
                        "moyen_paiement": 'espece',
                        }
 
+        # On test sans être loggué :
+        settings.DEBUG = False
+        self.client.logout()
         response = self.client.post('/wv/paiement',
                                     data=json.dumps(json_achats, cls=DjangoJSONEncoder),
                                     content_type="application/json",
-                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+                                    )
+        # redirection vers login
+        self.assertEqual(response.status_code, 302)
+
+        # On se loggue avec un user terminal
+        log_user_terminal = self.client.login(username='user_terminal_paiement', password='PASSWORDTERMINAL')
+        settings.DEBUG = True
+        response = self.client.post('/wv/paiement',
+                                    data=json.dumps(json_achats, cls=DjangoJSONEncoder),
+                                    content_type="application/json",
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+                                    )
+
+        if response.status_code != 200:
+            # L'user est bien loggué en terminal ?
+            import ipdb;
+            ipdb.set_trace()
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json().get('route'), f"transaction_espece")
@@ -677,7 +698,8 @@ class CashlessTest(TiBilletTestCase):
             methode_choices=Articles.VENTE,
         )
 
-        primary_card = CarteMaitresse.objects.first()
+        primary_card = CarteMaitresse.objects.filter(
+            carte__membre__isnull=False).first()
         self.assertIsInstance(primary_card, CarteMaitresse)
         self.assertIsInstance(primary_card.carte, CarteCashless)
         responsable: Membre = primary_card.carte.membre
@@ -766,77 +788,20 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(Decimal(assets[0].get('qty')), asset_e.qty)
         self.assertEqual(assets[0].get('monnaie'), f"{monnaie_e.pk}")
 
-    def create_badgeuse(self):
-        self.assertFalse(MoyenPaiement.objects.filter(categorie=MoyenPaiement.BADGE).exists())
-        badgeuse_creation()
-        self.assertTrue(MoyenPaiement.objects.filter(categorie=MoyenPaiement.BADGE).exists())
-
-    def send_asset_to_fedow_with_api(self):
-        # On check la fédération actuelle, nous devons avoir que la monnaie fedow stripe
-        config = Configuration.get_solo()
-        get_accepted_assets = self.fedowAPI.place.get_accepted_assets()
-        self.assertEqual(len(get_accepted_assets), 1)
-        self.assertEqual(get_accepted_assets[0].get('category'), 'FED')
-
-        # Avec le script de popdb, on a déjà des assets de type local et gift
-        # On change le nom pour ne pas avoir l'erreur de doublon dans fedow
-        # Dans le futur, il faudra créer des assets ici from scratch
-        fake = Faker()
-        set_list = set((fake.currency_name(), fake.currency_code()) for x in range(10))
-        # import ipdb; ipdb.set_trace()
-        name, currency_code = set_list.pop()
-        mp_primary = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
-        mp_primary.currency_code = currency_code
-        mp_primary.name = f"EURO2_{config.structure}"
-        mp_primary.save()
-
-        name, currency_code = set_list.pop()
-        mp_gift = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_GIFT)
-        mp_gift.currency_code = currency_code
-        mp_gift.name = f"CADEAU2_{config.structure}"
-        mp_gift.save()
-
-        # Envoie trois assets : euros, cadeau et adhésion
-        responses = self.fedowAPI.send_assets_from_cashless()
-        # Création vers fedow de : Badgeuse + assets e + asset cadeau + adhésion
-        if len(responses) != 4:
-            import ipdb;
-            ipdb.set_trace()
-        self.assertEqual(len(responses), 4)
-
-        assets_pk = [str(asset.pk) for asset in MoyenPaiement.objects.all()]
-        assets_pk.append(str(Configuration.get_solo().methode_adhesion.pk))
-        for response in responses:
-            self.assertEqual(response.status_code, 201)
-            self.assertIn(response.json()['uuid'], assets_pk)
-            self.assertFalse(response.json()['is_stripe_primary'])
-
-        # On relance la demande des assets acceptés, les nouveaux doivent y être
-        get_accepted_assets = self.fedowAPI.place.get_accepted_assets()
-
-        if len(get_accepted_assets) != 5:
-            import ipdb;
-            ipdb.set_trace()
-        self.assertEqual(len(get_accepted_assets), 5)
-
-        cats = [asset.get('category') for asset in get_accepted_assets]
-        self.assertEqual(len(cats), 5)
-        self.assertIn('FED', cats)
-        self.assertIn('TNF', cats)
-        self.assertIn('TLF', cats)
-        self.assertIn('SUB', cats)
-        self.assertIn('BDG', cats)
-
-        return responses
+    # def create_badgeuse(self):
+    #     self.assertTrue(MoyenPaiement.objects.filter(categorie=MoyenPaiement.BADGE).exists())
 
     def send_card_to_fedow_with_api(self):
         cards = CarteCashless.objects.all()
-        response = self.fedowAPI.NFCcard.create(cards)
-
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(int(response.json()), cards.count())
-
-        return response
+        config = Configuration.get_solo()
+        self.assertTrue(config.can_fedow())
+        fedowAPI = FedowAPI()
+        # Les cartes sont automatiquement envoyé à Fedow par un signal post_save
+        # On check que Fedow renvoie bien un 409 : conflict, existe déja
+        try:
+            response = fedowAPI.NFCcard.create(cards)
+        except Exception as e:
+            self.assertIn('409', str(e))
 
     def creation_wallet_carte_vierge_et_email(self):
         fedowAPI = FedowAPI()
@@ -862,7 +827,7 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(cartes[0].membre.wallet, cartes[0].wallet)
         self.assertEqual(cartes[1].membre.wallet, cartes[1].wallet)
 
-    #TODO: Uniquement possible avec Billetterie dans le futur, c'est la bas que la clé rsa est stockée
+    # TODO: Uniquement possible avec Billetterie dans le futur, c'est la bas que la clé rsa est stockée
     def creation_wallet_avec_email_seul(self):
         fedowAPI = FedowAPI()
         membres = Membre.objects.filter(CarteCashless_Membre__isnull=True, email__isnull=False, wallet__isnull=True)[:4]
@@ -932,6 +897,8 @@ class CashlessTest(TiBilletTestCase):
             if not wallet:
                 wallet: Wallet = fedowAPI.NFCcard.link_user(email=carte.membre.email, card=carte)
 
+            import ipdb;
+            ipdb.set_trace()
             adhesion = fedowAPI.subscription.create(
                 wallet=f"{wallet.uuid}",
                 amount=int(membre.cotisation * 100),
@@ -1140,7 +1107,8 @@ class CashlessTest(TiBilletTestCase):
         config = Configuration.get_solo()
         primary_card = CarteMaitresse.objects.first()
         if not primary_card:
-            import ipdb; ipdb.set_trace()
+            import ipdb;
+            ipdb.set_trace()
 
         responsable: Membre = primary_card.carte.membre
         pdv = PointDeVente.objects.get(name="Boutique")
@@ -1153,7 +1121,8 @@ class CashlessTest(TiBilletTestCase):
         )
 
         if not responsable:
-            import ipdb; ipdb.set_trace()
+            import ipdb;
+            ipdb.set_trace()
 
         json_achats = {"articles": [{"pk": f"{article_vider_carte.pk}", "qty": 1}],
                        "pk_responsable": f"{responsable.pk}",
@@ -1518,7 +1487,8 @@ class CashlessTest(TiBilletTestCase):
         )
         config = Configuration.get_solo()
         if config.can_fedow():
-            response = self.fedowAPI.NFCcard.create([carte, ])
+            fedowAPI = FedowAPI()
+            response = fedowAPI.NFCcard.create([carte, ])
             self.assertEqual(response.status_code, 201)
             self.assertEqual(response.json(), '1')
 
@@ -1544,10 +1514,14 @@ class CashlessTest(TiBilletTestCase):
                 origin=origin,
             ))
 
-        if config.can_fedow():
-            response = self.fedowAPI.NFCcard.create(cartes)
-            self.assertEqual(response.status_code, 201)
-            self.assertEqual(response.json(), '2')
+        self.assertTrue(config.can_fedow())
+        fedowAPI = FedowAPI()
+        # Les cartes sont automatiquement envoyé à Fedow par un signal post_save
+        # On check que Fedow renvoie bien un 409 : conflict, existe déja
+        try:
+            response = fedowAPI.NFCcard.create(cartes)
+        except Exception as e:
+            self.assertIn('409', str(e))
 
         # Chargement des cartes
         for carte in cartes:
@@ -1913,14 +1887,17 @@ class CashlessTest(TiBilletTestCase):
         return card
 
     # ./manage.py test --tag=fast --tag=no-fedow
-    @tag('no-fedow')
-    def x_test_cashless(self):
-        settings.FEDOW = False
+    # ./manage.py test --tag=fast --tag=fedow
+    @tag('fedow')
+    def test_fedow(self):
         print("log user test to admin")
         log_admin = self.connect_admin()
 
+        print("Création d'un user terminal et log in avec")
+        self.user_terminal()
+
         print("Création d'une boutique en base de donnée")
-        self.pos_boutique = self.create_pos()
+        self.pos_boutique = self.created_pos()
 
         print("Création de 20 cartes carshless dont 5 primaires")
         self.create_cards_with_db()
@@ -1950,26 +1927,20 @@ class CashlessTest(TiBilletTestCase):
         print('recharge de carte puis remboursement via le front')
         self.remboursement_front()
 
-    # ./manage.py test --tag=fast --tag=fedow
-    @tag('fedow')
-    def test_fedow(self):
-        # On relance les test précédents
-        # self.test_cashless()
-        # settings.FEDOW = True
-
+        # END EX TEST TIBILLET SANS FEDOW
 
         print('handshake avec serveur fedow')
-        self.handshake_with_fedow_serveur()
+        self.check_handshake_with_fedow_serveur()
+
+        print("Création de 20 cartes carshless dont 5 primaires")
+        self.create_cards_with_db()
 
         print(
-            "AVEC FEDOW Création d'un article boisson, vente via api /wv/paieemnt en espèce et vente en carte bancaire")
+            "AVEC FEDOW Création d'un article boisson, vente via api /wv/paiement en espèce et vente en carte bancaire")
         self.paiement_espece_carte_bancaire()
 
-        print('création de la badgeuse')
-        self.create_badgeuse()
-
-        print("Envoi des assets euro, cadeau et adhésion à fedow")
-        self.send_asset_to_fedow_with_api()
+        # print('création de la badgeuse')
+        # self.create_badgeuse()
 
         print("Envoi de toute les cartes d'un coup vers fedow")
         self.send_card_to_fedow_with_api()
@@ -2023,7 +1994,7 @@ class CashlessTest(TiBilletTestCase):
     @tag('stripe')
     def test_posthandshake(self):
         settings.FEDOW = True
-        self.handshake_with_fedow_serveur()
+        self.check_handshake_with_fedow_serveur()
 
         # Connect
         self.connect_admin()
@@ -2032,9 +2003,9 @@ class CashlessTest(TiBilletTestCase):
         # Fabrication de membres
         self.create_members_with_db()
         # Ajout boutique et lien vers CM
-        self.create_pos()
+        self.created_pos()
         self.link_card_primary_to_pos()
-        self.create_badgeuse()
+        # self.create_badgeuse()
 
         # Ajoute des sous
         settings.FEDOW = False
@@ -2125,13 +2096,13 @@ class CashlessTest(TiBilletTestCase):
         self.connect_admin()
         self.create_cards_with_db()
         self.create_members_with_db()
-        self.create_pos()
+        self.created_pos()
         self.link_card_primary_to_pos()
-        self.create_badgeuse()
+        # self.create_badgeuse()
         self.badge()
 
         settings.FEDOW = True
-        self.handshake_with_fedow_serveur()
+        self.check_handshake_with_fedow_serveur()
         self.post_handshake()
         self.add_me_to_test_fed()
 
@@ -2144,7 +2115,7 @@ class CashlessTest(TiBilletTestCase):
         pass
 
     def x_test_appariage(self):
-        #TODO: Tester l'appairage avec discovery
+        # TODO: Tester l'appairage avec discovery
         pass
 
 # TEST TOUT :

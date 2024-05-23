@@ -848,15 +848,14 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 'ticketZ_printer',
             ),
         }),
-        ('Billetterie', {
-            'fields': (
-                'key_billetterie',
-                'billetterie_ip_white_list',
-                'billetterie_url',
-                'revoquer_key_billetterie',
-
-            ),
-        }),
+        # ('Billetterie', {
+        #     'fields': (
+                # 'key_billetterie',
+                # 'billetterie_ip_white_list',
+                # 'billetterie_url',
+                # 'revoquer_key_billetterie',
+            # ),
+        # }),
         ('OCECO', {
             'fields': (
                 'valeur_oceco',
@@ -872,11 +871,11 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 'cashback_value',
             ),
         }),
-        ('Badgeuse', {
-            'fields': (
-                'badgeuse_active',
-            ),
-        }),
+        # ('Badgeuse', {
+        #     'fields': (
+        #         'badgeuse_active',
+        #     ),
+        # }),
         ('Fidelity', {
             'fields': (
                 'fidelity_active',
@@ -954,11 +953,10 @@ class ConfigurationAdmin(SingletonModelAdmin):
         return form
 
     def save_model(self, request, instance: Configuration, form, change):
-
-        if (not form.initial.get('badgeuse_active')
-                and instance.badgeuse_active):
+        # if (not form.initial.get('badgeuse_active')
+        #         and instance.badgeuse_active):
             # On passe de False à True
-            badgeuse_creation()
+            # badgeuse_creation()
 
         # obj.user = request.user
         ex_api_key = None
@@ -984,7 +982,8 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 messages.add_message(
                     request,
                     messages.SUCCESS,
-                    _(f"Copiez bien la clé suivante et mettez la en lieu sur ! Elle n'est pas enregistrée sur nos serveurs et ne sera affichée qu'une seule fois ici :")
+                    _(f"Copiez bien la clé suivante et mettez la en lieu sur ! "
+                      f"Elle n'est pas enregistrée sur nos serveurs et ne sera affichée qu'une seule fois ici :")
                 )
                 messages.add_message(
                     request,
@@ -998,37 +997,37 @@ class ConfigurationAdmin(SingletonModelAdmin):
             instance.odoo_api_key = None
             instance.revoquer_odoo_api_key = False
 
-        if instance.revoquer_key_billetterie:
-            if instance.key_billetterie:
-                ex_api_key = APIKey.objects.get(id=instance.key_billetterie.id)
-                instance.key_billetterie = None
-                messages.add_message(request, messages.WARNING, "API Key deleted")
-
-            else:
-                api_key = None
-                key = " "
-                # On affiche la string Key sur l'admin de django en message
-                # et django.message capitalize chaque message...
-                # du coup on fait bien gaffe à ce que je la clée générée ai bien une majusculle au début ...
-                while key[0].isupper() == False:
-                    api_key, key = APIKey.objects.create_key(name="billetterie_key")
-                    if key[0].isupper() == False:
-                        api_key.delete()
-
-                instance.key_billetterie = api_key
-
-                messages.add_message(
-                    request,
-                    messages.SUCCESS,
-                    _(f"Copiez bien la clé suivante et mettez la en lieu sur ! Elle n'est pas enregistrée sur nos serveurs et ne sera affichée qu'une seule fois ici :")
-                )
-                messages.add_message(
-                    request,
-                    messages.WARNING,
-                    f"{key}"
-                )
-
-            instance.revoquer_key_billetterie = False
+        # if instance.revoquer_key_billetterie:
+        #     if instance.key_billetterie:
+        #         ex_api_key = APIKey.objects.get(id=instance.key_billetterie.id)
+        #         instance.key_billetterie = None
+        #         messages.add_message(request, messages.WARNING, "API Key deleted")
+        #
+        #     else:
+        #         api_key = None
+        #         key = " "
+        #         # On affiche la string Key sur l'admin de django en message
+        #         # et django.message capitalize chaque message...
+        #         # du coup on fait bien gaffe à ce que je la clée générée ai bien une majusculle au début ...
+        #         while key[0].isupper() == False:
+        #             api_key, key = APIKey.objects.create_key(name="billetterie_key")
+        #             if key[0].isupper() == False:
+        #                 api_key.delete()
+        #
+        #         instance.key_billetterie = api_key
+        #
+        #         messages.add_message(
+        #             request,
+        #             messages.SUCCESS,
+        #             _(f"Copiez bien la clé suivante et mettez la en lieu sur ! Elle n'est pas enregistrée sur nos serveurs et ne sera affichée qu'une seule fois ici :")
+        #         )
+        #         messages.add_message(
+        #             request,
+        #             messages.WARNING,
+        #             f"{key}"
+        #         )
+        #
+        #     instance.revoquer_key_billetterie = False
 
         ### DOKOS
         if instance.dokos_url and instance.dokos_key and instance.dokos_id:
@@ -1107,6 +1106,8 @@ class ConfigurationAdmin(SingletonModelAdmin):
         #         messages.add_message(request, messages.ERROR, f"Erreur handshake")
         #         instance.string_connect = None
 
+
+        # Clé API OCECO
         if ex_api_key:
             ex_api_key.delete()
         cache.clear()
@@ -1116,10 +1117,11 @@ class ConfigurationAdmin(SingletonModelAdmin):
             fedowAPI = FedowAPI()
             # Verification des synchros asset fedelitée
             try:
+                #TODO: Tester la fidelitée
                 if instance.fidelity_active:
                     fidelity, created = MoyenPaiement.objects.get_or_create(categorie=MoyenPaiement.FIDELITY,
                                                                             name="Fidelity")
-                    asset_serialized = fedowAPI.asset.get_or_create_asset(fidelity)
+                    asset_serialized, created = fedowAPI.asset.get_or_create_asset(fidelity)
                     messages.add_message(request, messages.SUCCESS, "Asset Fidelity OK")
             except Exception as e:
                 messages.add_message(request, messages.ERROR, _(f"Fedow non connecté. Asset non mis à jour : {e}"))

@@ -47,7 +47,10 @@ def get_fedow():
     return fedowAPI
 
 def send_assets():
+    pass
     # Envoie des assets et de l'adhésion
+    """
+    @return: 
     fedowAPI = get_fedow()
     responses = fedowAPI.send_assets_from_cashless()
     for response in responses:
@@ -60,6 +63,8 @@ def send_assets():
     assets = [MoyenPaiement.objects.get(pk=asset.get('uuid')) for asset in assets_acc]
 
     return assets
+    """
+
 
 
 def create_cards_and_pre_token():
@@ -155,16 +160,18 @@ def create_card_to_fedow(card_pk):
 
 @app.task
 def after_handshake():
-    send_assets()
     Origin.objects.all().delete()
     Place.objects.all().delete()
     MoyenPaiement.objects.filter(categorie=MoyenPaiement.STRIPE_FED).delete()
     fedowAPI = FedowAPI()
     fedowAPI.place.get_accepted_assets()
 
-    create_cards_and_pre_token()
-    send_existing_tokens()
-    send_existing_members()
+    # A faire a la main pour des updates de cashless déja existant.
+    # TODO: A virer une fois tout les cashless convertis en laboutik
+    # send_assets()
+    # create_cards_and_pre_token()
+    # send_existing_tokens()
+    # send_existing_members()
     config = Configuration.get_solo()
     config.fedow_synced = True
     config.save()
