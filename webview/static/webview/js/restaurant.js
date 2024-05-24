@@ -526,7 +526,6 @@ export function validerPaiementArticleCommande(actionAValider) {
   }
 
   vue_pv.validerEtape1(options)
-
 }
 
 function totalPrixCommandesTable(commandes, idTable) {
@@ -998,6 +997,7 @@ export function visualiserEtatCommandes(retour) {
     // console.log('--> Affiche tous les groupement -- ', groupementCategories)
     for (let i = 0; i < retour.length; i++) {
       let groupement = retour[i]
+      console.log('groupement =', groupement)
       let commandes = groupement.commandes
       let commandesFiltrees = commandes.filter(obj => obj.table === idTable)
       let nouvelObjet = {
@@ -1022,6 +1022,7 @@ export function visualiserEtatCommandes(retour) {
   // les groupements non servis
   for (let idGroupement = 0; idGroupement < data.length; idGroupement++) {
     let groupement = data[idGroupement]
+    // sys.logJson('groupement =',groupement)
     // trie par date (les plus anciennes aux plus récentes)
     groupement.commandes.sort((a, b) => ((new Date(a.datetime)).getTime()) - ((new Date(b.datetime)).getTime()))
 
@@ -1093,6 +1094,7 @@ export function visualiserEtatCommandes(retour) {
                 <div class="test-ref-table-name">${commande.table_name}</div>
               </div> <!-- fin: com-titre-partie-centre -->
               <div class="com-titre-partie-droite BF-ligne">
+                <span class="md16px test-ref-preparation-place">${groupement.name}</span>
                 <div class="mg4px test-ref-status-order">${statutLisible[commande.statut]}</div>
           `
           // impression si ticket et mode gérant activé
@@ -1111,6 +1113,7 @@ export function visualiserEtatCommandes(retour) {
           fragmentHtml += `
               <div class="com-titre-partie-centre BF-ligne"></div>
               <div class="com-titre-partie-droite">
+              <span class="md16px test-ref-preparation-place">${groupement.name}</span>
           `
           // affichage numéro de commande avec nom du groupmement de catégorie, exemple: "Bar 9"
           if (Object.entries(commande.numero_du_ticket_imprime).length !== 0) {
@@ -1138,6 +1141,7 @@ export function visualiserEtatCommandes(retour) {
         `
         // largeur écran inférieure à 800 pixels
         if (largeurEcran < 800) {
+          // console.log('largeurEcran < 800; commande =', commande)
           fragmentHtml += `
             <div class="com-titre-conteneur-plus coulBlanc l100p" ${styleCouleurAlerteDate}>
               <div class="BF-ligne">
@@ -1328,12 +1332,14 @@ export function visualiserEtatCommandes(retour) {
           }
 
           fragmentHtml += `
+                <span class="md16px test-ref-preparation-place">${groupement.name}</span>
               </div> <!-- fin: com-titre-partie-droite -->
           `
         } else {
           // largeur écran inférieure à 800 pixels
           fragmentHtml += `
               <div class="com-titre-partie-droite BF-ligne" style="width:calc(100% - 102px);justify-content: flex-end;">
+                <span class="md16px test-ref-preparation-place">${groupement.name}</span>
           `
           // affichage numéro de commande avec nom du groupmement de catégorie, exemple: "Bar 9"
           if (Object.entries(commande.numero_du_ticket_imprime).length !== 0) {
@@ -1783,7 +1789,7 @@ export function afficherCommandesTable(idTable) {
             <div data-i8n="return,uppercase">RETOUR</div>
           </div>
         </div>
-        <div class="BF-ligne fond-ok footer-bt  curseur-action" onclick="vue_pv.testPaiementPossible('addition_liste')">
+        <div id="bt-valider-commande" class="BF-ligne fond-ok footer-bt  curseur-action" onclick="vue_pv.testPaiementPossible('addition_liste')">
           <i class="footer-bt-icon fas fa-check-circle md4px"></i>
           <div class="BF-col-deb footer-bt-text mg4px">
             <div data-i8n="validate,uppercase">VALIDER</div>

@@ -33,14 +33,14 @@ function gestionTransactionFondsInsuffisants(retour, options) {
 
     boutons += `<bouton-basique class="test-fonds-insuffisants-nfc" traiter-texte="1" texte="[autre] [CARTE]|2rem||other-uppercase;card-uppercase,(CASHLESS)|1.2rem,[TOTAL] ${totalManque} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#3b567f" icon="fa-coins||2.5rem" onclick="fn.popupAnnuler();vue_pv.validerEtapeMoyenComplementaire('nfc')" style="margin-top:16px;margin-bottom:40px;"></bouton-basique>`
     msg += `
-      <div class="popup-titre1" data-i8n="insufficientFunds,capitalize">Fonds insuffisants.</div>
-      <div class="popup-msg1">
+      <div class="popup-titre1 test-return-title" data-i8n="insufficientFunds,capitalize">Fonds insuffisants.</div>
+      <div class="popup-msg1 test-return-missing-cash">
         <span data-i8n="isMissing,capitalize">Il manque</span> <span id="test-manque-monnaie">${retour.message.manque}</span> <span data-i8n="currencySymbol">€</span>
       </div>
-      <div class="popup-msg1">
+      <div class="popup-msg1 test-return-fisrt-card-content">
         ${retour.carte.membre_name} <span data-i8n="has">a</span> <span id="test-carte-total-monnaie">${retour.carte.total_monnaie}</span>
       </div>
-      <div class="popup-msg1" data-i8n="possiblePurchaseBy,capitalize">Achat possible par :</div>
+      <div class="popup-msg1 test-returm-possible-purchase" data-i8n="possiblePurchaseBy,capitalize">Achat possible par :</div>
     `
   } else {
     console.log("-> Fonds insuffisants sur deuxieme carte")
@@ -664,8 +664,8 @@ export function gererRetourPostPaiement(retour, status, options) {
 }
 
 function checkCarteOk(retour) {
-  console.log('-> fonction checkCarteOk !')
-  sys.logJson('retour = ', retour)
+  // console.log('-> fonction checkCarteOk !')
+  // sys.logJson('retour = ', retour)
 
   const translateName = getTranslate('name') === '' ? "Nom" : getTranslate('name', 'capitalize')
   let totalMonnaie = parseFloat(retour.total_monnaie)
@@ -690,7 +690,8 @@ function checkCarteOk(retour) {
 
   let msg = `
     <div class="BF-col-uniforme check-carte-ok">
-      <div class="check-carte-ok-nom test-return-name">${translateName} : ${membreName}</div>
+      <!-- <div class="check-carte-ok-nom test-return-name">${translateName} : ${membreName}</div> -->
+      <div class="check-carte-ok-nom test-return-name"><span data-i8n="name,capitalize">Nom</span> : ${membreName}</div>
       <div class="check-carte-ok-cotisation test-return-contribution">${retour.cotisation_membre_a_jour}</div>
       <div class="check-carte-ok-total-carte test-return-total-card">
       <span data-i8n="on,capitalize">Sur</span> <span data-i8n="card">carte</span> : ${totalMonnaie} <span data-i8n="currencySymbol"></span>

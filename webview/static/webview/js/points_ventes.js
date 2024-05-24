@@ -1243,22 +1243,31 @@ export function testPaiementPossible(actionAValider) {
 }
 
 /**
+ * lister les "retours de consignes" de tous les points de ventes
+ * @returns 
+ */
+function findAllDepositsInAllPs() {
+  let findDeposits = []
+  for (let item in glob.data) {
+    const result = glob.data[item].articles.find(art => art.methode_name === 'RetourConsigne').id
+    findDeposits.push(result)
+  }
+  return findDeposits
+}
+
+
+/**
  * Test la présence de la méthode "RetourConsigne" dans les achats
  * @param {object} achats 
  * @returns 
  */
 function depositIsPresent(achats) {
   let retour = false
+  const findDeposits = findAllDepositsInAllPs()
+
   for (let j in achats.articles) {
     const article = achats.articles[j]
-    const articlesCurrentPS = glob.data.find(item => item.id === article.pk_pdv).articles
-    for (let i in articlesCurrentPS) {
-      const articleItem = articlesCurrentPS[i]
-      if (articleItem.id === article.pk && articleItem.methode_name === "RetourConsigne") {
-        retour = true
-        break
-      }
-    }
+    retour = findDeposits.includes(article.pk)
     if (retour === true) {
       break
     }
