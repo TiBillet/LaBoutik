@@ -4,7 +4,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from APIcashless.models import ArticleVendu, Configuration, Appareil, CarteCashless, CarteMaitresse, MoyenPaiement, \
-    Categorie, Articles
+    Categorie, Articles, PointDeVente, Membre
 from epsonprinter.tasks import direct_to_print
 from APIcashless.tasks import adhesion_to_odoo, cashback, badgeuse_to_dokos, fidelity_task, email_new_hardware
 from fedow_connect.fedow_api import FedowAPI
@@ -124,6 +124,7 @@ def send_new_asset_to_fedow(sender, instance: MoyenPaiement, created, **kwargs):
                 asset, created = fedowAPI.asset.get_or_create_asset(instance)
 
 
+
 @receiver(post_save, sender=MoyenPaiement)
 def create_article_membership(sender, instance: MoyenPaiement, created, **kwargs):
     if created:
@@ -145,13 +146,20 @@ def create_article_membership(sender, instance: MoyenPaiement, created, **kwargs
                 icon='fa-address-book',
                 cashless=False,
             )
+
+            prices = []
             for price in product.get('prices'):
-                Articles.objects.create(
+                art = Articles.objects.create(
                     name=f"{product['name']} {price['name']}",
                     methode_choices=Articles.ADHESIONS,
                     prix=price['prix'],
-                    categorie=CatMembership
+                    categorie=CatMembership,
+                    subscription_fedow_asset=instance,
                 )
+                prices.append(art)
+
+
+
 
 
 @receiver(post_save, sender=MoyenPaiement)
@@ -175,10 +183,22 @@ def create_article_badge(sender, instance: MoyenPaiement, created, **kwargs):
                 icon='fa-address-card',
                 cashless=False,
             )
+
+            prices = []
             for price in product.get('prices'):
-                Articles.objects.create(
+                art = Articles.objects.create(
                     name=f"{product['name']} {price['name']}",
                     methode_choices=Articles.BADGEUSE,
                     prix=price['prix'],
-                    categorie=CatBadge
+                    categorie=CatBadge,
+                    subscription_fedow_asset=instance,
                 )
+                prices.append(art)
+
+
+
+
+@receiver(post_save, sender=Membre)
+def link_membre_to_card(sender, instance: Membre, created, **kwargs):
+    # import ipdb; ipdb.set_trace()
+    pass
