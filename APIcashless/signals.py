@@ -42,10 +42,11 @@ class TriggerMethodeArticleVenduPOSTSAVE:
             # import ipdb; ipdb.set_trace()
 
     def trigger_AD(self):
-        # ADHESIONS = 'AD'
-        logger.info(f"TRIGGER ArticleVendu.methode_choices -> ADHESION -> adhesion_to_odoo.delay")
-        if not self.article_vendu.comptabilise:
-            adhesion_to_odoo.delay(self.article_vendu.pk)
+        pass
+        # TODO: Déplacer dans Lespass
+        # logger.info(f"TRIGGER ArticleVendu.methode_choices -> ADHESION -> adhesion_to_odoo.delay")
+        # if not self.article_vendu.comptabilise:
+        #     adhesion_to_odoo.delay(self.article_vendu.pk)
 
     # Trigger des recharges euros en local (Espèce ou TPE des lieux ou Stripe Non connect)
     def trigger_RE(self):
@@ -65,6 +66,8 @@ class TriggerMethodeArticleVenduPOSTSAVE:
         logger.info(f"TRIGGER ArticleVendu.methode_choices -> BADGEUSE")
 
         badgeuse_to_fedow(self.article_vendu.pk)
+
+        # TODO: Déplacer dans LesPass
         badgeuse_to_dokos(self.article_vendu.pk)
 
         #

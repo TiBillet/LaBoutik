@@ -553,32 +553,10 @@ class Command(BaseCommand):
                 self.admin.save()
 
             def pop_membre_articles_cartes_test(self):
-
-                try:
-                    testMembre, created = Membre.objects.get_or_create(name="TEST")
-                except Exception as e:
-                    testMembre = Membre.objects.get(name="TEST")
-                    pass
-
-                try:
-                    jonas_membre, created = Membre.objects.get_or_create(name="JONAS")
-                except Exception as e:
-                    jonas_membre = Membre.objects.get(name="JONAS")
-                    pass
-
-                try:
-                    robocop_membre, created = Membre.objects.get_or_create(name="ROBOCOP")
-                except Exception as e:
-                    robocop_membre = Membre.objects.get(name="ROBOCOP")
-                    pass
-
-                try:
-                    framboise_membre, created = Membre.objects.get_or_create(name="FRAMBOISIÉ")
-                except Exception as e:
-                    framboise_membre = Membre.objects.get(name="FRAMBOISIÉ")
-                    pass
-
-
+                testMembre, created = Membre.objects.get_or_create(name="TEST")
+                jonas_membre, created = Membre.objects.get_or_create(name="JONAS")
+                robocop_membre, created = Membre.objects.get_or_create(name="ROBOCOP")
+                framboise_membre, created = Membre.objects.get_or_create(name="FRAMBOISIÉ")
                 origin = Origin.objects.get_or_create(generation=1)[0]
 
                 cards = []

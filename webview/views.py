@@ -495,16 +495,14 @@ def check_carte(request):
         tag_id_request = request.data.get('tag_id_client').upper()
 
         # Methode FEDOW Uniquement, on va mettre a jour la carte
-        if Configuration.get_solo().can_fedow():
-            try:
-                fedowApi = FedowAPI()
-                fedowApi.NFCcard.retrieve(tag_id_request)
-            except Exception as e:
-                logger.error(f"Check carte FEDOW : {e}")
-                return Response({"msg": f"Fédération indisponible. Contactez l'administrateur. {e}"},
-                                status=status.HTTP_404_NOT_FOUND)
+        try:
+            fedowApi = FedowAPI()
+            fedowApi.NFCcard.retrieve(tag_id_request)
+        except Exception as e:
+            logger.error(f"Check carte FEDOW : {e}")
+            return Response({"msg": f"Fédération indisponible. Contactez l'administrateur. {e}"},
+                            status=status.HTTP_404_NOT_FOUND)
 
-        # Methode Old Cashless
         try:
             carte = CarteCashless.objects.get(tag_id=tag_id_request)
         except CarteCashless.DoesNotExist:
@@ -518,8 +516,6 @@ def check_carte(request):
             return Response(data, status=status.HTTP_404_NOT_FOUND)
         except Exception:
             raise Exception
-
-        # import ipdb; ipdb.set_trace()
 
         serializer = CarteCashlessSerializer(carte)
         data = serializer.data
@@ -1136,40 +1132,41 @@ class Commande:
         if not carte_db :
             logger.error('methode_adhesion : Pas de carte')
             raise NotAcceptable(
-                detail="Pas de carte.",
+                detail=_("Pas de carte."),
                 code=None
             )
 
-        # Si pas de membre sur la carte, et si l'adhésion suspendue n'est pas activée dans la configuration
-        # on renvoie une erreur et on ne crée par l'adhésion.
-        if not carte_db.membre:
+        # Check carte fedow :
+        fedowAPI = FedowAPI()
+        fedow_serialized_card = fedowAPI.NFCcard.cached_retrieve(carte_db.tag_id)
+        # Si wallet ephemère = pas d'email
+        if fedow_serialized_card.get('is_wallet_ephemere'):
             logger.error('methode_adhesion : Pas de membre sur cette carte')
             raise NotAcceptable(
-                detail="Pas d'email lié sur cette carte.\n"
-                       "Merci de lier un email à cette carte. "
-                       "Vous pouvez scanner le QRCode de la carte pour cela.",
+                detail=_("Pas d'email lié sur cette carte.\n"
+                       "Merci de lier un email à cette carte en scannant son QRCode."),
                 code=None
             )
 
         # On va chercher l'adhérant
-        if carte_db.membre:
-            adherant: Membre = carte_db.membre
-
-            # if adherant.a_jour_cotisation():
-            #     raise NotAcceptable(
-            #         detail=f"Le membre {adherant.name} à déja adhéré le {adherant.date_derniere_cotisation} "
-            #                f"via l'interface : {adherant.choice_str(Membre.ORIGIN_ADHESIONS_CHOICES, adherant.adhesion_origine)}.",
-            #         code=None
-            #     )
-
-            aujourdhui = datetime.now().date()
-            adherant.date_derniere_cotisation = aujourdhui
-            adherant.cotisation = total
-
-            if not adherant.date_inscription:
-                adherant.date_inscription = aujourdhui
-
-            adherant.save()
+        # if carte_db.membre:
+        #     adherant: Membre = carte_db.membre
+        #
+        #     # if adherant.a_jour_cotisation():
+        #     #     raise NotAcceptable(
+        #     #         detail=f"Le membre {adherant.name} à déja adhéré le {adherant.date_derniere_cotisation} "
+        #     #                f"via l'interface : {adherant.choice_str(Membre.ORIGIN_ADHESIONS_CHOICES, adherant.adhesion_origine)}.",
+        #     #         code=None
+        #     #     )
+        #
+        #     aujourdhui = datetime.now().date()
+        #     adherant.date_derniere_cotisation = aujourdhui
+        #     adherant.cotisation = total
+        #
+        #     if not adherant.date_inscription:
+        #         adherant.date_inscription = aujourdhui
+        #
+        #     adherant.save()
 
         ArticleVendu.objects.create(
             article=article,
