@@ -925,17 +925,20 @@ class Commande:
         if not carte:
             logger.warning(f"methode_BG : pas de carte")
             raise NotAcceptable(detail=f"Pas de carte NFC", code=None)
-        if not carte.membre:
-            logger.warning(f"methode_BG : pas de membre")
-            raise NotAcceptable(detail=f"Pas de membre sur la carte", code=None)
-        if not carte.membre.email:
-            logger.warning(f"methode_BG : pas de mail")
-            raise NotAcceptable(detail=f"Pas de mail sur la carte", code=None)
 
-        if article.subscription_fedow_asset:
-            asset = article.subscription_fedow_asset
-        else:
-            asset = MoyenPaiement.objects.get(categorie=MoyenPaiement.BADGE)
+        # if not carte.membre:
+        #     logger.warning(f"methode_BG : pas de membre")
+        #     raise NotAcceptable(detail=f"Pas de membre sur la carte", code=None)
+        # if not carte.membre.email:
+        #     logger.warning(f"methode_BG : pas de mail")
+        #     raise NotAcceptable(detail=f"Pas de mail sur la carte", code=None)
+
+        asset = article.subscription_fedow_asset
+
+        if article.prix > 0:
+            logger.warning(f"Article badge payant, en cours de dev.")
+            raise NotAcceptable(detail=f"Pas de badge payant tout de suite :)", code=None)
+
 
         ligne_article_vendu = ArticleVendu.objects.create(
             article=article,
@@ -1129,23 +1132,22 @@ class Commande:
         total = round((article.prix * qty), 2)
         carte_db: CarteCashless = self.carte_db
         self.total_vente_article += total
-        adherant = None
 
-        # Si pas de membre sur la carte, et si l'adhésion suspendue n'est pas activée dans la configuration
-        # on renvoie une erreur et on ne crée par l'adhésion.
-        if not carte_db.membre and not self.configuration.adhesion_suspendue:
-            logger.error('methode_adhesion : Pas de membre sur cette carte')
+        if not carte_db :
+            logger.error('methode_adhesion : Pas de carte')
             raise NotAcceptable(
-                detail="Pas de membre sur cette carte.\n"
-                       "Merci de lier un membre à cette carte avant d'adhérer.",
+                detail="Pas de carte.",
                 code=None
             )
 
-        if carte_db.adhesion_suspendue:
-            logger.error('methode_adhesion : La carte a déja une adhésion suspendue')
+        # Si pas de membre sur la carte, et si l'adhésion suspendue n'est pas activée dans la configuration
+        # on renvoie une erreur et on ne crée par l'adhésion.
+        if not carte_db.membre:
+            logger.error('methode_adhesion : Pas de membre sur cette carte')
             raise NotAcceptable(
-                detail="La carte a déja une adhésion suspendue.\n"
-                       "Merci de lier un membre à cette carte.",
+                detail="Pas d'email lié sur cette carte.\n"
+                       "Merci de lier un email à cette carte. "
+                       "Vous pouvez scanner le QRCode de la carte pour cela.",
                 code=None
             )
 
@@ -1153,12 +1155,12 @@ class Commande:
         if carte_db.membre:
             adherant: Membre = carte_db.membre
 
-            if adherant.a_jour_cotisation():
-                raise NotAcceptable(
-                    detail=f"Le membre {adherant.name} à déja adhéré le {adherant.date_derniere_cotisation} "
-                           f"via l'interface : {adherant.choice_str(Membre.ORIGIN_ADHESIONS_CHOICES, adherant.adhesion_origine)}.",
-                    code=None
-                )
+            # if adherant.a_jour_cotisation():
+            #     raise NotAcceptable(
+            #         detail=f"Le membre {adherant.name} à déja adhéré le {adherant.date_derniere_cotisation} "
+            #                f"via l'interface : {adherant.choice_str(Membre.ORIGIN_ADHESIONS_CHOICES, adherant.adhesion_origine)}.",
+            #         code=None
+            #     )
 
             aujourdhui = datetime.now().date()
             adherant.date_derniere_cotisation = aujourdhui

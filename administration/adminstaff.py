@@ -520,10 +520,11 @@ class CarteCashlessAdmin(admin.ModelAdmin):
         "number",
         "uuid_qrcode",
     )
+
     # readonly_fields = fields
     list_display_links = None
 
-    search_fields = ['tag_id', 'number', 'membre__first_name', 'membre__last_name', 'membre__email']
+    search_fields = ['tag_id', 'number', 'membre__name', 'membre__prenom', 'membre__email']
 
     def has_delete_permission(self, request, obj=None):
         return False
