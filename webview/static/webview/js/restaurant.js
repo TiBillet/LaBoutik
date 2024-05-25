@@ -158,7 +158,7 @@ export function assignerTableEphemere() {
   }
 
   let titre = `<div class="BF-col">
-    <div class="ft-2r" data-i8n="creationEphemeralTable,capitalize">Création d'une table éphémère.</div>
+    <div class="BF-ligne ft-2r" data-i8n="creationEphemeralTable,capitalize" style="white-space: pre-line; text-align: center;">Création d'une table éphémère.</div>
   </div>`
 
   // compose le bouton retour à afficher
