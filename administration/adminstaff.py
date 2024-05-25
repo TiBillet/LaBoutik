@@ -297,6 +297,7 @@ class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
                 'direct_to_printer',
                 'decompte_ticket',
                 'subscription_fedow_asset',
+                'subscription_type',
             ),
         }),
     )

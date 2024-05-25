@@ -160,7 +160,8 @@ class TokenValidator(serializers.Serializer):
                 for card in other_cards:
                     logger.info(f"DOUBLE CARD {card.tag_id} - WITH SAME FEDOW WALLET. Set all asset to 0")
                     card.assets.update(qty=0)
-            return tokens_cashless
+
+        return tokens_cashless
 
     @staticmethod
     def get_payment_tokens(serilized_tokens):
@@ -202,12 +203,11 @@ class CardValidator(serializers.Serializer):
     def validate(self, attrs):
         try:
             card = CarteCashless.objects.get(id=attrs['uuid'])
-            if not card.wallet:
-                card.wallet = self.fields['wallet'].wallet
-                card.origin = self.fields['origin'].origin
-                card.save()
-            elif card.wallet != self.fields.get('wallet').wallet:
-                raise serializers.ValidationError("Wallet and card mismatch")
+            card.wallet = self.fields['wallet'].wallet
+            card.origin = self.fields['origin'].origin
+            card.save()
+            # elif card.wallet != self.fields.get('wallet').wallet:
+            #     raise serializers.ValidationError("Wallet and card mismatch")
 
         # Création de la carte cashless si elle n'existe pas
         except CarteCashless.DoesNotExist:
@@ -225,7 +225,6 @@ class CardValidator(serializers.Serializer):
         # Mise à jour des assets de la carte :
         # tokens_cashless = Assets
         tokens_cashless = TokenValidator.update_or_create(attrs['wallet']['tokens'], card)
-
         return attrs
 
 

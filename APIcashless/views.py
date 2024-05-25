@@ -26,7 +26,7 @@ from APIcashless.models import Configuration, CarteCashless, Assets, Membre, Poi
     ArticleVendu, MoyenPaiement, CarteMaitresse
 from APIcashless.serializers import MembreSerializer, CarteCashlessSerializerForQrCode
 from APIcashless.validator import DataOcecoValidator, BilletterieValidator, AdhesionValidator, \
-    EmailMembreValidator, RechargeCardValidator, MembreshipValidator
+    EmailMembreValidator, RechargeCardValidator, MembreshipValidator, SaleFromLespassValidator
 from Cashless import settings
 from fedow_connect.fedow_api import FedowAPI
 from fedow_connect.utils import sign_message, verify_signature
@@ -449,11 +449,15 @@ class CheckCarteQrUuid(viewsets.ViewSet):
         return Response(serializer_copy)
 
 
+class SaleFromLespass(APIView):
+    permission_classes = [HasAPIKey]
+    def post(self, request):
+        import ipdb; ipdb.set_trace()
+        validator = SaleFromLespassValidator(data=request.data)
+
+
+
 class billetterie_endpoint(APIView):
-    '''
-    curl -H "Authorization: Api-Key gDXvlupm.laoE5Oy1YQdhAWYznXReMB2id8zjZ1iD" -X POST --data "card=01E31CBB&amount=10" http://localhost:8001/api/billetterie_endpoint
-    '''
-    # permission_classes = [AllowAny]
     permission_classes = [HasAPIKey]
 
     def post(self, request):

@@ -35,6 +35,10 @@ urlpatterns = [
          name="oceco_endpoint"),
     path('billetterie_endpoint', views.billetterie_endpoint.as_view(),
          name="billetterie_endpoint"),
+
+    path('salefromlespass', views.SaleFromLespass.as_view(),
+         name="salefromlespass"),
+
     path('billetterie_qrcode_adhesion', views.billetterie_qrcode_adhesion.as_view(),
          name="billetterie_endpoint"),
     path('preparations', views.preparations.as_view(),

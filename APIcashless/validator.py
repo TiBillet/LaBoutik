@@ -44,6 +44,12 @@ class EmailMembreValidator(serializers.Serializer):
         representation['membre'] = self.membre
         return representation
 
+
+
+class SaleFromLespassValidator(serializers.Serializer):
+    wallet = serializers.UUIDField()
+
+
 class BilletterieValidator(serializers.Serializer):
     uuid = serializers.UUIDField()
     uuid_commande = serializers.UUIDField(required=False)

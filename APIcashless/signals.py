@@ -158,6 +158,7 @@ def create_article_membership(sender, instance: MoyenPaiement, created, **kwargs
                     prix=price['prix'],
                     categorie=CatMembership,
                     subscription_fedow_asset=instance,
+                    subscription_type=price['subscription_type'],
                 )
                 prices.append(art)
 
@@ -195,6 +196,7 @@ def create_article_badge(sender, instance: MoyenPaiement, created, **kwargs):
                     prix=price['prix'],
                     categorie=CatBadge,
                     subscription_fedow_asset=instance,
+                    subscription_type=price['subscription_type'],
                 )
                 prices.append(art)
 

@@ -572,6 +572,28 @@ class Articles(models.Model):
                                                  help_text=_(
                                                      "Asset Fedow utilisé pour un abonnement, adhésion ou une badgeuse"))
 
+    NA, YEAR, MONTH, DAY, HOUR, CIVIL = 'N', 'Y', 'M', 'D', 'H', 'C'
+    SUB_CHOICES = [
+        (NA, _('Non applicable')),
+        (YEAR, _("365 Jours")),
+        (MONTH, _('30 Jours')),
+        (DAY, _('1 Jour')),
+        (HOUR, _('1 Heure')),
+        (CIVIL, _('Civile')),
+    ]
+
+    subscription_type = models.CharField(max_length=1,
+                                         choices=SUB_CHOICES,
+                                         default=NA,
+                                         verbose_name=_("durée d'abonnement"),
+                                         )
+
+    # def derniere_vente(self, carte=None):
+    #     return ArticleVendu.objects.filter(
+    #         carte=carte,
+    #         article=self,
+    #     )
+
     def url_image(self):
         if self.image:
             # oui, thumbnail existe bien !
@@ -1025,6 +1047,19 @@ class Assets(models.Model):
             return self.carte.membre
         else:
             return ""
+
+    # def a_jour_cotisation(self):
+        # if calcul_adh == Configuration.ADH_365JOURS:
+        #     return timezone.now().date() <= (self.date_derniere_cotisation + timedelta(days=365))
+        #
+        # elif calcul_adh == Configuration.ADH_CIVILE:
+        #     return timezone.now().date().year == self.date_derniere_cotisation.year
+        #
+        # elif calcul_adh == Configuration.ADH_GLISSANTE_OCT:
+        #     if timezone.now().date().year == (self.date_derniere_cotisation.year + 1):
+        #         if self.date_derniere_cotisation.month >= 10:
+        #             return True
+        #     return timezone.now().date().year == self.date_derniere_cotisation.year
 
     class Meta:
         unique_together = [['monnaie', 'carte']]
