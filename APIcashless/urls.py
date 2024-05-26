@@ -36,7 +36,7 @@ urlpatterns = [
     path('billetterie_endpoint', views.billetterie_endpoint.as_view(),
          name="billetterie_endpoint"),
     path('billetterie_qrcode_adhesion', views.billetterie_qrcode_adhesion.as_view(),
-         name="billetterie_endpoint"),
+         name="billetterie_qrcode_adhesion"),
     path('preparations', views.preparations.as_view(),
          name="preparations"),
     path('membre_check', views.membre_check.as_view(),
