@@ -452,8 +452,37 @@ class CheckCarteQrUuid(viewsets.ViewSet):
 class SaleFromLespass(APIView):
     permission_classes = [HasAPIKey]
     def post(self, request):
-        import ipdb; ipdb.set_trace()
+        logger.info(request.data)
         validator = SaleFromLespassValidator(data=request.data)
+        if not validator.is_valid():
+            return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Un seul article par requete
+        try :
+            price_lespass_uuid =  validator.validated_data['pricesold']['price']['uuid']
+            wallet = validator.validated_data['user_uuid_wallet']
+            moyen_paiement_stripe = Configuration.get_solo().moyen_paiement_mollie
+            article = Articles.objects.get(pk=price_lespass_uuid)
+            pos, created = PointDeVente.objects.get_or_create(name=_('Billetterie'))
+
+            art = ArticleVendu.objects.create(
+                article=article,
+                prix=validator.validated_data['pricesold']['prix'],
+                qty=validator.validated_data['qty'],
+                pos=pos,
+                tva=validator.validated_data['vat'],
+                membre=getattr(wallet,'membre', None),
+                responsable=None,
+                carte=wallet.cards.first(),
+                moyen_paiement=moyen_paiement_stripe,
+                uuid=validator.validated_data['uuid'],
+                commande=validator.validated_data['uuid'],
+                # ip_user=get_client_ip(request),
+            )
+            return Response("", status=status.HTTP_200_OK)
+
+        except Articles.DoesNotExist:
+            raise Exception('Pas de correspondance article - price')
 
 
 

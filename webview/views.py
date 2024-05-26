@@ -1148,6 +1148,8 @@ class Commande:
                 code=None
             )
 
+        import ipdb; ipdb.set_trace()
+
         # On va chercher l'adhérant
         # if carte_db.membre:
         #     adherant: Membre = carte_db.membre

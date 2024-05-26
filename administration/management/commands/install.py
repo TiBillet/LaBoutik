@@ -540,7 +540,6 @@ class Command(BaseCommand):
                     logger.error(
                         'Error handhsake Fedow. Please double check all you environnement and relaunch from scratch '
                         '(./flush.sh on Fedow, after Lespass and after LaBoutik)')
-                    import ipdb; ipdb.set_trace()
                     raise Exception(
                         'Error handhsake Fedow. Please double check all you environnement and relaunch from scratch '
                         '(./flush.sh on Fedow, after Lespass and after LaBoutik)')
@@ -873,6 +872,7 @@ class Command(BaseCommand):
             def add_membership_and_badge_articles(self):
                 # On est dans un environnement de test/dev/debug,
                 # on rajoute ces articles dans un point de vente et dans toutes les cartes primaires.
+                # Ces adhésion et badge ont été créé par le serializer ProductFromLespassValidator
                 pdv_adh, created = PointDeVente.objects.get_or_create(
                     name="Adhésions",
                 )

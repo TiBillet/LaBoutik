@@ -69,6 +69,7 @@ def send_password_reset_email(modeladmin, request, queryset):
 class UserCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
     fields, plus a repeated password."""
+
     # password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     # password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
 
@@ -76,7 +77,8 @@ class UserCreationForm(forms.ModelForm):
         model = TibiUser
         fields = ('email', 'is_staff',)
         help_texts = {
-            'email': _('Un email valide est nécessaire pour la connexion. Un formulaire de création de mot de passe sera envoyé.'),
+            'email': _(
+                'Un email valide est nécessaire pour la connexion. Un formulaire de création de mot de passe sera envoyé.'),
         }
 
     def save(self, commit=True):
@@ -86,7 +88,6 @@ class UserCreationForm(forms.ModelForm):
         user.save()
         email_activation(user.uuid)
         return user
-
 
 
 # Register out own model admin, based on the default UserAdmin
@@ -581,9 +582,9 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'total',
         'date_time',
         'moyen_paiement',
-        'membre',
+        # 'membre',
         'carte',
-        'responsable',
+        'pos',
         'table',
         'id_commande',
     )
@@ -594,7 +595,7 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'qty',
         'moyen_paiement',
         'carte',
-        'comptabilise',
+        # 'comptabilise',
     )
 
     readonly_fields = list_display + fields
@@ -607,10 +608,10 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         ('date_time', DateRangeFilter),
         'moyen_paiement',
         'table',
-        'comptabilise',
+        # 'comptabilise',
     ]
 
-    actions = [send_to_odoo, ]
+    # actions = [send_to_odoo, ]
 
     # default_filters = ('pos__id__exact=48',)
 
@@ -852,11 +853,11 @@ class ConfigurationAdmin(SingletonModelAdmin):
         }),
         # ('Billetterie', {
         #     'fields': (
-                # 'key_billetterie',
-                # 'billetterie_ip_white_list',
-                # 'billetterie_url',
-                # 'revoquer_key_billetterie',
-            # ),
+        # 'key_billetterie',
+        # 'billetterie_ip_white_list',
+        # 'billetterie_url',
+        # 'revoquer_key_billetterie',
+        # ),
         # }),
         ('OCECO', {
             'fields': (
@@ -957,8 +958,8 @@ class ConfigurationAdmin(SingletonModelAdmin):
     def save_model(self, request, instance: Configuration, form, change):
         # if (not form.initial.get('badgeuse_active')
         #         and instance.badgeuse_active):
-            # On passe de False à True
-            # badgeuse_creation()
+        # On passe de False à True
+        # badgeuse_creation()
 
         # obj.user = request.user
         ex_api_key = None
@@ -1108,7 +1109,6 @@ class ConfigurationAdmin(SingletonModelAdmin):
         #         messages.add_message(request, messages.ERROR, f"Erreur handshake")
         #         instance.string_connect = None
 
-
         # Clé API OCECO
         if ex_api_key:
             ex_api_key.delete()
@@ -1119,7 +1119,7 @@ class ConfigurationAdmin(SingletonModelAdmin):
             fedowAPI = FedowAPI()
             # Verification des synchros asset fedelitée
             try:
-                #TODO: Tester la fidelitée
+                # TODO: Tester la fidelitée
                 if instance.fidelity_active:
                     fidelity, created = MoyenPaiement.objects.get_or_create(categorie=MoyenPaiement.FIDELITY,
                                                                             name="Fidelity")
@@ -1159,8 +1159,8 @@ class ConfigurationAdmin(SingletonModelAdmin):
             # if obj.string_connect:
             #     if obj.onboard_url and not obj.stripe_connect_account:
             #         replace['string_connect'] = '_onboarding'
-                # elif obj.stripe_connect_valid:
-                #     replace['string_connect'] = 'federated_with'
+            # elif obj.stripe_connect_valid:
+            #     replace['string_connect'] = 'federated_with'
 
             # Iterate fieldsets
             for fieldset in fieldsets:
@@ -1289,15 +1289,17 @@ def recalculer_la_tva(modeladmin, request, queryset):
 
 recalculer_la_tva.short_description = _("Recalculer la tva en fonction des catégories d'articles.")
 
+
 def update(modeladmin, request, queryset):
     for cloture in queryset:
         cloture: ClotureCaisse
-        start, end = cloture.start , cloture.end
+        start, end = cloture.start, cloture.end
         ticketZ = TicketZ(start_date=start, end_date=end)
         if ticketZ.calcul_valeurs():
             ticketz_json = ticketZ.to_json
             cloture.ticketZ = ticketz_json
             cloture.save()
+
 
 # Au lieux d'afficher les fields ordinaire, on affiche le template ticketZ
 class ClotureCaisseChangeList(ChangeList):
