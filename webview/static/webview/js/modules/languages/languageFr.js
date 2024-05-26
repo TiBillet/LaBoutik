@@ -71,7 +71,7 @@ export const fr = {
     offer: "offrir",
     impossibleTranslation: "Attention: pas de traduction, erreur dans les données de traduction; voir [] ou index de traduction",
     enterTableName: "entrez un nom de table",
-    creationEphemeralTable: "création d'une table éphémère",
+    creationEphemeralTable: "création d'une\ntable éphémère",
     importName: "importer nom",
     fromCard: "depuis carte",
     mustEnterNumber: "vous devez entrer un nombre",
