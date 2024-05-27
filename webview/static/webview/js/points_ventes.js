@@ -1249,8 +1249,10 @@ export function testPaiementPossible(actionAValider) {
 function findAllDepositsInAllPs() {
   let findDeposits = []
   for (let item in glob.data) {
-    const result = glob.data[item].articles.find(art => art.methode_name === 'RetourConsigne').id
-    findDeposits.push(result)
+    const search = glob.data[item].articles.find(art => art.methode_name === 'RetourConsigne')
+    if (search !== undefined) {
+      findDeposits.push(search.id)
+    }
   }
   return findDeposits
 }
