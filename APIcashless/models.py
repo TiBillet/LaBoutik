@@ -615,7 +615,7 @@ class Articles(models.Model):
             self.VIDER_CARTE: "ViderCarte",
             # self.VOID_CARTE: self.VOID_CARTE,
             # self.BILLET: self.BILLET,
-            # self.BADGEUSE: self.BADGEUSE,
+            self.BADGEUSE: self.BADGEUSE,
             # self.FIDELITY: self.FIDELITY,
         }
         if hasattr(MAP_EX_METHODES_CHOICES, self.methode_choices):
