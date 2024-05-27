@@ -618,7 +618,7 @@ class Articles(models.Model):
             # self.BADGEUSE: self.BADGEUSE,
             # self.FIDELITY: self.FIDELITY,
         }
-        if MAP_EX_METHODES_CHOICES[self.methode_choices]:
+        if hasattr(MAP_EX_METHODES_CHOICES, self.methode_choices):
             return MAP_EX_METHODES_CHOICES[self.methode_choices]
         elif self.methode:
             return self.methode.name
