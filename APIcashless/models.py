@@ -613,12 +613,12 @@ class Articles(models.Model):
             self.ADHESIONS: "Adhesion",
             self.RETOUR_CONSIGNE: "RetourConsigne",
             self.VIDER_CARTE: "ViderCarte",
-            # self.VOID_CARTE: self.VOID_CARTE,
-            # self.BILLET: self.BILLET,
+            self.VOID_CARTE: "ViderCarte",
+            # self.BILLET: self.BILLET, #TODO: pour l'imprimante géré par le client
             self.BADGEUSE: self.BADGEUSE,
             # self.FIDELITY: self.FIDELITY,
         }
-        if hasattr(MAP_EX_METHODES_CHOICES, self.methode_choices):
+        if MAP_EX_METHODES_CHOICES.get(self.methode_choices):
             return MAP_EX_METHODES_CHOICES[self.methode_choices]
         elif self.methode:
             return self.methode.name
