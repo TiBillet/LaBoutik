@@ -289,6 +289,8 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'retour_consigne'))[0]
 
+
+
                 d["Cadeau +0.1"] = \
                     Articles.objects.get_or_create(name="Cadeau +0.1",
                                                    prix=0.1,
@@ -658,12 +660,12 @@ class Command(BaseCommand):
                     icon='fa-hamburger',
                 )
                 Boutique, created = PointDeVente.objects.get_or_create(name="Boutique", poid_liste=4)
+                test = PointDeVente.objects.get_or_create(name="Test", poid_liste=5)[0]
 
                 carteM, created = CarteMaitresse.objects.get_or_create(carte=cards_db[0], edit_mode=True)
                 carteM.points_de_vente.add(Resto)
                 carteM.points_de_vente.add(bar1)
-                if PointDeVente.objects.filter(name="Badgeuse").exists():
-                    carteM.points_de_vente.add(PointDeVente.objects.get(name="Badgeuse"))
+                carteM.points_de_vente.add(test)
                 carteM.points_de_vente.add(self.pdv_cashless)
 
                 carteM3, created = CarteMaitresse.objects.get_or_create(carte=cards_db[2], edit_mode=True)
@@ -795,6 +797,16 @@ class Command(BaseCommand):
 
                 Resto = PointDeVente.objects.get(name="Resto")
                 bar1 = PointDeVente.objects.get(name="Bar 1")
+
+                ## LE PDV TEST POUR NICO
+                test = PointDeVente.objects.get(name="Test")
+                test.articles.add(Articles.objects.get_or_create(name="Retour Consigne bis",
+                                                   prix=-1,
+                                                   methode_choices=Articles.RETOUR_CONSIGNE)[0])
+
+                test.articles.add(Articles.objects.get_or_create(name="Retour Consigne Rebis",
+                                                                 prix=-1,
+                                                                 methode_choices=Articles.RETOUR_CONSIGNE)[0])
 
                 for art in articles:
                     bar1.articles.add(art) if art not in bar1.articles.all() else art
