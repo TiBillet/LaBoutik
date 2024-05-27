@@ -26,7 +26,7 @@ from APIcashless.models import Configuration, CarteCashless, Assets, Membre, Poi
     ArticleVendu, MoyenPaiement, CarteMaitresse
 from APIcashless.serializers import MembreSerializer, CarteCashlessSerializerForQrCode
 from APIcashless.validator import DataOcecoValidator, BilletterieValidator, AdhesionValidator, \
-    EmailMembreValidator, RechargeCardValidator, MembreshipValidator
+    EmailMembreValidator, RechargeCardValidator, MembreshipValidator, SaleFromLespassValidator
 from Cashless import settings
 from fedow_connect.fedow_api import FedowAPI
 from fedow_connect.utils import sign_message, verify_signature
@@ -449,11 +449,44 @@ class CheckCarteQrUuid(viewsets.ViewSet):
         return Response(serializer_copy)
 
 
+class SaleFromLespass(APIView):
+    permission_classes = [HasAPIKey]
+    def post(self, request):
+        logger.info(request.data)
+        validator = SaleFromLespassValidator(data=request.data)
+        if not validator.is_valid():
+            return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Un seul article par requete
+        try :
+            price_lespass_uuid =  validator.validated_data['pricesold']['price']['uuid']
+            wallet = validator.validated_data['user_uuid_wallet']
+            moyen_paiement_stripe = Configuration.get_solo().moyen_paiement_mollie
+            article = Articles.objects.get(pk=price_lespass_uuid)
+            pos, created = PointDeVente.objects.get_or_create(name=_('Billetterie'))
+
+            art = ArticleVendu.objects.create(
+                article=article,
+                prix=validator.validated_data['pricesold']['prix'],
+                qty=validator.validated_data['qty'],
+                pos=pos,
+                tva=validator.validated_data['vat'],
+                membre=getattr(wallet,'membre', None),
+                responsable=None,
+                carte=wallet.cards.first(),
+                moyen_paiement=moyen_paiement_stripe,
+                uuid=validator.validated_data['uuid'],
+                commande=validator.validated_data['uuid'],
+                # ip_user=get_client_ip(request),
+            )
+            return Response("", status=status.HTTP_200_OK)
+
+        except Articles.DoesNotExist:
+            raise Exception('Pas de correspondance article - price')
+
+
+
 class billetterie_endpoint(APIView):
-    '''
-    curl -H "Authorization: Api-Key gDXvlupm.laoE5Oy1YQdhAWYznXReMB2id8zjZ1iD" -X POST --data "card=01E31CBB&amount=10" http://localhost:8001/api/billetterie_endpoint
-    '''
-    # permission_classes = [AllowAny]
     permission_classes = [HasAPIKey]
 
     def post(self, request):

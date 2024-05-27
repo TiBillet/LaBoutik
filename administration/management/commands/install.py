@@ -540,7 +540,6 @@ class Command(BaseCommand):
                     logger.error(
                         'Error handhsake Fedow. Please double check all you environnement and relaunch from scratch '
                         '(./flush.sh on Fedow, after Lespass and after LaBoutik)')
-                    import ipdb; ipdb.set_trace()
                     raise Exception(
                         'Error handhsake Fedow. Please double check all you environnement and relaunch from scratch '
                         '(./flush.sh on Fedow, after Lespass and after LaBoutik)')
@@ -553,32 +552,10 @@ class Command(BaseCommand):
                 self.admin.save()
 
             def pop_membre_articles_cartes_test(self):
-
-                try:
-                    testMembre, created = Membre.objects.get_or_create(name="TEST")
-                except Exception as e:
-                    testMembre = Membre.objects.get(name="TEST")
-                    pass
-
-                try:
-                    jonas_membre, created = Membre.objects.get_or_create(name="JONAS")
-                except Exception as e:
-                    jonas_membre = Membre.objects.get(name="JONAS")
-                    pass
-
-                try:
-                    robocop_membre, created = Membre.objects.get_or_create(name="ROBOCOP")
-                except Exception as e:
-                    robocop_membre = Membre.objects.get(name="ROBOCOP")
-                    pass
-
-                try:
-                    framboise_membre, created = Membre.objects.get_or_create(name="FRAMBOISIÉ")
-                except Exception as e:
-                    framboise_membre = Membre.objects.get(name="FRAMBOISIÉ")
-                    pass
-
-
+                testMembre, created = Membre.objects.get_or_create(name="TEST")
+                jonas_membre, created = Membre.objects.get_or_create(name="JONAS")
+                robocop_membre, created = Membre.objects.get_or_create(name="ROBOCOP")
+                framboise_membre, created = Membre.objects.get_or_create(name="FRAMBOISIÉ")
                 origin = Origin.objects.get_or_create(generation=1)[0]
 
                 cards = []
@@ -895,6 +872,7 @@ class Command(BaseCommand):
             def add_membership_and_badge_articles(self):
                 # On est dans un environnement de test/dev/debug,
                 # on rajoute ces articles dans un point de vente et dans toutes les cartes primaires.
+                # Ces adhésion et badge ont été créé par le serializer ProductFromLespassValidator
                 pdv_adh, created = PointDeVente.objects.get_or_create(
                     name="Adhésions",
                 )
