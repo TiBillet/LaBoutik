@@ -1128,7 +1128,7 @@ class Commande:
         total = round((article.prix * qty), 2)
         carte_db: CarteCashless = self.carte_db
         self.total_vente_article += total
-
+        primary_card_fisrtTagId = self.responsable.CarteCashless_Membre.first()
         if not carte_db :
             logger.error('methode_adhesion : Pas de carte')
             raise NotAcceptable(
@@ -1148,7 +1148,13 @@ class Commande:
                 code=None
             )
 
-        import ipdb; ipdb.set_trace()
+        adh = fedowAPI.subscription.create(
+            wallet=f"{fedow_serialized_card['wallet']['uuid']}",
+            amount=int(self.total_vente_article * 100),
+            article=article,
+            user_card_firstTagId=carte_db.tag_id,
+            primary_card_fisrtTagId=primary_card_fisrtTagId.tag_id
+        )
 
         # On va chercher l'adhérant
         # if carte_db.membre:
@@ -1170,31 +1176,35 @@ class Commande:
         #
         #     adherant.save()
 
+        if not adh['verify_hash']:
+            raise NotAcceptable(
+                detail="Erreur fédération.\n"
+                       "Contactez un administrateur.",
+                code=None
+            )
+
         ArticleVendu.objects.create(
             article=article,
             prix=total,
             qty=1,
             pos=self.point_de_vente,
             carte=carte_db,
-            membre=adherant,
+            membre=carte_db.membre,
             responsable=self.responsable,
             moyen_paiement=self.moyen_paiement,
             commande=self.uuid_commande,
             uuid_paiement=self.uuid_paiement,
             table=self.table,
             ip_user=self.ip_user,
+            hash_fedow=adh['hash'],
+            sync_fedow=True,
         )
 
-        if not adherant and self.configuration.adhesion_suspendue:
-            carte_db.adhesion_suspendue = True
-            carte_db.save()
-
-            logger.warning('methode_adhesion : Pas de membre sur cette carte, on lance une adhesion suspendue')
-            raise NotAcceptable(
-                detail="Pas de membre sur cette carte.\n"
-                       "L'adhésion est suspendue et sera valide dès que la fiche membre sera créée",
-                code=None
-            )
+        # if not adherant and self.configuration.adhesion_suspendue:
+        #     carte_db.adhesion_suspendue = True
+        #     carte_db.save()
+        #
+        #     logger.warning('methode_adhesion : Pas de membre sur cette carte, on lance une adhesion suspendue')
 
     # RETOUR_CONSIGNE = 'CR'
     def methode_CR(self, article, qty):

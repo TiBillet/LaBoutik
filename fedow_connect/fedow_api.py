@@ -14,7 +14,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import localtime
 from django.core.cache import cache
-from APIcashless.models import CarteCashless, MoyenPaiement, Membre, ArticleVendu, Configuration, Wallet
+from APIcashless.models import CarteCashless, MoyenPaiement, Membre, ArticleVendu, Configuration, Wallet, Articles
 from APIcashless.models import Wallet as WalletDb
 
 logger = logging.getLogger(__name__)
@@ -142,24 +142,27 @@ class Subscription():
             self.config = Configuration.get_solo()
 
     def create(self,
-               wallet=None,
-               email=None,
-               amount: int = None,
+               wallet,
+               amount: int,
                date=None,
                user_card_firstTagId=None,
-               primary_card_fisrtTagId=None, ):
+               primary_card_fisrtTagId=None,
+               article: Articles=None,
+               ):
+
         if not date:
             date = localtime()
 
-        # Si Wallet est None, alors nous en créons ou allons chercher un wallet avec l'email
-        if not wallet:
-            pass
+        if article.methode_choices != Articles.ADHESIONS:
+            raise ValueError('Article must be an Membership product')
+        if not article.subscription_fedow_asset:
+            raise ValueError('Fedow subscription_fedow_asset must be set')
 
         subscription = {
             "amount": int(amount),
             "sender": f"{self.config.fedow_place_wallet_uuid}",
             "receiver": f"{UUID(wallet)}",
-            "asset": f"{self.config.methode_adhesion.pk}",
+            "asset": f"{article.subscription_fedow_asset.pk}",
             "subscription_start_datetime": date.isoformat(),
         }
         if user_card_firstTagId:
