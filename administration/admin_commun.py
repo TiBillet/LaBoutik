@@ -223,6 +223,8 @@ class CustomMembreForm(forms.ModelForm):
         self.fields['name'].widget.attrs['style'] = "text-transform: uppercase;"
         self.fields['prenom'].widget.attrs['style'] = "text-transform: capitalize;"
         self.fields['cotisation'].initial = config.prix_adhesion
+        # self.fields['choice_adhesion'].initial = Articles.objects.filter(methode_choice=Articles.ADHESIONS)
+
         # import ipdb; ipdb.set_trace()
         if self.instance.date_derniere_cotisation:
             adhesion = ArticleVendu.objects.filter(article__methode=config.methode_adhesion, membre=self.instance)
@@ -242,11 +244,21 @@ class CustomMembreForm(forms.ModelForm):
                 self.fields['cotisation'].widget = forms.HiddenInput()
                 self.fields['paiment_adhesion'].widget = forms.HiddenInput()
 
-        # import ipdb; ipdb.set_trace()
+    new_choice_adhesion = forms.ModelChoiceField(
+        queryset=Articles.objects.filter(methode_choices=Articles.ADHESIONS),
+        required=False,
+        label="Nouvelle adhésion",
+        help_text="<span style='color: #6f7e95'>" +
+                  _("Nouvelle adhésion") +
+                  "</br>" +
+                  _("Choisir l'article adhésion à comptabiliser.") +
+                  "</span>",
+    )
 
     nouvelle_carte_cashless = forms.ModelChoiceField(
         queryset=CarteCashless.objects.filter(membre__isnull=True),
         required=False,
+        label=_("Nouvelle carte cashless"),
         help_text="<span style='color: #6f7e95'>" +
                   _("Ajouter une carte cashless à ce membre. ") +
                   "</br>" +
@@ -306,13 +318,16 @@ class CustomMembreForm(forms.ModelForm):
             if self.cleaned_data.get('paiment_adhesion') != Membre.NAN:
                 logger.info(f"{instance} : instance.paiment_adhesion != Membre.NAN")
                 configuration = Configuration.objects.get()
-                instance.date_derniere_cotisation = timezone.now().date()
 
-                if not instance.date_inscription:
-                    instance.date_inscription = timezone.now().date()
-
+                # instance.date_derniere_cotisation = timezone.now().date()
+                # if not instance.date_inscription:
+                #     instance.date_inscription = timezone.now().date()
                 # par default, prend le premier point de vente disponinble.
-                pos = PointDeVente.objects.filter(comportement=PointDeVente.CASHLESS)[0]
+
+                pos = PointDeVente.objects.get_or_create(name='Admin')[0]
+                article = self.cleaned_data.get('new_choice_adhesion')
+                if not article :
+                    raise Exception("Selectionnez l'article adhésion")
 
                 paiement = False
                 cotisation = 0
@@ -328,7 +343,7 @@ class CustomMembreForm(forms.ModelForm):
 
                 if paiement and not adh_suspendue:
                     ArticleVendu.objects.create(
-                        article=Articles.objects.filter(methode=configuration.methode_adhesion)[0],
+                        article=article,
                         prix=cotisation,
                         qty=1,
                         pos=pos,
@@ -359,7 +374,7 @@ class MembresAdmin(admin.ModelAdmin):
                 ('name', 'prenom'),
                 ('email', 'demarchage'),
                 ('tel', 'code_postal'),
-                ('cotisation', 'paiment_adhesion'),
+                ('new_choice_adhesion', 'cotisation', 'paiment_adhesion'),
                 'nouvelle_carte_cashless',
                 'commentaire',
             )

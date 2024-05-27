@@ -195,6 +195,8 @@ class Membre(models.Model):
     paiment_adhesion = models.CharField(max_length=1, choices=TYPE_CHOICES, default=NAN,
                                         verbose_name=_("Methode de paiement"))
 
+    choice_adhesion = models.ForeignKey("Articles", null=True, blank=True, on_delete=models.SET_NULL)
+
     def choice_str(self, choice_list: list, choice_str: str):
         for choice in choice_list:
             if choice[0] == choice_str:
@@ -527,7 +529,6 @@ class Articles(models.Model):
     ADHESIONS = 'AD'
     RETOUR_CONSIGNE = 'CR'
     VIDER_CARTE = 'VC'
-    BLANCHIR_CARTE = 'BC'
     VOID_CARTE = 'VV'
     FRACTIONNE = 'FR'
     BILLET = 'BI'
@@ -542,7 +543,6 @@ class Articles(models.Model):
         (ADHESIONS, _('Adhésions')),
         (RETOUR_CONSIGNE, _('Retour de consigne')),
         (VIDER_CARTE, _('Vider Carte')),
-        (BLANCHIR_CARTE, _('Blanchir Carte')),
         (VOID_CARTE, _('Void Carte')),
         (FRACTIONNE, _('Fractionné')),
         (BILLET, _('Billet de concert')),
@@ -605,7 +605,22 @@ class Articles(models.Model):
     # Utilisé par le front pour connaitre le comportement de l'article
     # TODO: Changer sur le front le nom des variables pour correspondre à la nouvelle nomenclature (methode_choices)
     def methode_name(self):
-        if self.methode:
+        MAP_EX_METHODES_CHOICES = {
+            self.VENTE: "VenteArticle",
+            self.RECHARGE_EUROS: "AjoutMonnaieVirtuelle",
+            self.RECHARGE_EUROS_FEDERE: "AjoutMonnaieVirtuelle",
+            self.RECHARGE_CADEAU: "AjoutMonnaieVirtuelleCadeau",
+            self.ADHESIONS: "Adhesion",
+            self.RETOUR_CONSIGNE: "RetourConsigne",
+            self.VIDER_CARTE: "ViderCarte",
+            # self.VOID_CARTE: self.VOID_CARTE,
+            # self.BILLET: self.BILLET,
+            # self.BADGEUSE: self.BADGEUSE,
+            # self.FIDELITY: self.FIDELITY,
+        }
+        if MAP_EX_METHODES_CHOICES[self.methode_choices]:
+            return MAP_EX_METHODES_CHOICES[self.methode_choices]
+        elif self.methode:
             return self.methode.name
         else:
             logger.error(_(f"Pas de methode pour {self.name}"))
@@ -2018,7 +2033,7 @@ class Configuration(SingletonModel):
     fidelity_active = models.BooleanField(default=False,
                                           verbose_name=_("Incrémentez des points de fidélité pour chaque achat."))
     fidelity_asset_trigger = models.ManyToManyField('MoyenPaiement', related_name='fidelity_asset_trigger',
-                                                    null=True, blank=True,
+                                                    blank=True,
                                                     verbose_name=_(
                                                         "Asset déclencheur de l'incrémentation des points de fidélité"))
     fidelity_asset = models.ForeignKey('MoyenPaiement', on_delete=models.SET_NULL, null=True, blank=True,
