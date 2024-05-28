@@ -1492,8 +1492,8 @@ export function validerEtapeMoyenComplementaire(moyenPaiement, sommeDonnee) {
 }
 
 export function validerEtape2(data) {
-  console.log('-> fonction validerEtape2 !')
-  sys.logJson('data = ', data)
+  // console.log('-> fonction validerEtape2 !')
+  // sys.logJson('data = ', data)
   let options = {}
 
   // L'utilisation du lecteur nfc, impose un format de données différent.
