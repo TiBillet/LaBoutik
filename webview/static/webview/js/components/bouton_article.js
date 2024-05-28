@@ -58,7 +58,7 @@ function get_template(ctx) {
         left: 8px;
         top: 6px;
         font-weight: bold;
-        max-height: 66px;
+        max-height: 100px;
         font-size: 20px;
         margin-top: 0;
         margin-bottom: 1rem;
