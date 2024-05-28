@@ -1136,17 +1136,29 @@ class Commande:
                 code=None
             )
 
+        # On permet de payer avec de la monnaie cashless, mais on vérifie quand même :
+        if self.moyen_paiement.categorie == MoyenPaiement.LOCAL_EURO:
+            #TODO: Accepter les monnaies cashless Locale Euro et Fedéré uniquement
+            #vérifier le total wallet > prix adhésion & faire la transaction coté fédow
+            raise NotAcceptable(
+                detail=_("Travail en cours. "
+                         "Désolé, les adhésions n'acceptent que espèce ou CB."),
+                code=None
+            )
+
+
         # Check carte fedow :
         fedowAPI = FedowAPI()
         fedow_serialized_card = fedowAPI.NFCcard.cached_retrieve(carte_db.tag_id)
+
         # Si wallet ephemère = pas d'email
-        if fedow_serialized_card.get('is_wallet_ephemere'):
-            logger.error('methode_adhesion : Pas de membre sur cette carte')
-            raise NotAcceptable(
-                detail=_("Pas d'email lié sur cette carte.\n"
-                       "Merci de lier un email à cette carte en scannant son QRCode."),
-                code=None
-            )
+        # if fedow_serialized_card.get('is_wallet_ephemere'):
+        #     logger.error('methode_adhesion : Pas de membre sur cette carte')
+        #     raise NotAcceptable(
+        #         detail=_("Pas d'email lié sur cette carte.\n"
+        #                "Merci de lier un email à cette carte en scannant son QRCode."),
+        #         code=None
+        #     )
 
         adh = fedowAPI.subscription.create(
             wallet=f"{fedow_serialized_card['wallet']['uuid']}",
