@@ -586,12 +586,12 @@ function afficherRetourVenteDirecte(retour, status, options) {
         for (const id in item) {
           const subItem = item[id]
           if (typeof(subItem) === 'string') {
-            msgs += `<div class="BF-col popup-msg1" style="width:98%;">${subItem}</div>`
+            msgs += `<div class="BF-col popup-msg1 test-msg-${key}-${id}" style="width:98%;white-space: pre-line; text-align: center;">${subItem}</div>`
           }
         }
       } else {
         if (typeof(item) === 'string') {
-          msgs += `<div class="popup-msg1">${item}</div>`
+          msgs += `<div class="popup-msg1 test-msg-${key}" style="width:98%;white-space: pre-line; text-align: center;">${item}</div>`
         }
       }
     }
@@ -615,8 +615,8 @@ function afficherRetourVenteDirecte(retour, status, options) {
  * @param {Object} options = données avant le lancement de la requète
  */
 export function gererRetourPostPaiement(retour, status, options) {
-  // console.log('-> fonction gererRetourPostPaiement, options.actionAValider=', options.actionAValider)
-  // sys.logValeurs({retour: retour, status: status, options: options})
+  console.log('-> fonction gererRetourPostPaiement, options.actionAValider=', options.actionAValider)
+  sys.logValeurs({retour: retour, status: status, options: options})
   try {
     // sys.logValeurs({retour: retour, status: status, options: options})
 
