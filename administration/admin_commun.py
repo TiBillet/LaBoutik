@@ -17,6 +17,7 @@ from jet.filters import DateRangeFilter
 
 from APIcashless.models import CarteCashless, Membre, ArticleVendu, Configuration, \
     PointDeVente, Articles
+from fedow_connect.fedow_api import FedowAPI
 from fedow_connect.tasks import set_primary_card
 
 logger = logging.getLogger(__name__)
@@ -222,38 +223,38 @@ class CustomMembreForm(forms.ModelForm):
         self.fields['email'].widget.attrs['style'] = "text-transform: lowercase;"
         self.fields['name'].widget.attrs['style'] = "text-transform: uppercase;"
         self.fields['prenom'].widget.attrs['style'] = "text-transform: capitalize;"
-        self.fields['cotisation'].initial = config.prix_adhesion
+        # self.fields['cotisation'].initial = config.prix_adhesion
         # self.fields['choice_adhesion'].initial = Articles.objects.filter(methode_choice=Articles.ADHESIONS)
 
         # import ipdb; ipdb.set_trace()
-        if self.instance.date_derniere_cotisation:
-            adhesion = ArticleVendu.objects.filter(article__methode=config.methode_adhesion, membre=self.instance)
-            if len(adhesion) > 0:
-                adh_uuid = adhesion.first().commande
-                self.fields[
-                    'date_derniere_cotisation'].help_text = (f"<span style='color: #6f7e95'><a href='/rapport/invoice/{adh_uuid}'>"
-                                                             + _("Télécharger le reçu d'adhésion en pdf")
-                                                             + f"</a></span>")
+        # if self.instance.date_derniere_cotisation:
+        #     adhesion = ArticleVendu.objects.filter(article__methode=config.methode_adhesion, membre=self.instance)
+        #     if len(adhesion) > 0:
+        #         adh_uuid = adhesion.first().commande
+        #         self.fields[
+        #             'date_derniere_cotisation'].help_text = (f"<span style='color: #6f7e95'><a href='/rapport/invoice/{adh_uuid}'>"
+        #                                                      + _("Télécharger le reçu d'adhésion en pdf")
+        #                                                      + f"</a></span>")
 
         # Si nouveau membre; kwargs.get('instance') == None
         if kwargs.get('instance'):
             membre = kwargs.get('instance')
             if membre.CarteCashless_Membre.count() > 0:
                 self.fields['nouvelle_carte_cashless'].widget = forms.HiddenInput()
-            if membre.a_jour_cotisation():
-                self.fields['cotisation'].widget = forms.HiddenInput()
-                self.fields['paiment_adhesion'].widget = forms.HiddenInput()
+            # if membre.a_jour_cotisation():
+            #     self.fields['cotisation'].widget = forms.HiddenInput()
+            #     self.fields['paiment_adhesion'].widget = forms.HiddenInput()
 
-    new_choice_adhesion = forms.ModelChoiceField(
-        queryset=Articles.objects.filter(methode_choices=Articles.ADHESIONS),
-        required=False,
-        label="Nouvelle adhésion",
-        help_text="<span style='color: #6f7e95'>" +
-                  _("Nouvelle adhésion") +
-                  "</br>" +
-                  _("Choisir l'article adhésion à comptabiliser.") +
-                  "</span>",
-    )
+    # new_choice_adhesion = forms.ModelChoiceField(
+    #     queryset=Articles.objects.filter(methode_choices=Articles.ADHESIONS),
+    #     required=False,
+    #     label="Nouvelle adhésion",
+    #     help_text="<span style='color: #6f7e95'>" +
+    #               _("Nouvelle adhésion") +
+    #               "</br>" +
+    #               _("Choisir l'article adhésion à comptabiliser.") +
+    #               "</span>",
+    # )
 
     nouvelle_carte_cashless = forms.ModelChoiceField(
         queryset=CarteCashless.objects.filter(membre__isnull=True),
@@ -314,6 +315,7 @@ class CustomMembreForm(forms.ModelForm):
                 if len(all_carte) > 0:
                     carte = all_carte[0]
 
+            """
             # si adhesion depuis l'interface admin.
             if self.cleaned_data.get('paiment_adhesion') != Membre.NAN:
                 logger.info(f"{instance} : instance.paiment_adhesion != Membre.NAN")
@@ -342,6 +344,10 @@ class CustomMembreForm(forms.ModelForm):
                     cotisation = 0
 
                 if paiement and not adh_suspendue:
+                    fedowAPI = FedowAPI()
+                    wallet, created = fedowAPI.wallet.get_or_create_wallet_from_email(instance.email)
+                    instance.wallet = wallet
+
                     ArticleVendu.objects.create(
                         article=article,
                         prix=cotisation,
@@ -354,6 +360,7 @@ class CustomMembreForm(forms.ModelForm):
                     )
 
                 instance.paiment_adhesion = "N"
+            """
 
         logger.info(f'{instance} if commit {commit}')
         if commit:
@@ -374,7 +381,7 @@ class MembresAdmin(admin.ModelAdmin):
                 ('name', 'prenom'),
                 ('email', 'demarchage'),
                 ('tel', 'code_postal'),
-                ('new_choice_adhesion', 'cotisation', 'paiment_adhesion'),
+                # ('new_choice_adhesion', 'cotisation', 'paiment_adhesion'),
                 'nouvelle_carte_cashless',
                 'commentaire',
             )
@@ -392,11 +399,11 @@ class MembresAdmin(admin.ModelAdmin):
                     'prenom',
                     'numero_carte',
                     'email',
-                    'date_derniere_cotisation',
+                    # 'date_derniere_cotisation',
                     'date_ajout',
-                    'commentaire',
+                    # 'commentaire',
                     'derniere_presence',
-                    'adhesion_origine',
+                    # 'adhesion_origine',
                     )
 
     readonly_fields = ('date_ajout',)
@@ -412,7 +419,7 @@ class MembresAdmin(admin.ModelAdmin):
         'email',
         'CarteCashless_Membre__number',
         ('date_ajout', DateRangeFilter),
-        ('date_derniere_cotisation', DateRangeFilter),
+        # ('date_derniere_cotisation', DateRangeFilter),
     ]
 
     list_per_page = 20
@@ -420,6 +427,7 @@ class MembresAdmin(admin.ModelAdmin):
 
     def save_model(self, request, instance, form, change):
         super().save_model(request, instance, form, change)
+        """
         if instance.a_jour_cotisation():
             messages.add_message(
                 request,
@@ -432,6 +440,7 @@ class MembresAdmin(admin.ModelAdmin):
                 messages.ERROR,
                 _(f"Ce membre n'est pas à jour de sa cotisation.")
             )
+        """
 
     def get_urls(self):
         urls = super().get_urls()

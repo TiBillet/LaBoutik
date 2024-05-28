@@ -834,7 +834,7 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(membres.count(), 4)
         for membre in membres:
             # Link de l'email à la carte via le code nfc
-            wallet: Wallet = fedowAPI.wallet.create_from_email(email=membre.email)
+            wallet: Wallet = fedowAPI.wallet.get_or_create_wallet_from_email(email=membre.email)
             wallet_uuid = wallet.uuid
             self.assertIsInstance(wallet, Wallet)
             self.assertIsInstance(wallet_uuid, UUID)

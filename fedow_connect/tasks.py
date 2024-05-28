@@ -117,6 +117,8 @@ def send_existing_tokens():
 def send_existing_members():
     # Envoie des comptes membres
     fedowAPI = get_fedow()
+
+    # refaire ça en mode atomique !!!!
     for membre in Membre.objects.filter(email__isnull=False).exclude(email=""):
         carte = None
         wallet = None
@@ -125,7 +127,12 @@ def send_existing_members():
                 wallet = fedowAPI.NFCcard.link_user(email=membre.email, card=carte)
         if membre.date_derniere_cotisation:
             if not wallet:
-                wallet: Wallet = fedowAPI.wallet.create_from_email(email=membre.email)
+                wallet, created = fedowAPI.wallet.get_or_create_wallet_from_email(email=membre.email)
+                if not membre.wallet:
+                    membre.wallet = wallet
+                    membre.save()
+                elif membre.wallet != wallet:
+                    raise Exception("Wallet and member mismatch")
             adh = fedowAPI.subscription.create(
                 wallet=f"{wallet.uuid}",
                 amount=int(membre.cotisation * 100),

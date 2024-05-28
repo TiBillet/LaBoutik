@@ -361,12 +361,9 @@ class NFCCard():
              primary_card_fisrtTagId: str = None):
         return self.refund(user_card_firstTagId, primary_card_fisrtTagId, void=True)
 
-    def link_user(self, email: str = None, card: CarteCashless = None):
-        try :
+    def link_user(self, email: str = None, card: CarteCashless = None, membre=None):
+        if not membre :
             membre = Membre.objects.get(email=email)
-        except Exception as e :
-            print(e)
-            import ipdb; ipdb.set_trace()
 
         # Check if card is already linked to the good member
         if card.membre is not None:
@@ -583,17 +580,11 @@ class WalletFedow():
         if config is None:
             self.config = Configuration.get_solo()
 
-    def create_from_email(self, email: str = None):
+    def get_or_create_wallet_from_email(self, email: str = None, save=True):
         response_link = _post(self.config, 'wallet', {"email": email})
         if response_link.status_code == 201:
-            # Création du wallet dans la base de donnée
-            membre = Membre.objects.get(email=email)
-            if not membre.wallet:
-                membre.wallet, created = Wallet.objects.get_or_create(uuid=UUID(response_link.json()))
-                membre.save()
-            elif membre.wallet.uuid != UUID(response_link.json()):
-                raise Exception("Wallet and member mismatch")
-            return membre.wallet
+            wallet, created = Wallet.objects.get_or_create(uuid=UUID(response_link.json()))
+            return wallet, created
 
         raise Exception(f"Wallet FedowAPI create_from_email response : {response_link.status_code}")
 
