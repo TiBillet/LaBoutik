@@ -534,10 +534,28 @@ function afficherRetourVenteDirecte(retour, status, options) {
         }
 
         msgDefaut = `<div class="popup-titre1 test-return-title-content" data-i8n="membership,capitalize">Adhésion</div>
-          ${msgCotisation}
-          <div class="test-return-total-achats" style="font-size: 2rem;font-weight: bold;">
-            <span data-i8n="total,capitalize">Total</span>${moyensDePaiement}<span> ${retour.somme_totale}</span> <span data-i8n="currencySymbol"></span>
+        ${msgCotisation}
+        <div class="test-return-total-achats" style="font-size: 2rem;font-weight: bold;">
+          <span data-i8n="total,capitalize">Total</span>${moyensDePaiement}<span> ${retour.somme_totale}</span> <span data-i8n="currencySymbol"></span>
         </div>`
+
+        // paiement espèce, somme donnée; pas de complémentaire
+        if (options.achats.complementaire === undefined && options.achats.moyen_paiement === 'espece') {
+          const totalAchat = parseFloat(options.achats.total)
+          const sommeDonnee = parseFloat(options.sommeDonnee)
+          const resultat = new Big(sommeDonnee).minus(totalAchat)
+          // const sumValue = (new Big(sum)).valueOf()
+          msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
+              <span data-i8n="givenSum,capitalize">Somme donnée</span>
+              <span>${sommeDonnee}</span>
+              <span data-i8n="currencySymbol"></span>
+            </div>
+            <div class="test-return-change" style="font-size: 2rem;font-weight: bold;">
+              <span data-i8n="change,capitalize">monnaie à rendre</span>
+              <span role="status" aria-label="change">${resultat}</span>
+              <span data-i8n="currencySymbol"></span>
+            </div>`
+        }
       }
 
       // retour consigne

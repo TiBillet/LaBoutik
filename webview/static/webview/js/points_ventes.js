@@ -27,9 +27,9 @@ glob.bt_groupement = {
     nb_commande_max: nombreMaxSelectionArticle
   },
   'Adhesion': {
-    moyens_paiement: 'espece|carte_bancaire|nfc',
+    moyens_paiement: 'espece|carte_bancaire',
     besoin_tag_id: 'tout',
-    groupe: 'groupe1',
+    groupe: 'groupe4',
     nb_commande_max: nombreMaxSelectionArticle
   },
   'AjoutMonnaieVirtuelle': {
