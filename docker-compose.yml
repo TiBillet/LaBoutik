@@ -10,6 +10,14 @@ services:
     networks:
       - laboutik_backend
 
+  laboutik_memcached:
+    image: memcached:1.6
+    container_name: laboutik_memcached
+    hostname: laboutik_memcached
+    restart: always
+    networks:
+      - laboutik_backend
+
   laboutik_redis:
     image: redis:6-alpine
     restart: always
@@ -30,9 +38,11 @@ services:
     links:
       - laboutik_postgres:postgres
       - laboutik_redis:redis
+      - laboutik_memcached:memcached
     depends_on:
       - laboutik_postgres
       - laboutik_redis
+      - laboutik_memcached
     networks:
       - laboutik_backend
     extra_hosts:
@@ -40,8 +50,8 @@ services:
       - "demo.tibillet.localhost:172.17.0.1"
       - "billetistan.tibillet.localhost:172.17.0.1"
       - "cashless.tibillet.localhost:172.17.0.1"
-#    command: "sleep infinity"
-#    command: "bash /home/tibillet/LaBoutik/DjangoFiles/launch_prod.sh"
+  #    command: "sleep infinity"
+  #    command: "bash /home/tibillet/LaBoutik/DjangoFiles/launch_prod.sh"
 
 
   laboutik_celery:
@@ -55,9 +65,11 @@ services:
     links:
       - laboutik_postgres:postgres
       - laboutik_redis:redis
+      - laboutik_memcached:memcached
     depends_on:
       - laboutik_postgres
       - laboutik_django
+      - laboutik_memcached
     networks:
       - laboutik_backend
     extra_hosts:
