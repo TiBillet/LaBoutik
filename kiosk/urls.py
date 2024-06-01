@@ -4,9 +4,10 @@ from kiosk.views import (index, CardViewset,
 from rest_framework import routers
 router = routers.DefaultRouter()
 
-router.register(r'card', CardViewset, basename='scan')
+router.register(r'card', CardViewset, basename='card')
 
 urlpatterns = [
+    path('index/', index, name='index'),
     path('api/', include(router.urls)),
     path('recharge_paiment_pg/', recharge_paiment_pg, name='recharge_paiment_pg'),
     path('given_bill/', given_bill, name='given_bill'),

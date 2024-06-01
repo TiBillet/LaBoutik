@@ -5,8 +5,9 @@ from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseRedirect, HttpResponse
 from django.utils import timezone
+from requests import Response
 
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions,status
 from rest_framework.decorators import action
 
 from APIcashless.models import CarteCashless
@@ -37,14 +38,24 @@ def index(request):
 
     return render(request, 'kiosk_pages/first_page.html')
 
-
 class CardViewset(viewsets.ViewSet):
+    # The permission might be used in different methods, but not all
+    permission_classes = []
     # save scanded card:
-    @action(detail=False, methods=['POST'])
-    def save_scanded_card(self, request):
-        scanned_card_id = request.POST.get('scanded_tag_id')
-        ScannedNfcCard.objects.create(reeded_card=scanned_card_id)
-        return HttpResponse(scanned_card_id)
+    @action(detail=False, methods=['POST'], permission_classes=[permissions.AllowAny])
+    def save_scaned_card(self, request):
+        # Look if the card that is being scaned exist in the DB
+        validator = CardValidator(data=request.data)
+        # check if the scaned card doesn't exist or is unvalid
+        if not validator.is_valid():
+            message = "Card error, please try again!"
+            return render(request, 'kiosk_pages/first_page.html',
+                          {'message': message})
+
+        # Saving the card that is being scaned
+        card: CarteCashless = validator.validated_data.get('tag_id')
+        ScannedNfcCard.objects.create(card=card)
+        return HttpResponse('Card saved: ')
 
 
     # post from card scan /
@@ -67,19 +78,20 @@ class CardViewset(viewsets.ViewSet):
     @action(detail=False, methods=['POST'])
     def recharge(self,request):
         selected_data = AmountValidator(data=request.data)
-        # If it happens that the uuid or the total is wrong
+        # If it happens that the tag_id or the total is wrong
         if not selected_data.is_valid():
-            message = "Error, please try again!"
+            message = "Error, please try again! "
 
             return render(request, 'kiosk_pages/first_page.html',
                           {'message':message})
 
-        uuid = selected_data.validated_data.get('uuid')
-        total = selected_data.validated_data.get('total')
+        card: CarteCashless = selected_data.validated_data.get('tag_id')
+        total: Decimal = selected_data.validated_data.get('total')
 
         return render(request,
         'kiosk_pages/recharge.html',
-        {'total':total, 'uuid': uuid})
+        {'total':total, 'card': card})
+
 
     # post from paiment
     @action(detail=False, methods=['POST'])
@@ -91,9 +103,8 @@ class CardViewset(viewsets.ViewSet):
                                  "Wrong selection, please try again")
             return HttpResponseRedirect('/')
 
-        card: CarteCashless = choosed_data.validated_data.get('uuid')
+        card: CarteCashless = choosed_data.validated_data.get('tag_id')
         total: Decimal = choosed_data.validated_data.get('total')
-
         paiment_choice = Payment.objects.create(amount=total, card=card)
         context = {'card': card, 'total': total, 'paiment_choice': paiment_choice}
 

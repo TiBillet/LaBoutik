@@ -9,7 +9,7 @@
     </div>
     <div class="row">
         <div class="col-4" id="totStripe">
-            <input type="hidden" id="uuidPostStripe" value="{{ uuid }}" name="uuid"/>
+            <input type="hidden" id="tagIdPostStripe" value="{{ card.tag_id }}" name="tag_id"/>
             <input type="hidden" id="totalPostStripe" value="{{ total }}" name="total"/>
             <a type="button" class="btn btn-success" style="width: 140px;"
                hx-post="stripe_paiment/"
@@ -26,13 +26,13 @@
             </a>
         </div>
            <div class="col-3"></div>
-        <div class="col-4" id="totUuid">
-            <input type="hidden" id="uuidPost" value="{{ uuid }}" name="uuid"/>
+        <div class="col-4" id="totCash">
+            <input type="hidden" id="tagIdPost" value="{{ card.tag_id }}" name="tag_id"/>
             <input type="hidden" id="totalPost" value="{{ total }}" name="total"/>
             <a type="button" 
                class="btn btn-success" style="width: 140px;"
                hx-post="api/card/paiment/"
-               hx-include="#totUuid"
+               hx-include="#totCash"
                hx-trigger="click"
                hx-target="closest section"
             >

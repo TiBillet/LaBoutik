@@ -1,9 +1,9 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
+
 {% block content %}
     <div id="mainPage2">
-
 
         <div class="center-text" id="main_page">
             <div class="row">
@@ -16,23 +16,18 @@
             </div>
         </div>
 
-
-        <input type="text" id="given_card"
+        <input type="hidden" id="given_card"
         value="{{ tag_id }}" name="tag_id"/>
+
         <div
                 hx-post="api/card/scan/"
                 hx-include="#given_card"
-                hx-trigger="load"
+                hx-trigger="load delay:0.2s"
                 hx-target="#mainPage2"
         >
         </div>
 
     </div>
-
-
-<script>
-
-</script>
 
 
 {% endblock content %}

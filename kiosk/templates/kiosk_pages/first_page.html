@@ -12,34 +12,27 @@
                     <h4 style="color: red">{{ message }}</h4>
                 </div>
                 <div class="col-12">
+                    <h1>{{ tst }}</h1>
                     <h1>Welcome, please scan your wristband to check or refille your wallet</h1>
                 </div>
             </div>
         </div>
 
-
         <div
-             hx-get="/"
+             hx-get="index/"
              hx-trigger="load  delay:1s"
              hx-target="#mainPage"
              hx-swap="outerHTML"
         >
         </div>
 
+        <div
+             hx-get="https://127.0.0.2:6997/scan_nfc/"
+             hx-trigger="load  delay:1s"
+        >
+        </div>
+
     </div>
-         
-    
-    
-{#    <input type="text" id="given_card" on_input="listen_card()" name="number"/>#}
-{#    <button#}
-{#            hx-post="api/card/scan/"#}
-{#            hx-include="#given_card"#}
-{#            hx-trigger="click"#}
-{#            hx-target="#main_page"#}
-{#            >check</button>#}
-{#    #}
-{#    #}
-    
 
 <script>
     

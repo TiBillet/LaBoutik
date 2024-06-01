@@ -12,8 +12,9 @@ class CardValidator(serializers.Serializer):
 
 # Validate the amount and uuid posted
 class AmountValidator(serializers.Serializer):
-    uuid = serializers.SlugRelatedField(
+    tag_id = serializers.SlugRelatedField(
         queryset=CarteCashless.objects.all(),
-        slug_field='id'
+        slug_field='tag_id'
     )
     total = serializers.DecimalField(max_digits=8, decimal_places=2)
+    device_confirm = serializers.CharField(required=False)

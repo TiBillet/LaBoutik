@@ -39,13 +39,13 @@
                 </div>
                 
                 <div class="row" id="cash_content">
-                   
+
                     <div class="col-12" id="total_card">
-                        <input type="hidden" id="cardUuid" value="{{ card.uuid }}" name="uuid"/>
+                        <input type="hidden" id="cardTagId" value="{{ card.tag_id }}" name="tag_id"/>
                         <h4>Total: <output id="total_dj" value="{{ total_dj }}" name="total"> {{ total }}</output></h4>
                             <button type="button" class="btn btn-success" 
-                                    hx-get="api/card/recharge/"
-                                    hx-include="#cardUuid, #total_dj"
+                                    hx-post="api/card/recharge/"
+                                    hx-include="#cardTagId, #total_dj"
                                     hx-trigger="click"
                                     hx-target="#cash_content"
                                     hx-swapping="InnerHTML"
@@ -54,7 +54,7 @@
                 </div>
                 
                 <div>
-                    <a class="btn btn-primary" href="/" style="width: 120px; height: 40px;">
+                    <a class="btn btn-primary" href="https://cashless.tibillet.localhost/kiosk/" style="width: 120px; height: 40px;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-return-right" viewBox="0 0 16 16">
                           <path fill-rule="evenodd" d="M1.5 1.5A.5.5 0 0 0 1 2v4.8a2.5 2.5 0 0 0 2.5 2.5h9.793l-3.347 3.346a.5.5 0 0 0 .708.708l4.2-4.2a.5.5 0 0 0 0-.708l-4-4a.5.5 0 0 0-.708.708L13.293 8.3H3.5A1.5 1.5 0 0 1 2 6.8V2a.5.5 0 0 0-.5-.5"/>
                         </svg>
