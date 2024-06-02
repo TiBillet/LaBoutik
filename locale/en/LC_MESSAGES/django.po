@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-02 09:02+0000\n"
+"POT-Creation-Date: 2024-06-02 09:41+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,9 +26,7 @@ msgstr "Cashless server URL not specified"
 msgid ""
 "Erreur de connexion au serveur discovery pour appareillage : "
 "{discovery_request.json()}"
-msgstr ""
-"Faulty connection to discovery server : "
-"{discovery_request.json()}"
+msgstr "Faulty connection to discovery server : {discovery_request.json()}"
 
 #: APIcashless/custom_utils.py:141
 msgid "Clé discovery non renseignée"
@@ -40,8 +38,8 @@ msgid ""
 "Erreur de connexion au serveur discovery pour appareillage : "
 "{discovery_new_client_request.status_code}"
 msgstr ""
-"Faulty connection to discovery server : "
-"{discovery_new_client_request.status_code}"
+"Faulty connection to discovery server : {discovery_new_client_request."
+"status_code}"
 
 #: APIcashless/models.py:53 APIcashless/models.py:143 APIcashless/models.py:300
 #: APIcashless/models.py:378 APIcashless/models.py:407
@@ -105,8 +103,7 @@ msgstr "I agree to receive the newsletter"
 msgid ""
 "Vous pouvez modifier la valeur par default dans la page de configuration "
 "générale"
-msgstr ""
-"You can change the default value in the general configuration page"
+msgstr "You can change the default value in the general configuration page"
 
 #: APIcashless/models.py:179
 msgid "Depuis Admin"
@@ -485,7 +482,8 @@ msgstr "QRcode uuid4"
 msgid ""
 "Non obligatoire lors de la création, il sera généré aléatoirement si non "
 "rempli."
-msgstr "Not mandatory at creation, it will be randomly generated if not completed"
+msgstr ""
+"Not mandatory at creation, it will be randomly generated if not completed"
 
 #: APIcashless/models.py:898
 msgid "Numéro imprimé"
@@ -638,8 +636,7 @@ msgstr "Canceled"
 #: APIcashless/models.py:1421
 msgid ""
 "Erreur lors d'un rapprochement de paiement fractionné. Aucun paiement en Db."
-msgstr ""
-"Fractional payment reconciliation error. No payment in database."
+msgstr "Fractional payment reconciliation error. No payment in database."
 
 #: APIcashless/models.py:1597
 msgid "Envoyé sur Odoo"
@@ -766,7 +763,8 @@ msgid ""
 "Si annulation d'un article déja payé par cashless, on rembourse "
 "automatiquement sur la carte"
 msgstr ""
-"If you cancel an item already paid for by cashless, your card will be automatically refunded."
+"If you cancel an item already paid for by cashless, your card will be "
+"automatically refunded."
 
 #: APIcashless/models.py:1960
 msgid "Url publique du serveur cashless"
@@ -784,7 +782,9 @@ msgstr "Create / Revoke"
 msgid ""
 "Selectionnez et validez pour générer ou supprimer une clé API. La clé ne "
 "sera affiché qu'a la création, notez la bien !"
-msgstr "Select and validate to generate or delete an API key. The key will only be displayed on creation, so make a note of it!"
+msgstr ""
+"Select and validate to generate or delete an API key. The key will only be "
+"displayed on creation, so make a note of it!"
 
 #: APIcashless/models.py:1986
 msgid "Ip serveur oceco"
@@ -970,6 +970,14 @@ msgstr "EX Accounting charts"
 msgid "Point de fidélité"
 msgstr "Point of sale"
 
+#: APIcashless/tasks.py:373
+msgid ""
+"Vous avez reçu une invitation pour accéder à l'interface d'administration de "
+"TiBillet."
+msgstr ""
+"TiBillet : You have received an invitation to access the administration "
+"interface"
+
 #: APIcashless/tasks.py:379
 msgid "Administration Caisse TiBillet"
 msgstr "LaBoutik Admin"
@@ -979,13 +987,16 @@ msgid "Décollage imminent"
 msgstr "Take-off imminent"
 
 #: APIcashless/tasks.py:382
-#, python-brace-format
+#, fuzzy
+#| msgid ""
+#| "Vous avez été invité à créer votre compte pour l'administration de "
+#| "l'instance TiBillet de {config.structure}."
 msgid ""
 "Vous avez été invité à créer votre compte pour l'administration de "
-"l'instance TiBillet de {config.structure}."
+"l'instance TiBillet de "
 msgstr ""
-"You have been invited to create your account for the administration of "
-"the TiBillet instance of {config.structure}."
+"You have been invited to create your account for the administration of the "
+"TiBillet instance of "
 
 #: APIcashless/tasks.py:383
 msgid ""
@@ -1002,8 +1013,8 @@ msgstr "I validate my mail"
 #: APIcashless/tasks.py:390
 msgid ""
 "Si vous recevez cet email par erreur, merci de contacter l'équipe de TiBillet"
-msgstr ""
-"If you receive this email in error, please contact the TiBillet team."
+msgstr "If you receive this email in error, please contact the TiBillet team."
+
 #: APIcashless/tasks.py:392
 msgid "A bientôt, et bon voyage"
 msgstr "See you soon, and bon voyage"
@@ -1018,8 +1029,8 @@ msgid ""
 "Un nouveau terminal '{appareil.name}' s'est connecté à votre instance "
 "TiBillet {structure_name}"
 msgstr ""
-"A new terminal '{appareil.name}' has connected to your instance"
-"TiBillet {structure_name}"
+"A new terminal '{appareil.name}' has connected to your instanceTiBillet "
+"{structure_name}"
 
 #: APIcashless/validator.py:80
 msgid "10 %"

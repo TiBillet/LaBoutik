@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-02 09:02+0000\n"
+"POT-Creation-Date: 2024-06-02 09:41+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -911,6 +911,12 @@ msgstr ""
 msgid "Point de fidélité"
 msgstr ""
 
+#: APIcashless/tasks.py:373
+msgid ""
+"Vous avez reçu une invitation pour accéder à l'interface d'administration de "
+"TiBillet."
+msgstr ""
+
 #: APIcashless/tasks.py:379
 msgid "Administration Caisse TiBillet"
 msgstr ""
@@ -920,10 +926,9 @@ msgid "Décollage imminent"
 msgstr ""
 
 #: APIcashless/tasks.py:382
-#, python-brace-format
 msgid ""
 "Vous avez été invité à créer votre compte pour l'administration de "
-"l'instance TiBillet de {config.structure}."
+"l'instance TiBillet de "
 msgstr ""
 
 #: APIcashless/tasks.py:383

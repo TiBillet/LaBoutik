@@ -370,7 +370,7 @@ def email_activation(user_uuid: uuid4=None):
 
     template_name = "mails_transactionnels/email_activation.html"
     email = user.email
-    subject = "Vous avez reçu une invitation pour accéder à l'interface d'administration de TiBillet."
+    subject = _("Vous avez reçu une invitation pour accéder à l'interface d'administration de TiBillet.")
     context = {
         'username': user.username,
         'user': user,
@@ -379,7 +379,7 @@ def email_activation(user_uuid: uuid4=None):
         'objet': _('Administration Caisse TiBillet'),
         'sub_title': _('Décollage imminent'),
         'svg_sub_title': '',
-        'main_text': _(f"Vous avez été invité à créer votre compte pour l'administration de l'instance TiBillet de {config.structure}."),
+        'main_text': _(f"Vous avez été invité à créer votre compte pour l'administration de l'instance TiBillet de ") + f"{config.structure}.",
         'main_text_2': _("Merci de valider votre email avec le lien ci-dessous. Vous serez invité à créer un mot de passe."),
         'table_info': {},
         'button_color': "#25c19f",  # for tibillet green : "#25c19f", for red warning : "#E8423FFF"
