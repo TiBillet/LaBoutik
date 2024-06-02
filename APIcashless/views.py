@@ -203,7 +203,7 @@ class oceco_endpoint(APIView):
 
                     logger.info(
                         f"{timezone.now()} {timezone.now() - start} /APIcashless/oceco_endpoint POST {validator_transaction.validated_data}")
-                    return Response(f"Monnaie Cadeau ok ({commande_valide['carte']['total_monnaie']})",
+                    return Response(_(f"Monnaie Cadeau ok ({commande_valide['carte']['total_monnaie']})"),
                                     status=status.HTTP_200_OK)
                 else:
                     logger.error(
@@ -633,7 +633,7 @@ class billetterie_qrcode_adhesion(APIView):
 
 
             if not membre.name and not membre.prenom and not membre.tel:
-                return Response('Membre existant mais zero informations', status=status.HTTP_204_NO_CONTENT)
+                return Response(_('Membre existant mais zero informations'), status=status.HTTP_204_NO_CONTENT)
 
             # Membre existant, mais information manquante
             if not membre.name or not membre.prenom or not membre.tel:
@@ -646,7 +646,7 @@ class billetterie_qrcode_adhesion(APIView):
                 return Response(info_membre, status=status.HTTP_206_PARTIAL_CONTENT)
 
             if membre.name and membre.prenom and membre.tel:
-                return Response('Membre existant, carte liée', status=status.HTTP_202_ACCEPTED)
+                return Response(_('Membre existant, carte liée'), status=status.HTTP_202_ACCEPTED)
 
 
         else:

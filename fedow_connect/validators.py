@@ -245,16 +245,16 @@ class TransactionValidator(serializers.Serializer):
 
     FIRST, SALE, CREATION, REFILL, TRANSFER, SUBSCRIBE, BADGE, FUSION, REFUND, VOID = 'FST', 'SAL', 'CRE', 'REF', 'TRF', 'SUB', 'BDG', 'FUS', 'RFD', 'VID'
     TYPE_ACTION = (
-        (FIRST, "Premier bloc"),
-        (SALE, "Vente d'article"),
-        (CREATION, 'Creation monétaire'),
-        (REFILL, 'Recharge'),
-        (TRANSFER, 'Transfert'),
-        (SUBSCRIBE, 'Abonnement ou adhésion'),
-        (BADGE, 'Badgeuse'),
-        (FUSION, 'Fusion de deux wallets'),
-        (REFUND, 'Remboursement'),
-        (VOID, 'Dissocciation de la carte et du wallet user'),
+        (FIRST, _("Premier bloc")),
+        (SALE, _("Vente d'article")),
+        (CREATION, _('Creation monétaire')),
+        (REFILL, _('Recharge')),
+        (TRANSFER, _('Transfert')),
+        (SUBSCRIBE, _('Abonnement ou adhésion')),
+        (BADGE, _('Badgeuse')),
+        (FUSION, _('Fusion de deux wallets')),
+        (REFUND, _('Remboursement')),
+        (VOID, _('Dissocciation de la carte et du wallet user')),
     )
     action = serializers.ChoiceField(choices=TYPE_ACTION)
 

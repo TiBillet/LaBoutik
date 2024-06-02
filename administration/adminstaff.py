@@ -463,7 +463,7 @@ class CategorieFilter(admin.SimpleListFilter):
     title = _("methode")
 
     # Parameter for the filter that will be used in the URL query.
-    parameter_name = 'methode'
+    parameter_name = _('methode')
 
     def lookups(self, request, model_admin):
         """
@@ -1079,7 +1079,7 @@ class ConfigurationAdmin(SingletonModelAdmin):
                     instance.journal_odoo_stripe]:
                     if not journal or journal not in journaux.keys():
                         messages.add_message(request, messages.ERROR,
-                                             f"Error journal name. Please fill with : {journaux}")
+                                             (f"Error journal name. Please fill with : {journaux}"))
                         journaux_ok = False
 
                 if journaux_ok:

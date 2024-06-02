@@ -197,7 +197,7 @@ class NfcReader(APIView):
             if appareil.actif:
                 return Response(appareil.ip_lan, status=status.HTTP_200_OK)
             else:
-                return Response('Appareil non actif', status=status.HTTP_401_UNAUTHORIZED)
+                return Response(_('Appareil non actif'), status=status.HTTP_401_UNAUTHORIZED)
 
         return Response('Heing ?', status=status.HTTP_404_NOT_FOUND)
 
@@ -222,7 +222,7 @@ def index(request):
 
             except CarteMaitresse.DoesNotExist:
                 # TODO: Virer "erreur :1", passer en response REST
-                return JsonResponse({"erreur": 1, "msg": "Carte non maitresse"})
+                return JsonResponse({"erreur": 1, "msg": _("Carte non maitresse")})
 
             except Exception as e:
                 logger.error(f"Erreur login carte primaire : {e}")
@@ -255,7 +255,7 @@ def index(request):
                     logger.error("/wv/index Carte sans nom !")
                     # TODO: Virer "erreur :1", utiliser Response
                     return JsonResponse(
-                        {"erreur": 1, "msg": "Carte sans membre, ajoutez un responsable sur cette carte maitresse."})
+                        {"erreur": 1, "msg": _("Carte sans membre, ajoutez un responsable sur cette carte maitresse.")})
 
     contexte = {
         'version': '4.24.04',
@@ -297,7 +297,7 @@ def close_all_pos(request):
         # Aucune vente depuis la dernière fermeture,
         # on envoie la fermeture précédente
         if not premiere_vente_apres_derniere_fermeture:
-            return Response({"message": "Aucune vente depuis la dernière fermeture."},
+            return Response({"message": _("Aucune vente depuis la dernière fermeture.")},
                             status=status.HTTP_206_PARTIAL_CONTENT)
 
         start_date = premiere_vente_apres_derniere_fermeture.date_time
@@ -319,12 +319,12 @@ def close_all_pos(request):
             to_printer = ticketZ_tasks_printer.delay(ticketz_json)
             if not config.ticketZ_printer:
                 return Response({
-                    "message": "Caisses cloturées mais aucune imprimante selectionnée dans la configuration pour le Ticket Z.\n"
-                               "Vous pouvez le ré-imprimer depuis l'interface d'administration."},
+                    "message": _("Caisses cloturées mais aucune imprimante selectionnée dans la configuration pour le Ticket Z.\n"
+                               "Vous pouvez le ré-imprimer depuis l'interface d'administration.")},
                     status=status.HTTP_200_OK)
 
-            return Response({"message": "Caisses cloturées et ticket envoyé à l'impression"}, status=status.HTTP_200_OK)
-        return Response({"message": "Erreur génération du ticket Z"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"message": _("Caisses cloturées et ticket envoyé à l'impression")}, status=status.HTTP_200_OK)
+        return Response({"message": _("Erreur génération du ticket Z")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @login_required
@@ -342,11 +342,11 @@ def ticket_client(request, tagid):
                 thread_email.start()
                 logger.info(f'Thread email lancé pour ticket_client {carte.membre.email}')
 
-                return Response(f"Mail envoyé sur {carte.membre.email}", status=status.HTTP_200_OK)
+                return Response(_(f"Mail envoyé sur {carte.membre.email}"), status=status.HTTP_200_OK)
             else:
-                return Response(f"Pas de mail sur la carte.", status=status.HTTP_400_BAD_REQUEST)
+                return Response(_(f"Pas de mail sur la carte."), status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(f"Pas de membre sur la carte.", status=status.HTTP_400_BAD_REQUEST)
+            return Response(_(f"Pas de membre sur la carte."), status=status.HTTP_400_BAD_REQUEST)
 
 
 @login_required
@@ -455,14 +455,14 @@ def preparation(request, *args, **kwargs):
 
                                         if ligne_article_vendu.table:
                                             dict_message[
-                                                'message'] += f", sur la table {ligne_article_vendu.table.name},"
+                                                'message'] += _(f", sur la table {ligne_article_vendu.table.name},")
 
                                         dict_message[
-                                            'message'] += f" a été remboursée de {asset.qty} {asset.monnaie.name}.\n"
+                                            'message'] += _(f" a été remboursée de {asset.qty} {asset.monnaie.name}.\n")
 
                                     if not configuration.remboursement_auto_annulation:
                                         dict_message[
-                                            'message'] += f"{article.name} payé en {ligne_article_vendu.moyen_paiement} supprimés de la commande et comptabilisé, mais aucun remboursement automatique n'a été réalisé.\n"
+                                            'message'] += _(f"{article.name} payé en {ligne_article_vendu.moyen_paiement} supprimés de la commande et comptabilisé, mais aucun remboursement automatique n'a été réalisé.\n")
 
                             else:
                                 raise serializers.ValidationError(_("Carte maitresse non gérante."))
@@ -501,7 +501,7 @@ def check_carte(request):
                 fedowApi.NFCcard.retrieve(tag_id_request)
             except Exception as e:
                 logger.error(f"Check carte FEDOW : {e}")
-                return Response({"msg": f"Fédération indisponible. Contactez l'administrateur. {e}"},
+                return Response({"msg": _(f"Fédération indisponible. Contactez l'administrateur. {e}")},
                                 status=status.HTTP_404_NOT_FOUND)
 
         # Methode Old Cashless
@@ -1298,7 +1298,7 @@ def table_solo_et_commande(request, *args, **kwargs):
             logger.info(f"{timezone.now()} {timezone.now() - start} /wv/table_solo_et_commande/{table}")
             return Response(data, status=status.HTTP_200_OK)
         else:
-            return Response("Mauvais numéro de table", status=status.HTTP_400_BAD_REQUEST)
+            return Response(_("Mauvais numéro de table"), status=status.HTTP_400_BAD_REQUEST)
 
 
 @login_required

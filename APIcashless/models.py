@@ -1684,8 +1684,8 @@ class ConfigurationsGraphique(SingletonModel):
     jours_vente_article = models.SmallIntegerField(default=1)
 
     class Meta:
-        verbose_name = 'Graphique du dashboard'
-        verbose_name_plural = 'Graphique du dashboard'
+        verbose_name = _('Graphique du dashboard')
+        verbose_name_plural = _('Graphique du dashboard')
 
 
 # TODO: a virer lors du prochain nettoyage

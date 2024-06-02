@@ -325,7 +325,7 @@ def afficher_les_prix(modeladmin, request, queryset):
     queryset.update(afficher_les_prix=True)
 
 
-afficher_les_prix.short_description = "Aficher les prix"
+afficher_les_prix.short_description = _("Aficher les prix")
 
 
 # noinspection PyUnusedLocal
@@ -333,7 +333,7 @@ def cacher_les_prix(modeladmin, request, queryset):
     queryset.update(afficher_les_prix=False)
 
 
-cacher_les_prix.short_description = "Cacher les prix"
+cacher_les_prix.short_description = _("Cacher les prix")
 
 
 # noinspection PyUnusedLocal
@@ -341,7 +341,7 @@ def accepte_especes(modeladmin, request, queryset):
     queryset.update(accepte_especes=True)
 
 
-accepte_especes.short_description = "Accepte especes"
+accepte_especes.short_description = _("Accepte especes")
 
 
 # noinspection PyUnusedLocal
@@ -349,7 +349,7 @@ def refuse_especes(modeladmin, request, queryset):
     queryset.update(accepte_especes=False)
 
 
-refuse_especes.short_description = "Refuse especes"
+refuse_especes.short_description = _("Refuse especes")
 
 
 # noinspection PyUnusedLocal
@@ -357,7 +357,7 @@ def accepte_cb(modeladmin, request, queryset):
     queryset.update(accepte_carte_bancaire=True)
 
 
-accepte_cb.short_description = "Accepte carte bancaire"
+accepte_cb.short_description = _("Accepte carte bancaire")
 
 
 # noinspection PyUnusedLocal
@@ -365,7 +365,7 @@ def refuse_cb(modeladmin, request, queryset):
     queryset.update(accepte_carte_bancaire=False)
 
 
-refuse_cb.short_description = "Refuse carte bancaire"
+refuse_cb.short_description = _("Refuse carte bancaire")
 
 
 class PointOfSaleAdmin(admin.ModelAdmin):

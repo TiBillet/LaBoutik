@@ -273,7 +273,7 @@ class TicketZ():
         # Tableau TVA
         articles_vendus_euro = self.articles_vendus_euro
         if articles_vendus_euro == None:
-            raise Exception("Valeur non calculée, lancez calcul_valeurs()")
+            raise Exception(_("Valeur non calculée, lancez calcul_valeurs()"))
 
         all_tva = set(articles_vendus_euro.values_list('tva', flat=True).distinct())
 

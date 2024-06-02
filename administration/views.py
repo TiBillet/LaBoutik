@@ -120,7 +120,7 @@ class ClotureToMail(APIView):
         email = config.compta_email if config.compta_email else config.email
         envoie_rapport_et_ticketz_par_mail.delay(cloture_caisse.pk)
         messages.add_message(request, messages.SUCCESS,
-                             f"Génération en cours pour {cloture_caisse.start} - {cloture_caisse.end}. Les rapports seront envoyés sur {email}")
+                             _(f"Génération en cours pour {cloture_caisse.start} - {cloture_caisse.end}. Les rapports seront envoyés sur {email}"))
         return HttpResponseRedirect(request.query_params.get('next'))
 
 
@@ -133,11 +133,11 @@ class ClotureToPrinter(APIView):
         if config.ticketZ_printer:
             # ticketZ_tasks_printer.delay(cloture_caisse.ticketZ)
             ticketZ_tasks_printer.delay(cloture_caisse.ticketZ)
-            messages.add_message(request, messages.SUCCESS, f"Envoyé sur l'imprimante {config.ticketZ_printer}")
+            messages.add_message(request, messages.SUCCESS, _(f"Envoyé sur l'imprimante {config.ticketZ_printer}"))
         else:
             ticketZ_tasks_printer(cloture_caisse.ticketZ)
             messages.add_message(request, messages.ERROR,
-                                 f"Aucune imprimante selectionnée dans le menu TickerZ des parametres")
+                                 _(f"Aucune imprimante selectionnée dans le menu TickerZ des parametres"))
 
         return HttpResponseRedirect(request.query_params.get('next'))
 

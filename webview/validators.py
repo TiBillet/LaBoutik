@@ -141,7 +141,8 @@ class DataAchatDepuisClientValidator(serializers.Serializer):
         if total_sended:
             # On vérifie que le total envoyé ne contient pas plus de 2 décimales
             if len(str(total_sended).partition('.')[-1]) > 2:
-                error_msg = f"Le total envoyé contient plus de 2 décimales /wv/paiement -> SERIALIZER DataAchatDepuisClientValidator -> validate_articles() -> total_sended : {total_sended} - self.initial_data : {self.initial_data}"
+                error_msg = _(
+                    f"Le total envoyé contient plus de 2 décimales /wv/paiement -> SERIALIZER DataAchatDepuisClientValidator -> validate_articles() -> total_sended : {total_sended} - self.initial_data : {self.initial_data}")
                 # Pour envoyer un message a sentry :
                 # capture_message(f"{error_msg}")
                 logger.error(f"{error_msg}")
@@ -309,7 +310,7 @@ class DataAchatDepuisClientValidator(serializers.Serializer):
                 return MoyenPaiement.objects.get(categorie=value)
             except Exception as e:
                 raise serializers.ValidationError(
-                    f"Le moyen de paiement n'est pas valide : {value} - self.initial_data : {self.initial_data}")
+                    _(f"Le moyen de paiement n'est pas valide : {value} - self.initial_data : {self.initial_data}"))
 
     def validate(self, attrs):
         # On vérifie, si on a des articles qui ne sont pas des ventes normales,
