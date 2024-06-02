@@ -407,6 +407,11 @@ def email_activation(user_uuid: uuid4=None):
     except smtplib.SMTPRecipientsRefused as e:
         logger.error(
             f"ERROR {timezone.now()} Erreur mail SMTPRecipientsRefused pour report_celery_mailer : {e}")
+    except Exception as e :
+        logger.error(
+            f"ERROR {timezone.now()} Erreur mail pour report_celery_mailer : {e}")
+        # TODO: A virer lorsque probleme de mail réglé :
+        logger.warning(f'{connexion_url}')
 
 
 @app.task

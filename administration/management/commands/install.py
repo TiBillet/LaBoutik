@@ -398,7 +398,10 @@ class Command(BaseCommand):
                 )
                 admin.groups.add(staff_group)
                 admin.save()
-                email_activation(admin.uuid)
+                try :
+                    email_activation(admin.uuid)
+                except :
+                    logger.error("Email for admin activation FAILED")
                 call_command('check_permissions')
                 return admin
 
