@@ -905,6 +905,6 @@ class Command(BaseCommand):
 
         ### RUNER ###
         if PointDeVente.objects.count() > 0:
-            logger.error(f'PointDeVente.objects.count() > 0. Pop déja effectué')
+            logger.warning(f'PointDeVente.objects.count() > 0. Pop déja effectué')
         else:
             Install(options)
