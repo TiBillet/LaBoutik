@@ -687,7 +687,7 @@ msgstr "End"
 
 #: APIcashless/models.py:1775 APIcashless/models.py:1792
 msgid "Cloture de caisse"
-msgstr "Cash register closing"
+msgstr "Cashier's report"
 
 #: APIcashless/models.py:1776
 msgid "Rapport hebdomadaire"
@@ -703,7 +703,7 @@ msgstr "Annual report"
 
 #: APIcashless/models.py:1793
 msgid "Clotures de caisse"
-msgstr "Cash register closing"
+msgstr "Cashier's report"
 
 #: APIcashless/models.py:1801
 msgid "Nom de la structure"
