@@ -111,4 +111,11 @@ volumes:
   laboutik_postgres_data:
 
 
+# Avant de build :
+## Tradution :
+### Mettre a jour le fichier de traduction : django-admin makemessages -l en && django-admin makemessages -l fr
+### Changer les textes dans locale/en/django.po
+### Compiler les traductions : django-admin compilemessages
+
 # docker build -t laboutik . && docker tag laboutik tibillet/laboutik:latest && docker tag laboutik tibillet/laboutik:0.9.4 && docker push tibillet/laboutik:latest && docker push tibillet/laboutik:0.9.4
+

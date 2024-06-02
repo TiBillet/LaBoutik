@@ -376,7 +376,7 @@ msgstr "Membership or subscription"
 #: APIcashless/models.py:626
 #, python-brace-format
 msgid "Pas de methode pour {self.name}"
-msgstr "No method for"
+msgstr "No method for {self.name}"
 
 #: APIcashless/models.py:642
 msgid "article"
