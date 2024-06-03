@@ -162,6 +162,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'url_image',
             'couleur_texte',
             'methode_name',
+            'methode_choices',
             'archive',
         )
 

@@ -55,16 +55,18 @@ function get_template(ctx) {
 
       .ele-nom {
         position: absolute;
-        left: 8px;
+        left: 4px;
         top: 6px;
         font-weight: bold;
-        max-height: 66px;
-        font-size: 20px;
-        margin-top: 0;
-        margin-bottom: 1rem;
+        height: 78px;
+        width: calc(100% - 8px);
+        font-size: 18px;
+        margin: 0;
+        padding: 0;
         color: ${ctx.couleur_texte};
         overflow: hidden;
         text-shadow: 2px 2px 3px ${colorLuminance(ctx.couleur_fond, -0.5)};
+        text-align: center;
       }
 
       .ele-img {
@@ -197,7 +199,7 @@ function get_template(ctx) {
     <div class="ele-conteneur">
       ${ctx.afficher_image()}
       <div class="ele-nom">
-        ${ctx.nom}
+        ${ctx.nom.replace(/\\n/g, '<br>')}
       </div>
       <div class="article-pdp BF-ligne-g">
         <div class="ele-icon">${ctx.info_icon}</div>

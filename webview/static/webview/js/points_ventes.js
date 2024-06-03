@@ -27,9 +27,9 @@ glob.bt_groupement = {
     nb_commande_max: nombreMaxSelectionArticle
   },
   'Adhesion': {
-    moyens_paiement: 'espece|carte_bancaire|nfc',
+    moyens_paiement: 'espece|carte_bancaire',
     besoin_tag_id: 'tout',
-    groupe: 'groupe1',
+    groupe: 'groupe4',
     nb_commande_max: nombreMaxSelectionArticle
   },
   'AjoutMonnaieVirtuelle': {
@@ -1243,22 +1243,33 @@ export function testPaiementPossible(actionAValider) {
 }
 
 /**
+ * lister les "retours de consignes" de tous les points de ventes
+ * @returns 
+ */
+function findAllDepositsInAllPs() {
+  let findDeposits = []
+  for (let item in glob.data) {
+    const search = glob.data[item].articles.find(art => art.methode_name === 'RetourConsigne')
+    if (search !== undefined) {
+      findDeposits.push(search.id)
+    }
+  }
+  return findDeposits
+}
+
+
+/**
  * Test la présence de la méthode "RetourConsigne" dans les achats
  * @param {object} achats 
  * @returns 
  */
 function depositIsPresent(achats) {
   let retour = false
+  const findDeposits = findAllDepositsInAllPs()
+
   for (let j in achats.articles) {
     const article = achats.articles[j]
-    const articlesCurrentPS = glob.data.find(item => item.id === article.pk_pdv).articles
-    for (let i in articlesCurrentPS) {
-      const articleItem = articlesCurrentPS[i]
-      if (articleItem.id === article.pk && articleItem.methode_name === "RetourConsigne") {
-        retour = true
-        break
-      }
-    }
+    retour = findDeposits.includes(article.pk)
     if (retour === true) {
       break
     }
@@ -1481,8 +1492,8 @@ export function validerEtapeMoyenComplementaire(moyenPaiement, sommeDonnee) {
 }
 
 export function validerEtape2(data) {
-  console.log('-> fonction validerEtape2 !')
-  sys.logJson('data = ', data)
+  // console.log('-> fonction validerEtape2 !')
+  // sys.logJson('data = ', data)
   let options = {}
 
   // L'utilisation du lecteur nfc, impose un format de données différent.

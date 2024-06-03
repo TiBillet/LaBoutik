@@ -70,7 +70,7 @@ export const en = {
     offer: "offer",
     impossibleTranslation: "Attention: no translation, error in translation data; see [] or translation index",
     enterTableName: "enter a table name",
-    creationEphemeralTable: "creation of an ephemeral table",
+    creationEphemeralTable: "creation of an\nephemeral table",
     importName: "import name",
     fromCard: "from card",
     mustEnterNumber: "you must enter a number",

@@ -1,9 +1,14 @@
+from collections import OrderedDict
+
 from django.utils import timezone
 from rest_framework import serializers
-from APIcashless.models import CarteCashless, Configuration, Assets, Membre, MoyenPaiement
+from APIcashless.models import CarteCashless, Configuration, Assets, Membre, MoyenPaiement, Articles, Categorie, Wallet
 from django.utils.translation import gettext, gettext_lazy as _
 from rest_framework.generics import get_object_or_404
 import logging
+
+from fedow_connect.fedow_api import FedowAPI
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,7 +27,6 @@ class RechargeCardValidator(serializers.Serializer):
         representation = super().to_representation(instance)
         representation['card'] = self.card
         return representation
-
 
 
 # POUR l'api Check membre
@@ -44,13 +48,143 @@ class EmailMembreValidator(serializers.Serializer):
         representation['membre'] = self.membre
         return representation
 
+
+### FROM LESPASS
+
+class PriceFromLespassValidator(serializers.Serializer):
+    adhesion_obligatoire = serializers.BooleanField(allow_null=True)
+    name = serializers.CharField(max_length=250)
+    short_description = serializers.CharField(max_length=250, allow_null=True)
+    long_description = serializers.CharField(max_length=2500, allow_null=True)
+    max_per_user = serializers.IntegerField()
+    prix = serializers.DecimalField(max_digits=8, decimal_places=2)
+    product = serializers.UUIDField()
+    recurring_payment = serializers.BooleanField()
+    stock = serializers.BooleanField(allow_null=True)
+    uuid = serializers.UUIDField()
+
+    NA, YEAR, MONTH, DAY, HOUR, CIVIL = 'N', 'Y', 'M', 'D', 'H', 'C'
+    SUB_CHOICES = [
+        (NA, _('Non applicable')),
+        (YEAR, _("365 Jours")),
+        (MONTH, _('30 Jours')),
+        (DAY, _('1 Jour')),
+        (HOUR, _('1 Heure')),
+        (CIVIL, _('Civile')),
+    ]
+    subscription_type = serializers.CharField(max_length=1)
+
+    NA, DIX, VINGT, HUITCINQ, DEUXDEUX = 'NA', 'DX', 'VG', 'HC', 'DD'
+    TVA_CHOICES = [
+        (NA, _('Non applicable')),
+        (DIX, _("10 %")),
+        (VINGT, _('20 %')),
+        (HUITCINQ, _('8.5 %')),
+        (DEUXDEUX, _('2.2 %')),
+    ]
+    vat = serializers.CharField(max_length=2)
+
+
+class PriceSoldFromLespassValidator(serializers.Serializer):
+    price = PriceFromLespassValidator()
+    prix = serializers.DecimalField(max_digits=8, decimal_places=2)
+
+
+class SaleFromLespassValidator(serializers.Serializer):
+    uuid = serializers.UUIDField()
+    pricesold = PriceSoldFromLespassValidator()
+    qty = serializers.DecimalField(max_digits=8, decimal_places=2)
+    vat = serializers.DecimalField(max_digits=4, decimal_places=2)
+    user_uuid_wallet = serializers.UUIDField()
+
+    def validate_user_uuid_wallet(self, value):
+        try :
+            wallet = Wallet.objects.get(pk=value)
+        except Wallet.DoesNotExist:
+            fedowAPI = FedowAPI()
+            fedowAPI.wallet.retrieve(f"{value}")
+            wallet = Wallet.objects.get(pk=value)
+
+        return wallet
+
+
+class ProductFromLespassValidator(serializers.Serializer):
+    NONE, BILLET, PACK, RECHARGE_CASHLESS = 'N', 'B', 'P', 'R'
+    RECHARGE_FEDERATED, VETEMENT, MERCH, ADHESION, BADGE = 'S', 'T', 'M', 'A', 'G'
+    DON, FREERES, NEED_VALIDATION = 'D', 'F', 'V'
+
+    CATEGORIE_ARTICLE_CHOICES = [
+        (NONE, _('Selectionnez une catégorie')),
+        (BILLET, _('Billet payant')),
+        (PACK, _("Pack d'objets")),
+        (RECHARGE_CASHLESS, _('Recharge cashless')),
+        (RECHARGE_FEDERATED, _('Recharge suspendue')),
+        (VETEMENT, _('Vetement')),
+        (MERCH, _('Merchandasing')),
+        (ADHESION, _('Abonnement et/ou adhésion associative')),
+        (BADGE, _('Badgeuse')),
+        (DON, _('Don')),
+        (FREERES, _('Reservation gratuite')),
+        (NEED_VALIDATION, _('Nécessite une validation manuelle'))
+    ]
+
+    categorie_article = serializers.ChoiceField(choices=CATEGORIE_ARTICLE_CHOICES)
+    prices = PriceFromLespassValidator(many=True)
+    img = serializers.URLField(allow_null=True)
+    legal_link = serializers.URLField(allow_null=True)
+    long_description = serializers.CharField(max_length=2500, allow_null=True)
+    short_description = serializers.CharField(max_length=250, allow_null=True)
+    name = serializers.CharField(max_length=500)
+    nominative = serializers.BooleanField(allow_null=True)
+    option_generale_checkbox = serializers.ListField()
+    option_generale_radio = serializers.ListField()
+    publish = serializers.BooleanField(allow_null=True)
+    send_to_cashless = serializers.BooleanField(allow_null=True)
+    tag = serializers.ListField()
+    terms_and_conditions_document = serializers.URLField(allow_null=True)
+    uuid = serializers.UUIDField()
+
+
+    def validate(self, attrs):
+        product = attrs
+        categorie = product['categorie_article']
+        prices = product['prices']
+
+        dict_cat_name = {
+            'G': (_('Badge'), Articles.BADGEUSE),
+            'A': (_('Adhésions'), Articles.ADHESIONS),
+            'B': (_('Billet'), Articles.BILLET),
+        }
+
+        # Si c'est une adhésion ou un article badge :
+        # Création de la catégorie d'article
+        if categorie in dict_cat_name:
+            cat, created = Categorie.objects.get_or_create(name=dict_cat_name[categorie][0])
+            logger.info(f"Categorie {cat.name} - created {created}")
+            for price in prices :
+                article, created = Articles.objects.get_or_create(id=price['uuid'])
+                # créé ou pas, on met à jour l'article avec les infos de la billetterie
+                article.name=f"{product['name']} {price['name']}"
+                article.methode_choices=dict_cat_name[categorie][1]
+                article.prix=price['prix']
+                article.categorie=cat
+                article.subscription_type=price['subscription_type']
+                article.subscription_fedow_asset=self.context['MoyenPaiement']
+                article.save()
+
+        return attrs
+
+    ### END FROM LESPASS
+
+    ### START OLD BILLETTERIE
+
+
 class BilletterieValidator(serializers.Serializer):
     uuid = serializers.UUIDField()
     uuid_commande = serializers.UUIDField(required=False)
     recharge_qty = serializers.FloatField(required=False)
     tarif_adhesion = serializers.FloatField(required=False)
     carte = None
-
 
     def validate_uuid(self, value):
         try:
@@ -97,25 +231,25 @@ class MembreshipValidator(serializers.Serializer):
         return self.card.uuid_qrcode
 
     def validate(self, attrs):
-        if not self.fiche_membre.prenom :
+        if not self.fiche_membre.prenom:
             if not self.initial_data.get('first_name'):
                 raise serializers.ValidationError(_(f'first_name est obligatoire'))
             self.fiche_membre.prenom = self.initial_data.get('first_name')
-        if not self.fiche_membre.name :
+        if not self.fiche_membre.name:
             if not self.initial_data.get('last_name'):
                 raise serializers.ValidationError(_(f'last_name est obligatoire'))
             self.fiche_membre.name = self.initial_data.get('last_name')
-        if not self.fiche_membre.tel :
+        if not self.fiche_membre.tel:
             if not self.initial_data.get('phone'):
                 raise serializers.ValidationError(_(f'phone est obligatoire'))
             self.fiche_membre.tel = self.initial_data.get('phone')
 
-        #not requiered
-        if not self.fiche_membre.code_postal :
+        # not requiered
+        if not self.fiche_membre.code_postal:
             self.fiche_membre.code_postal = self.initial_data.get('postal_code')
-        if not self.fiche_membre.date_naissance :
+        if not self.fiche_membre.date_naissance:
             self.fiche_membre.date_naissance = self.initial_data.get('birth_date')
-        if not self.fiche_membre.demarchage :
+        if not self.fiche_membre.demarchage:
             self.fiche_membre.demarchage = self.initial_data.get('newsletter')
 
         print(self.fiche_membre.prenom)
@@ -129,6 +263,7 @@ class MembreshipValidator(serializers.Serializer):
         representation['card'] = self.card
 
         return representation
+
 
 # pour le qr code adhésion
 class AdhesionValidator(serializers.Serializer):
@@ -182,6 +317,7 @@ class UpdateFedWalletValidator(serializers.Serializer):
         representation = super().to_representation(instance)
         representation['card'] = self.carte
         return representation
+
 
 class DataOcecoValidator(serializers.Serializer):
     '''
