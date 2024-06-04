@@ -27,3 +27,5 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=8, decimal_places=2, verbose_name=_('Somme souhaitée'))
     device_amount = models.DecimalField(default=0, max_digits=8, decimal_places=2,
                                         verbose_name=_('Somme insérée dans la machine'))
+
+

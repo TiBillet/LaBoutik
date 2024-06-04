@@ -12,7 +12,7 @@ from rest_framework.decorators import action
 
 from APIcashless.models import CarteCashless
 from kiosk.serializers import CardSerializer
-from kiosk.validators import AmountValidator, CardValidator
+from kiosk.validators import AmountValidator, CardValidator, BillValidator
 from kiosk.models import ScannedNfcCard, Payment
 
 
@@ -86,8 +86,8 @@ class CardViewset(viewsets.ViewSet):
                           {'message':message})
 
         card: CarteCashless = selected_data.validated_data.get('tag_id')
-        total: Decimal = selected_data.validated_data.get('total')
-
+        total0: Decimal = selected_data.validated_data.get('total')
+        total = str((total0))
         return render(request,
         'kiosk_pages/recharge.html',
         {'total':total, 'card': card})
@@ -101,7 +101,7 @@ class CardViewset(viewsets.ViewSet):
         if not choosed_data.is_valid():
             messages.add_message(request, messages.WARNING,
                                  "Wrong selection, please try again")
-            return HttpResponseRedirect('/')
+            return HttpResponseRedirect('/kiosk')
 
         card: CarteCashless = choosed_data.validated_data.get('tag_id')
         total: Decimal = choosed_data.validated_data.get('total')
@@ -112,9 +112,42 @@ class CardViewset(viewsets.ViewSet):
 
 
     # Amoount of bills recived from the device
+    @action(detail=False, methods=['GET'])
+    def return_device(self,request):
+        paiment_complete = False
+        paiment_choice = Payment.objects.all().order_by('created_at').last()
+        rest = paiment_choice.amount - paiment_choice.device_amount
+        if rest <= 0:
+            paiment_complete = True
+            rest_device = False
+            if rest < 0:
+                rest_device = True
+                rest = paiment_choice.device_amount - paiment_choice.amount
+            return render(request,
+            'paiment/device_bills.html',
+            {'paiment_complete': paiment_complete,
+             'rest_device': rest_device, 'rest': rest})
+        return render(request,
+        'paiment/device_bills.html',
+    {'paiment_choice': paiment_choice,
+        'paiment_complete':paiment_complete,'rest': rest})
+
+    # verify bill reciving
     @action(detail=False, methods=['POST'])
-    def devices_bill(self,request):
-        pass
+    def devices_bills(self, request):
+        paiment_choice = Payment.objects.all().order_by('created_at').last()
+        bill_data = BillValidator(data=request.data)
+        if not bill_data.is_valid():
+            message = ("Sorry error device, please take your bill from the device "
+                       "and, restart again")
+            return render(request, 'kiosk_pages/first_page.html',)
+
+        amount_device = bill_data.validated_data.get('bill')
+        paiment_choice.device_amount += amount_device
+        paiment_choice.save()
+
+        return HttpResponseRedirect(paiment_choice)
+
 
 
     @action(detail=False, methods=['POST'])

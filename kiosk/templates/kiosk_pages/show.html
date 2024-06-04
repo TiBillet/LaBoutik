@@ -8,8 +8,12 @@
             
                 <div class="row">
                     <div class="col-12">
-                        <h3>You have {{ card.amount }} € on your wallet. </h3>
-                  
+                        {% if not card.amount %}
+                            <h3>You have 0 € on your wallet. </h3>
+                        {% else %}
+                            <h3>You have {{ card.amount }} € on your wallet. </h3>
+                        {% endif %}
+
                         <h3>Choose the values that you want to add to your wallet</h3>
                     </div>
                 </div>

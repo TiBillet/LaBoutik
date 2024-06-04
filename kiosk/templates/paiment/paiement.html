@@ -1,8 +1,8 @@
- {% extends 'base/base.html' %}
+{% extends 'base/base.html' %}
 {% block content %}
 
     {% load static %}
-
+<div id="paimentPg">
     <div class="center-text">
 
         <div class="row">
@@ -10,15 +10,15 @@
                 <h2> You can insert yur bills in the device!</h2>
             </div>
         </div>
-
+        {% if not paiment_complete %}
         <div class="row"
              hx-get="api/card/return_device/"
              hx-trigger="every 1s"
              hx-target="this"
         >
         </div>
-    
+        {% endif %}
     </div>
-
+</div>
 
 {% endblock content %}

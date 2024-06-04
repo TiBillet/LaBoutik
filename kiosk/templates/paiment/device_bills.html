@@ -1,0 +1,30 @@
+
+{% if  paiment_complete %}
+    <div
+             hx-get="index/"
+             hx-trigger="load delay:5s"
+             hx-target="#paimentPg"
+             hx-swap="outerHTML"
+    >
+        <h4>Your paiment is completed.</h4>
+    </div>
+    {% if rest_device  %}
+    <div>
+        <h4>Device return: {{ rest }}</h4>
+    </div>
+    {% endif %}
+    {% else %}
+    <div>
+    <div class="col 6">
+        <h4>
+            Amount Paid: {{ paiment_choice.device_amount }}
+        </h4>
+    </div>
+    
+    <div class="col 6">
+        <h4>
+            Rest of paiment {{ rest }}
+        </h4>
+    </div>
+</div>
+{% endif %}
