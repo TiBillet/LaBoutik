@@ -217,8 +217,9 @@ class PointOfSaleAdmin(SortableAdminMixin, admin.ModelAdmin):
     def formfield_for_manytomany(self, db_field, request, **kwargs):
         # import ipdb; ipdb.set_trace()
         if db_field.name == "articles":
-            kwargs["queryset"] = Articles.objects.exclude(archive=True)
-                # .filter(methode_choices__in=(Articles.VENTE, Articles.RETOUR_CONSIGNE, Articles.BADGEUSE)) \
+            kwargs["queryset"] = Articles.objects.all().exclude(archive=True).exclude(
+                methode_choices__in=(Articles.FRACTIONNE,)
+            )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 

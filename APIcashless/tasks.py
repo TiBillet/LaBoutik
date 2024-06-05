@@ -367,6 +367,7 @@ def email_activation(user_uuid: uuid4=None):
     uid = urlsafe_base64_encode(force_bytes(signer.sign(f'{user_uuid}')))
     token = default_token_generator.make_token(user)
     connexion_url = f"{settings.LABOUTIK_URL}rapport/activate/{uid}/{token}/"
+    logger.warning(f'{connexion_url}')
 
     template_name = "mails_transactionnels/email_activation.html"
     email = user.email

@@ -13,7 +13,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
-from django.core.signing import TimestampSigner
+from django.core.signing import TimestampSigner, SignatureExpired
 from django.http import HttpResponse, Http404, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.utils import timezone
@@ -324,7 +324,8 @@ def activate(request, uid, token):
         else :
             return HttpResponse(_('Token non valide ou expiré'))
 
-
+    except SignatureExpired:
+        return HttpResponse(_('Expired Token'))
     except Exception as e:
         logger.error(e)
         raise e
