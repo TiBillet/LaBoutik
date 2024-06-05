@@ -126,6 +126,11 @@ def send_new_asset_to_fedow(sender, instance: MoyenPaiement, created, **kwargs):
                 fedowAPI = FedowAPI()
                 asset, created = fedowAPI.asset.get_or_create_asset(instance)
 
+        # Création du MP Stripe Fédéré
+        if instance.categorie == MoyenPaiement.STRIPE_FED:
+            Configuration.get_solo().monnaies_acceptes.add(instance)
+            logger.info("Federated stripe asset added to accepted config asset")
+
 
 @receiver(post_save, sender=MoyenPaiement)
 def create_article_membreship_badge(sender, instance: MoyenPaiement, created, **kwargs):

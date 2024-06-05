@@ -498,6 +498,7 @@ def check_carte(request):
         try:
             fedowApi = FedowAPI()
             fedowApi.NFCcard.retrieve(tag_id_request)
+            # import ipdb; ipdb.set_trace()
         except Exception as e:
             logger.error(f"Check carte FEDOW : {e}")
             return Response({"msg": f"Fédération indisponible. Contactez l'administrateur. {e}"},

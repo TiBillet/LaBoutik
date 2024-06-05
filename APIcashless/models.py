@@ -634,7 +634,8 @@ class Articles(models.Model):
 
     def __str__(self):
         if self.methode_choices in [self.RECHARGE_EUROS, self.RECHARGE_EUROS_FEDERE]:
-            return f"Recharge {self.name}"
+            pre_name = _("Recharge")
+            return f"{pre_name} {self.name}"
         return self.name
 
     class Meta:

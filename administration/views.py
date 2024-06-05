@@ -71,7 +71,7 @@ class TicketZToday(APIView):
         ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
         if ticketZ.calcul_valeurs():
             return render(request, self.template_name, context=ticketZ.to_dict)
-        return HttpResponse(_("Aucune vente aujourd'hui"))
+        return HttpResponse('No sales today')
 
 class RapportToday(APIView):
     template_name = "rapports/rapport_complet.html"
@@ -84,7 +84,7 @@ class RapportToday(APIView):
         ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
         if ticketZ.calcul_valeurs():
             return render(request, self.template_name, context=ticketZ.to_dict)
-
+        return HttpResponse('No sales today')
 
 class TicketZsimpleFromCloture(APIView):
     template_name = "rapports/ticketZ_simple.html"
