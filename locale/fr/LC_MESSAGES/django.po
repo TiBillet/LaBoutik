@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-02 09:41+0000\n"
+"POT-Creation-Date: 2024-06-05 08:04+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -188,7 +188,7 @@ msgid "Service direct ( vente au comptoir )"
 msgstr ""
 
 #: APIcashless/models.py:338 APIcashless/models.py:539
-#: administration/adminstaff.py:482
+#: APIcashless/models.py:1606 administration/adminstaff.py:482
 msgid "Vente"
 msgstr ""
 
@@ -613,12 +613,8 @@ msgstr ""
 msgid "Envoyé sur Odoo"
 msgstr ""
 
-#: APIcashless/models.py:1606
-msgid "Article vendu"
-msgstr ""
-
 #: APIcashless/models.py:1607
-msgid "Articles vendus"
+msgid "Ventes"
 msgstr ""
 
 #: APIcashless/models.py:1683
@@ -954,7 +950,7 @@ msgstr ""
 msgid "L'agence spaciale de TiBillet"
 msgstr ""
 
-#: APIcashless/tasks.py:427
+#: APIcashless/tasks.py:432
 #, python-brace-format
 msgid ""
 "Un nouveau terminal '{appareil.name}' s'est connecté à votre instance "
@@ -1491,3 +1487,9 @@ msgstr ""
 #: webview/views.py:1144
 msgid "Travail en cours. Désolé, les adhésions n'acceptent que espèce ou CB."
 msgstr ""
+
+#~ msgid "Article vendu"
+#~ msgstr "Article vendu"
+
+#~ msgid "Articles vendus"
+#~ msgstr "Article vendu"

@@ -1603,8 +1603,8 @@ class ArticleVendu(models.Model):
 
     class Meta:
         ordering = ('-date_time',)
-        verbose_name = _('Article vendu')
-        verbose_name_plural = _('Articles vendus')
+        verbose_name = _('Vente')
+        verbose_name_plural = _('Ventes')
 
     def __str__(self):
         return f"{self.article.name} {self.prix}€"
