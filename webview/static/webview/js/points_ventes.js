@@ -1187,7 +1187,7 @@ export function afficherMessageArticlesNonSelectionnes() {
     <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="fn.popupAnnuler();"></bouton-basique>
   </div>`
 
-  let message = `<div class="BF-col" style="font-size:3rem;font-weight:bold;color:#FFFFFF;text-shadow: 0px 1px 0px rgba(255,255,255,0.5);">
+  let message = `<div class="BF-col no-article-selected test-return-msg-about-article">
     <div data-i8n="noArticle,capitalize">Aucun article</div>
     <div data-i8n="hasBeenSelected">n'a été selectioné</div>
   </div>`
