@@ -54,7 +54,7 @@
 <body>
 
 <h1>{% trans "Rapport TiBillet" %}</h1>
-<h1><span class="test-tenant">{% trans structure %} </span></h1>
+<h1><span class="test-tenant">{{ structure }} </span></h1>
 <h3>{% trans "Début : " %}{{ start_date }}</h3>
 <h3>{% trans "Fin : " %}{{ end_date }}</h3>
 
@@ -72,7 +72,7 @@
         <tbody>
         {% for nom, total in dict_moyenPaiement_euros.items %}
             <tr class="test-item1-mp">
-                <td class="test-item1-mp-nom">{% trans nom %}</td>
+                <td class="test-item1-mp-nom">{{ nom }}</td>
                 <td class="test-item1-mp-total">{{ total | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
@@ -91,7 +91,7 @@
         </tr>
         {% for nom, total in dict_moyenPaiement_gift.items %}
             <tr class="test-item2-mp">
-                <td class="test-item2-mp-nom">{% trans nom %}</td>
+                <td class="test-item2-mp-nom">{{ nom }}</td>
                 <td class="test-item2-mp-total">{{ total | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
@@ -147,7 +147,7 @@
 
 
 <div id="recharge_cashless">
-    <h2 class="test-nom-monnaie">{%  trans "Recharge Cashless" %} {% trans nom_monnaie %}</h2>
+    <h2 class="test-nom-monnaie">{%  trans "Recharge Cashless" %} {{ nom_monnaie }}</h2>
     <table class="content">
         <thead>
         <tr>
@@ -161,7 +161,7 @@
         </tr>
         {% for nom, total in dict_moyenPaiement_recharge.items %}
             <tr class="test-item-recharge">
-                <td class="test-item-recharge-nom">{% trans nom %}</td>
+                <td class="test-item-recharge-nom">{{ nom }}</td>
                 <td class="test-item-recharge-total">{{ total | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
@@ -170,7 +170,7 @@
         </tr>
         {% for nom, total in dict_moyenPaiement_remboursement.items %}
             <tr class="test-item-remboursement">
-                <td class="test-item-remboursement-nom">{% trans nom %}</td>
+                <td class="test-item-remboursement-nom">{{ nom }}</td>
                 <td class="test-item-remboursement-total">{{ total | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
@@ -257,7 +257,7 @@
         </tbody>
         <tfoot>
         <tr class="test-item-fond-caisse">
-            <th>{% trans "" %}{% trans "TOTAL CAISSE :" %}</th>
+            <th>{% trans "TOTAL CAISSE :" %}</th>
             <td class="test-item-fond-caisse-totaux">{{ total_cash | floatformat:2 }}€</td>
         </tr>
         </tfoot>
@@ -277,14 +277,14 @@
         </thead>
         <tbody>
         <tr>
-            <th colspan="2">{% trans nom_monnaie %}</th>
+            <th colspan="2">{{ nom_monnaie }}</th>
         </tr>
         <tr class="test-item-monnaie-dormante">
             <td class="test-item-monnaie-dormante-valeur">{{ delta_cashless_euro| floatformat:2 }}€</td>
             <td class="test-item-monnaie-dormante-reste">{{ dormante_j_rapport | floatformat:2 }}€</td>
         </tr>
         <tr>
-            <th colspan="2">{% trans nom_monnaie_cadeau %} (+{%  trans total_recharge_cadeau %})</th>
+            <th colspan="2">{{ nom_monnaie_cadeau }} (+{{ total_recharge_cadeau }})</th>
         </tr>
         <tr class="test-item-monnaie-dormante">
             <td class="test-item-monnaie-dormante-valeur">{{ delta_cashless_gift | floatformat:2 }}€</td>
@@ -309,7 +309,7 @@
         <tbody>
         {% for name, valeur in dict_toute_entrees_par_moyen_paiement.items %}
             <tr class="test-item-fond-caisse">
-                <td class="test-item-fond-caisse-total">{% trans name %}</td>
+                <td class="test-item-fond-caisse-total">{{ nom }}</td>
                 <td class="test-item-fond-caisse-total">{{ valeur  | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
@@ -349,7 +349,7 @@
                         {% if article == "total" %}
                             <th>{% trans "sous total :" %}</th>
                         {% else %}
-                            <td class="qty-cout-article">{% trans article %}</td>
+                            <td class="qty-cout-article">{{ article }}</td>
                         {% endif %}
                         {% for value in col_valeur %}
                             <td class="item-benef">{{ value  | floatformat:2 }}</td>
@@ -396,7 +396,7 @@
         </tr>
         <tr>
             <th colspan="8"></th>
-            <th>{% trans TVA %}</th>
+            <th>{% trans 'TVA' %}</th>
             <td class="test-qty-total-tva">{{ total_collecte_toute_tva | floatformat:2 }}€</td>
         </tr>
         <tr>

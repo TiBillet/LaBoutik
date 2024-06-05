@@ -53,7 +53,7 @@
 </head>
 <body>
 <h1>{% trans "Ticket Z Simplifié" %}</h1>
-<h1><span class="test-tenant">{% trans structure %}</span></h1>
+<h1><span class="test-tenant">{{ structure }}</span></h1>
 <h3>Début : {{ start_date }}</h3>
 <h3>Fin : {{ end_date }}</h3>
 
@@ -71,7 +71,7 @@
         <tbody>
         {% for nom, total in dict_moyenPaiement_euros.items %}
             <tr class="test-item1-mp">
-                <td class="test-item1-mp-nom">{% trans nom %}</td>
+                <td class="test-item1-mp-nom">{{ nom }}</td>
                 <td class="test-item1-mp-total">{{ total | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
@@ -90,7 +90,7 @@
         </tr>
         {% for nom, total in dict_moyenPaiement_gift.items %}
             <tr class="test-item2-mp">
-                <td class="test-item2-mp-nom">{% trans nom %}</td>
+                <td class="test-item2-mp-nom">{{ nom }}</td>
                 <td class="test-item2-mp-total">{{ total | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
@@ -186,7 +186,7 @@
 
 
 <div id="recharge_cashless">
-    <h2 class="test-nom-monnaie"> {% trans "Recharge Cashless"%} {% trans nom_monnaie %}</h2>
+    <h2 class="test-nom-monnaie"> {% trans "Recharge Cashless"%} {{ nom_monnaie }}</h2>
     <table class="content">
         <thead>
         <tr>
@@ -200,7 +200,7 @@
         </tr>
         {% for nom, total in dict_moyenPaiement_recharge.items %}
             <tr class="test-item-recharge">
-                <td class="test-item-recharge-nom">{% trans nom %}</td>
+                <td class="test-item-recharge-nom">{{ nom }}</td>
                 <td class="test-item-recharge-total">{{ total | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
@@ -209,7 +209,7 @@
         </tr>
         {% for nom, total in dict_moyenPaiement_remboursement.items %}
             <tr class="test-item-remboursement">
-                <td class="test-item-remboursement-nom">{% trans nom %}</td>
+                <td class="test-item-remboursement-nom">{{ nom }}</td>
                 <td class="test-item-remboursement-total">{{ total | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
@@ -238,7 +238,7 @@
         <tbody>
         {% for name, valeur in dict_toute_entrees_par_moyen_paiement.items %}
             <tr class="test-item-fond-caisse">
-                <td class="test-item-fond-caisse-total">{% trans name %}</td>
+                <td class="test-item-fond-caisse-total">{{ name }}</td>
                 <td class="test-item-fond-caisse-total">{{ valeur | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
