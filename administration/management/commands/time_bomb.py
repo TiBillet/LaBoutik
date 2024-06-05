@@ -1,18 +1,14 @@
+import logging
 import os
 import time
 
-from django.utils import timezone
+from dateutil.relativedelta import relativedelta
+from django.core.management.base import BaseCommand
 from django.utils.timezone import localtime
 from sentry_sdk import capture_message
 
-from APIcashless.models import CommandeSauvegarde, Table, Configuration, GroupementCategorie, Place, CarteCashless, \
-    Categorie, Articles, Membre, PointDeVente, Assets, CarteMaitresse, ArticleVendu
-from django.core.management.base import BaseCommand
-from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta
-from APIcashless.tasks import GetOrCreateRapportFromDate
-import logging
-
+from APIcashless.models import Configuration, Place, CarteCashless, \
+    Categorie, Articles, PointDeVente, Assets, CarteMaitresse
 from fedow_connect.fedow_api import FedowAPI
 from webview.validators import DataAchatDepuisClientValidator
 from webview.views import Commande

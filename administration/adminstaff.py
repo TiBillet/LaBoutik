@@ -203,9 +203,9 @@ class PointOfSaleAdmin(SortableAdminMixin, admin.ModelAdmin):
                      )
     actions = [afficher_les_prix, cacher_les_prix, accepte_especes, refuse_especes, accepte_cb, refuse_cb]
 
-    def get_queryset(self, request):
-        qs = super(PointOfSaleAdmin, self).get_queryset(request)
-        return qs.exclude(comportement=PointDeVente.CASHLESS)
+    # def get_queryset(self, request):
+    #     qs = super(PointOfSaleAdmin, self).get_queryset(request)
+    #     return qs.exclude(comportement=PointDeVente.CASHLESS)
 
     # pour retirer le petit bouton plus a coté des champs article
     def get_form(self, request, obj=None, **kwargs):  # Just added this override
@@ -215,10 +215,10 @@ class PointOfSaleAdmin(SortableAdminMixin, admin.ModelAdmin):
 
     # pour selectionner uniquement les articles ventes et retour consigne
     def formfield_for_manytomany(self, db_field, request, **kwargs):
+        # import ipdb; ipdb.set_trace()
         if db_field.name == "articles":
-            kwargs["queryset"] = Articles.objects \
-                .filter(methode_choices__in=(Articles.VENTE, Articles.RETOUR_CONSIGNE, Articles.BADGEUSE)) \
-                .exclude(archive=True)
+            kwargs["queryset"] = Articles.objects.exclude(archive=True)
+                # .filter(methode_choices__in=(Articles.VENTE, Articles.RETOUR_CONSIGNE, Articles.BADGEUSE)) \
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
@@ -303,6 +303,7 @@ class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
         }),
     )
 
+    # Pour ne voir que les articles sans Cashless :
     def get_queryset(self, request):
         qs = super(ArticlesAdmin, self).get_queryset(request)
 

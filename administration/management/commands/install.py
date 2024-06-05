@@ -21,6 +21,7 @@ from fedow_connect.tasks import after_handshake
 from fedow_connect.utils import get_public_key, rsa_encrypt_string, rsa_decrypt_string, data_to_b64
 from fedow_connect.views import handshake
 from faker import Faker
+from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 
@@ -282,7 +283,7 @@ class Command(BaseCommand):
                 #                                    )[0]
 
                 d["Retour Consigne"] = \
-                    Articles.objects.get_or_create(name="Retour Consigne",
+                    Articles.objects.get_or_create(name=_("Retour Consigne"),
                                                    prix=-1,
                                                    categorie=CatConsigne,
                                                    methode_choices=Articles.RETOUR_CONSIGNE,
@@ -292,7 +293,7 @@ class Command(BaseCommand):
 
 
                 d["Cadeau +0.1"] = \
-                    Articles.objects.get_or_create(name="Cadeau +0.1",
+                    Articles.objects.get_or_create(name=_("Cadeau +0.1"),
                                                    prix=0.1,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
@@ -300,7 +301,7 @@ class Command(BaseCommand):
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
                 d["Cadeau +0.5"] = \
-                    Articles.objects.get_or_create(name="Cadeau +0.5",
+                    Articles.objects.get_or_create(name=_("Cadeau +0.5"),
                                                    prix=0.5,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
@@ -308,7 +309,7 @@ class Command(BaseCommand):
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
                 d["Cadeau +1"] = \
-                    Articles.objects.get_or_create(name="Cadeau +1",
+                    Articles.objects.get_or_create(name=_("Cadeau +1"),
                                                    prix=1,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
@@ -316,7 +317,7 @@ class Command(BaseCommand):
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
                 d["Cadeau +5"] = \
-                    Articles.objects.get_or_create(name="Cadeau +5",
+                    Articles.objects.get_or_create(name=_("Cadeau +5"),
                                                    prix=5,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
@@ -331,7 +332,7 @@ class Command(BaseCommand):
                 #                                    methode=self.methode_articles.get('adhesion'))[0]
 
                 d["VIDER CARTE"] = \
-                    Articles.objects.get_or_create(name="VIDER CARTE",
+                    Articles.objects.get_or_create(name=_("VIDER CARTE"),
                                                    categorie=CatDanger,
                                                    methode_choices=Articles.VIDER_CARTE,
                                                    methode=self.methode_articles.get('vider_carte'))[0]
