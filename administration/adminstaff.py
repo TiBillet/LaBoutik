@@ -935,6 +935,7 @@ class ConfigurationAdmin(SingletonModelAdmin):
                     MoyenPaiement.LOCAL_GIFT,
                     MoyenPaiement.EXTERIEUR_FED,
                     MoyenPaiement.EXTERIEUR_GIFT,
+                    MoyenPaiement.STRIPE_FED,
                 ]))
 
         # On ajoute les assets FIDELITY
@@ -1114,26 +1115,25 @@ class ConfigurationAdmin(SingletonModelAdmin):
             ex_api_key.delete()
         cache.clear()
 
-        if instance.can_fedow():
-            from fedow_connect.fedow_api import FedowAPI
-            fedowAPI = FedowAPI()
-            # Verification des synchros asset fedelitée
-            try:
-                # TODO: Tester la fidelitée
-                if instance.fidelity_active:
-                    fidelity, created = MoyenPaiement.objects.get_or_create(categorie=MoyenPaiement.FIDELITY,
-                                                                            name="Fidelity")
-                    asset_serialized, created = fedowAPI.asset.get_or_create_asset(fidelity)
-                    messages.add_message(request, messages.SUCCESS, "Asset Fidelity OK")
-            except Exception as e:
-                messages.add_message(request, messages.ERROR, _(f"Fedow non connecté. Asset non mis à jour : {e}"))
+        from fedow_connect.fedow_api import FedowAPI
+        fedowAPI = FedowAPI()
+        # Verification des synchros asset fedelitée
+        try:
+            # TODO: Tester la fidelitée
+            if instance.fidelity_active:
+                fidelity, created = MoyenPaiement.objects.get_or_create(categorie=MoyenPaiement.FIDELITY,
+                                                                        name="Fidelity")
+                asset_serialized, created = fedowAPI.asset.get_or_create_asset(fidelity)
+                messages.add_message(request, messages.SUCCESS, "Asset Fidelity OK")
+        except Exception as e:
+            messages.add_message(request, messages.ERROR, _(f"Fedow non connecté. Asset non mis à jour : {e}"))
 
-            try:
-                # Mise à jour des assets Fedow
-                fedowAPI.place.get_accepted_assets()
-                messages.add_message(request, messages.SUCCESS, _("Mise à jour des assets Fedow OK"))
-            except Exception as e:
-                messages.add_message(request, messages.ERROR, _(f"Fedow non connecté. Asset non mis à jour : {e}"))
+        try:
+            # Mise à jour des assets Fedow
+            fedowAPI.place.get_accepted_assets()
+            messages.add_message(request, messages.SUCCESS, _("Mise à jour des assets Fedow OK"))
+        except Exception as e:
+            messages.add_message(request, messages.ERROR, _(f"Fedow non connecté. Asset non mis à jour : {e}"))
 
         super().save_model(request, instance, form, change)
 

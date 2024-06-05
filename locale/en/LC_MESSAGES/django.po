@@ -1368,7 +1368,7 @@ msgstr "Real-time"
 
 #: administration/dashboard_modules.py:60
 msgid "C.A. TTC"
-msgstr "Turnover incl. tax"
+msgstr "All Sales incl. tax"
 
 #: administration/dashboard_modules.py:73
 msgid "Monnaie Disponible"

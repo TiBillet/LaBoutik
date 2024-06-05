@@ -107,6 +107,7 @@ class AssetValidator(serializers.Serializer):
                 is_federated=True,
                 cadeau=True if cat == MoyenPaiement.EXTERIEUR_GIFT else False,
             )
+
             logger.info(f"New asset created : {moyen_paiement}")
             # Le signal MoyenPaiement va s'enclencher si c'est une badgeuse
             # ou une adhésion pour aller chercher les articles correspondant dans Lespass
@@ -133,6 +134,7 @@ class TokenValidator(serializers.Serializer):
     @staticmethod
     def update_or_create(serilized_tokens, card):
         tokens_cashless = []
+        #TODO: Virer les précédents tokens
         for token in serilized_tokens:
             try:
                 token_cashless = Assets.objects.get(monnaie__pk=token['asset']['uuid'], carte=card)
