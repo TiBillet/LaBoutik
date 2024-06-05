@@ -23,28 +23,28 @@ glob.bt_groupement = {
   'RetourConsigne': {
     moyens_paiement: 'espece|nfc',
     besoin_tag_id: 'nfc',
-    groupe: 'groupe5',
+    groupe: 'groupe2',
     nb_commande_max: nombreMaxSelectionArticle
   },
   'Adhesion': {
     moyens_paiement: 'espece|carte_bancaire',
     besoin_tag_id: 'tout',
-    groupe: 'groupe4',
+    groupe: 'groupe3',
     nb_commande_max: nombreMaxSelectionArticle
   },
   'AjoutMonnaieVirtuelle': {
     moyens_paiement: 'espece|carte_bancaire',
     besoin_tag_id: 'tout',
-    groupe: 'groupe2',
+    groupe: 'groupe4',
     nb_commande_max: nombreMaxSelectionArticle
   },
   'AjoutMonnaieVirtuelleCadeau': {
     moyens_paiement: '',
     besoin_tag_id: 'tout',
-    groupe: 'groupe2', // groupe4
+    groupe: 'groupe5',
     nb_commande_max: nombreMaxSelectionArticle
   },
-  'ViderCarte': { moyens_paiement: '', besoin_tag_id: 'tout', groupe: 'groupe3', nb_commande_max: 1 },
+  'ViderCarte': { moyens_paiement: '', besoin_tag_id: 'tout', groupe: 'groupe6', nb_commande_max: 1 },
   'Inconnue': { moyens_paiement: '', besoin_tag_id: '', groupe: 'groupe888', nb_commande_max: 0 },
 }
 // pour vérifier si les méthodes ont été renseignées
