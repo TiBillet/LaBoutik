@@ -1,3 +1,4 @@
+import os
 from decimal import Decimal
 from typing import List
 
@@ -143,7 +144,8 @@ class DataAchatDepuisClientValidator(serializers.Serializer):
             if len(str(total_sended).partition('.')[-1]) > 2:
                 error_msg = f"Le total envoyé contient plus de 2 décimales /wv/paiement -> SERIALIZER DataAchatDepuisClientValidator -> validate_articles() -> total_sended : {total_sended} - self.initial_data : {self.initial_data}"
                 # Pour envoyer un message a sentry :
-                # capture_message(f"{error_msg}")
+                if os.environ.get('SENTRY_DNS'):
+                    capture_message(f"{error_msg}")
                 logger.error(f"{error_msg}")
             total_sended = dround(total_sended)
             self.initial_data['total'] = total_sended
