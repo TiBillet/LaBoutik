@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-{% load static %}
 
 {% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 <html lang="en">
 
 <html>
@@ -56,6 +56,7 @@
     </style>
 </head>
 <body>
+{% language 'en' %}
 <h1>{% trans "Ticket Z Simplifié" %}</h1>
 <h1><span class="test-tenant">{{ structure }}</span></h1>
 <h3>Début : {{ start_date }}</h3>
@@ -255,5 +256,6 @@
 <div>
     {% trans "Si vous pensez à des améliorations, n'hésitez pas à nous contacter, on adore ça :)" %}
 </div>
+{% endlanguage %}
 </body>
 </html>

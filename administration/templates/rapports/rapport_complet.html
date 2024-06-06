@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 {% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
 <head>
 <html lang="en">
@@ -52,6 +53,8 @@
     </style>
 </head>
 <body>
+{% language 'en' %}
+
 
 <h1>{% trans "Rapport TiBillet" %}</h1>
 <h1><span class="test-tenant">{{ structure }} </span></h1>
@@ -455,5 +458,6 @@
 <div>
     {% trans "Si vous pensez à des améliorations, n'hésitez pas à nous contacter, on adore ça :)" %}
 </div>
+{% endlanguage %}
 </body>
 </html>
