@@ -634,7 +634,9 @@ class Articles(models.Model):
 
     def __str__(self):
         if self.methode_choices in [self.RECHARGE_EUROS, self.RECHARGE_EUROS_FEDERE]:
-            pre_name = _("Recharge")
+            pre_name = "Refill"
+            if settings.LANGUAGE_CODE == 'fr':
+                pre_name = "Recharge"
             return f"{pre_name} {self.name}"
         return self.name
 
@@ -791,6 +793,14 @@ class MoyenPaiement(models.Model):
             MoyenPaiement.LOCAL_EURO,
             MoyenPaiement.STRIPE_FED,
         ]
+
+        if os.environ.get('EXT_FED_PRIO') == "1":
+            list_prio = [
+                MoyenPaiement.LOCAL_GIFT,
+                MoyenPaiement.EXTERIEUR_FED,
+                MoyenPaiement.LOCAL_EURO,
+                MoyenPaiement.STRIPE_FED,
+            ]
 
         def asset_key(asset):
             try:

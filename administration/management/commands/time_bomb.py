@@ -30,14 +30,6 @@ class Command(BaseCommand):
             articles_vendus__date_time__gt=localtime() - relativedelta(hours=26),
         ).distinct()
 
-        self_cards_spp0 = CarteCashless.objects.filter(
-            origin__place=self_place,
-            cartes_maitresses__isnull=True,
-            assets__qty__gt=0,
-        ).distinct()
-
-        import ipdb; ipdb.set_trace()
-
         cat_time_bomb, created = Categorie.objects.get_or_create(name='TIME BOMB')
         # L'article TIME BOMB est considéré comme une vente,
         # afin de bien le voir dans le rapport comptable comment entrée.
@@ -55,7 +47,7 @@ class Command(BaseCommand):
 
         pos_time_bomb, created = PointDeVente.objects.get_or_create(name="TIME BOMB")
 
-        for card in self_cards:
+        for card in self_cards_26h:
             card: CarteCashless
             # Update from fedow
             # Ptit time pour éviter de DDOS

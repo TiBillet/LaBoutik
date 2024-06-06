@@ -333,7 +333,6 @@ class NFCCard():
                 carte = CarteCashless.objects.get(tag_id=user_card_firstTagId)
                 carte.wallet = None
                 carte.membre = None
-                import ipdb; ipdb.set_trace()
                 carte.assets.all().delete()
                 carte.save()
                 cache.delete(f"serialized_card_{user_card_firstTagId}")

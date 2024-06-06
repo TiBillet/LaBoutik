@@ -1067,6 +1067,39 @@ class Commande:
 
         self.reponse['route'] = "transaction_ajout_monnaie_virtuelle"
 
+    # RECHARGE CASHLESS MONNAIE EXTERIEUR FIDUCIAIRE NON CADEAU
+    def methode_RF(self, article, qty):
+        total = dround(article.prix * qty)
+        reste = total
+        self.total_vente_article += total
+
+        # On va chercher l'asset correspondant à l'article de recharge
+        asset_fedow: MoyenPaiement = article.subscription_fedow_asset
+        if not asset_fedow:
+            raise NotAcceptable("No fedow asset connected.")
+        # Fabrication du token de la carte avec cet asset
+        token_card, created = self.carte_db.assets.get_or_create(monnaie=asset_fedow)
+        token_card.qty += reste
+
+        self._refill_assets(token_card, reste)
+
+        ArticleVendu.objects.create(
+            article=article,
+            prix=article.prix,
+            qty=qty,
+            pos=self.point_de_vente,
+            carte=self.carte_db,
+            membre=self.carte_db.membre,
+            responsable=self.responsable,
+            moyen_paiement=self.moyen_paiement,
+            commande=self.uuid_commande,
+            uuid_paiement=self.uuid_paiement,
+            table=self.table,
+            ip_user=self.ip_user,
+        )
+
+        self.reponse['route'] = "transaction_ajout_monnaie_virtuelle"
+
     # RECHARGE_CADEAU = 'RC'
     def methode_RC(self, article, qty):
         total = dround(article.prix * qty)
