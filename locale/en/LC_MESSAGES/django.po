@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-06 11:17+0000\n"
+"POT-Creation-Date: 2024-06-06 12:25+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -46,7 +46,7 @@ msgstr ""
 #: APIcashless/models.py:491 APIcashless/models.py:678
 #: administration/templates/rapports/rapport_complet.html:68
 #: administration/templates/rapports/rapport_complet.html:154
-#: administration/templates/rapports/ticketZ_simple.html:67
+#: administration/templates/rapports/ticketZ_simple.html:68
 msgid "Nom"
 msgstr "Last name"
 
@@ -382,7 +382,7 @@ msgstr "No method for {self.name}"
 
 #: APIcashless/models.py:637
 #: administration/templates/rapports/rapport_complet.html:160
-#: administration/templates/rapports/ticketZ_simple.html:199
+#: administration/templates/rapports/ticketZ_simple.html:200
 #, fuzzy
 #| msgid "RechargeS"
 msgid "Recharge"
@@ -426,7 +426,7 @@ msgstr "Web (Stripe)"
 
 #: APIcashless/models.py:760
 #: administration/templates/rapports/rapport_complet.html:232
-#: administration/templates/rapports/ticketZ_simple.html:152
+#: administration/templates/rapports/ticketZ_simple.html:153
 msgid "Espèces"
 msgstr "Cash"
 
@@ -1479,19 +1479,19 @@ msgid "Fin : "
 msgstr "End"
 
 #: administration/templates/rapports/rapport_complet.html:63
-#: administration/templates/rapports/ticketZ_simple.html:62
+#: administration/templates/rapports/ticketZ_simple.html:63
 msgid "Total des ventes par moyen de paiement"
 msgstr "Total sales by payment method"
 
 #: administration/templates/rapports/rapport_complet.html:64
-#: administration/templates/rapports/ticketZ_simple.html:63
+#: administration/templates/rapports/ticketZ_simple.html:64
 #, fuzzy
 #| msgid "Activez le cashbash pour les rechargements cashless"
 msgid "Ne comprend pas les recharges cashless."
 msgstr "Does not include cashless refill "
 
 #: administration/templates/rapports/rapport_complet.html:69
-#: administration/templates/rapports/ticketZ_simple.html:68
+#: administration/templates/rapports/ticketZ_simple.html:69
 #, fuzzy
 #| msgid "Point de vente"
 msgid "Total vente"
@@ -1508,28 +1508,28 @@ msgstr "TOTAL Taxe Excluded"
 #: administration/templates/rapports/rapport_complet.html:333
 #: administration/templates/rapports/rapport_complet.html:371
 #: administration/templates/rapports/rapport_complet.html:399
-#: administration/templates/rapports/ticketZ_simple.html:84
-#: administration/templates/rapports/ticketZ_simple.html:118
+#: administration/templates/rapports/ticketZ_simple.html:85
+#: administration/templates/rapports/ticketZ_simple.html:119
 msgid "TVA"
 msgstr "VAT"
 
 #: administration/templates/rapports/rapport_complet.html:113
-#: administration/templates/rapports/ticketZ_simple.html:112
+#: administration/templates/rapports/ticketZ_simple.html:113
 msgid "TVA Collectée par taux"
 msgstr "VAT Collected by rate"
 
 #: administration/templates/rapports/rapport_complet.html:117
-#: administration/templates/rapports/ticketZ_simple.html:116
+#: administration/templates/rapports/ticketZ_simple.html:117
 msgid "Vente à taux"
 msgstr "Sell at rate"
 
 #: administration/templates/rapports/rapport_complet.html:118
-#: administration/templates/rapports/ticketZ_simple.html:117
+#: administration/templates/rapports/ticketZ_simple.html:118
 msgid "HT"
 msgstr "Tax Excluded"
 
 #: administration/templates/rapports/rapport_complet.html:120
-#: administration/templates/rapports/ticketZ_simple.html:119
+#: administration/templates/rapports/ticketZ_simple.html:120
 msgid "TTC"
 msgstr "All Tax Included"
 
@@ -1537,12 +1537,12 @@ msgstr "All Tax Included"
 #: administration/templates/rapports/rapport_complet.html:181
 #: administration/templates/rapports/rapport_complet.html:214
 #: administration/templates/rapports/rapport_complet.html:378
-#: administration/templates/rapports/ticketZ_simple.html:135
+#: administration/templates/rapports/ticketZ_simple.html:136
 msgid "TOTAL"
 msgstr "TOTAL"
 
 #: administration/templates/rapports/rapport_complet.html:150
-#: administration/templates/rapports/ticketZ_simple.html:189
+#: administration/templates/rapports/ticketZ_simple.html:190
 #, fuzzy
 #| msgid "Cashless"
 msgid "Recharge Cashless"
@@ -1551,7 +1551,7 @@ msgstr "Cashless Refill"
 #: administration/templates/rapports/rapport_complet.html:155
 #: administration/templates/rapports/rapport_complet.html:233
 #: administration/templates/rapports/rapport_complet.html:306
-#: administration/templates/rapports/ticketZ_simple.html:153
+#: administration/templates/rapports/ticketZ_simple.html:154
 msgid "Total"
 msgstr "Total"
 
@@ -1576,22 +1576,21 @@ msgid "Par Moyen de paiement"
 msgstr "Payment method"
 
 #: administration/templates/rapports/rapport_complet.html:228
-#: administration/templates/rapports/ticketZ_simple.html:148
+#: administration/templates/rapports/ticketZ_simple.html:149
 #, fuzzy
 #| msgid "Fond de caisse."
 msgid "Fond de caisse espèce"
 msgstr "Cash float"
 
 #: administration/templates/rapports/rapport_complet.html:238
-#: administration/templates/rapports/ticketZ_simple.html:158
-#: administration/templates/rapports/ticketZ_simple.html:166
+#: administration/templates/rapports/ticketZ_simple.html:159
 #, fuzzy
 #| msgid "Fond de caisse."
 msgid "Fond de caisse"
 msgstr "Cash float"
 
 #: administration/templates/rapports/rapport_complet.html:242
-#: administration/templates/rapports/ticketZ_simple.html:162
+#: administration/templates/rapports/ticketZ_simple.html:163
 #, fuzzy
 #| msgid "Cashless"
 msgid "Recharge cashless en espèce"
@@ -1602,19 +1601,19 @@ msgid "Remboursement cashless en espèce"
 msgstr "Refund in cash"
 
 #: administration/templates/rapports/rapport_complet.html:250
-#: administration/templates/rapports/ticketZ_simple.html:170
+#: administration/templates/rapports/ticketZ_simple.html:171
 #, fuzzy
 #| msgid "Adhésions"
 msgid "Adhésion en espèce"
 msgstr "Membership in cash"
 
 #: administration/templates/rapports/rapport_complet.html:254
-#: administration/templates/rapports/ticketZ_simple.html:174
+#: administration/templates/rapports/ticketZ_simple.html:175
 msgid "Vente directe en espèce"
 msgstr "Direct sell in cash"
 
 #: administration/templates/rapports/rapport_complet.html:260
-#: administration/templates/rapports/ticketZ_simple.html:180
+#: administration/templates/rapports/ticketZ_simple.html:181
 msgid "TOTAL CAISSE :"
 msgstr "TOTAL CASH REGISTER: "
 
@@ -1637,17 +1636,17 @@ msgid "Reste sur toutes cartes"
 msgstr "Rest on all cards"
 
 #: administration/templates/rapports/rapport_complet.html:300
-#: administration/templates/rapports/ticketZ_simple.html:229
+#: administration/templates/rapports/ticketZ_simple.html:230
 msgid "Total toutes entrées par moyen de paiement"
 msgstr "Total all entries by payment method"
 
 #: administration/templates/rapports/rapport_complet.html:301
-#: administration/templates/rapports/ticketZ_simple.html:230
+#: administration/templates/rapports/ticketZ_simple.html:231
 msgid "Vente + Recharge + Adhésion"
 msgstr "Selling + Refill + Membership"
 
 #: administration/templates/rapports/rapport_complet.html:305
-#: administration/templates/rapports/ticketZ_simple.html:234
+#: administration/templates/rapports/ticketZ_simple.html:235
 msgid "Moyen de paiements toutes entrées"
 msgstr "Paiment methods all entries"
 
@@ -1763,18 +1762,23 @@ msgid "Rapport généré par l'outil libre et coopératif  "
 msgstr "Report generated by the open source tool and the cooperative"
 
 #: administration/templates/rapports/rapport_complet.html:456
-#: administration/templates/rapports/ticketZ_simple.html:252
+#: administration/templates/rapports/ticketZ_simple.html:253
 msgid ""
 "Si vous pensez à des améliorations, n'hésitez pas à nous contacter, on adore "
 "ça :)"
-msgstr ""
-"If you think of improvements, do not hesitate to contact us, we love it :)"
+msgstr "If you think of improvements, do not hesitate to contact us, we love that"
 
-#: administration/templates/rapports/ticketZ_simple.html:55
+#: administration/templates/rapports/ticketZ_simple.html:56
 msgid "Ticket Z Simplifié"
 msgstr "Ticket Z Simplified"
 
-#: administration/templates/rapports/ticketZ_simple.html:249
+#: administration/templates/rapports/ticketZ_simple.html:167
+#, fuzzy
+#| msgid "Fond de caisse."
+msgid "Fond de caisse "
+msgstr "Cash float"
+
+#: administration/templates/rapports/ticketZ_simple.html:250
 msgid "Rapport généré par l'outil libre et coopératif"
 msgstr "Report generated by the open source tool and the cooperative"
 
