@@ -104,7 +104,9 @@ def set_category_from_article(sender, instance: ArticleVendu, **kwargs):
 
 @receiver(post_save, sender=CarteCashless)
 def send_card_to_fedow(sender, instance: CarteCashless, created, **kwargs):
-    if created:
+    if created and not instance.wallet:
+        # Si ya un wallet, alors ça a été créé après un retour Fedow, pas besoin de renvoyer.
+
         # On le fait en synchrone, comme ça si ça plante, on le voit dans l'admin
         create_card_to_fedow(instance.pk)
 
