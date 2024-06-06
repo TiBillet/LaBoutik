@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-05 13:37+0000\n"
+"POT-Creation-Date: 2024-06-06 11:17+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,6 +42,9 @@ msgstr ""
 #: APIcashless/models.py:53 APIcashless/models.py:143 APIcashless/models.py:300
 #: APIcashless/models.py:378 APIcashless/models.py:407
 #: APIcashless/models.py:491 APIcashless/models.py:678
+#: administration/templates/rapports/rapport_complet.html:68
+#: administration/templates/rapports/rapport_complet.html:154
+#: administration/templates/rapports/ticketZ_simple.html:67
 msgid "Nom"
 msgstr ""
 
@@ -262,6 +265,7 @@ msgid "Prix d'achat"
 msgstr ""
 
 #: APIcashless/models.py:502
+#: administration/templates/rapports/rapport_complet.html:343
 msgid "Catégorie"
 msgstr ""
 
@@ -282,8 +286,9 @@ msgid "Recharge Cadeau"
 msgstr ""
 
 #: APIcashless/models.py:543 APIcashless/validator.py:155
+#: administration/templates/rapports/rapport_complet.html:189
 msgid "Adhésions"
-msgstr ""
+msgstr "Futja Kot"
 
 #: APIcashless/models.py:544
 msgid "Retour de consigne"
@@ -360,6 +365,8 @@ msgid "Pas de methode pour {self.name}"
 msgstr ""
 
 #: APIcashless/models.py:637
+#: administration/templates/rapports/rapport_complet.html:160
+#: administration/templates/rapports/ticketZ_simple.html:199
 msgid "Recharge"
 msgstr ""
 
@@ -400,8 +407,10 @@ msgid "Web (Stripe)"
 msgstr ""
 
 #: APIcashless/models.py:760
+#: administration/templates/rapports/rapport_complet.html:232
+#: administration/templates/rapports/ticketZ_simple.html:152
 msgid "Espèces"
-msgstr ""
+msgstr "Refill"
 
 #: APIcashless/models.py:761
 msgid "Carte bancaire"
@@ -1352,13 +1361,306 @@ msgstr ""
 msgid "View on site"
 msgstr ""
 
+#: administration/templates/rapports/rapport_complet.html:7
+msgid "Rapport complet"
+msgstr ""
+
+#: administration/templates/rapports/rapport_complet.html:56
+msgid "Rapport TiBillet"
+msgstr ""
+
+#: administration/templates/rapports/rapport_complet.html:58
+msgid "Début : "
+msgstr ""
+
+#: administration/templates/rapports/rapport_complet.html:59
+msgid "Fin : "
+msgstr ""
+
+#: administration/templates/rapports/rapport_complet.html:63
+#: administration/templates/rapports/ticketZ_simple.html:62
+msgid "Total des ventes par moyen de paiement"
+msgstr "Total sales by payment method"
+
+#: administration/templates/rapports/rapport_complet.html:64
+#: administration/templates/rapports/ticketZ_simple.html:63
+msgid "Ne comprend pas les recharges cashless."
+msgstr "Does not include cashless refill "
+
+#: administration/templates/rapports/rapport_complet.html:69
+#: administration/templates/rapports/ticketZ_simple.html:68
+msgid "Total vente"
+msgstr "Total sale"
+
+#: administration/templates/rapports/rapport_complet.html:81
+#: administration/templates/rapports/rapport_complet.html:394
+#: administration/templates/rapports/rapport_complet.html:404
+msgid "TOTAL HT"
+msgstr "TOTAL Taxe Excluded"
+
+#: administration/templates/rapports/rapport_complet.html:89
+#: administration/templates/rapports/rapport_complet.html:119
+#: administration/templates/rapports/rapport_complet.html:333
+#: administration/templates/rapports/rapport_complet.html:371
+#: administration/templates/rapports/rapport_complet.html:399
+#: administration/templates/rapports/ticketZ_simple.html:84
+#: administration/templates/rapports/ticketZ_simple.html:118
+msgid "TVA"
+msgstr "VAT"
+
+#: administration/templates/rapports/rapport_complet.html:113
+#: administration/templates/rapports/ticketZ_simple.html:112
+msgid "TVA Collectée par taux"
+msgstr "VAT Collected by rate"
+
+#: administration/templates/rapports/rapport_complet.html:117
+#: administration/templates/rapports/ticketZ_simple.html:116
+msgid "Vente à taux"
+msgstr "Sell at rate"
+
+#: administration/templates/rapports/rapport_complet.html:118
+#: administration/templates/rapports/ticketZ_simple.html:117
+msgid "HT"
+msgstr "Tax Excluded"
+
+#: administration/templates/rapports/rapport_complet.html:120
+#: administration/templates/rapports/ticketZ_simple.html:119
+msgid "TTC"
+msgstr "All Tax Included"
+
+#: administration/templates/rapports/rapport_complet.html:136
+#: administration/templates/rapports/rapport_complet.html:181
+#: administration/templates/rapports/rapport_complet.html:214
+#: administration/templates/rapports/rapport_complet.html:378
+#: administration/templates/rapports/ticketZ_simple.html:135
+msgid "TOTAL"
+msgstr "TOTAL"
+
+#: administration/templates/rapports/rapport_complet.html:150
+#: administration/templates/rapports/ticketZ_simple.html:189
+msgid "Recharge Cashless"
+msgstr "Cashless Refill"
+
+#: administration/templates/rapports/rapport_complet.html:155
+#: administration/templates/rapports/rapport_complet.html:233
+#: administration/templates/rapports/rapport_complet.html:306
+#: administration/templates/rapports/ticketZ_simple.html:153
+msgid "Total"
+msgstr "Total"
+
+#: administration/templates/rapports/rapport_complet.html:169
+msgid "Remboursement"
+msgstr "Refund"
+
+#: administration/templates/rapports/rapport_complet.html:193
+msgid "Quantitées"
+msgstr "Price"
+
+#: administration/templates/rapports/rapport_complet.html:194
+msgid "Tarif"
+msgstr "Payment method"
+
+#: administration/templates/rapports/rapport_complet.html:205
+msgid "Par Moyen de paiement"
+msgstr ""
+
+#: administration/templates/rapports/rapport_complet.html:228
+#: administration/templates/rapports/ticketZ_simple.html:148
+msgid "Fond de caisse espèce"
+msgstr "Cash float"
+
+#: administration/templates/rapports/rapport_complet.html:238
+#: administration/templates/rapports/ticketZ_simple.html:158
+#: administration/templates/rapports/ticketZ_simple.html:166
+msgid "Fond de caisse"
+msgstr "Cash float"
+
+#: administration/templates/rapports/rapport_complet.html:242
+#: administration/templates/rapports/ticketZ_simple.html:162
+msgid "Recharge cashless en espèce"
+msgstr "Cashless Refill in cash"
+
+#: administration/templates/rapports/rapport_complet.html:246
+msgid "Remboursement cashless en espèce"
+msgstr "Refund in cash"
+
+#: administration/templates/rapports/rapport_complet.html:250
+#: administration/templates/rapports/ticketZ_simple.html:170
+msgid "Adhésion en espèce"
+msgstr "Membership in cash"
+
+#: administration/templates/rapports/rapport_complet.html:254
+#: administration/templates/rapports/ticketZ_simple.html:174
+msgid "Vente directe en espèce"
+msgstr "Direct sell in cash"
+
+#: administration/templates/rapports/rapport_complet.html:260
+#: administration/templates/rapports/ticketZ_simple.html:180
+msgid "TOTAL CAISSE :"
+msgstr "TOTAL CASH REGISTER: "
+
+#: administration/templates/rapports/rapport_complet.html:269
+msgid "Monnaie dormante"
+msgstr ""
+
+#: administration/templates/rapports/rapport_complet.html:270
+msgid "Le delta est la différence entre recharge et dépense."
+msgstr "Delta is the difference between charging and spending."
+
+#: administration/templates/rapports/rapport_complet.html:274
+msgid "Delta"
+msgstr "Delta"
+
+#: administration/templates/rapports/rapport_complet.html:275
+msgid "Reste sur toutes cartes"
+msgstr "Rest on all cards"
+
+#: administration/templates/rapports/rapport_complet.html:300
+#: administration/templates/rapports/ticketZ_simple.html:229
+msgid "Total toutes entrées par moyen de paiement"
+msgstr "Total all entries by payment method"
+
+#: administration/templates/rapports/rapport_complet.html:301
+#: administration/templates/rapports/ticketZ_simple.html:230
+msgid "Vente + Recharge + Adhésion"
+msgstr "Selling + Refill + Membership"
+
+#: administration/templates/rapports/rapport_complet.html:305
+#: administration/templates/rapports/ticketZ_simple.html:234
+msgid "Moyen de paiements toutes entrées"
+msgstr "Paiment methods all entries"
+
+#: administration/templates/rapports/rapport_complet.html:323
+msgid "Quantités, coûts et bénéfices."
+msgstr "Quantities, costs and profits"
+
+#: administration/templates/rapports/rapport_complet.html:326
+msgid "Article (Prix/Achat)"
+msgstr "Item (Price/Purchase)"
+
+#: administration/templates/rapports/rapport_complet.html:327
+#: administration/templates/rapports/rapport_complet.html:365
+#, fuzzy
+#| msgid "Article vendu"
+msgid "Qty vendue"
+msgstr "Selling quantity"
+
+#: administration/templates/rapports/rapport_complet.html:328
+#: administration/templates/rapports/rapport_complet.html:366
+msgid "Qty offerte"
+msgstr "Gift quantity"
+
+#: administration/templates/rapports/rapport_complet.html:329
+#: administration/templates/rapports/rapport_complet.html:367
+msgid "Qty Totale"
+msgstr "Total quantity"
+
+#: administration/templates/rapports/rapport_complet.html:330
+#, fuzzy
+#| msgid "Article vendu"
+msgid "Qty vendu"
+msgstr "Selling quantity"
+
+#: administration/templates/rapports/rapport_complet.html:331
+#, fuzzy
+#| msgid "Qty offerte"
+msgid "Qty offert"
+msgstr "Gift quantity"
+
+#: administration/templates/rapports/rapport_complet.html:332
+#, fuzzy
+#| msgid "Qty Totale"
+msgid "Qty total"
+msgstr "Total quantity"
+
+#: administration/templates/rapports/rapport_complet.html:334
+#: administration/templates/rapports/rapport_complet.html:372
+msgid "Bénéfice"
+msgstr "Profit"
+
+#: administration/templates/rapports/rapport_complet.html:335
+#: administration/templates/rapports/rapport_complet.html:373
+msgid "Total TTC"
+msgstr "Total Including All Taxes"
+
+#: administration/templates/rapports/rapport_complet.html:350
+msgid "sous total :"
+msgstr "sub total"
+
+#: administration/templates/rapports/rapport_complet.html:368
+#, fuzzy
+#| msgid "Article vendu"
+msgid "Cout vendu"
+msgstr "Selling Cost"
+
+#: administration/templates/rapports/rapport_complet.html:369
+msgid "Cout offert"
+msgstr "Gift Cost"
+
+#: administration/templates/rapports/rapport_complet.html:370
+msgid "Cout total"
+msgstr "Total Cost"
+
+#: administration/templates/rapports/rapport_complet.html:414
+msgid "Nombre de cartes badgées distinctes :"
+msgstr "Number of distinct badged cards:"
+
+#: administration/templates/rapports/rapport_complet.html:419
+#, fuzzy
+#| msgid "Cartes & Membres"
+msgid "Cartes Badgées"
+msgstr "Badge Cards"
+
+#: administration/templates/rapports/rapport_complet.html:428
+msgid "Pour les accros des chiffres :"
+msgstr "For calcul obsessed"
+
+#: administration/templates/rapports/rapport_complet.html:433
+msgid "Nbr de carte utilisées"
+msgstr "Nbr of used cards"
+
+#: administration/templates/rapports/rapport_complet.html:434
+msgid "Recharge médiane"
+msgstr "Median Refill"
+
+#: administration/templates/rapports/rapport_complet.html:435
+msgid "Panier moyen"
+msgstr "Average basket"
+
+#: administration/templates/rapports/rapport_complet.html:436
+msgid "Reste sur carte (moyenne)"
+msgstr "Rest on card (average)"
+
+#: administration/templates/rapports/rapport_complet.html:437
+msgid "Nouveaux membres"
+msgstr "New members"
+
+#: administration/templates/rapports/rapport_complet.html:453
+msgid "Rapport généré par l'outil libre et coopératif  "
+msgstr "Report generated by the open source tool and the cooperative"
+
+#: administration/templates/rapports/rapport_complet.html:456
+#: administration/templates/rapports/ticketZ_simple.html:252
+msgid ""
+"Si vous pensez à des améliorations, n'hésitez pas à nous contacter, on adore "
+"ça :)"
+msgstr "If you think of improvements, do not hesitate to contact us, we love it :)"
+
+#: administration/templates/rapports/ticketZ_simple.html:55
+msgid "Ticket Z Simplifié"
+msgstr "Ticket Z Simplified"
+
+#: administration/templates/rapports/ticketZ_simple.html:249
+msgid "Rapport généré par l'outil libre et coopératif"
+msgstr "Report generated by the open source tool and the cooperative"
+
 #: administration/views.py:325
 msgid "Token non valide ou expiré"
-msgstr ""
+msgstr "Not a valid token"
 
 #: administration/views.py:345
 msgid "Les mots de passe ne correspondent pas"
-msgstr ""
+msgstr "Passwords don't match"
 
 #: fedow_connect/validators.py:68
 msgid "Token équivalent euro"
@@ -1479,6 +1781,21 @@ msgstr ""
 msgid "Tibillet"
 msgstr ""
 
+#: webview/views.py:322
+msgid ""
+"Caisses cloturées mais aucune imprimante selectionnée dans la configuration "
+"pour le Ticket Z.\n"
+"Vous pouvez le ré-imprimer depuis l'interface d'administration."
+msgstr ""
+
+#: webview/views.py:326
+msgid "Caisses cloturées et ticket envoyé à l'impression"
+msgstr ""
+
+#: webview/views.py:327
+msgid "Erreur génération du ticket Z"
+msgstr ""
+
 #: webview/views.py:468
 msgid "Carte maitresse non gérante."
 msgstr ""
@@ -1511,9 +1828,6 @@ msgstr ""
 #: webview/views.py:1145
 msgid "Travail en cours. Désolé, les adhésions n'acceptent que espèce ou CB."
 msgstr ""
-
-#~ msgid "Article vendu"
-#~ msgstr "Article vendu"
 
 #~ msgid "Articles vendus"
 #~ msgstr "Article vendu"
