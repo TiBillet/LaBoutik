@@ -151,6 +151,7 @@ export const fr = {
     cashless: 'cashless',
     prePurchaseCard: 'carte avant achats',
     postPurchaseCard: 'carte après achats',
-    cardsTotal: 'total des cartes'
+    cardsTotal: 'total des cartes',
+    totalCardWallet: 'total portefeuille carte'
   }
 }

@@ -89,9 +89,10 @@ function messageRetourAssets(retour) {
     }
   }
   if (valAssetsTest === 1) {
-    fragmentHtml = `<div class="popup-msg1"><span data-i8n="including">dont</span> :</div>`
+    // fragmentHtml = `<div class="popup-msg1"><span data-i8n="including">dont</span> :</div>`
+    fragmentHtml = `<div class="popup-msg1" style="margin-top: 1rem;"><span data-i8n="totalCardWallet">total portefeuille carte</span> :</div>`
   }
-  fragmentHtml += enumAssets
+  fragmentHtml += enumAssets + '<div style="margin-BOTTOM: 1rem;"></div>'
   return fragmentHtml
 }
 

@@ -150,6 +150,7 @@ export const en = {
     cashless: 'cashless',
     prePurchaseCard: 'pre-purchase card',
     postPurchaseCard: 'post-purchase card',
-    cardsTotal: 'cards total'
+    cardsTotal: 'cards total',
+    totalCardWallet: 'total card wallet'
   }
 }
