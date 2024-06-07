@@ -510,6 +510,9 @@ function afficherRetourVenteDirecte(retour, status, options) {
         }
       }
 
+      if (options.methodes[0] === "AjoutMonnaieVirtuelleCadeau" && retour.carte) {
+        msgDefaut += messageRetourAssets(retour)
+      }
 
       // vider une carte
       if (options.methodes[0] === "ViderCarte") {
