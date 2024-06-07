@@ -85,5 +85,6 @@ export const menu = {
     { icon: "fas fa-cash-register", size: 1.2, posX: '8px', posY: '10px'},
     { icon:"fas fa-ban", size: 2.4, false: true, color: "#ff0000"}
   ],
-  i8nIndex: "closeAccounts,uppercase"
+  // i8nIndex: "closeAccounts,uppercase"
+  i8nIndex: "closeCashRegister,uppercase"
 }
