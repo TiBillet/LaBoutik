@@ -319,12 +319,12 @@ def close_all_pos(request):
             to_printer = ticketZ_tasks_printer.delay(ticketz_json)
             if not config.ticketZ_printer:
                 return Response({
-                    "message": "Caisses cloturées mais aucune imprimante selectionnée dans la configuration pour le Ticket Z.\n"
-                               "Vous pouvez le ré-imprimer depuis l'interface d'administration."},
+                    "message": _("Caisses cloturées mais aucune imprimante selectionnée dans la configuration pour le Ticket Z.\n"
+                               "Vous pouvez le ré-imprimer depuis l'interface d'administration.")},
                     status=status.HTTP_200_OK)
 
-            return Response({"message": "Caisses cloturées et ticket envoyé à l'impression"}, status=status.HTTP_200_OK)
-        return Response({"message": "Erreur génération du ticket Z"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"message": _("Caisses cloturées et ticket envoyé à l'impression")}, status=status.HTTP_200_OK)
+        return Response({"message": _("Erreur génération du ticket Z")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @login_required
