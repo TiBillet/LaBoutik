@@ -45,18 +45,18 @@ class DecimalEncoder(json.JSONEncoder):
             return str(o)
         return super(DecimalEncoder, self).default(o)
 
-
-def start_end_event_4h_am(date, fuseau_horaire=None, heure_pivot=4):
-    if fuseau_horaire is None:
-        config = Configuration.get_solo()
-        fuseau_horaire = config.fuseau_horaire
-
-    tzlocal = pytz.timezone(fuseau_horaire)
-    debut_event = tzlocal.localize(datetime.combine(date, datetime.min.time()), is_dst=None) + timedelta(
-        hours=heure_pivot)
-    fin_event = tzlocal.localize(datetime.combine(date, datetime.min.time()), is_dst=None) + timedelta(
-        days=1, hours=heure_pivot)
-    return debut_event, fin_event
+#
+# def start_end_event_4h_am(date, fuseau_horaire=None, heure_pivot=4):
+#     if fuseau_horaire is None:
+#         config = Configuration.get_solo()
+#         fuseau_horaire = config.fuseau_horaire
+#
+#     tzlocal = pytz.timezone(fuseau_horaire)
+#     debut_event = tzlocal.localize(datetime.combine(date, datetime.min.time()), is_dst=None) + timedelta(
+#         hours=heure_pivot)
+#     fin_event = tzlocal.localize(datetime.combine(date, datetime.min.time()), is_dst=None) + timedelta(
+#         days=1, hours=heure_pivot)
+#     return debut_event, fin_event
 
 
 ### NEW METHOD CLOTURE CAISSE
@@ -67,7 +67,13 @@ class TicketZToday(APIView):
     def get(self, request):
         config = Configuration.get_solo()
         heure_cloture = config.cloture_de_caisse_auto
-        matin = timezone.make_aware(datetime.combine(timezone.localdate(), heure_cloture))
+
+        start = timezone.localtime()
+        if start.time() < heure_cloture:
+            # Alors on est au petit matin, on prend la date de la veille
+            start = start - timedelta(days=1)
+        matin = timezone.make_aware(datetime.combine(start, heure_cloture))
+
         ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
         if ticketZ.calcul_valeurs():
             return render(request, self.template_name, context=ticketZ.to_dict)
@@ -80,7 +86,13 @@ class RapportToday(APIView):
     def get(self, request):
         config = Configuration.get_solo()
         heure_cloture = config.cloture_de_caisse_auto
-        matin = timezone.make_aware(datetime.combine(timezone.localdate(), heure_cloture))
+
+        start = timezone.localtime()
+        if start.time() < heure_cloture:
+            # Alors on est au petit matin, on prend la date de la veille
+            start = start - timedelta(days=1)
+        matin = timezone.make_aware(datetime.combine(start, heure_cloture))
+
         ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
         if ticketZ.calcul_valeurs():
             return render(request, self.template_name, context=ticketZ.to_dict)
