@@ -185,7 +185,7 @@ msgid "articles"
 msgstr "items"
 
 #: APIcashless/models.py:326
-msgid "catégories"
+msgid "categories"
 msgstr "categories"
 
 #: APIcashless/models.py:334
@@ -253,7 +253,7 @@ msgid "Nombre de copie à imprimer"
 msgstr "Number of copies to print"
 
 #: APIcashless/models.py:484
-msgid "Préparation & impression"
+msgid "Preparation & impression"
 msgstr "Preparation & printing"
 
 #: APIcashless/models.py:485
@@ -427,7 +427,7 @@ msgid "Carte bancaire"
 msgstr "Credit card"
 
 #: APIcashless/models.py:764
-msgid "Chèque"
+msgid "Cheque"
 msgstr "Bank check"
 
 #: APIcashless/models.py:765
@@ -658,7 +658,7 @@ msgstr "Sales"
 #: APIcashless/models.py:1694
 #, fuzzy
 #| msgid "Information"
-msgid "information Générale"
+msgid "information Generale"
 msgstr "General Information"
 
 #: APIcashless/models.py:1695
@@ -712,7 +712,7 @@ msgid "Prix de l'adhésion par default"
 msgstr "Default Membership Price"
 
 #: APIcashless/models.py:1837
-msgid "31 Décembre"
+msgid "31 Decembre"
 msgstr "Decembre 31st"
 
 #: APIcashless/models.py:1838
@@ -724,7 +724,7 @@ msgid "Durée d'adhésion"
 msgstr "Membership duration"
 
 #: APIcashless/models.py:1852
-msgid "Indian/Réunion"
+msgid "Indian/Reunion"
 msgstr "Indian/Reunion"
 
 #: APIcashless/models.py:1853
@@ -752,11 +752,11 @@ msgid "Assets acceptés pour ventes"
 msgstr "Assets accepted for sales"
 
 #: APIcashless/models.py:1960
-msgid "Code PIN pour appareillage"
+msgid "Code PIN pour appareillement"
 msgstr "PIN code for pairing"
 
 #: APIcashless/models.py:1965
-msgid "Validation manuelle de la préparation sur écran tactile"
+msgid "Validation manuelle de la préparation sur ecran tactile"
 msgstr "Manual validation of the preparation on touch screen"
 
 #: APIcashless/models.py:1969
@@ -895,7 +895,7 @@ msgstr ""
 "Accounting email. Sends reports from the day before in pdf every morning."
 
 #: APIcashless/models.py:2141
-msgid "Heure de clotûre automatique de toutes les caisses"
+msgid "Heure de cloture automatique de toutes les caisses"
 msgstr "Automatic closing time for all cash registers"
 
 #: APIcashless/models.py:2147
@@ -1223,7 +1223,7 @@ msgstr ""
 "A valid email is required for login. A password creation form will be sent."
 
 #: administration/adminstaff.py:130
-msgid "Afficher les prix"
+msgid "Aficher les prix"
 msgstr "Show prices"
 
 #: administration/adminstaff.py:138
@@ -1231,11 +1231,11 @@ msgid "Cacher les prix"
 msgstr "Hide prices"
 
 #: administration/adminstaff.py:146
-msgid "Accepte espèces"
+msgid "Accepte especes"
 msgstr "Accepts cash"
 
 #: administration/adminstaff.py:154
-msgid "Refuse espèces"
+msgid "Refuse especes"
 msgstr "refuse cash"
 
 #: administration/adminstaff.py:162
@@ -1276,7 +1276,7 @@ msgid ""
 "Colonne \" Liste des articles x/x/x \" :  Qty Commandées / Reste à servir / "
 "Reste à payer "
 msgstr ""
-Column \"List of items x/x/x\": Qty Ordered / Remaining to be served / "
+"Column \"List of items x/x/x\": Qty Ordered / Remaining to be served / "
 "Left to pay "
 
 #: administration/adminstaff.py:467
@@ -1288,7 +1288,7 @@ msgid "Recharge Euros"
 msgstr "Euros top-up"
 
 #: administration/adminstaff.py:483
-msgid "Recharges"
+msgid "RechargeS"
 msgstr "top-ups"
 
 #: administration/adminstaff.py:564
