@@ -1269,28 +1269,28 @@ class GroupementCategorieFilter(SimpleListFilter):
         else:
             return queryset.filter(article__categorie__groupements__name=self.value())
 
-
-def recalculer_la_tva(modeladmin, request, queryset):
-    for rapport in queryset:
-        debut_event, fin_event = start_end_event_4h_am(rapport.date)
-
-        article_vendus = ArticleVendu.objects.filter(
-            date_time__gte=debut_event,
-            date_time__lte=fin_event,
-        )
-        for article in article_vendus:
-            if article.article:
-                if article.article.categorie:
-                    if article.article.categorie.tva:
-                        article.tva = article.article.categorie.tva.taux
-                        article.save()
-
-        ticketZ = TicketZ(rapport)
-        ticketZ.calcul_valeurs()
-
-
-recalculer_la_tva.short_description = _("Recalculer la tva en fonction des catégories d'articles.")
-
+#
+# def recalculer_la_tva(modeladmin, request, queryset):
+#     for rapport in queryset:
+#         debut_event, fin_event = start_end_event_4h_am(rapport.date)
+#
+#         article_vendus = ArticleVendu.objects.filter(
+#             date_time__gte=debut_event,
+#             date_time__lte=fin_event,
+#         )
+#         for article in article_vendus:
+#             if article.article:
+#                 if article.article.categorie:
+#                     if article.article.categorie.tva:
+#                         article.tva = article.article.categorie.tva.taux
+#                         article.save()
+#
+#         ticketZ = TicketZ(rapport)
+#         ticketZ.calcul_valeurs()
+#
+#
+# recalculer_la_tva.short_description = _("Recalculer la tva en fonction des catégories d'articles.")
+#
 
 def update(modeladmin, request, queryset):
     for cloture in queryset:
