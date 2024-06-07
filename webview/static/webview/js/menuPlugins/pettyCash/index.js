@@ -51,7 +51,7 @@ window.pettyCashInterface = function () {
    </div>
   `
   let options = {
-    titre: '<h1 data-i8n="pettyCash,capitalize">Fond de caisse</h1>',
+    titre: '<h1 data-i8n="cashFloat,capitalize">Fond de caisse</h1>',
     message: message,
     type: 'normal'
   }
@@ -61,5 +61,5 @@ window.pettyCashInterface = function () {
 export const menu = {
   func: "pettyCashInterface",
   icon: "fas fa-cash-register", // font awesome 5
-  i8nIndex: "pettyCash,uppercase"
+  i8nIndex: "cashFloat,uppercase"
 }
