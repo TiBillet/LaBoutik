@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-06-07 06:52+0000\n"
+"POT-Creation-Date: 2024-06-07 11:40+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -26,7 +26,8 @@ msgstr "Cashless server URL not provided"
 msgid ""
 "Erreur de connexion au serveur discovery pour appareillage : "
 "{discovery_request.json()}"
-msgstr "Connection error to discovery server for device : {discovery_request.json()}"
+msgstr ""
+"Connection error to discovery server for device : {discovery_request.json()}"
 
 #: APIcashless/custom_utils.py:141
 msgid "Clé discovery non renseignée"
@@ -103,8 +104,12 @@ msgid "J'accepte de recevoir la newsletter"
 msgstr "I agree to receive the newsletter"
 
 #: APIcashless/models.py:170
+#, fuzzy
+#| msgid ""
+#| "Vous pouvez modifier la valeur par défault dans la page de configuration "
+#| "générale"
 msgid ""
-"Vous pouvez modifier la valeur par défault dans la page de configuration "
+"Vous pouvez modifier la valeur par default dans la page de configuration "
 "générale"
 msgstr "You can change the default value in the general configuration page"
 
@@ -253,11 +258,15 @@ msgid "Nombre de copie à imprimer"
 msgstr "Number of copies to print"
 
 #: APIcashless/models.py:484
-msgid "Preparation & impression"
-msgstr "Preparation & printing"
+#, fuzzy
+#| msgid "Préparations & impressions"
+msgid "Préparation & impréssion"
+msgstr "Preparations & printing"
 
 #: APIcashless/models.py:485
-msgid "Préparations & impressions"
+#, fuzzy
+#| msgid "Préparations & impressions"
+msgid "Préparations & impréssions"
 msgstr "Preparations & printing"
 
 #: APIcashless/models.py:492
@@ -664,8 +673,8 @@ msgstr "General Information"
 #: APIcashless/models.py:1695
 #, fuzzy
 #| msgid "Information"
-msgid "informations Générale"
-msgstr "Generale informations"
+msgid "informations Generale"
+msgstr "General Information"
 
 #: APIcashless/models.py:1716 administration/admin_commun.py:474
 msgid "Cashless"
@@ -764,8 +773,8 @@ msgid ""
 "Si annulation d'un article déja payé par cashless, on rembourse "
 "automatiquement sur la carte"
 msgstr ""
-"If you cancel an item already paid for by cashless, it will be "
-"automatically refunded to your card."
+"If you cancel an item already paid for by cashless, it will be automatically "
+"refunded to your card."
 
 #: APIcashless/models.py:1971
 msgid "Url publique du serveur cashless"
@@ -938,7 +947,8 @@ msgstr "Validate your stripe account:"
 #, fuzzy
 #| msgid "Badgeuse"
 msgid "Badgeuse active"
-msgstr "Active Time clock 
+msgstr "Active Time clock "
+
 #: APIcashless/models.py:2209
 msgid "Création de l'article et du points de vente Badge si activé."
 msgstr "Creation of the item and the Badge points of sale if activated."
@@ -1030,7 +1040,7 @@ msgid ""
 "Un nouveau terminal '{appareil.name}' s'est connecté à votre instance "
 "TiBillet {structure_name}"
 msgstr ""
-"A new terminal '{device.name}' was connected to your instance TiBillet "
+"A new terminal '{appareil.name}' was connected to your instance TiBillet "
 "{structure_name}"
 
 #: APIcashless/validator.py:80
@@ -1078,11 +1088,13 @@ msgstr "Suspended top-up"
 #: APIcashless/validator.py:122
 #, fuzzy
 #| msgid "Rechargement"
-msgid "Vêtement"
+msgid "Vetement"
 msgstr "clothing"
 
 #: APIcashless/validator.py:123
-msgid "Merchandising"
+#, fuzzy
+#| msgid "Merchandising"
+msgid "Merchandasing"
 msgstr "Merchandising"
 
 #: APIcashless/validator.py:124
@@ -1096,7 +1108,9 @@ msgid "Don"
 msgstr "Donation"
 
 #: APIcashless/validator.py:127
-msgid "Réservation gratuite"
+#, fuzzy
+#| msgid "Réservation gratuite"
+msgid "Reservation gratuite"
 msgstr "Free reservation"
 
 #: APIcashless/validator.py:128
@@ -1176,8 +1190,8 @@ msgid ""
 "Pour remplacer une carte perdue, aller sur l'onglet CARTE CASHLESS une fois "
 "le membre créé."
 msgstr ""
-"To replace a lost card, go to the CASHLESS CARD tab once the member "
-"has been created."
+"To replace a lost card, go to the CASHLESS CARD tab once the member has been "
+"created."
 
 #: administration/admin_commun.py:278
 msgid "Cliquez ici pour voir sa fiche"
@@ -1192,8 +1206,8 @@ msgid ""
 "Les deux champs de date suivants se remplissent automatiquement à la "
 "sauvegarde sur la date du jour"
 msgstr ""
-"The following two date fields are automatically populated "
-"when saved on today's date"
+"The following two date fields are automatically populated when saved on "
+"today's date"
 
 #: administration/admin_commun.py:289
 msgid "si l'adhésion est selectionné dans l'onglet principal."
@@ -1256,7 +1270,7 @@ msgid ""
 "<br/>Le menu de préparation {groupe.name} affichera et imprimera les "
 "catégories :"
 msgstr ""
-"<br/>The preparation menu {group.name} will display and print the "
+"<br/>The preparation menu {groupe.name} will display and print the "
 "categories:"
 
 #: administration/adminstaff.py:247
@@ -1276,8 +1290,8 @@ msgid ""
 "Colonne \" Liste des articles x/x/x \" :  Qty Commandées / Reste à servir / "
 "Reste à payer "
 msgstr ""
-"Column \"List of items x/x/x\": Qty Ordered / Remaining to be served / "
-"Left to pay "
+"Column \"List of items x/x/x\": Qty Ordered / Remaining to be served / Left "
+"to pay "
 
 #: administration/adminstaff.py:467
 msgid "methode"
@@ -1342,8 +1356,8 @@ msgid ""
 "Erreur de connexion à Dokos, vérifiez l'url et la clé API : https://doc."
 "dokos.io/federation-lieux/federation-de-lieux/api/"
 msgstr ""
-"Dokos connection error, check URL and API key: https://doc."
-"dokos.io/federation-lieux/federation-de-lieux/api/"
+"Dokos connection error, check URL and API key: https://doc.dokos.io/"
+"federation-lieux/federation-de-lieux/api/"
 
 #: administration/adminstaff.py:1131 administration/adminstaff.py:1138
 #, python-brace-format
@@ -1361,10 +1375,6 @@ msgstr "Free the selected tables"
 #: administration/adminstaff.py:1253
 msgid "groupement pour préparation"
 msgstr "group for preparation"
-
-#: administration/adminstaff.py:1292
-msgid "Recalculer la tva en fonction des catégories d'articles."
-msgstr "Recalculate VAT based on item categories."
 
 #: administration/dashboard.py:12
 msgid "Récapitulatif"
@@ -1795,15 +1805,15 @@ msgstr "Cash float"
 msgid "Rapport généré par l'outil libre et coopératif"
 msgstr "Report generated by an open source and cooperative system"
 
-#: administration/views.py:325
+#: administration/views.py:337
 msgid "Token non valide ou expiré"
 msgstr "Invalid or expired token"
 
-#: administration/views.py:328
-msgid "Token expiré"
-msgstr "Expired Token"
+#: administration/views.py:340
+msgid "Expired Token"
+msgstr ""
 
-#: administration/views.py:346
+#: administration/views.py:358
 msgid "Les mots de passe ne correspondent pas"
 msgstr "Passwords don't match"
 
@@ -1918,7 +1928,7 @@ msgstr "Unknown primary Card"
 msgid ""
 "Appareil déja en cours d'utilisation. Désactivez le d'abord pour un nouvel "
 "appairage."
-msgstr "Device already in use. Disable it first for new pairing.""
+msgstr "Device already in use. Disable it first for new pairing."
 
 #: webview/views.py:155 webview/views.py:166
 msgid "Utilisateur non actif. Relancez l'appairage."
@@ -1939,8 +1949,8 @@ msgid ""
 "pour le Ticket Z.\n"
 "Vous pouvez le ré-imprimer depuis l'interface d'administration."
 msgstr ""
-"Cash registers closed but no printer selected in the configuration "
-"for Ticket Z.\n"
+"Cash registers closed but no printer selected in the configuration for "
+"Ticket Z.\n"
 "You can re-print it from the administration interface."
 
 #: webview/views.py:326
@@ -1983,6 +1993,20 @@ msgstr "No card"
 #: webview/views.py:1177
 msgid "Travail en cours. Désolé, les adhésions n'acceptent que espèce ou CB."
 msgstr "Work in progress. Sorry, memberships only accept cash or credit card."
+
+#~ msgid "Preparation & impression"
+#~ msgstr "Preparation & printing"
+
+#, fuzzy
+#~| msgid "Information"
+#~ msgid "informations Générale"
+#~ msgstr "Generale informations"
+
+#~ msgid "Recalculer la tva en fonction des catégories d'articles."
+#~ msgstr "Recalculate VAT based on item categories."
+
+#~ msgid "Token expiré"
+#~ msgstr "Expired Token"
 
 #, fuzzy
 #~| msgid "Articles"
