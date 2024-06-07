@@ -21,7 +21,7 @@ from APIcashless.models import Categorie, CarteMaitresse, CommandeSauvegarde, Ap
     Couleur, TauxTVA, ClotureCaisse
 from APIcashless.models import GroupementCategorie, Table, MoyenPaiement
 from APIcashless.tasks import email_activation
-from administration.views import start_end_event_4h_am, TicketZ
+from administration.views import TicketZ
 from administration.admin_commun import *
 from epsonprinter.models import Printer
 from epsonprinter.tasks import ticketZ_tasks_printer
