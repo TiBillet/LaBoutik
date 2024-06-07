@@ -1,3 +1,6 @@
+import os
+
+from django.core.management import call_command
 from django.utils import timezone
 from APIcashless.models import CommandeSauvegarde, Table, Configuration, GroupementCategorie
 from django.core.management.base import BaseCommand
@@ -29,21 +32,6 @@ class Command(BaseCommand):
             group.compteur_ticket_journee = 0
             group.save()
 
-    # def calcul_rapport_veille(self):
-    #     # on calcule la date du jour, c’est-à-dire jusqu’au lendemain à 4 h du mat'
-    #     jour = timezone.localdate() - timedelta(days=1)
-    #
-    #     try:
-    #         # Génération du ticket Z via le thread celery
-    #         rapport = RapportTableauComptable.objects.get(date=jour)
-    #         task = ticketZ_fromRapport_to_mail.delay(rapport.pk)
-    #
-    #     except RapportTableauComptable.DoesNotExist:
-    #         logger.info(f"CRON 4h du matin : Pas de tableau pour le jour {jour}")
-    #     except Exception as e:
-    #         logger.error(f"CRON 4h du matin : Exception : {e}")
-    #         raise e
-
     def calculs_des_rapports_et_ticketZ(self):
         config = Configuration.get_solo()
         heure_cloture = config.cloture_de_caisse_auto
@@ -52,10 +40,11 @@ class Command(BaseCommand):
         iso_calendar = now.isocalendar()
 
         # Tout les jours
-        jour_4h = timezone.make_aware(datetime.combine(now, heure_cloture))
-        hier_4h = jour_4h - relativedelta(days=1)
-        start = timezone.make_aware(datetime.combine(hier_4h, heure_cloture))
-        end = timezone.make_aware(datetime.combine(jour_4h, heure_cloture))
+        jour = timezone.make_aware(datetime.combine(now, heure_cloture))
+        hier = jour - relativedelta(days=1)
+
+        start = timezone.make_aware(datetime.combine(hier, heure_cloture))
+        end = timezone.make_aware(datetime.combine(jour, heure_cloture))
 
         # TODO: Si la cloture de caisse n'a pas enore été faite
         GetOrCreateRapportFromDate.delay((start.isoformat(), end.isoformat()))
@@ -90,9 +79,14 @@ class Command(BaseCommand):
 
             GetOrCreateRapportFromDate.delay((start.isoformat(), end.isoformat()))
 
+    def time_bomb(self):
+        call_command('time_bomb')
+
     def handle(self, *args, **options):
         # self.calcul_rapport_veille()
         self.table_ephemere()
         self.archive_commande()
         self.calculs_des_rapports_et_ticketZ()
         self.rezet_compteur_ticket_journee()
+        if os.environ.get('TIME_BOMB') == '1':
+            self.time_bomb()
