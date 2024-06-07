@@ -38,8 +38,8 @@ msgid ""
 "Erreur de connexion au serveur discovery pour appareillage : "
 "{discovery_new_client_request.status_code}"
 msgstr ""
-"Faulty connection to discovery server : {discovery_new_client_request."
-"status_code}"
+"Faulty connection to discovery server : "
+"{discovery_new_client_request.status_code}"
 
 #: APIcashless/models.py:53 APIcashless/models.py:143 APIcashless/models.py:300
 #: APIcashless/models.py:378 APIcashless/models.py:407
@@ -228,7 +228,7 @@ msgstr "VAT Rate"
 
 #: APIcashless/models.py:413
 msgid "Url Image"
-msgstr "Url Image"
+msgstr "Image Url"
 
 #: APIcashless/models.py:445 APIcashless/models.py:446
 msgid "Catégorie d'articles"
