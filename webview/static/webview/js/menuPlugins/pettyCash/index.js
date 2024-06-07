@@ -5,16 +5,13 @@
 */
 
 window.pettyCashAction = function () {
-  console.log("-> pettyCashAction !")
+  // console.log("-> pettyCashAction !")
   // récupération de la valeur entrée
   const value = parseFloat(document.querySelector('#petty-cash').value)
   if (isNaN(value)) {
     document.querySelector('#petty-cash-msg-erreur').innerHTML = `<span data-i8n="isNotNumber,capitalize" style="color: red;">Ce n'est pas un nombre</span>`
   } else {
     const pettyCashValue = (new Big(value)).valueOf()
-    console.log('pettyCashValue =', pettyCashValue)
-
-    // TODO: action maitier à coder
 
     // supression du popup
     fn.popupAnnuler()
@@ -31,7 +28,7 @@ window.pettyCashInterface = function () {
     <div class="BF-col" style="margin: 0 2%;">`
 
   // Sans clavier virtuel pour les autres fronts
-  if (glob.infosNavigateur.front !== 'FPI') {
+  if (glob.appConfig.periph !== 'FPI') {
     message += `
         <input type="number" id="petty-cash" class="addition-fractionnee-input">
         <small id="petty-cash-msg-erreur"></small>
