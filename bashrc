@@ -13,6 +13,9 @@ alias test="poetry run python /DjangoFiles/manage.py test"
 alias rcel="poetry run celery -A Cashless worker -l INFO"
 alias guni="poetry run gunicorn primary_server.wsgi --capture-output --reload -w 3 -b 0.0.0.0:8000"
 
+alias mmes="django-admin makemessages -l en && django-admin makemessages -l fr"
+alias cmes="django-admin compilemessages"
+
 alias notebook="poetry run python /DjangoFiles/manage.py shell_plus --notebook"
 
 load_sql() {
