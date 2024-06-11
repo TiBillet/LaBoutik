@@ -334,6 +334,7 @@ class NFCCard():
                 carte.wallet = None
                 carte.membre = None
                 carte.assets.all().delete()
+                carte.cartes_maitresses.all().delete()
                 carte.save()
                 cache.delete(f"serialized_card_{user_card_firstTagId}")
                 logger.debug(f"cache DELETED for card {user_card_firstTagId}")
