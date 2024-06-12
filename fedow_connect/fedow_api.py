@@ -14,7 +14,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import localtime
 from django.core.cache import cache
-from APIcashless.models import CarteCashless, MoyenPaiement, Membre, ArticleVendu, Configuration, Wallet
+from APIcashless.models import CarteCashless, MoyenPaiement, Membre, ArticleVendu, Configuration, Wallet, Articles
 from APIcashless.models import Wallet as WalletDb
 
 logger = logging.getLogger(__name__)
@@ -142,24 +142,27 @@ class Subscription():
             self.config = Configuration.get_solo()
 
     def create(self,
-               wallet=None,
-               email=None,
-               amount: int = None,
+               wallet,
+               amount: int,
                date=None,
                user_card_firstTagId=None,
-               primary_card_fisrtTagId=None, ):
+               primary_card_fisrtTagId=None,
+               article: Articles=None,
+               ):
+
         if not date:
             date = localtime()
 
-        # Si Wallet est None, alors nous en créons ou allons chercher un wallet avec l'email
-        if not wallet:
-            pass
+        if article.methode_choices != Articles.ADHESIONS:
+            raise ValueError('Article must be an Membership product')
+        if not article.subscription_fedow_asset:
+            raise ValueError('Fedow subscription_fedow_asset must be set')
 
         subscription = {
             "amount": int(amount),
             "sender": f"{self.config.fedow_place_wallet_uuid}",
             "receiver": f"{UUID(wallet)}",
-            "asset": f"{self.config.methode_adhesion.pk}",
+            "asset": f"{article.subscription_fedow_asset.pk}",
             "subscription_start_datetime": date.isoformat(),
         }
         if user_card_firstTagId:
@@ -330,6 +333,8 @@ class NFCCard():
                 carte = CarteCashless.objects.get(tag_id=user_card_firstTagId)
                 carte.wallet = None
                 carte.membre = None
+                carte.assets.all().delete()
+                carte.cartes_maitresses.all().delete()
                 carte.save()
                 cache.delete(f"serialized_card_{user_card_firstTagId}")
                 logger.debug(f"cache DELETED for card {user_card_firstTagId}")
@@ -358,12 +363,9 @@ class NFCCard():
              primary_card_fisrtTagId: str = None):
         return self.refund(user_card_firstTagId, primary_card_fisrtTagId, void=True)
 
-    def link_user(self, email: str = None, card: CarteCashless = None):
-        try :
+    def link_user(self, email: str = None, card: CarteCashless = None, membre=None):
+        if not membre :
             membre = Membre.objects.get(email=email)
-        except Exception as e :
-            print(e)
-            import ipdb; ipdb.set_trace()
 
         # Check if card is already linked to the good member
         if card.membre is not None:
@@ -580,17 +582,11 @@ class WalletFedow():
         if config is None:
             self.config = Configuration.get_solo()
 
-    def create_from_email(self, email: str = None):
+    def get_or_create_wallet_from_email(self, email: str = None, save=True):
         response_link = _post(self.config, 'wallet', {"email": email})
         if response_link.status_code == 201:
-            # Création du wallet dans la base de donnée
-            membre = Membre.objects.get(email=email)
-            if not membre.wallet:
-                membre.wallet, created = Wallet.objects.get_or_create(uuid=UUID(response_link.json()))
-                membre.save()
-            elif membre.wallet.uuid != UUID(response_link.json()):
-                raise Exception("Wallet and member mismatch")
-            return membre.wallet
+            wallet, created = Wallet.objects.get_or_create(uuid=UUID(response_link.json()))
+            return wallet, created
 
         raise Exception(f"Wallet FedowAPI create_from_email response : {response_link.status_code}")
 

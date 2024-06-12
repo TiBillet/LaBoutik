@@ -152,13 +152,13 @@ export function assignerTableEphemere() {
     <small id="entree-nom-table-msg-erreur" style="margin-bottom:0.5rem;"></small>`
 
   // Sans clavier virtuel pour les autres fronts
-  if (glob.appConfig.front_type !== 'FPI') {
+  if (glob.appConfig.periph !== 'FPI') {
     entreeClavier = `<input id="entree-nom-table" class="input-nom-table" placeholder="${placeHolder}" autofocus>
       <small id="entree-nom-table-msg-erreur" style="margin-bottom:0.5rem;"></small>`
   }
 
   let titre = `<div class="BF-col">
-    <div class="ft-2r" data-i8n="creationEphemeralTable,capitalize">Création d'une table éphémère.</div>
+    <div class="BF-ligne ft-2r" data-i8n="creationEphemeralTable,capitalize" style="white-space: pre-line; text-align: center;">Création d'une table éphémère.</div>
   </div>`
 
   // compose le bouton retour à afficher
@@ -397,7 +397,7 @@ export function demanderValeurAdditionFractionnee() {
 
     // Sans clavier virtuel pour les autres fronts
     // console.log('glob.storage = ', glob.storage)
-    if (glob.appConfig.front_type !== 'FPI') {
+    if (glob.appConfig.periph !== 'FPI') {
       message = `<input id="addition-fractionnee" class="addition-fractionnee-input">
       <small id="addition-fractionnee-msg-erreur"></small>`
     }
@@ -526,7 +526,6 @@ export function validerPaiementArticleCommande(actionAValider) {
   }
 
   vue_pv.validerEtape1(options)
-
 }
 
 function totalPrixCommandesTable(commandes, idTable) {
@@ -998,6 +997,7 @@ export function visualiserEtatCommandes(retour) {
     // console.log('--> Affiche tous les groupement -- ', groupementCategories)
     for (let i = 0; i < retour.length; i++) {
       let groupement = retour[i]
+      console.log('groupement =', groupement)
       let commandes = groupement.commandes
       let commandesFiltrees = commandes.filter(obj => obj.table === idTable)
       let nouvelObjet = {
@@ -1022,6 +1022,7 @@ export function visualiserEtatCommandes(retour) {
   // les groupements non servis
   for (let idGroupement = 0; idGroupement < data.length; idGroupement++) {
     let groupement = data[idGroupement]
+    // sys.logJson('groupement =',groupement)
     // trie par date (les plus anciennes aux plus récentes)
     groupement.commandes.sort((a, b) => ((new Date(a.datetime)).getTime()) - ((new Date(b.datetime)).getTime()))
 
@@ -1093,6 +1094,7 @@ export function visualiserEtatCommandes(retour) {
                 <div class="test-ref-table-name">${commande.table_name}</div>
               </div> <!-- fin: com-titre-partie-centre -->
               <div class="com-titre-partie-droite BF-ligne">
+                <span class="md16px test-ref-preparation-place">${groupement.name}</span>
                 <div class="mg4px test-ref-status-order">${statutLisible[commande.statut]}</div>
           `
           // impression si ticket et mode gérant activé
@@ -1111,6 +1113,7 @@ export function visualiserEtatCommandes(retour) {
           fragmentHtml += `
               <div class="com-titre-partie-centre BF-ligne"></div>
               <div class="com-titre-partie-droite">
+              <span class="md16px test-ref-preparation-place">${groupement.name}</span>
           `
           // affichage numéro de commande avec nom du groupmement de catégorie, exemple: "Bar 9"
           if (Object.entries(commande.numero_du_ticket_imprime).length !== 0) {
@@ -1138,6 +1141,7 @@ export function visualiserEtatCommandes(retour) {
         `
         // largeur écran inférieure à 800 pixels
         if (largeurEcran < 800) {
+          // console.log('largeurEcran < 800; commande =', commande)
           fragmentHtml += `
             <div class="com-titre-conteneur-plus coulBlanc l100p" ${styleCouleurAlerteDate}>
               <div class="BF-ligne">
@@ -1179,8 +1183,8 @@ export function visualiserEtatCommandes(retour) {
           if (glob.modeGerant === false) {
             fragmentHtml += `
                 <div class="com-article-infos BF-ligne-deb" data-reste-servir-init="${objArticle.reste_a_servir}" data-article-id="${objArticle.article.id}">
-                  <div class="md16px test-rest-serve-qty">${objArticle.reste_a_servir}</div>
-                  <div class="md16px test-rest-serve-name">${objArticle.article.name}</div>
+                  <div class="md16px test-return-rest-serve-qty">${objArticle.reste_a_servir}</div>
+                  <div class="md16px test-return-rest-serve-name">${objArticle.article.name}</div>
                 </div>
             `
           } else {
@@ -1189,13 +1193,13 @@ export function visualiserEtatCommandes(retour) {
               <div class="com-article-ligne BF-ligne-deb">
                 <div id="com-article-actions${objArticle.article.id}-${uuidCommande}" class="com-article-actions" data-article-id="${objArticle.article.id}" data-reste-servir-init="${objArticle.reste_a_servir}" data-reste-servir-modifier="0" onclick="restau.incrementerArticlePreparation(${objArticle.reste_a_servir}, '${objArticle.article.id}', '${uuidCommande}')">
                   <div class="com-bt com-ident1">
-                    <i class="fas fa-plus"></i>
+                    <i class="fas fa-plus test-return-icon-plus"></i>
                   </div>
                 </div>
                 <div class="com-article-infos BF-ligne-deb">
-                  <div id="com-article-infos-reste-servir-modifier${objArticle.article.id}-${uuidCommande}" class="md4px ">0</div>
-                  <div class="md16px test-rest-serve-qty">sur ${objArticle.reste_a_servir}</div>
-                  <div class="md16px test-rest-serve-name">${objArticle.article.name}</div>
+                  <div id="com-article-infos-reste-servir-modifier${objArticle.article.id}-${uuidCommande}" class="md4px test-return-reste-servir-modifier">0</div>
+                  <div class="md16px">sur <span class="test-return-rest-serve-qty">${objArticle.reste_a_servir}</span></div>
+                  <div class="md16px test-return-rest-serve-name">${objArticle.article.name}</div>
                 </div>
               </div> <!-- fin com-block1-article-conteneur -->
             `
@@ -1222,12 +1226,12 @@ export function visualiserEtatCommandes(retour) {
           if (commande.articles.length > 1 || maxNbArticle > 1) {
             fragmentHtml += `
               <div class="com-bt com-ident1 md8px" onclick="restau.modifierArticlesCommande('${uuidCommande}',  ${groupement.pk}, 'total')">
-                <i class="fas fa-th mg4px"></i>
+                <i class="fas fa-th mg4px test-return-icon-grid"></i>
               </div>
             `
           }
           fragmentHtml += `
-                <div class="com-bt com-ident3" onclick="restau.modifierArticlesCommande('${uuidCommande}', ${groupement.pk}, 'reset')" data-i8n="reset,uppercase">RESET</div>
+                <div class="com-bt com-ident3 test-return-action-reset" onclick="restau.modifierArticlesCommande('${uuidCommande}', ${groupement.pk}, 'reset')" data-i8n="reset,uppercase">RESET</div>
                </div>
             </div> <!-- fin: div contenant les articles en mode gérant -->
             <div class="com-article-footer BF-ligne-deb">
@@ -1328,12 +1332,14 @@ export function visualiserEtatCommandes(retour) {
           }
 
           fragmentHtml += `
+                <span class="md16px test-ref-preparation-place">${groupement.name}</span>
               </div> <!-- fin: com-titre-partie-droite -->
           `
         } else {
           // largeur écran inférieure à 800 pixels
           fragmentHtml += `
               <div class="com-titre-partie-droite BF-ligne" style="width:calc(100% - 102px);justify-content: flex-end;">
+                <span class="md16px test-ref-preparation-place">${groupement.name}</span>
           `
           // affichage numéro de commande avec nom du groupmement de catégorie, exemple: "Bar 9"
           if (Object.entries(commande.numero_du_ticket_imprime).length !== 0) {
@@ -1396,8 +1402,8 @@ export function visualiserEtatCommandes(retour) {
             let objArticle = commande.articles[idArticle]
             fragmentHtml += `
                 <div class="com-article-infos BF-ligne-deb" data-reste-servir-init="${objArticle.reste_a_servir}" data-article-id="${objArticle.article.id}">
-                  <div class="md16px test-article-qty">${objArticle.qty}</div>
-                  <div class="md16px test-article-name">${objArticle.article.name}</div>
+                  <div class="md16px test-return-rest-serve-qty">${objArticle.qty}</div>
+                  <div class="md16px test-return-rest-serve-name">${objArticle.article.name}</div>
                 </div>
             `
           }
@@ -1420,13 +1426,13 @@ export function visualiserEtatCommandes(retour) {
               <div class="com-article-ligne BF-ligne-deb">
                 <div id="com-article-actions${objArticle.article.id}-${uuidCommande}" class="com-article-actions" data-article-id="${objArticle.article.id}" data-qty-init="${objArticle.qty}" data-qty-modifier="0" onclick="restau.incrementerArticlePourSuppression(${objArticle.qty}, '${objArticle.article.id}', '${uuidCommande}')">
                   <div class="com-bt com-ident1">
-                    <i class="fas fa-plus"></i>
+                    <i class="fas fa-plus test-return-icon-plus"></i>
                   </div>
                 </div>
                 <div class="com-article-infos BF-ligne-deb">
-                  <div id="com-article-infos-reste-servir-modifier${objArticle.article.id}-${uuidCommande}" class="md4px ">0</div>
-                  <div class="md16px test-article-qty">sur ${objArticle.qty}</div>
-                  <div class="md16px test-article-name">${objArticle.article.name}</div>
+                  <div id="com-article-infos-reste-servir-modifier${objArticle.article.id}-${uuidCommande}" class="md4px test-return-reste-servir-modifier">0</div>
+                  <div class="md16px">sur <span class="test-return-rest-serve-qty">${objArticle.qty}</span></div>
+                  <div class="md16px test-return-rest-serve-name">${objArticle.article.name}</div>
                 </div>
               </div> <!-- fin com-block1-article-conteneur -->
             `
@@ -1437,15 +1443,15 @@ export function visualiserEtatCommandes(retour) {
           if (commande.articles.length > 1) {
             fragmentHtml += `
                 <div class="com-bt com-ident1 md8px" onclick="restau.configurerNombreArticlesPourSuppression('${uuidCommande}',  ${groupement.pk}, 'total')">
-                  <i class="fas fa-th mg4px"></i>
+                  <i class="fas fa-th mg4px test-return-icon-grid"></i>
                 </div>
               `
           }
           fragmentHtml += `
-                <div class="com-bt com-ident3" onclick="restau.configurerNombreArticlesPourSuppression('${uuidCommande}', ${groupement.pk}, 'reset')" data-i8n="reset,uppercase">RESET</div>
+                <div class="com-bt com-ident3 test-return-action-reset" onclick="restau.configurerNombreArticlesPourSuppression('${uuidCommande}', ${groupement.pk}, 'reset')" data-i8n="reset,uppercase">RESET</div>
               </div>
               <div class="com-article-footer BF-ligne fond-retour" onclick="restau.validerSuppressionArtilcesCommande('${uuidCommande}', ${groupement.pk})">
-                <div class="BF-ligne com-ident-supp" data-i8n="deleteArticles,uppercase">SUPPRIMER ARTICLE(S)</div>
+                <div class="BF-ligne com-ident-supp test-action-delete-article" data-i8n="deleteArticles,uppercase">SUPPRIMER ARTICLE(S)</div>
               </div>  
             </div>
           `
@@ -1783,7 +1789,7 @@ export function afficherCommandesTable(idTable) {
             <div data-i8n="return,uppercase">RETOUR</div>
           </div>
         </div>
-        <div class="BF-ligne fond-ok footer-bt  curseur-action" onclick="vue_pv.testPaiementPossible('addition_liste')">
+        <div id="bt-valider-commande" class="BF-ligne fond-ok footer-bt  curseur-action" onclick="vue_pv.testPaiementPossible('addition_liste')">
           <i class="footer-bt-icon fas fa-check-circle md4px"></i>
           <div class="BF-col-deb footer-bt-text mg4px">
             <div data-i8n="validate,uppercase">VALIDER</div>

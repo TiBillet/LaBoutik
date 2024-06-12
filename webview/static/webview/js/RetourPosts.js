@@ -33,14 +33,14 @@ function gestionTransactionFondsInsuffisants(retour, options) {
 
     boutons += `<bouton-basique class="test-fonds-insuffisants-nfc" traiter-texte="1" texte="[autre] [CARTE]|2rem||other-uppercase;card-uppercase,(CASHLESS)|1.2rem,[TOTAL] ${totalManque} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#3b567f" icon="fa-coins||2.5rem" onclick="fn.popupAnnuler();vue_pv.validerEtapeMoyenComplementaire('nfc')" style="margin-top:16px;margin-bottom:40px;"></bouton-basique>`
     msg += `
-      <div class="popup-titre1" data-i8n="insufficientFunds,capitalize">Fonds insuffisants.</div>
-      <div class="popup-msg1">
+      <div class="popup-titre1 test-return-title" data-i8n="insufficientFunds,capitalize">Fonds insuffisants.</div>
+      <div class="popup-msg1 test-return-missing-cash">
         <span data-i8n="isMissing,capitalize">Il manque</span> <span id="test-manque-monnaie">${retour.message.manque}</span> <span data-i8n="currencySymbol">€</span>
       </div>
-      <div class="popup-msg1">
+      <div class="popup-msg1 test-return-fisrt-card-content">
         ${retour.carte.membre_name} <span data-i8n="has">a</span> <span id="test-carte-total-monnaie">${retour.carte.total_monnaie}</span>
       </div>
-      <div class="popup-msg1" data-i8n="possiblePurchaseBy,capitalize">Achat possible par :</div>
+      <div class="popup-msg1 test-returm-possible-purchase" data-i8n="possiblePurchaseBy,capitalize">Achat possible par :</div>
     `
   } else {
     console.log("-> Fonds insuffisants sur deuxieme carte")
@@ -89,9 +89,10 @@ function messageRetourAssets(retour) {
     }
   }
   if (valAssetsTest === 1) {
-    fragmentHtml = `<div class="popup-msg1"><span data-i8n="including">dont</span> :</div>`
+    // fragmentHtml = `<div class="popup-msg1"><span data-i8n="including">dont</span> :</div>`
+    fragmentHtml = `<div class="popup-msg1" style="margin-top: 1rem;"><span data-i8n="totalCardWallet">total portefeuille carte</span> :</div>`
   }
-  fragmentHtml += enumAssets
+  fragmentHtml += enumAssets + '<div style="margin-BOTTOM: 1rem;"></div>'
   return fragmentHtml
 }
 
@@ -403,14 +404,14 @@ function afficherRetourVenteDirecte(retour, status, options) {
         <span data-i8n="transaction,capitalize">Transaction</span> <span data-i8n="ok">Ok</span>
       </div>`
 
-      if (options.methodes[0] === "VenteArticle" || options.methodes[0] === "AjoutMonnaieVirtuelle") {
-        // envoie les indexs de traduction des monnaies utilisées
-        let moyensDePaiement = `(<span data-i8n="${orthoPaiement[options.achats.moyen_paiement]}"></span>`
-        if (options.achats.complementaire !== undefined) {
-          moyensDePaiement += `/<span data-i8n="${orthoPaiement[options.achats.complementaire.moyen_paiement]}"></span>`
-        }
-        moyensDePaiement += ')'
+      // envoie les indexs de traduction des monnaies utilisées
+      let moyensDePaiement = `(<span data-i8n="${orthoPaiement[options.achats.moyen_paiement]}"></span>`
+      if (options.achats.complementaire !== undefined) {
+        moyensDePaiement += `/<span data-i8n="${orthoPaiement[options.achats.complementaire.moyen_paiement]}"></span>`
+      }
+      moyensDePaiement += ')'
 
+      if (options.methodes[0] === "VenteArticle" || options.methodes[0] === "AjoutMonnaieVirtuelle") {
         // affiche le total et la ou les monnaies utilisées
         msgDefaut += `<div class="test-return-total-achats" style="font-size: 2rem;font-weight: bold;">
           <span data-i8n="total,capitalize">Total</span>${moyensDePaiement}<span> ${retour.somme_totale}</span> <span data-i8n="currencySymbol"></span>
@@ -510,6 +511,9 @@ function afficherRetourVenteDirecte(retour, status, options) {
         }
       }
 
+      if (options.methodes[0] === "AjoutMonnaieVirtuelleCadeau" && retour.carte) {
+        msgDefaut += messageRetourAssets(retour)
+      }
 
       // vider une carte
       if (options.methodes[0] === "ViderCarte") {
@@ -526,19 +530,36 @@ function afficherRetourVenteDirecte(retour, status, options) {
         let msgCotisation = ''
         if (retour.carte !== undefined && retour.carte !== null) {
           msgCotisation = `
-            <div class="popup-msg1 test-msg-membre">
-              <span data-i8n="member">membre</span> : ${retour.carte.membre_name}
+            <div class="popup-msg1">
+              <span data-i8n="member">membre</span> : <span class="test-return-membre-name">${retour.carte.membre_name}</span>
             </div>
             <div class="popup-msg1 test-msg-adhesion-date">${retour.carte.cotisation_membre_a_jour}</div>
           `
         }
-        msgDefaut = `
-          <div class="popup-titre1" data-i8n="membership,capitalize">Adhésion</div>
-          ${msgCotisation}
-          <div class="popup-msg1 test-msg-adhesion">
-            <span data-i8n="total,capitalize">Total</span> (${window.orthoPaiement[options.achats.moyen_paiement]}) : ${retour.somme_totale}
-          </div>
-        `
+
+        msgDefaut = `<div class="popup-titre1 test-return-title-content" data-i8n="membership,capitalize">Adhésion</div>
+        ${msgCotisation}
+        <div class="test-return-total-achats" style="font-size: 2rem;font-weight: bold;">
+          <span data-i8n="total,capitalize">Total</span>${moyensDePaiement}<span> ${retour.somme_totale}</span> <span data-i8n="currencySymbol"></span>
+        </div>`
+
+        // paiement espèce, somme donnée; pas de complémentaire
+        if (options.achats.complementaire === undefined && options.achats.moyen_paiement === 'espece') {
+          const totalAchat = parseFloat(options.achats.total)
+          const sommeDonnee = parseFloat(options.sommeDonnee)
+          const resultat = new Big(sommeDonnee).minus(totalAchat)
+          // const sumValue = (new Big(sum)).valueOf()
+          msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
+              <span data-i8n="givenSum,capitalize">Somme donnée</span>
+              <span>${sommeDonnee}</span>
+              <span data-i8n="currencySymbol"></span>
+            </div>
+            <div class="test-return-change" style="font-size: 2rem;font-weight: bold;">
+              <span data-i8n="change,capitalize">monnaie à rendre</span>
+              <span role="status" aria-label="change">${resultat}</span>
+              <span data-i8n="currencySymbol"></span>
+            </div>`
+        }
       }
 
       // retour consigne
@@ -582,16 +603,16 @@ function afficherRetourVenteDirecte(retour, status, options) {
     typeMsg = 'attent'
     for (const key in retour) {
       const item = retour[key]
-      if (typeof(item) === 'object') {
+      if (typeof (item) === 'object') {
         for (const id in item) {
           const subItem = item[id]
-          if (typeof(subItem) === 'string') {
-            msgs += `<div class="BF-col popup-msg1" style="width:98%;">${subItem}</div>`
+          if (typeof (subItem) === 'string') {
+            msgs += `<div class="BF-col popup-msg1 test-msg-${key}-${id}" style="width:98%;white-space: pre-line; text-align: center;">${subItem}</div>`
           }
         }
       } else {
-        if (typeof(item) === 'string') {
-          msgs += `<div class="popup-msg1">${item}</div>`
+        if (typeof (item) === 'string') {
+          msgs += `<div class="popup-msg1 test-msg-${key}" style="width:98%;white-space: pre-line; text-align: center;">${item}</div>`
         }
       }
     }
@@ -615,8 +636,8 @@ function afficherRetourVenteDirecte(retour, status, options) {
  * @param {Object} options = données avant le lancement de la requète
  */
 export function gererRetourPostPaiement(retour, status, options) {
-  // console.log('-> fonction gererRetourPostPaiement, options.actionAValider=', options.actionAValider)
-  // sys.logValeurs({retour: retour, status: status, options: options})
+  console.log('-> fonction gererRetourPostPaiement, options.actionAValider=', options.actionAValider)
+  sys.logValeurs({ retour: retour, status: status, options: options })
   try {
     // sys.logValeurs({retour: retour, status: status, options: options})
 
@@ -664,8 +685,8 @@ export function gererRetourPostPaiement(retour, status, options) {
 }
 
 function checkCarteOk(retour) {
-  console.log('-> fonction checkCarteOk !')
-  sys.logJson('retour = ', retour)
+  // console.log('-> fonction checkCarteOk !')
+  // sys.logJson('retour = ', retour)
 
   const translateName = getTranslate('name') === '' ? "Nom" : getTranslate('name', 'capitalize')
   let totalMonnaie = parseFloat(retour.total_monnaie)
@@ -690,7 +711,8 @@ function checkCarteOk(retour) {
 
   let msg = `
     <div class="BF-col-uniforme check-carte-ok">
-      <div class="check-carte-ok-nom test-return-name">${translateName} : ${membreName}</div>
+      <!-- <div class="check-carte-ok-nom test-return-name">${translateName} : ${membreName}</div> -->
+      <div class="check-carte-ok-nom test-return-name"><span data-i8n="name,capitalize">Nom</span> : ${membreName}</div>
       <div class="check-carte-ok-cotisation test-return-contribution">${retour.cotisation_membre_a_jour}</div>
       <div class="check-carte-ok-total-carte test-return-total-card">
       <span data-i8n="on,capitalize">Sur</span> <span data-i8n="card">carte</span> : ${totalMonnaie} <span data-i8n="currencySymbol"></span>

@@ -834,7 +834,7 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(membres.count(), 4)
         for membre in membres:
             # Link de l'email à la carte via le code nfc
-            wallet: Wallet = fedowAPI.wallet.create_from_email(email=membre.email)
+            wallet: Wallet = fedowAPI.wallet.get_or_create_wallet_from_email(email=membre.email)
             wallet_uuid = wallet.uuid
             self.assertIsInstance(wallet, Wallet)
             self.assertIsInstance(wallet_uuid, UUID)
@@ -899,6 +899,7 @@ class CashlessTest(TiBilletTestCase):
 
             import ipdb;
             ipdb.set_trace()
+
             adhesion = fedowAPI.subscription.create(
                 wallet=f"{wallet.uuid}",
                 amount=int(membre.cotisation * 100),
@@ -1105,10 +1106,9 @@ class CashlessTest(TiBilletTestCase):
 
     def remboursement_front(self):
         config = Configuration.get_solo()
-        primary_card = CarteMaitresse.objects.first()
-        if not primary_card:
-            import ipdb;
-            ipdb.set_trace()
+        primary_card = CarteMaitresse.objects.filter(
+            carte__membre__isnull=False
+        ).first()
 
         responsable: Membre = primary_card.carte.membre
         pdv = PointDeVente.objects.get(name="Boutique")
@@ -1119,10 +1119,6 @@ class CashlessTest(TiBilletTestCase):
         article_vider_carte: Articles = Articles.objects.get(
             methode_choices=Articles.VIDER_CARTE,
         )
-
-        if not responsable:
-            import ipdb;
-            ipdb.set_trace()
 
         json_achats = {"articles": [{"pk": f"{article_vider_carte.pk}", "qty": 1}],
                        "pk_responsable": f"{responsable.pk}",

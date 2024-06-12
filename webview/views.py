@@ -319,12 +319,12 @@ def close_all_pos(request):
             to_printer = ticketZ_tasks_printer.delay(ticketz_json)
             if not config.ticketZ_printer:
                 return Response({
-                    "message": "Caisses cloturées mais aucune imprimante selectionnée dans la configuration pour le Ticket Z.\n"
-                               "Vous pouvez le ré-imprimer depuis l'interface d'administration."},
+                    "message": _("Caisses cloturées mais aucune imprimante selectionnée dans la configuration pour le Ticket Z.\n"
+                               "Vous pouvez le ré-imprimer depuis l'interface d'administration.")},
                     status=status.HTTP_200_OK)
 
-            return Response({"message": "Caisses cloturées et ticket envoyé à l'impression"}, status=status.HTTP_200_OK)
-        return Response({"message": "Erreur génération du ticket Z"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"message": _("Caisses cloturées et ticket envoyé à l'impression")}, status=status.HTTP_200_OK)
+        return Response({"message": _("Erreur génération du ticket Z")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @login_required
@@ -495,16 +495,14 @@ def check_carte(request):
         tag_id_request = request.data.get('tag_id_client').upper()
 
         # Methode FEDOW Uniquement, on va mettre a jour la carte
-        if Configuration.get_solo().can_fedow():
-            try:
-                fedowApi = FedowAPI()
-                fedowApi.NFCcard.retrieve(tag_id_request)
-            except Exception as e:
-                logger.error(f"Check carte FEDOW : {e}")
-                return Response({"msg": f"Fédération indisponible. Contactez l'administrateur. {e}"},
-                                status=status.HTTP_404_NOT_FOUND)
+        try:
+            fedowApi = FedowAPI()
+            fedowApi.NFCcard.retrieve(tag_id_request)
+        except Exception as e:
+            logger.error(f"Check carte FEDOW : {e}")
+            return Response({"msg": f"Fedow error. Contact an admin : {e}"},
+                            status=status.HTTP_404_NOT_FOUND)
 
-        # Methode Old Cashless
         try:
             carte = CarteCashless.objects.get(tag_id=tag_id_request)
         except CarteCashless.DoesNotExist:
@@ -518,8 +516,6 @@ def check_carte(request):
             return Response(data, status=status.HTTP_404_NOT_FOUND)
         except Exception:
             raise Exception
-
-        # import ipdb; ipdb.set_trace()
 
         serializer = CarteCashlessSerializer(carte)
         data = serializer.data
@@ -925,17 +921,20 @@ class Commande:
         if not carte:
             logger.warning(f"methode_BG : pas de carte")
             raise NotAcceptable(detail=f"Pas de carte NFC", code=None)
-        if not carte.membre:
-            logger.warning(f"methode_BG : pas de membre")
-            raise NotAcceptable(detail=f"Pas de membre sur la carte", code=None)
-        if not carte.membre.email:
-            logger.warning(f"methode_BG : pas de mail")
-            raise NotAcceptable(detail=f"Pas de mail sur la carte", code=None)
 
-        if article.subscription_fedow_asset:
-            asset = article.subscription_fedow_asset
-        else:
-            asset = MoyenPaiement.objects.get(categorie=MoyenPaiement.BADGE)
+        # if not carte.membre:
+        #     logger.warning(f"methode_BG : pas de membre")
+        #     raise NotAcceptable(detail=f"Pas de membre sur la carte", code=None)
+        # if not carte.membre.email:
+        #     logger.warning(f"methode_BG : pas de mail")
+        #     raise NotAcceptable(detail=f"Pas de mail sur la carte", code=None)
+
+        asset = article.subscription_fedow_asset
+
+        if article.prix > 0:
+            logger.warning(f"Article badge payant, en cours de dev.")
+            raise NotAcceptable(detail=f"Pas de badge payant tout de suite :)", code=None)
+
 
         ligne_article_vendu = ArticleVendu.objects.create(
             article=article,
@@ -1068,6 +1067,39 @@ class Commande:
 
         self.reponse['route'] = "transaction_ajout_monnaie_virtuelle"
 
+    # RECHARGE CASHLESS MONNAIE EXTERIEUR FIDUCIAIRE NON CADEAU
+    def methode_RF(self, article, qty):
+        total = dround(article.prix * qty)
+        reste = total
+        self.total_vente_article += total
+
+        # On va chercher l'asset correspondant à l'article de recharge
+        asset_fedow: MoyenPaiement = article.subscription_fedow_asset
+        if not asset_fedow:
+            raise NotAcceptable("No fedow asset connected.")
+        # Fabrication du token de la carte avec cet asset
+        token_card, created = self.carte_db.assets.get_or_create(monnaie=asset_fedow)
+        token_card.qty += reste
+
+        self._refill_assets(token_card, reste)
+
+        ArticleVendu.objects.create(
+            article=article,
+            prix=article.prix,
+            qty=qty,
+            pos=self.point_de_vente,
+            carte=self.carte_db,
+            membre=self.carte_db.membre,
+            responsable=self.responsable,
+            moyen_paiement=self.moyen_paiement,
+            commande=self.uuid_commande,
+            uuid_paiement=self.uuid_paiement,
+            table=self.table,
+            ip_user=self.ip_user,
+        )
+
+        self.reponse['route'] = "transaction_ajout_monnaie_virtuelle"
+
     # RECHARGE_CADEAU = 'RC'
     def methode_RC(self, article, qty):
         total = dround(article.prix * qty)
@@ -1129,45 +1161,72 @@ class Commande:
         total = round((article.prix * qty), 2)
         carte_db: CarteCashless = self.carte_db
         self.total_vente_article += total
-        adherant = None
-
-        # Si pas de membre sur la carte, et si l'adhésion suspendue n'est pas activée dans la configuration
-        # on renvoie une erreur et on ne crée par l'adhésion.
-        if not carte_db.membre and not self.configuration.adhesion_suspendue:
-            logger.error('methode_adhesion : Pas de membre sur cette carte')
+        primary_card_fisrtTagId = self.responsable.CarteCashless_Membre.first()
+        if not carte_db :
+            logger.error('methode_adhesion : Pas de carte')
             raise NotAcceptable(
-                detail="Pas de membre sur cette carte.\n"
-                       "Merci de lier un membre à cette carte avant d'adhérer.",
+                detail=_("Pas de carte."),
                 code=None
             )
 
-        if carte_db.adhesion_suspendue:
-            logger.error('methode_adhesion : La carte a déja une adhésion suspendue')
+        # On permet de payer avec de la monnaie cashless, mais on vérifie quand même :
+        if self.moyen_paiement.categorie == MoyenPaiement.LOCAL_EURO:
+            #TODO: Accepter les monnaies cashless Locale Euro et Fedéré uniquement
+            #vérifier le total wallet > prix adhésion & faire la transaction coté fédow
             raise NotAcceptable(
-                detail="La carte a déja une adhésion suspendue.\n"
-                       "Merci de lier un membre à cette carte.",
+                detail=_("Travail en cours. "
+                         "Désolé, les adhésions n'acceptent que espèce ou CB."),
                 code=None
             )
+
+
+        # Check carte fedow :
+        fedowAPI = FedowAPI()
+        fedow_serialized_card = fedowAPI.NFCcard.cached_retrieve(carte_db.tag_id)
+
+        # Si wallet ephemère = pas d'email
+        # if fedow_serialized_card.get('is_wallet_ephemere'):
+        #     logger.error('methode_adhesion : Pas de membre sur cette carte')
+        #     raise NotAcceptable(
+        #         detail=_("Pas d'email lié sur cette carte.\n"
+        #                "Merci de lier un email à cette carte en scannant son QRCode."),
+        #         code=None
+        #     )
+
+        adh = fedowAPI.subscription.create(
+            wallet=f"{fedow_serialized_card['wallet']['uuid']}",
+            amount=int(self.total_vente_article * 100),
+            article=article,
+            user_card_firstTagId=carte_db.tag_id,
+            primary_card_fisrtTagId=primary_card_fisrtTagId.tag_id
+        )
 
         # On va chercher l'adhérant
-        if carte_db.membre:
-            adherant: Membre = carte_db.membre
+        # if carte_db.membre:
+        #     adherant: Membre = carte_db.membre
+        #
+        #     # if adherant.a_jour_cotisation():
+        #     #     raise NotAcceptable(
+        #     #         detail=f"Le membre {adherant.name} à déja adhéré le {adherant.date_derniere_cotisation} "
+        #     #                f"via l'interface : {adherant.choice_str(Membre.ORIGIN_ADHESIONS_CHOICES, adherant.adhesion_origine)}.",
+        #     #         code=None
+        #     #     )
+        #
+        #     aujourdhui = datetime.now().date()
+        #     adherant.date_derniere_cotisation = aujourdhui
+        #     adherant.cotisation = total
+        #
+        #     if not adherant.date_inscription:
+        #         adherant.date_inscription = aujourdhui
+        #
+        #     adherant.save()
 
-            if adherant.a_jour_cotisation():
-                raise NotAcceptable(
-                    detail=f"Le membre {adherant.name} à déja adhéré le {adherant.date_derniere_cotisation} "
-                           f"via l'interface : {adherant.choice_str(Membre.ORIGIN_ADHESIONS_CHOICES, adherant.adhesion_origine)}.",
-                    code=None
-                )
-
-            aujourdhui = datetime.now().date()
-            adherant.date_derniere_cotisation = aujourdhui
-            adherant.cotisation = total
-
-            if not adherant.date_inscription:
-                adherant.date_inscription = aujourdhui
-
-            adherant.save()
+        if not adh['verify_hash']:
+            raise NotAcceptable(
+                detail="Erreur fédération.\n"
+                       "Contactez un administrateur.",
+                code=None
+            )
 
         ArticleVendu.objects.create(
             article=article,
@@ -1175,25 +1234,22 @@ class Commande:
             qty=1,
             pos=self.point_de_vente,
             carte=carte_db,
-            membre=adherant,
+            membre=carte_db.membre,
             responsable=self.responsable,
             moyen_paiement=self.moyen_paiement,
             commande=self.uuid_commande,
             uuid_paiement=self.uuid_paiement,
             table=self.table,
             ip_user=self.ip_user,
+            hash_fedow=adh['hash'],
+            sync_fedow=True,
         )
 
-        if not adherant and self.configuration.adhesion_suspendue:
-            carte_db.adhesion_suspendue = True
-            carte_db.save()
-
-            logger.warning('methode_adhesion : Pas de membre sur cette carte, on lance une adhesion suspendue')
-            raise NotAcceptable(
-                detail="Pas de membre sur cette carte.\n"
-                       "L'adhésion est suspendue et sera valide dès que la fiche membre sera créée",
-                code=None
-            )
+        # if not adherant and self.configuration.adhesion_suspendue:
+        #     carte_db.adhesion_suspendue = True
+        #     carte_db.save()
+        #
+        #     logger.warning('methode_adhesion : Pas de membre sur cette carte, on lance une adhesion suspendue')
 
     # RETOUR_CONSIGNE = 'CR'
     def methode_CR(self, article, qty):

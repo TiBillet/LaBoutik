@@ -4,7 +4,8 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from APIcashless.models import ArticleVendu, Configuration, Appareil, CarteCashless, CarteMaitresse, MoyenPaiement, \
-    Categorie, Articles
+    Categorie, Articles, PointDeVente, Membre
+from APIcashless.validator import ProductFromLespassValidator
 from epsonprinter.tasks import direct_to_print
 from APIcashless.tasks import adhesion_to_odoo, cashback, badgeuse_to_dokos, fidelity_task, email_new_hardware
 from fedow_connect.fedow_api import FedowAPI
@@ -42,10 +43,10 @@ class TriggerMethodeArticleVenduPOSTSAVE:
             # import ipdb; ipdb.set_trace()
 
     def trigger_AD(self):
-        # ADHESIONS = 'AD'
-        logger.info(f"TRIGGER ArticleVendu.methode_choices -> ADHESION -> adhesion_to_odoo.delay")
-        if not self.article_vendu.comptabilise:
-            adhesion_to_odoo.delay(self.article_vendu.pk)
+        logger.info(f"TRIGGER ArticleVendu.methode_choices -> ADHESION -> On fait pu rien :)")
+        pass
+        # if not self.article_vendu.comptabilise:
+        #     adhesion_to_odoo.delay(self.article_vendu.pk)
 
     # Trigger des recharges euros en local (Espèce ou TPE des lieux ou Stripe Non connect)
     def trigger_RE(self):
@@ -65,6 +66,8 @@ class TriggerMethodeArticleVenduPOSTSAVE:
         logger.info(f"TRIGGER ArticleVendu.methode_choices -> BADGEUSE")
 
         badgeuse_to_fedow(self.article_vendu.pk)
+
+        # TODO: Déplacer dans LesPass
         badgeuse_to_dokos(self.article_vendu.pk)
 
         #
@@ -101,7 +104,9 @@ def set_category_from_article(sender, instance: ArticleVendu, **kwargs):
 
 @receiver(post_save, sender=CarteCashless)
 def send_card_to_fedow(sender, instance: CarteCashless, created, **kwargs):
-    if created:
+    if created and not instance.wallet:
+        # Si ya un wallet, alors ça a été créé après un retour Fedow, pas besoin de renvoyer.
+
         # On le fait en synchrone, comme ça si ça plante, on le voit dans l'admin
         create_card_to_fedow(instance.pk)
 
@@ -123,12 +128,21 @@ def send_new_asset_to_fedow(sender, instance: MoyenPaiement, created, **kwargs):
                 fedowAPI = FedowAPI()
                 asset, created = fedowAPI.asset.get_or_create_asset(instance)
 
+        # Création du MP Stripe Fédéré
+        if instance.categorie == MoyenPaiement.STRIPE_FED:
+            Configuration.get_solo().monnaies_acceptes.add(instance)
+            logger.info("Federated stripe asset added to accepted config asset")
+
 
 @receiver(post_save, sender=MoyenPaiement)
-def create_article_membership(sender, instance: MoyenPaiement, created, **kwargs):
+def create_article_membreship_badge(sender, instance: MoyenPaiement, created, **kwargs):
+    # Création des Moyen de paiement lors du fedowAPI.place.get_accepted_assets(),
+    # ou de n'importe quel appel vers AssetValidator
     if created:
         logger.info(f'MoyenPaiement {instance.get_categorie_display()} created !')
         if instance.categorie in [
+            MoyenPaiement.BADGE,
+            MoyenPaiement.EXTERNAL_BADGE,
             MoyenPaiement.ADHESION,
             MoyenPaiement.MEMBERSHIP,
             MoyenPaiement.EXTERNAL_MEMBERSHIP,
@@ -137,48 +151,17 @@ def create_article_membership(sender, instance: MoyenPaiement, created, **kwargs
             retrieve_product = requests.get(
                 f"{config.billetterie_url}/api/products/{instance.pk}/",
                 verify=bool(not settings.DEBUG))
-            product = retrieve_product.json()
 
-            # Création de la catégorie Adhésion
-            CatMembership, created = Categorie.objects.get_or_create(
-                name=_("Memberships"),
-                icon='fa-address-book',
-                cashless=False,
-            )
-            for price in product.get('prices'):
-                Articles.objects.create(
-                    name=f"{product['name']} {price['name']}",
-                    methode_choices=Articles.ADHESIONS,
-                    prix=price['prix'],
-                    categorie=CatMembership
-                )
+            if retrieve_product.status_code != 200 :
+                raise Exception(
+                    f"create_article_membreship_badge : Billetterie réponse : {retrieve_product.status_code}")
 
+            # Fabrique et mets à jour les articles adhésions ou badges
+            product = ProductFromLespassValidator(data=retrieve_product.json(),
+                                                  context={
+                                                      'MoyenPaiement': instance,
+                                                  })
+            if not product.is_valid():
+                raise Exception(
+                    f"create_article_membreship_badge : Création d'Asset Adhésion ou Badge {ProductFromLespassValidator.errors}")
 
-@receiver(post_save, sender=MoyenPaiement)
-def create_article_badge(sender, instance: MoyenPaiement, created, **kwargs):
-    if created:
-        logger.info(f'MoyenPaiement {instance.get_categorie_display()} created !')
-        if instance.categorie in [
-            MoyenPaiement.BADGE,
-            MoyenPaiement.EXTERNAL_BADGE,
-        ]:
-            config = Configuration.get_solo()
-
-            retrieve_product = requests.get(
-                f"{config.billetterie_url}/api/products/{instance.pk}/",
-                verify=bool(not settings.DEBUG))
-            product = retrieve_product.json()
-
-            # Création de la catégorie Adhésion
-            CatBadge, created = Categorie.objects.get_or_create(
-                name=_("Badge"),
-                icon='fa-address-card',
-                cashless=False,
-            )
-            for price in product.get('prices'):
-                Articles.objects.create(
-                    name=f"{product['name']} {price['name']}",
-                    methode_choices=Articles.BADGEUSE,
-                    prix=price['prix'],
-                    categorie=CatBadge
-                )

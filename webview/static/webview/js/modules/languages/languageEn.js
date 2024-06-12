@@ -29,7 +29,7 @@ export const en = {
     preparations: "preparations",
     tables: "tables",
     managingMode: "managing mode",
-    closeAccounts: "close accounts",
+    closeCashRegister: "close register",
     restart: "restart",
     select: "select",
     all: "all",
@@ -70,7 +70,7 @@ export const en = {
     offer: "offer",
     impossibleTranslation: "Attention: no translation, error in translation data; see [] or translation index",
     enterTableName: "enter a table name",
-    creationEphemeralTable: "creation of an ephemeral table",
+    creationEphemeralTable: "creation of an\nephemeral table",
     importName: "import name",
     fromCard: "from card",
     mustEnterNumber: "you must enter a number",
@@ -129,7 +129,7 @@ export const en = {
     insufficientFunds: "insufficient funds",
     onSecondCard: "on second card",
     unknownCard: "unknown card",
-    pettyCash: "petty cash",
+    cashFloat: "cash float",
     sum: "sum",
     minimumLettersTableName: "minimum two letters for the table",
     isNotNumber: "it’s not a number",
@@ -150,6 +150,7 @@ export const en = {
     cashless: 'cashless',
     prePurchaseCard: 'pre-purchase card',
     postPurchaseCard: 'post-purchase card',
-    cardsTotal: 'cards total'
+    cardsTotal: 'cards total',
+    totalCardWallet: 'total card wallet'
   }
 }

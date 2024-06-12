@@ -392,7 +392,8 @@ body {
     color: #000000;
 }
 
-.menu-burger-item i, .menu-burger-item span {
+.menu-burger-item i,
+.menu-burger-item span {
     width: 15%;
     font-size: 1.4rem;
     /* margin-left: 8px; */
@@ -406,6 +407,16 @@ body {
     line-height: 60px;
     text-transform: uppercase;
     padding-left: 8px;
+}
+
+/* divers */
+.no-article-selected {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #FFFFFF;
+    text-shadow: 0px 1px 0px rgba(255, 255, 255, 0.5);
+    white-space: pre-wrap;
+    text-align: center !important;
 }
 
 /* prise de commandes et paiements */
@@ -1027,6 +1038,8 @@ footer {
     font-size: 16px;
     font-weight: bold;
     color: #FFFFFF;
+    white-space: pre-wrap;
+    text-align: center !important;
 }
 
 .com-ident-supp {

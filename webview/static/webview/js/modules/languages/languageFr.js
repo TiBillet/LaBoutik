@@ -30,7 +30,7 @@ export const fr = {
     preparations: "préparations",
     tables: "tables",
     managingMode: "mode gérant",
-    closeAccounts: "cloturer",
+    closeCashRegister: "cloturer caisse",
     restart: "redémarrer",
     select: "sélection",
     all: "tous",
@@ -71,7 +71,7 @@ export const fr = {
     offer: "offrir",
     impossibleTranslation: "Attention: pas de traduction, erreur dans les données de traduction; voir [] ou index de traduction",
     enterTableName: "entrez un nom de table",
-    creationEphemeralTable: "création d'une table éphémère",
+    creationEphemeralTable: "création d'une\ntable éphémère",
     importName: "importer nom",
     fromCard: "depuis carte",
     mustEnterNumber: "vous devez entrer un nombre",
@@ -130,7 +130,7 @@ export const fr = {
     insufficientFunds: "fonds insuffisants",
     onSecondCard: "sur deuxieme carte",
     unknownCard: "carte inconnue",
-    pettyCash: "fond caisse",
+    cashFloat: "fond caisse",
     sum: "somme",
     minimumLettersTableName: "minimum deux lettres pour la table",
     isNotNumber: "ce n'est pas un nombre",
@@ -151,6 +151,7 @@ export const fr = {
     cashless: 'cashless',
     prePurchaseCard: 'carte avant achats',
     postPurchaseCard: 'carte après achats',
-    cardsTotal: 'total des cartes'
+    cardsTotal: 'total des cartes',
+    totalCardWallet: 'total portefeuille carte'
   }
 }

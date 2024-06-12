@@ -22,8 +22,6 @@ listMenuToAdd.forEach(async (plug) => {
       let stateInverse = '', color = ''
       const posX = data.posX !== undefined ? data.posX : 0
       const posY = data.posY !== undefined ? data.posY : 0
-      console.log('posX =', posX)
-      console.log('posY =', posY)
       if (data.inverse) {
         stateInverse = ' fa-inverse'
       }
@@ -31,7 +29,6 @@ listMenuToAdd.forEach(async (plug) => {
         color = `color: ${data.color};`
       }
       const style = `style="${color}position:absolute;left:${posX};top:${posY};font-size:${data.size}rem;"`
-      console.log('style =', style)
       visual += `<i class="${data.icon} ${stateInverse}" ${style}></i>`
     })
     visual += `</span>`

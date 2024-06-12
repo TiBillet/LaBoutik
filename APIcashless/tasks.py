@@ -367,10 +367,11 @@ def email_activation(user_uuid: uuid4=None):
     uid = urlsafe_base64_encode(force_bytes(signer.sign(f'{user_uuid}')))
     token = default_token_generator.make_token(user)
     connexion_url = f"{settings.LABOUTIK_URL}rapport/activate/{uid}/{token}/"
+    logger.warning(f'{connexion_url}')
 
     template_name = "mails_transactionnels/email_activation.html"
     email = user.email
-    subject = "Vous avez reçu une invitation pour accéder à l'interface d'administration de TiBillet."
+    subject = _("Vous avez reçu une invitation pour accéder à l'interface d'administration de TiBillet.")
     context = {
         'username': user.username,
         'user': user,
@@ -379,7 +380,7 @@ def email_activation(user_uuid: uuid4=None):
         'objet': _('Administration Caisse TiBillet'),
         'sub_title': _('Décollage imminent'),
         'svg_sub_title': '',
-        'main_text': _(f"Vous avez été invité à créer votre compte pour l'administration de l'instance TiBillet de {config.structure}."),
+        'main_text': _(f"Vous avez été invité à créer votre compte pour l'administration de l'instance TiBillet de ") + f"{config.structure}.",
         'main_text_2': _("Merci de valider votre email avec le lien ci-dessous. Vous serez invité à créer un mot de passe."),
         'table_info': {},
         'button_color': "#25c19f",  # for tibillet green : "#25c19f", for red warning : "#E8423FFF"
@@ -407,6 +408,11 @@ def email_activation(user_uuid: uuid4=None):
     except smtplib.SMTPRecipientsRefused as e:
         logger.error(
             f"ERROR {timezone.now()} Erreur mail SMTPRecipientsRefused pour report_celery_mailer : {e}")
+    except Exception as e :
+        logger.error(
+            f"ERROR {timezone.now()} Erreur mail pour report_celery_mailer : {e}")
+        # TODO: A virer lorsque probleme de mail réglé :
+        logger.warning(f'{connexion_url}')
 
 
 @app.task

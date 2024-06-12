@@ -195,6 +195,8 @@ class Membre(models.Model):
     paiment_adhesion = models.CharField(max_length=1, choices=TYPE_CHOICES, default=NAN,
                                         verbose_name=_("Methode de paiement"))
 
+    choice_adhesion = models.ForeignKey("Articles", null=True, blank=True, on_delete=models.SET_NULL)
+
     def choice_str(self, choice_list: list, choice_str: str):
         for choice in choice_list:
             if choice[0] == choice_str:
@@ -527,7 +529,6 @@ class Articles(models.Model):
     ADHESIONS = 'AD'
     RETOUR_CONSIGNE = 'CR'
     VIDER_CARTE = 'VC'
-    BLANCHIR_CARTE = 'BC'
     VOID_CARTE = 'VV'
     FRACTIONNE = 'FR'
     BILLET = 'BI'
@@ -542,7 +543,6 @@ class Articles(models.Model):
         (ADHESIONS, _('Adhésions')),
         (RETOUR_CONSIGNE, _('Retour de consigne')),
         (VIDER_CARTE, _('Vider Carte')),
-        (BLANCHIR_CARTE, _('Blanchir Carte')),
         (VOID_CARTE, _('Void Carte')),
         (FRACTIONNE, _('Fractionné')),
         (BILLET, _('Billet de concert')),
@@ -572,6 +572,28 @@ class Articles(models.Model):
                                                  help_text=_(
                                                      "Asset Fedow utilisé pour un abonnement, adhésion ou une badgeuse"))
 
+    NA, YEAR, MONTH, DAY, HOUR, CIVIL = 'N', 'Y', 'M', 'D', 'H', 'C'
+    SUB_CHOICES = [
+        (NA, _('Non applicable')),
+        (YEAR, _("365 Jours")),
+        (MONTH, _('30 Jours')),
+        (DAY, _('1 Jour')),
+        (HOUR, _('1 Heure')),
+        (CIVIL, _('Civile')),
+    ]
+
+    subscription_type = models.CharField(max_length=1,
+                                         choices=SUB_CHOICES,
+                                         default=NA,
+                                         verbose_name=_("durée d'abonnement"),
+                                         )
+
+    # def derniere_vente(self, carte=None):
+    #     return ArticleVendu.objects.filter(
+    #         carte=carte,
+    #         article=self,
+    #     )
+
     def url_image(self):
         if self.image:
             # oui, thumbnail existe bien !
@@ -583,7 +605,22 @@ class Articles(models.Model):
     # Utilisé par le front pour connaitre le comportement de l'article
     # TODO: Changer sur le front le nom des variables pour correspondre à la nouvelle nomenclature (methode_choices)
     def methode_name(self):
-        if self.methode:
+        MAP_EX_METHODES_CHOICES = {
+            self.VENTE: "VenteArticle",
+            self.RECHARGE_EUROS: "AjoutMonnaieVirtuelle",
+            self.RECHARGE_EUROS_FEDERE: "AjoutMonnaieVirtuelle",
+            self.RECHARGE_CADEAU: "AjoutMonnaieVirtuelleCadeau",
+            self.ADHESIONS: "Adhesion",
+            self.RETOUR_CONSIGNE: "RetourConsigne",
+            self.VIDER_CARTE: "ViderCarte",
+            self.VOID_CARTE: "ViderCarte",
+            # self.BILLET: self.BILLET, #TODO: pour l'imprimante géré par le client
+            self.BADGEUSE: self.BADGEUSE,
+            # self.FIDELITY: self.FIDELITY,
+        }
+        if MAP_EX_METHODES_CHOICES.get(self.methode_choices):
+            return MAP_EX_METHODES_CHOICES[self.methode_choices]
+        elif self.methode:
             return self.methode.name
         else:
             logger.error(_(f"Pas de methode pour {self.name}"))
@@ -597,7 +634,10 @@ class Articles(models.Model):
 
     def __str__(self):
         if self.methode_choices in [self.RECHARGE_EUROS, self.RECHARGE_EUROS_FEDERE]:
-            return f"Recharge {self.name}"
+            pre_name = "Refill"
+            if settings.LANGUAGE_CODE == 'fr':
+                pre_name = "Recharge"
+            return f"{pre_name} {self.name}"
         return self.name
 
     class Meta:
@@ -753,6 +793,14 @@ class MoyenPaiement(models.Model):
             MoyenPaiement.LOCAL_EURO,
             MoyenPaiement.STRIPE_FED,
         ]
+
+        if os.environ.get('EXT_FED_PRIO') == "1":
+            list_prio = [
+                MoyenPaiement.LOCAL_GIFT,
+                MoyenPaiement.EXTERIEUR_FED,
+                MoyenPaiement.LOCAL_EURO,
+                MoyenPaiement.STRIPE_FED,
+            ]
 
         def asset_key(asset):
             try:
@@ -1025,6 +1073,19 @@ class Assets(models.Model):
             return self.carte.membre
         else:
             return ""
+
+    # def a_jour_cotisation(self):
+        # if calcul_adh == Configuration.ADH_365JOURS:
+        #     return timezone.now().date() <= (self.date_derniere_cotisation + timedelta(days=365))
+        #
+        # elif calcul_adh == Configuration.ADH_CIVILE:
+        #     return timezone.now().date().year == self.date_derniere_cotisation.year
+        #
+        # elif calcul_adh == Configuration.ADH_GLISSANTE_OCT:
+        #     if timezone.now().date().year == (self.date_derniere_cotisation.year + 1):
+        #         if self.date_derniere_cotisation.month >= 10:
+        #             return True
+        #     return timezone.now().date().year == self.date_derniere_cotisation.year
 
     class Meta:
         unique_together = [['monnaie', 'carte']]
@@ -1553,8 +1614,8 @@ class ArticleVendu(models.Model):
 
     class Meta:
         ordering = ('-date_time',)
-        verbose_name = _('Article vendu')
-        verbose_name_plural = _('Articles vendus')
+        verbose_name = _('Vente')
+        verbose_name_plural = _('Ventes')
 
     def __str__(self):
         return f"{self.article.name} {self.prix}€"
@@ -1983,7 +2044,7 @@ class Configuration(SingletonModel):
     fidelity_active = models.BooleanField(default=False,
                                           verbose_name=_("Incrémentez des points de fidélité pour chaque achat."))
     fidelity_asset_trigger = models.ManyToManyField('MoyenPaiement', related_name='fidelity_asset_trigger',
-                                                    null=True, blank=True,
+                                                    blank=True,
                                                     verbose_name=_(
                                                         "Asset déclencheur de l'incrémentation des points de fidélité"))
     fidelity_asset = models.ForeignKey('MoyenPaiement', on_delete=models.SET_NULL, null=True, blank=True,

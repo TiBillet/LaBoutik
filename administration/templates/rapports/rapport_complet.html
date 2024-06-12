@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="fr">
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
 
+<html lang="">
 <head>
     <meta charset="UTF-8">
-    <title>Rapport complet {{ start_date }}</title>
+    <title>{% trans "Rapport complet" %} {{ start_date }}</title>
     <style>
         {
             font-family: sans-serif
@@ -51,21 +53,23 @@
     </style>
 </head>
 <body>
+{% language 'en' %}
 
-<h1>Rapport TiBillet</h1>
-<h1><span class="test-tenant">{{ structure }}</span></h1>
-<h3>Début : {{ start_date }}</h3>
-<h3>Fin : {{ end_date }}</h3>
+
+<h1>{% trans "Rapport TiBillet" %}</h1>
+<h1><span class="test-tenant">{{ structure }} </span></h1>
+<h3>{% trans "Début : " %}{{ start_date }}</h3>
+<h3>{% trans "Fin : " %}{{ end_date }}</h3>
 
 
 <div id="total_vente">
-    <h2>Total des ventes par moyen de paiement</h2>
-    <span>Ne comprend pas les recharges cashless.</span>
+    <h2>{% trans "Total des ventes par moyen de paiement" %}</h2>
+    <span>{% trans "Ne comprend pas les recharges cashless." %}</span>
     <table class="content">
         <thead>
         <tr>
-            <th>Nom</th>
-            <th>Total vente</th>
+            <th>{% trans "Nom" %}</th>
+            <th>{% trans "Total vente" %}</th>
         </tr>
         </thead>
         <tbody>
@@ -77,7 +81,7 @@
         {% endfor %}
         {#TOTAL#}
         <tr style="border-top: 2px solid #1B1464; ">
-            <th>TOTAL HT</th>
+            <th>{% trans "TOTAL HT" %}</th>
             <td class="test-items1-mp-total">{{ total_HT | floatformat:2 }}€</td>
         </tr>
         <tr>
@@ -85,7 +89,7 @@
             <td class="total-taux-collecte">{{ total_collecte_toute_tva | floatformat:2 }}€</td>
         </tr>
         <tr style="border-bottom: 2px solid #1B1464; ">
-            <th>TOTAL TTC</th>
+            <th>{% trans "TVA" %}</th>
             <td class="test-items1-mp-total">{{ total_TTC | floatformat:2 }}€</td>
         </tr>
         {% for nom, total in dict_moyenPaiement_gift.items %}
@@ -109,14 +113,14 @@
 
 
 <div id="tva">
-    <h2>TVA Collectée par taux</h2>
+    <h2>{% trans "TVA Collectée par taux" %}</h2>
     <table class="content">
         <thead>
         <tr>
-            <th>Vente à taux</th>
-            <th>HT</th>
-            <th>TVA</th>
-            <th>TTC</th>
+            <th>{% trans "Vente à taux" %}</th>
+            <th>{% trans "HT" %}</th>
+            <th>{% trans "TVA" %}</th>
+            <th>{% trans "TTC" %}</th>
         </tr>
         </thead>
         <tbody>
@@ -132,7 +136,7 @@
         <tfoot>
         {#TOTAL#}
         <tr>
-            <th>TOTAL</th>
+            <th>{% trans "TOTAL" %}</th>
             <td class="total-taux-collecte">{{ total_collecte_ht | floatformat:2 }}€</td>
             <td class="total-taux-collecte">{{ total_collecte_tva | floatformat:2 }}€</td>
             <td class="total-taux-collecte">{{ total_collecte_ttc | floatformat:2 }}€</td>
@@ -146,17 +150,17 @@
 
 
 <div id="recharge_cashless">
-    <h2 class="test-nom-monnaie">Recharge Cashless {{ nom_monnaie }}</h2>
+    <h2 class="test-nom-monnaie">{%  trans "Recharge Cashless" %} {{ nom_monnaie }}</h2>
     <table class="content">
         <thead>
         <tr>
-            <th>Nom</th>
-            <th>Total</th>
+            <th>{% trans "Nom" %}</th>
+            <th>{% trans "Total" %}</th>
         </tr>
         </thead>
         <tbody>
         <tr>
-            <th colspan="2">Recharge</th>
+            <th colspan="2">{% trans "Recharge" %}</th>
         </tr>
         {% for nom, total in dict_moyenPaiement_recharge.items %}
             <tr class="test-item-recharge">
@@ -165,7 +169,7 @@
             </tr>
         {% endfor %}
         <tr>
-            <th colspan="2">Remboursement</th>
+            <th colspan="2">{% trans "Remboursement" %}</th>
         </tr>
         {% for nom, total in dict_moyenPaiement_remboursement.items %}
             <tr class="test-item-remboursement">
@@ -177,7 +181,7 @@
         <tfoot>
         {#TOTAL#}
         <tr>
-            <th>TOTAL</th>
+            <th>{% trans "TOTAL" %}</th>
             <td class="test-item-recharge-cashless-total">{{ total_cashless | floatformat:2 }}€</td>
         </tr>
         </tfoot>
@@ -185,12 +189,12 @@
 </div>
 
 <div id="adhesion_et_mp">
-    <h2>Adhésions</h2>
+    <h2>{% trans "Adhésions" %}</h2>
     <table class="content">
         <thead>
         <tr>
-            <th>Quantitées</th>
-            <th>Tarif</th>
+            <th>{% trans "Quantitées" %}</th>
+            <th>{% trans "Tarif" %}</th>
         </tr>
         </thead>
         <tbody>
@@ -201,7 +205,7 @@
             </tr>
         {% endfor %}
         <tr>
-            <th colspan="2">Par Moyen de paiement</th>
+            <th colspan="2">{% trans "Par Moyen de paiement" %}</th>
         </tr>
         {% for name, total in dict_adhesion_par_moyen_paiement.items %}
             <tr class="test-item-adhesion">
@@ -210,7 +214,7 @@
             </tr>
         {% endfor %}
         <tr>
-            <th colspan="2">TOTAL</th>
+            <th colspan="2">{% trans "TOTAL" %}</th>
         </tr>
         </tbody>
         <tfoot>
@@ -224,39 +228,39 @@
 
 
 <div id="fond_caisse">
-    <h2>Fond de caisse espèce</h2>
+    <h2>{% trans "Fond de caisse espèce" %}</h2>
     <table class="content">
         <thead>
         <tr>
-            <th>Espèces</th>
-            <th>Total</th>
+            <th>{% trans "Espèces" %}</th>
+            <th>{% trans "Total" %}</th>
         </tr>
         </thead>
         <tbody>
         <tr class="test-item-fond-caisse">
-            <td class="test-item-fond-caisse-nom">Fond de caisse</td>
+            <td class="test-item-fond-caisse-nom">{% trans "Fond de caisse" %}</td>
             <td class="test-item-fond-caisse-total">{{ fond_caisse | floatformat:2 }}€</td>
         </tr>
         <tr class="test-item-fond-caisse">
-            <td class="test-item-fond-caisse-nom">Recharge cashless en espèce</td>
+            <td class="test-item-fond-caisse-nom">{% trans "Recharge cashless en espèce" %}</td>
             <td class="test-item-fond-caisse-total">{{ recharge_cash | floatformat:2 }}€</td>
         </tr>
         <tr class="test-item-fond-caisse">
-            <td class="test-item-fond-caisse-nom">Remboursement cashless en espèce</td>
+            <td class="test-item-fond-caisse-nom">{% trans "Remboursement cashless en espèce" %}</td>
             <td class="test-item-fond-caisse-total">{{ remboursement_espece | floatformat:2 }}€</td>
         </tr>
         <tr class="test-item-fond-caisse">
-            <td class="test-item-fond-caisse-nom">Adhésion en espèce</td>
+            <td class="test-item-fond-caisse-nom">{% trans "Adhésion en espèce" %}</td>
             <td class="test-item-fond-caisse-total">{{ adhesion_espece | floatformat:2 }}€</td>
         </tr>
         <tr class="test-item-fond-caisse">
-            <td class="test-item-fond-caisse-nom">Vente directe en espèce</td>
+            <td class="test-item-fond-caisse-nom">{% trans "Vente directe en espèce" %}</td>
             <td class="test-item-fond-caisse-total">{{ ventes_directe_espece | floatformat:2 }}€</td>
         </tr>
         </tbody>
         <tfoot>
         <tr class="test-item-fond-caisse">
-            <th>TOTAL CAISSE :</th>
+            <th>{% trans "TOTAL CAISSE :" %}</th>
             <td class="test-item-fond-caisse-totaux">{{ total_cash | floatformat:2 }}€</td>
         </tr>
         </tfoot>
@@ -265,13 +269,13 @@
 
 
 <div id="monnaie_dormante">
-    <h2>Monnaie dormante</h2>
-    <span>Le delta est la différence entre recharge et dépense.</span>
+    <h2>{% trans "Monnaie dormante" %}</h2>
+    <span>{% trans "Le delta est la différence entre recharge et dépense." %}</span>
     <table class="content">
         <thead>
         <tr>
-            <th>Delta</th>
-            <th>Reste sur toutes cartes</th>
+            <th>{% trans "Delta" %}</th>
+            <th>{% trans "Reste sur toutes cartes" %}</th>
         </tr>
         </thead>
         <tbody>
@@ -290,25 +294,25 @@
             <td class="test-item-monnaie-dormante-reste">{{ dormante_gift_j_rapport | floatformat:2 }}€</td>
         </tr>
         </tbody>
-        <tfoot>
-        </tfoot>
+        <tfTotaloot>
+        </tfTotaloot>
     </table>
 </div>
 
 <div id="recap_toute_entree">
-    <h2>Total toutes entrées par moyen de paiement</h2>
-    <h3>Vente + Recharge + Adhésion</h3>
+    <h2>{% trans "Total toutes entrées par moyen de paiement" %}</h2>
+    <h3>{% trans "Vente + Recharge + Adhésion" %}</h3>
     <table class="content">
         <thead>
         <tr>
-            <th>Moyen de paiements toutes entrées</th>
-            <th>Total</th>
+            <th>{% trans "Moyen de paiements toutes entrées" %}</th>
+            <th>{% trans "Total" %}</th>
         </tr>
         </thead>
         <tbody>
         {% for name, valeur in dict_toute_entrees_par_moyen_paiement.items %}
             <tr class="test-item-fond-caisse">
-                <td class="test-item-fond-caisse-total">{{ name }}</td>
+                <td class="test-item-fond-caisse-total">{{ nom }}</td>
                 <td class="test-item-fond-caisse-total">{{ valeur  | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
@@ -319,19 +323,19 @@
 
 <div id="qty_et_couts">
     <table class="content">
-        <h2>Quantités, coûts et bénéfices.</h2>
+        <h2>{% trans "Quantités, coûts et bénéfices." %}</h2>
         <thead>
         <tr>
-            <th>Article (Prix/Achat)</th>
-            <th>Qty vendue</th>
-            <th>Qty offerte</th>
-            <th>Qty Totale</th>
-            <th>Cout vendu</th>
-            <th>Cout offert</th>
-            <th>Cout total</th>
-            <th>TVA</th>
-            <th>Bénéfice</th>
-            <th>Total TTC</th>
+            <th>{% trans "Article (Prix/Achat)" %}</th>
+            <th>{% trans "Qty vendue" %}</th>
+            <th>{% trans "Qty offerte" %}</th>
+            <th>{% trans "Qty Totale" %}</th>
+            <th>{% trans "Qty vendu" %}</th>
+            <th>{% trans "Qty offert" %}</th>
+            <th>{% trans "Qty total" %}</th>
+            <th>{% trans "TVA" %}</th>
+            <th>{% trans "Bénéfice" %}</th>
+            <th>{% trans "Total TTC" %}</th>
         </tr>
         </thead>
         <tbody>
@@ -339,14 +343,14 @@
             {% if categorie_name != "total" %}
 
                 <tr>
-                    <th colspan="10">Catégorie {{ categorie_name }}</th>
+                    <th colspan="10">{% trans "Catégorie" %} {{ categorie_name }}</th>
                 </tr>
 
 
                 {% for article, col_valeur in col_article.items %}
                     <tr class="qty-cout">
                         {% if article == "total" %}
-                            <th>sous total :</th>
+                            <th>{% trans "sous total :" %}</th>
                         {% else %}
                             <td class="qty-cout-article">{{ article }}</td>
                         {% endif %}
@@ -361,20 +365,20 @@
 
                 <tr>
                     <th></th>
-                    <th>Qty vendue</th>
-                    <th>Qty offerte</th>
-                    <th>Qty Totale</th>
-                    <th>Cout vendu</th>
-                    <th>Cout offert</th>
-                    <th>Cout total</th>
-                    <th>TVA</th>
-                    <th>Bénéfice</th>
-                    <th>Total TTC</th>
+                    <th>{% trans "Qty vendue" %}</th>
+                    <th>{% trans "Qty offerte" %}</th>
+                    <th>{% trans "Qty Totale" %}</th>
+                    <th>{% trans "Cout vendu" %}</th>
+                    <th>{% trans "Cout offert" %}</th>
+                    <th>{% trans "Cout total" %}</th>
+                    <th>{% trans "TVA" %}</th>
+                    <th>{% trans "Bénéfice" %}</th>
+                    <th>{% trans "Total TTC" %}</th>
                 </tr>
                 </thead>
 
                 <tr class="qty-cout">
-                    <th>TOTAL</th>
+                    <th>{% trans "TOTAL" %}</th>
 
                     {% for value in col_article %}
                         <td class="item-benef">{{ value | floatformat:2 }}</td>
@@ -390,17 +394,17 @@
         {#TOTAL#}
         <tr>
             <th colspan="8"></th>
-            <th>TOTAL HT</th>
+            <th>{% trans "TOTAL HT" %}</th>
             <td class="total-cout">{{ total_HT | floatformat:2 }}€</td>
         </tr>
         <tr>
             <th colspan="8"></th>
-            <th>TVA</th>
+            <th>{% trans 'TVA' %}</th>
             <td class="test-qty-total-tva">{{ total_collecte_toute_tva | floatformat:2 }}€</td>
         </tr>
         <tr>
             <th colspan="8"></th>
-            <th>TOTAL TTC</th>
+            <th>{% trans "TOTAL HT" %}</th>
             <td>{{ total_TTC | floatformat:2 }}€</td>
         </tr>
 
@@ -410,12 +414,12 @@
 
 {% if cartes_badgees_qty %}
     <div id="carte_badge">
-        <h2>Nombre de cartes badgées distinctes :</h2>
+        <h2>{% trans "Nombre de cartes badgées distinctes :" %}</h2>
 
         <table class="content">
             <tbody>
             <tr>
-                <td>Cartes Badgées</td>
+                <td>{% trans "Cartes Badgées" %}</td>
                 <td>{{ cartes_badgees_qty }}</td>
             </tr>
             </tbody>
@@ -424,16 +428,16 @@
 {% endif %}
 
 <div id="habitudes">
-    <h2>Pour les accros des chiffres :</h2>
+    <h2>{% trans "Pour les accros des chiffres :" %}</h2>
 
     <table class="content">
         <thead>
         <tr>
-            <th>Nbr de carte utilisées</th>
-            <th>Recharge médiane</th>
-            <th>Panier moyen</th>
-            <th>Reste sur carte (moyenne)</th>
-            <th>Nouveaux membres</th>
+            <th>{% trans "Nbr de carte utilisées" %}</th>
+            <th>{% trans "Recharge médiane" %}</th>
+            <th>{% trans "Panier moyen" %}</th>
+            <th>{% trans "Reste sur carte (moyenne)" %}</th>
+            <th>{% trans "Nouveaux membres" %}</th>
         </tr>
         </thead>
         <tbody>
@@ -449,10 +453,11 @@
 </div>
 
 <div>
-    Rapport généré par l'outil libre et coopératif <a href="https://tibillet.org">https://tibillet.org</a>.
+    {% trans "Rapport généré par l'outil libre et coopératif  " %}<a href="https://tibillet.org">https://tibillet.org</a>.
 </div>
 <div>
-    Si vous pensez à des améliorations, n'hésitez pas à nous contacter, on adore ça :)
+    {% trans "Si vous pensez à des améliorations, n'hésitez pas à nous contacter, on adore ça :)" %}
 </div>
+{% endlanguage %}
 </body>
 </html>

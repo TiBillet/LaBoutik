@@ -21,6 +21,7 @@ from fedow_connect.tasks import after_handshake
 from fedow_connect.utils import get_public_key, rsa_encrypt_string, rsa_decrypt_string, data_to_b64
 from fedow_connect.views import handshake
 from faker import Faker
+from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,8 @@ class Command(BaseCommand):
                     self.pop_tables_test()
                     self.preparation_test()
                     self.printer_test()
-                    badgeuse_creation()
+                    self.add_membership_and_badge_articles()
+                    # badgeuse_creation()
 
             def _base_config(self, options):
                 config = Configuration.get_solo()
@@ -281,15 +283,17 @@ class Command(BaseCommand):
                 #                                    )[0]
 
                 d["Retour Consigne"] = \
-                    Articles.objects.get_or_create(name="Retour Consigne",
+                    Articles.objects.get_or_create(name=_("Retour Consigne"),
                                                    prix=-1,
                                                    categorie=CatConsigne,
                                                    methode_choices=Articles.RETOUR_CONSIGNE,
                                                    methode=self.methode_articles.get(
                                                        'retour_consigne'))[0]
 
+
+
                 d["Cadeau +0.1"] = \
-                    Articles.objects.get_or_create(name="Cadeau +0.1",
+                    Articles.objects.get_or_create(name=_("Cadeau +0.1"),
                                                    prix=0.1,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
@@ -297,7 +301,7 @@ class Command(BaseCommand):
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
                 d["Cadeau +0.5"] = \
-                    Articles.objects.get_or_create(name="Cadeau +0.5",
+                    Articles.objects.get_or_create(name=_("Cadeau +0.5"),
                                                    prix=0.5,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
@@ -305,7 +309,7 @@ class Command(BaseCommand):
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
                 d["Cadeau +1"] = \
-                    Articles.objects.get_or_create(name="Cadeau +1",
+                    Articles.objects.get_or_create(name=_("Cadeau +1"),
                                                    prix=1,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
@@ -313,7 +317,7 @@ class Command(BaseCommand):
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
                 d["Cadeau +5"] = \
-                    Articles.objects.get_or_create(name="Cadeau +5",
+                    Articles.objects.get_or_create(name=_("Cadeau +5"),
                                                    prix=5,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
@@ -328,7 +332,7 @@ class Command(BaseCommand):
                 #                                    methode=self.methode_articles.get('adhesion'))[0]
 
                 d["VIDER CARTE"] = \
-                    Articles.objects.get_or_create(name="VIDER CARTE",
+                    Articles.objects.get_or_create(name=_("VIDER CARTE"),
                                                    categorie=CatDanger,
                                                    methode_choices=Articles.VIDER_CARTE,
                                                    methode=self.methode_articles.get('vider_carte'))[0]
@@ -395,7 +399,10 @@ class Command(BaseCommand):
                 )
                 admin.groups.add(staff_group)
                 admin.save()
-                email_activation(admin.uuid)
+                try :
+                    email_activation(admin.uuid)
+                except :
+                    logger.error("Email for admin activation FAILED")
                 call_command('check_permissions')
                 return admin
 
@@ -539,7 +546,6 @@ class Command(BaseCommand):
                     logger.error(
                         'Error handhsake Fedow. Please double check all you environnement and relaunch from scratch '
                         '(./flush.sh on Fedow, after Lespass and after LaBoutik)')
-                    import ipdb; ipdb.set_trace()
                     raise Exception(
                         'Error handhsake Fedow. Please double check all you environnement and relaunch from scratch '
                         '(./flush.sh on Fedow, after Lespass and after LaBoutik)')
@@ -552,46 +558,10 @@ class Command(BaseCommand):
                 self.admin.save()
 
             def pop_membre_articles_cartes_test(self):
-
-                try:
-                    testMembre, created = Membre.objects.get_or_create(name="TEST",
-                                                                       email="test@example.org",
-                                                                       cotisation=0)
-                except Exception as e:
-                    testMembre = Membre.objects.get(name="TEST")
-                    pass
-
-                try:
-                    jonas_membre, created = Membre.objects.get_or_create(name="JONAS",
-                                                                         email="jonas@billetistan.coop",
-                                                                         cotisation=0)
-                except Exception as e:
-                    jonas_membre = Membre.objects.get(name="JONAS")
-                    pass
-
-                try:
-                    robocop_membre, created = Membre.objects.get_or_create(name="ROBOCOP",
-                                                                           cotisation=0)
-                except Exception as e:
-                    robocop_membre = Membre.objects.get(name="ROBOCOP")
-                    pass
-
-                try:
-                    framboise_membre, created = Membre.objects.get_or_create(name="FRAMBOISIÉ",
-                                                                             cotisation=0)
-                except Exception as e:
-                    framboise_membre = Membre.objects.get(name="FRAMBOISIÉ")
-                    pass
-
-                try:
-                    mike_membre, created = Membre.objects.get_or_create(name="Mike",
-                                                                        email="mike@billetistant.coop",
-                                                                        cotisation=100)
-
-                except Exception as e:
-                    mike_membre = Membre.objects.get(name="Mike")
-                    pass
-
+                testMembre, created = Membre.objects.get_or_create(name="TEST")
+                jonas_membre, created = Membre.objects.get_or_create(name="JONAS")
+                robocop_membre, created = Membre.objects.get_or_create(name="ROBOCOP")
+                framboise_membre, created = Membre.objects.get_or_create(name="FRAMBOISIÉ")
                 origin = Origin.objects.get_or_create(generation=1)[0]
 
                 cards = []
@@ -675,16 +645,12 @@ class Command(BaseCommand):
 
                 cards_db[0].membre = testMembre
                 cards_db[0].save()
-                cards_db[1].membre = testMembre
-                cards_db[1].save()
                 cards_db[2].membre = robocop_membre
                 cards_db[2].save()
                 cards_db[3].membre = jonas_membre
                 cards_db[3].save()
                 cards_db[4].membre = framboise_membre
                 cards_db[4].save()
-                # cards_db[22].membre = mike_membre
-                # cards_db[22].save()
 
                 bar1, created = PointDeVente.objects.get_or_create(
                     name="Bar 1",
@@ -697,27 +663,13 @@ class Command(BaseCommand):
                     poid_liste=2,
                     icon='fa-hamburger',
                 )
-                bar2, created = PointDeVente.objects.get_or_create(name="Bar 2", poid_liste=3)
                 Boutique, created = PointDeVente.objects.get_or_create(name="Boutique", poid_liste=4)
-                PvEspece, created = PointDeVente.objects.get_or_create(
-                    name="PvEspece",
-                    accepte_especes=True,
-                    accepte_carte_bancaire=False,
-                    poid_liste=5
-                )
-
-                PvCb, created = PointDeVente.objects.get_or_create(
-                    name="PvCb",
-                    accepte_especes=False,
-                    accepte_carte_bancaire=True,
-                    poid_liste=6
-                )
+                test = PointDeVente.objects.get_or_create(name="Test", poid_liste=5)[0]
 
                 carteM, created = CarteMaitresse.objects.get_or_create(carte=cards_db[0], edit_mode=True)
                 carteM.points_de_vente.add(Resto)
                 carteM.points_de_vente.add(bar1)
-                if PointDeVente.objects.filter(name="Badgeuse").exists():
-                    carteM.points_de_vente.add(PointDeVente.objects.get(name="Badgeuse"))
+                carteM.points_de_vente.add(test)
                 carteM.points_de_vente.add(self.pdv_cashless)
 
                 carteM3, created = CarteMaitresse.objects.get_or_create(carte=cards_db[2], edit_mode=True)
@@ -738,13 +690,6 @@ class Command(BaseCommand):
                 carteM5.points_de_vente.add(Boutique)
                 carteM5.points_de_vente.add(self.pdv_cashless)
 
-                # carteM6, created = CarteMaitresse.objects.get_or_create(carte=cards_db[22], edit_mode=True)
-                # carteM6.points_de_vente.add(Resto)
-                # carteM6.points_de_vente.add(bar1)
-                # carteM6.points_de_vente.add(Boutique)
-                # carteM6.points_de_vente.add(PvEspece)
-                # carteM6.points_de_vente.add(PvCb)
-                # carteM6.points_de_vente.add(self.pdv_cashless)
 
                 ### FIN DE CREATION DE CARTES
 
@@ -856,8 +801,16 @@ class Command(BaseCommand):
 
                 Resto = PointDeVente.objects.get(name="Resto")
                 bar1 = PointDeVente.objects.get(name="Bar 1")
-                PvEspece = PointDeVente.objects.get(name="PvEspece")
-                PvCb = PointDeVente.objects.get(name="PvCb")
+
+                ## LE PDV TEST POUR NICO
+                test = PointDeVente.objects.get(name="Test")
+                test.articles.add(Articles.objects.get_or_create(name="Retour Consigne bis",
+                                                   prix=-1,
+                                                   methode_choices=Articles.RETOUR_CONSIGNE)[0])
+
+                test.articles.add(Articles.objects.get_or_create(name="Retour Consigne Rebis",
+                                                                 prix=-1,
+                                                                 methode_choices=Articles.RETOUR_CONSIGNE)[0])
 
                 for art in articles:
                     bar1.articles.add(art) if art not in bar1.articles.all() else art
@@ -865,8 +818,6 @@ class Command(BaseCommand):
                 for art in articles:
                     Resto.articles.add(art) if art not in Resto.articles.all() else art
 
-                PvEspece.articles.add(articles[1])
-                PvCb.articles.add(articles[2])
                 return True
 
             def pop_tables_test(self):
@@ -933,8 +884,28 @@ class Command(BaseCommand):
                     return True
                 return False
 
+
+            def add_membership_and_badge_articles(self):
+                # On est dans un environnement de test/dev/debug,
+                # on rajoute ces articles dans un point de vente et dans toutes les cartes primaires.
+                # Ces adhésion et badge ont été créé par le serializer ProductFromLespassValidator
+                pdv_adh, created = PointDeVente.objects.get_or_create(
+                    name="Adhésions",
+                )
+
+                adhesions_badges = Articles.objects.filter(
+                    methode_choices__in=[Articles.ADHESIONS, Articles.BADGEUSE]
+                )
+
+                for price in adhesions_badges:
+                    pdv_adh.articles.add(price)
+                for carte in CarteMaitresse.objects.all():
+                    carte.points_de_vente.add(pdv_adh)
+
+
+
         ### RUNER ###
         if PointDeVente.objects.count() > 0:
-            logger.error(f'PointDeVente.objects.count() > 0. Pop déja effectué')
+            logger.warning(f'PointDeVente.objects.count() > 0. Pop déja effectué')
         else:
             Install(options)

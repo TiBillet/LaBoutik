@@ -21,7 +21,7 @@ from APIcashless.models import Categorie, CarteMaitresse, CommandeSauvegarde, Ap
     Couleur, TauxTVA, ClotureCaisse
 from APIcashless.models import GroupementCategorie, Table, MoyenPaiement
 from APIcashless.tasks import email_activation
-from administration.views import start_end_event_4h_am, TicketZ
+from administration.views import TicketZ
 from administration.admin_commun import *
 from epsonprinter.models import Printer
 from epsonprinter.tasks import ticketZ_tasks_printer
@@ -69,6 +69,7 @@ def send_password_reset_email(modeladmin, request, queryset):
 class UserCreationForm(forms.ModelForm):
     """A form for creating new users. Includes all the required
     fields, plus a repeated password."""
+
     # password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     # password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
 
@@ -76,7 +77,8 @@ class UserCreationForm(forms.ModelForm):
         model = TibiUser
         fields = ('email', 'is_staff',)
         help_texts = {
-            'email': _('Un email valide est nécessaire pour la connexion. Un formulaire de création de mot de passe sera envoyé.'),
+            'email': _(
+                'Un email valide est nécessaire pour la connexion. Un formulaire de création de mot de passe sera envoyé.'),
         }
 
     def save(self, commit=True):
@@ -86,7 +88,6 @@ class UserCreationForm(forms.ModelForm):
         user.save()
         email_activation(user.uuid)
         return user
-
 
 
 # Register out own model admin, based on the default UserAdmin
@@ -202,9 +203,9 @@ class PointOfSaleAdmin(SortableAdminMixin, admin.ModelAdmin):
                      )
     actions = [afficher_les_prix, cacher_les_prix, accepte_especes, refuse_especes, accepte_cb, refuse_cb]
 
-    def get_queryset(self, request):
-        qs = super(PointOfSaleAdmin, self).get_queryset(request)
-        return qs.exclude(comportement=PointDeVente.CASHLESS)
+    # def get_queryset(self, request):
+    #     qs = super(PointOfSaleAdmin, self).get_queryset(request)
+    #     return qs.exclude(comportement=PointDeVente.CASHLESS)
 
     # pour retirer le petit bouton plus a coté des champs article
     def get_form(self, request, obj=None, **kwargs):  # Just added this override
@@ -214,10 +215,11 @@ class PointOfSaleAdmin(SortableAdminMixin, admin.ModelAdmin):
 
     # pour selectionner uniquement les articles ventes et retour consigne
     def formfield_for_manytomany(self, db_field, request, **kwargs):
+        # import ipdb; ipdb.set_trace()
         if db_field.name == "articles":
-            kwargs["queryset"] = Articles.objects \
-                .filter(methode_choices__in=(Articles.VENTE, Articles.RETOUR_CONSIGNE, Articles.BADGEUSE)) \
-                .exclude(archive=True)
+            kwargs["queryset"] = Articles.objects.all().exclude(archive=True).exclude(
+                methode_choices__in=(Articles.FRACTIONNE,)
+            )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
 
@@ -297,10 +299,12 @@ class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
                 'direct_to_printer',
                 'decompte_ticket',
                 'subscription_fedow_asset',
+                'subscription_type',
             ),
         }),
     )
 
+    # Pour ne voir que les articles sans Cashless :
     def get_queryset(self, request):
         qs = super(ArticlesAdmin, self).get_queryset(request)
 
@@ -520,10 +524,11 @@ class CarteCashlessAdmin(admin.ModelAdmin):
         "number",
         "uuid_qrcode",
     )
+
     # readonly_fields = fields
     list_display_links = None
 
-    search_fields = ['tag_id', 'number', 'membre__first_name', 'membre__last_name', 'membre__email']
+    search_fields = ['tag_id', 'number', 'membre__name', 'membre__prenom', 'membre__email']
 
     def has_delete_permission(self, request, obj=None):
         return False
@@ -579,9 +584,9 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'total',
         'date_time',
         'moyen_paiement',
-        'membre',
+        # 'membre',
         'carte',
-        'responsable',
+        'pos',
         'table',
         'id_commande',
     )
@@ -592,7 +597,7 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'qty',
         'moyen_paiement',
         'carte',
-        'comptabilise',
+        # 'comptabilise',
     )
 
     readonly_fields = list_display + fields
@@ -605,10 +610,10 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         ('date_time', DateRangeFilter),
         'moyen_paiement',
         'table',
-        'comptabilise',
+        # 'comptabilise',
     ]
 
-    actions = [send_to_odoo, ]
+    # actions = [send_to_odoo, ]
 
     # default_filters = ('pos__id__exact=48',)
 
@@ -850,11 +855,11 @@ class ConfigurationAdmin(SingletonModelAdmin):
         }),
         # ('Billetterie', {
         #     'fields': (
-                # 'key_billetterie',
-                # 'billetterie_ip_white_list',
-                # 'billetterie_url',
-                # 'revoquer_key_billetterie',
-            # ),
+        # 'key_billetterie',
+        # 'billetterie_ip_white_list',
+        # 'billetterie_url',
+        # 'revoquer_key_billetterie',
+        # ),
         # }),
         ('OCECO', {
             'fields': (
@@ -932,6 +937,7 @@ class ConfigurationAdmin(SingletonModelAdmin):
                     MoyenPaiement.LOCAL_GIFT,
                     MoyenPaiement.EXTERIEUR_FED,
                     MoyenPaiement.EXTERIEUR_GIFT,
+                    MoyenPaiement.STRIPE_FED,
                 ]))
 
         # On ajoute les assets FIDELITY
@@ -955,8 +961,8 @@ class ConfigurationAdmin(SingletonModelAdmin):
     def save_model(self, request, instance: Configuration, form, change):
         # if (not form.initial.get('badgeuse_active')
         #         and instance.badgeuse_active):
-            # On passe de False à True
-            # badgeuse_creation()
+        # On passe de False à True
+        # badgeuse_creation()
 
         # obj.user = request.user
         ex_api_key = None
@@ -1106,32 +1112,30 @@ class ConfigurationAdmin(SingletonModelAdmin):
         #         messages.add_message(request, messages.ERROR, f"Erreur handshake")
         #         instance.string_connect = None
 
-
         # Clé API OCECO
         if ex_api_key:
             ex_api_key.delete()
         cache.clear()
 
-        if instance.can_fedow():
-            from fedow_connect.fedow_api import FedowAPI
-            fedowAPI = FedowAPI()
-            # Verification des synchros asset fedelitée
-            try:
-                #TODO: Tester la fidelitée
-                if instance.fidelity_active:
-                    fidelity, created = MoyenPaiement.objects.get_or_create(categorie=MoyenPaiement.FIDELITY,
-                                                                            name="Fidelity")
-                    asset_serialized, created = fedowAPI.asset.get_or_create_asset(fidelity)
-                    messages.add_message(request, messages.SUCCESS, "Asset Fidelity OK")
-            except Exception as e:
-                messages.add_message(request, messages.ERROR, _(f"Fedow non connecté. Asset non mis à jour : {e}"))
+        from fedow_connect.fedow_api import FedowAPI
+        fedowAPI = FedowAPI()
+        # Verification des synchros asset fedelitée
+        try:
+            # TODO: Tester la fidelitée
+            if instance.fidelity_active:
+                fidelity, created = MoyenPaiement.objects.get_or_create(categorie=MoyenPaiement.FIDELITY,
+                                                                        name="Fidelity")
+                asset_serialized, created = fedowAPI.asset.get_or_create_asset(fidelity)
+                messages.add_message(request, messages.SUCCESS, "Asset Fidelity OK")
+        except Exception as e:
+            messages.add_message(request, messages.ERROR, _(f"Fedow non connecté. Asset non mis à jour : {e}"))
 
-            try:
-                # Mise à jour des assets Fedow
-                fedowAPI.place.get_accepted_assets()
-                messages.add_message(request, messages.SUCCESS, _("Mise à jour des assets Fedow OK"))
-            except Exception as e:
-                messages.add_message(request, messages.ERROR, _(f"Fedow non connecté. Asset non mis à jour : {e}"))
+        try:
+            # Mise à jour des assets Fedow
+            fedowAPI.place.get_accepted_assets()
+            messages.add_message(request, messages.SUCCESS, _("Mise à jour des assets Fedow OK"))
+        except Exception as e:
+            messages.add_message(request, messages.ERROR, _(f"Fedow non connecté. Asset non mis à jour : {e}"))
 
         super().save_model(request, instance, form, change)
 
@@ -1157,8 +1161,8 @@ class ConfigurationAdmin(SingletonModelAdmin):
             # if obj.string_connect:
             #     if obj.onboard_url and not obj.stripe_connect_account:
             #         replace['string_connect'] = '_onboarding'
-                # elif obj.stripe_connect_valid:
-                #     replace['string_connect'] = 'federated_with'
+            # elif obj.stripe_connect_valid:
+            #     replace['string_connect'] = 'federated_with'
 
             # Iterate fieldsets
             for fieldset in fieldsets:
@@ -1265,37 +1269,39 @@ class GroupementCategorieFilter(SimpleListFilter):
         else:
             return queryset.filter(article__categorie__groupements__name=self.value())
 
-
-def recalculer_la_tva(modeladmin, request, queryset):
-    for rapport in queryset:
-        debut_event, fin_event = start_end_event_4h_am(rapport.date)
-
-        article_vendus = ArticleVendu.objects.filter(
-            date_time__gte=debut_event,
-            date_time__lte=fin_event,
-        )
-        for article in article_vendus:
-            if article.article:
-                if article.article.categorie:
-                    if article.article.categorie.tva:
-                        article.tva = article.article.categorie.tva.taux
-                        article.save()
-
-        ticketZ = TicketZ(rapport)
-        ticketZ.calcul_valeurs()
-
-
-recalculer_la_tva.short_description = _("Recalculer la tva en fonction des catégories d'articles.")
+#
+# def recalculer_la_tva(modeladmin, request, queryset):
+#     for rapport in queryset:
+#         debut_event, fin_event = start_end_event_4h_am(rapport.date)
+#
+#         article_vendus = ArticleVendu.objects.filter(
+#             date_time__gte=debut_event,
+#             date_time__lte=fin_event,
+#         )
+#         for article in article_vendus:
+#             if article.article:
+#                 if article.article.categorie:
+#                     if article.article.categorie.tva:
+#                         article.tva = article.article.categorie.tva.taux
+#                         article.save()
+#
+#         ticketZ = TicketZ(rapport)
+#         ticketZ.calcul_valeurs()
+#
+#
+# recalculer_la_tva.short_description = _("Recalculer la tva en fonction des catégories d'articles.")
+#
 
 def update(modeladmin, request, queryset):
     for cloture in queryset:
         cloture: ClotureCaisse
-        start, end = cloture.start , cloture.end
+        start, end = cloture.start, cloture.end
         ticketZ = TicketZ(start_date=start, end_date=end)
         if ticketZ.calcul_valeurs():
             ticketz_json = ticketZ.to_json
             cloture.ticketZ = ticketz_json
             cloture.save()
+
 
 # Au lieux d'afficher les fields ordinaire, on affiche le template ticketZ
 class ClotureCaisseChangeList(ChangeList):

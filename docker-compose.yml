@@ -10,6 +10,14 @@ services:
     networks:
       - laboutik_backend
 
+  laboutik_memcached:
+    image: memcached:1.6
+    container_name: laboutik_memcached
+    hostname: laboutik_memcached
+    restart: always
+    networks:
+      - laboutik_backend
+
   laboutik_redis:
     image: redis:6-alpine
     restart: always
@@ -20,6 +28,7 @@ services:
       - laboutik_backend
 
   laboutik_django:
+#    image: tibillet/laboutik:latest
     build: .
     restart: always
     env_file: .env
@@ -30,9 +39,11 @@ services:
     links:
       - laboutik_postgres:postgres
       - laboutik_redis:redis
+      - laboutik_memcached:memcached
     depends_on:
       - laboutik_postgres
       - laboutik_redis
+      - laboutik_memcached
     networks:
       - laboutik_backend
     extra_hosts:
@@ -40,11 +51,12 @@ services:
       - "demo.tibillet.localhost:172.17.0.1"
       - "billetistan.tibillet.localhost:172.17.0.1"
       - "cashless.tibillet.localhost:172.17.0.1"
-#    command: "sleep infinity"
-#    command: "bash /home/tibillet/LaBoutik/DjangoFiles/launch_prod.sh"
+  #    command: "sleep infinity"
+  #    command: "bash /home/tibillet/LaBoutik/DjangoFiles/launch_prod.sh"
 
 
   laboutik_celery:
+#    image: tibillet/laboutik:latest
     build: .
     restart: always
     env_file: .env
@@ -55,9 +67,11 @@ services:
     links:
       - laboutik_postgres:postgres
       - laboutik_redis:redis
+      - laboutik_memcached:memcached
     depends_on:
       - laboutik_postgres
       - laboutik_django
+      - laboutik_memcached
     networks:
       - laboutik_backend
     extra_hosts:
@@ -99,4 +113,11 @@ volumes:
   laboutik_postgres_data:
 
 
-# docker build -t laboutik . && docker tag laboutik tibillet/laboutik:latest && docker tag laboutik tibillet/laboutik:0.9.2 && docker push tibillet/laboutik:latest && docker push tibillet/laboutik:0.9.2
+# Avant de build :
+## Tradution :
+### Mettre a jour le fichier de traduction : django-admin makemessages -l en && django-admin makemessages -l fr
+### Changer les textes dans locale/en/django.po
+### Compiler les traductions : django-admin compilemessages
+
+# docker build -t laboutik . && docker tag laboutik tibillet/laboutik:latest && docker tag laboutik tibillet/laboutik:0.9.5 && docker push tibillet/laboutik:latest && docker push tibillet/laboutik:0.9.5
+

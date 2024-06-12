@@ -162,6 +162,7 @@ class ArticleSerializer(serializers.ModelSerializer):
             'url_image',
             'couleur_texte',
             'methode_name',
+            'methode_choices',
             'archive',
         )
 
@@ -190,14 +191,13 @@ class PointDeVenteSerializer(serializers.ModelSerializer):
         """
         ret = super().to_representation(instance)
 
-        # TODO: Virer ce "Cashless" et utiliser des choices en dur ( variable permanente de methode )
+        # TODO: Virer ce "AjoutMonnaieVirtuelle" et utiliser des choices en dur ( variable permanente de methode )
         # 1/ On rajoute le nom de la monnaie sur les name cashless.
         # noinspection PyCompatibility
-        if ret['name'] == "Cashless":
-            for art in ret['articles']:
-                if art['methode_name'] == "AjoutMonnaieVirtuelle" or \
-                        art['methode_name'] == "AjoutMonnaieVirtuelleCadeau":
-                    art['name'] = f"{Configuration.objects.get().monnaie_principale.name} {art['name']}"
+        for art in ret['articles']:
+            if art['methode_name'] == "AjoutMonnaieVirtuelle" or \
+                    art['methode_name'] == "AjoutMonnaieVirtuelleCadeau":
+                art['name'] = f"{Configuration.objects.get().monnaie_principale.name} {art['name']}"
 
         # 2/ On retire les articles mis en archives
         for art in ret['articles']:
