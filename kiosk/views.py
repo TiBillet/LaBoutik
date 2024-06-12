@@ -17,15 +17,6 @@ from kiosk.models import ScannedNfcCard, Payment
 
 
 
-@csrf_exempt
-def given_bill(request):
-    print('____________________')
-    if request.method == 'POST':
-        given_bill = request.POST.get('bill')
-        print("Given Bill: ", given_bill)
-        return HttpResponse(given_bill)
-    pass
-
 
 # First page
 def index(request):
@@ -145,8 +136,9 @@ class CardViewset(viewsets.ViewSet):
         amount_device = bill_data.validated_data.get('bill')
         paiment_choice.device_amount += amount_device
         paiment_choice.save()
-
-        return HttpResponseRedirect(paiment_choice)
+        # A vérifier si HttpResponse(paiment_choise) c'est
+        # le bon retour ...
+        return HttpResponse(paiment_choice)
 
 
 
