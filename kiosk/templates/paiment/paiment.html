@@ -1,0 +1,59 @@
+{% extends 'base/base.html' %}
+{% block content %}
+
+    {% load static %}
+
+
+    <div id="paimentPg">
+        <div class="center-text">
+
+            <div class="row">
+                <div class="col-10">
+                    <h2> Insert your bills on the device!</h2>
+                </div>
+            </div>
+            {% if not paiment_complete %}
+                <div>
+                <div class="col 6">
+                    <h4>
+                        Amount Paid: {{ paiment_choice.device_amount }}
+                    </h4>
+                </div>
+
+                <div class="col 6">
+                    <h4>
+                        Rest of paiment {{ rest }}
+                    </h4>
+                </div>
+
+                <input type="hidden" id="tagIinPaiment" value="{{ card.tag_id }}" name="tag_id"/>
+{#                <input type="hidden" id="totalInPaiment" value="{{ paiment_choice.amount }}" name="total"/>#}
+                <div class="row"
+                     hx-post="api/device/paiment/"
+                     hx-trigger="load delay:1s"
+                     hx-include="#tagIinPaiment"
+                     hx-target="#paimentPg"
+                     hx-swap="innerHTML"
+                >
+                </div>
+            {% else %}
+                <input type="hidden" id="tagIdLast" value="{{ card.tag_id }}" name="tag_id"/>
+                <div
+                     hx-post="api/device/completed/"
+                     hx-trigger="load delay:5s"
+                     hx-include="#tagIdLast"
+                     hx-target="#paimentPg"
+                     hx-swap="outerHTML"
+                >
+                    <h4>Your paiment is completed.</h4>
+                </div>
+                {% if rest_device %}
+                    <div>
+                        <h4>Rest of bills: {{ rest }}</h4>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+
+{% endblock content %}

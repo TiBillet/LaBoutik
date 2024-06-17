@@ -3,9 +3,9 @@
 
     {% load static %}
 
-    <div class="center-text">
+    <div class="center-text" id="lastPage">
 
-        <div id="lastPage">
+        <div>
             <div class="row">
             <div class="col-10">
                 <h2> Congratulation, your card is been charged!</h2>
@@ -14,9 +14,10 @@
 
 
             <div class="col-10"
-                 hx-get="/"
-                 hx-trigger="load delay:15s"
+                 hx-get="index/"
+                 hx-trigger="load delay:7s"
                  hx-target="#lastPage"
+                 hx-swap="outerHTML"
             >
             </div>
 
@@ -24,11 +25,6 @@
         </div>
     
     </div>
-
-<script>
-        
-</script>
-
 
 
 {% endblock content %}

@@ -1,10 +1,11 @@
 from django.urls import path, include
-from kiosk.views import (index, CardViewset,
+from kiosk.views import (index, CardViewset, DeviceViewset,
                 stripe_paiment, recharge_paiment_pg)
 from rest_framework import routers
 router = routers.DefaultRouter()
 
 router.register(r'card', CardViewset, basename='card')
+router.register(r'device', DeviceViewset, basename='device')
 
 urlpatterns = [
     path('index/', index, name='index'),

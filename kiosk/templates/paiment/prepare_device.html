@@ -1,0 +1,31 @@
+{% extends 'base/base.html' %}
+{% block content %}
+    {% load static %}
+    <section id="deviceStart">
+        <div hx-get="http://127.0.0.2:6997/open_device/"
+             hx-trigger="load delay:0.5s">
+        </div>
+
+        <div id="paimentPg">
+            <div class="center-text">
+
+                <div class="row">
+                    <div class="col-10">
+                        <h2> Please prepare yur bills, so you can insert them in the device!</h2>
+                    </div>
+                </div>
+                <input type="hidden" id="tagIIntermedian" value="{{ card.tag_id }}" name="tag_id"/>
+                <input type="hidden" id="totalIntermedian" value="{{ total }}" name="total"/>
+                <div class="row"
+                     hx-post="api/device/is_device_open/"
+                     hx-include="#tagIIntermedian, #totalIntermedian"
+                     hx-trigger="load delay:3s"
+                     hx-target="#deviceStart"
+                     hx-swap="outerHTML"
+                >
+                </div>
+            </div>
+        </div>
+    </section>
+
+{% endblock content %}

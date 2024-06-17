@@ -10,6 +10,7 @@ from requests import Response
 from rest_framework import viewsets, permissions,status
 from rest_framework.decorators import action
 
+import Cashless
 from APIcashless.models import CarteCashless
 from kiosk.serializers import CardSerializer
 from kiosk.validators import AmountValidator, CardValidator, BillValidator
@@ -78,50 +79,12 @@ class CardViewset(viewsets.ViewSet):
 
         card: CarteCashless = selected_data.validated_data.get('tag_id')
         total0: Decimal = selected_data.validated_data.get('total')
+        Payment.objects.create(card=card,amount=total0)
         total = str((total0))
         return render(request,
         'kiosk_pages/recharge.html',
         {'total':total, 'card': card})
 
-
-    # post from paiment
-    @action(detail=False, methods=['POST'])
-    def paiment(self, request):
-        choosed_data = AmountValidator(data=request.data)
-        # check if the datas are well selected
-        if not choosed_data.is_valid():
-            messages.add_message(request, messages.WARNING,
-                                 "Wrong selection, please try again")
-            return HttpResponseRedirect('/kiosk')
-
-        card: CarteCashless = choosed_data.validated_data.get('tag_id')
-        total: Decimal = choosed_data.validated_data.get('total')
-        paiment_choice = Payment.objects.create(amount=total, card=card)
-        context = {'card': card, 'total': total, 'paiment_choice': paiment_choice}
-
-        return render(request, 'paiment/paiement.html', context=context)
-
-
-    # Amoount of bills recived from the device
-    @action(detail=False, methods=['GET'])
-    def return_device(self,request):
-        paiment_complete = False
-        paiment_choice = Payment.objects.all().order_by('created_at').last()
-        rest = paiment_choice.amount - paiment_choice.device_amount
-        if rest <= 0:
-            paiment_complete = True
-            rest_device = False
-            if rest < 0:
-                rest_device = True
-                rest = paiment_choice.device_amount - paiment_choice.amount
-            return render(request,
-            'paiment/device_bills.html',
-            {'paiment_complete': paiment_complete,
-             'rest_device': rest_device, 'rest': rest})
-        return render(request,
-        'paiment/device_bills.html',
-    {'paiment_choice': paiment_choice,
-        'paiment_complete':paiment_complete,'rest': rest})
 
     # verify bill reciving
     @action(detail=False, methods=['POST'])
@@ -172,6 +135,103 @@ class CardViewset(viewsets.ViewSet):
                       {'message': message})
 
 
+class DeviceViewset(viewsets.ViewSet):
+    permission_classes = []
+    # Open device:
+    @action(detail=False, methods=['POST'], permission_classes=[permissions.AllowAny])
+    def device_on(self, request):
+        choosed_data = AmountValidator(data=request.data)
+        # check if the datas are well selected
+        if not choosed_data.is_valid():
+            messages.add_message(request, messages.WARNING,
+                                 "Wrong selection, please try again")
+            return HttpResponseRedirect('/kiosk')
+
+        card: CarteCashless = choosed_data.validated_data.get('tag_id')
+        total0: Decimal = choosed_data.validated_data.get('total')
+
+        total = str((total0))
+
+        return render(request, 'paiment/prepare_device.html'
+                    ,{'card': card, 'total': total})
+
+
+    # Check if the device is open
+    @action(detail=False, methods=['POST'])
+    def is_device_open(self, request):
+        choosed_data = AmountValidator(data=request.data)
+        # check if the datas are well selected
+        if not choosed_data.is_valid():
+            messages.add_message(request, messages.WARNING,
+                                 "Wrong selection, please try again")
+            return HttpResponseRedirect('/kiosk')
+
+        card: CarteCashless = choosed_data.validated_data.get('tag_id')
+        total0: Decimal = choosed_data.validated_data.get('total')
+        total=str((total0))
+        # Extract the last payment from the card tag_id
+        paiment_choice = Payment.objects.filter(card=card).order_by('created_at').last()
+        import random
+        x = random.randint(1, 5)
+        if x == 1:
+            print("The Device is not open yet")
+            return render(request, 'paiment/prepare_device.html'
+                    ,{'card': card, 'total': total})
+        print('The Device is open')
+        return render(request, 'paiment/paiment.html'
+                ,{'card': card, 'paiment_choice': paiment_choice})
+
+
+    @action(detail=False, methods=['POST'])
+    # the page with the bill payment
+    def paiment(self, request):
+        test = request.POST.get('tag_id')
+        print(test)
+        card_data = CardValidator(data=request.data)
+
+        # choosed_data = AmountValidator(data=request.data)
+        # check if the datas are well selected
+        if not card_data.is_valid():
+            messages.add_message(request, messages.WARNING,
+                                 "Wrong selection, please try again")
+            return HttpResponseRedirect('/kiosk')
+
+        card: CarteCashless = card_data.validated_data.get('tag_id')
+        paiment_complete = False
+        paiment_choice = Payment.objects.filter(card=card).order_by('created_at').last()
+        # Calculate the rest and send it
+        rest = paiment_choice.amount - paiment_choice.device_amount
+        if rest <= 0:
+            paiment_complete = True
+            rest_device = False
+            if rest < 0:
+                rest_device = True
+                rest = paiment_choice.device_amount - paiment_choice.amount
+            return render(request,
+            'paiment/paiment.html',
+            {'paiment_complete': paiment_complete, 'paiment_choice':paiment_choice,
+             'rest_device': rest_device, 'rest': rest, 'card': card})
+        return render(request,
+        'paiment/paiment.html',
+    {'paiment_choice': paiment_choice, 'paiment_choice':paiment_choice,
+        'paiment_complete':paiment_complete,'rest': rest, 'card': card})
+
+
+    @action(detail=False, methods=['POST'])
+    def completed(self, request):
+        card_data = CardValidator(data=request.data)
+        if not card_data.is_valid():
+            messages.add_message(request, messages.WARNING,
+                                 "Wrong selection, please try again")
+            return HttpResponseRedirect('/kiosk')
+        card: CarteCashless = card_data.validated_data.get('tag_id')
+        print("_____________")
+
+        return render(request, 'paiment/confirmation_paiement.html'
+                      ,{'card': card})
+
+
+
 # This method will recharge paiment page
 def recharge_paiment_pg(request):
     uuid = request.POST.get('uuid')
@@ -181,17 +241,6 @@ def recharge_paiment_pg(request):
     context = {'uuid': uuid, 'total': total,
                'choice_amount': choice_amount, 'devic_amount': devic_amount}
     return render(request, 'paiment/recharge_paiment_pg.html', context=context)
-
-
-# # recharging value
-# def recharge(request):
-#     if request.method == 'GET':
-#         total = request.GET.get('total')
-#         uuid = request.GET.get('uuid')
-#
-#         return render(request,
-#                       'kiosk_pages/recharge.html',
-#                       {'total': total, 'uuid': uuid})
 
 
 # Stripe ----------------

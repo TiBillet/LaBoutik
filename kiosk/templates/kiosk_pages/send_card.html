@@ -18,13 +18,22 @@
 
         <input type="hidden" id="given_card"
         value="{{ tag_id }}" name="tag_id"/>
-
+        {% if not message %}
         <div
-                hx-post="api/card/scan/"
-                hx-include="#given_card"
-                hx-trigger="load delay:0.5s"
-                hx-target="#mainPage2"
+            hx-post="api/card/scan/"
+            hx-include="#given_card"
+            hx-trigger="load"
+            hx-target="#mainPage2"
         >
+        {% else %}
+            <p style="color: red">{{ message }}</p>
+            <div
+                hx-post="index/"
+                hx-include="#given_card"
+                hx-trigger="load delay:3s"
+                hx-target="#mainPage2"
+            >
+        {% endif %}
         </div>
 
     </div>
