@@ -1043,9 +1043,8 @@ export function visualiserEtatCommandes(retour) {
       if (maxNbArticleAServir > 0) {
         // ------------ entête ------------
         let dateStringTmp = new Date(commande.datetime)
-        // let dateStringTmp = new Date.parse(commande.datetime)
-        let heureLocaleTab = dateStringTmp.toLocaleTimeString(local, { hour12: false }).split(':')
-        const heureCommande = heureLocaleTab[0] + ':' + heureLocaleTab[1]
+        const baseTmp = commande.datetime.split('T')[1].split(':')
+        const heureCommande = baseTmp[0] + ':' + baseTmp[1]
         let dateJour = dateStringTmp.toLocaleDateString()
         let dateDuJour = (new Date()).toLocaleDateString()
         let styleCouleurAlerteDate = '', couleurIconTable = ''
