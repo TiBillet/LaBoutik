@@ -40,9 +40,7 @@ class CardViewset(viewsets.ViewSet):
         validator = CardValidator(data=request.data)
         # check if the scaned card doesn't exist or is unvalid
         if not validator.is_valid():
-            message = "Card error, please try again!"
-            return render(request, 'kiosk_pages/first_page.html',
-                          {'message': message})
+            return HttpResponse(status=404)#, "Card error, please try again!")
 
         # Saving the card that is being scaned
         card: CarteCashless = validator.validated_data.get('tag_id')
@@ -57,7 +55,7 @@ class CardViewset(viewsets.ViewSet):
         # check if the scaned card doesn't exist or is unvalid
         if not card_data.is_valid():
             message = "Card error, please try again!"
-            return render(request, 'kiosk_pages/first_page.html',
+            return render(request, 'kiosk_pages/card_error.html',
                           {'message': message})
 
         card: CarteCashless = card_data.validated_data.get('tag_id')
@@ -73,66 +71,46 @@ class CardViewset(viewsets.ViewSet):
         # If it happens that the tag_id or the total is wrong
         if not selected_data.is_valid():
             message = "Error, please try again! "
-
             return render(request, 'kiosk_pages/first_page.html',
                           {'message':message})
 
         card: CarteCashless = selected_data.validated_data.get('tag_id')
-        total0: Decimal = selected_data.validated_data.get('total')
-        Payment.objects.create(card=card,amount=total0)
-        total = str((total0))
+        total: Decimal = str(selected_data.validated_data.get('total'))
+        Payment.objects.create(card=card,amount=total)
         return render(request,
         'kiosk_pages/recharge.html',
         {'total':total, 'card': card})
 
 
-    # verify bill reciving
-    @action(detail=False, methods=['POST'])
-    def devices_bills(self, request):
-        paiment_choice = Payment.objects.all().order_by('created_at').last()
-        bill_data = BillValidator(data=request.data)
-        if not bill_data.is_valid():
-            message = ("Sorry error device, please take your bill from the device "
-                       "and, restart again")
-            return render(request, 'kiosk_pages/first_page.html',)
 
-        amount_device = bill_data.validated_data.get('bill')
-        paiment_choice.device_amount += amount_device
-        paiment_choice.save()
-        # A vérifier si HttpResponse(paiment_choise) c'est
-        # le bon retour ...
-        return HttpResponse(paiment_choice)
-
-
-
-    @action(detail=False, methods=['POST'])
-    def confirmation_paiment(self, request):
-        confirmation_data = AmountValidator(data=request.data)
-        # check if the datas are well selected
-        if not confirmation_data.is_valid():
-            message = ("Error, of payment, please take the money from the device"
-                       "and try again!")
-
-            return render(request, 'paiment/error_paiment.html',
-                          {'message': message})
-
-        card: CarteCashless = confirmation_data.validated_data.get('uuid')
-        total: Decimal = confirmation_data.validated_data.get('total')
-        device_confirm_paiment = confirmation_data.validated_data.get('device_confirm_paiment')
-
-        """
-        if device_confirm_paiment != None:
-            card = Card.objects.get(uuid=uuid)
-            card.amount += int(total)
-            card.save()
-            return render(request, 'paiment/confirmation_paiement.html', {'card': card})
-        """
-
-        message = ("Error, of payment, please take the money from the device"
-                   "and try again!")
-
-        return render(request, 'paiment/error_paiment.html',
-                      {'message': message})
+    # @action(detail=False, methods=['POST'])
+    # def confirmation_paiment(self, request):
+    #     confirmation_data = AmountValidator(data=request.data)
+    #     # check if the datas are well selected
+    #     if not confirmation_data.is_valid():
+    #         message = ("Error, of payment, please take the money from the device"
+    #                    "and try again!")
+    #
+    #         return render(request, 'paiment/error_paiment.html',
+    #                       {'message': message})
+    #
+    #     card: CarteCashless = confirmation_data.validated_data.get('uuid')
+    #     total: Decimal = confirmation_data.validated_data.get('total')
+    #     device_confirm_paiment = confirmation_data.validated_data.get('device_confirm_paiment')
+    #
+    #     """
+    #     if device_confirm_paiment != None:
+    #         card = Card.objects.get(uuid=uuid)
+    #         card.amount += int(total)
+    #         card.save()
+    #         return render(request, 'paiment/confirmation_paiement.html', {'card': card})
+    #     """
+    #
+    #     message = ("Error, of payment, please take the money from the device"
+    #                "and try again!")
+    #
+    #     return render(request, 'paiment/error_paiment.html',
+    #                   {'message': message})
 
 
 class DeviceViewset(viewsets.ViewSet):
@@ -217,6 +195,24 @@ class DeviceViewset(viewsets.ViewSet):
         'paiment_complete':paiment_complete,'rest': rest, 'card': card})
 
 
+    # verify bill reciving
+    @action(detail=False, methods=['POST'])#, permission_classes=[permissions.AllowAny])
+    def devices_bills(self, request):
+        paiment_choice = Payment.objects.all().order_by('created_at').last()
+        bill_data = BillValidator(data=request.data)
+        if not bill_data.is_valid():
+            message = ("Sorry error device, please take your bill from the device "
+                       "and, restart again")
+            return render(request, 'kiosk_pages/first_page.html',)
+
+        amount_device = bill_data.validated_data.get('bill')
+        paiment_choice.device_amount += amount_device
+        paiment_choice.save()
+        # A vérifier si HttpResponse(paiment_choise) c'est
+        # le bon retour ...
+        return HttpResponse(paiment_choice)
+
+
     @action(detail=False, methods=['POST'])
     def completed(self, request):
         card_data = CardValidator(data=request.data)
@@ -230,17 +226,6 @@ class DeviceViewset(viewsets.ViewSet):
         return render(request, 'paiment/confirmation_paiement.html'
                       ,{'card': card})
 
-
-
-# This method will recharge paiment page
-def recharge_paiment_pg(request):
-    uuid = request.POST.get('uuid')
-    total = request.POST.get('total')
-    choice_amount = request.POST.get('choice_amount')
-    devic_amount = request.POST.get('devic_amount')
-    context = {'uuid': uuid, 'total': total,
-               'choice_amount': choice_amount, 'devic_amount': devic_amount}
-    return render(request, 'paiment/recharge_paiment_pg.html', context=context)
 
 
 # Stripe ----------------
