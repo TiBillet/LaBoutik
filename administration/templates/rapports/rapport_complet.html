@@ -53,7 +53,7 @@
     </style>
 </head>
 <body>
-{% language 'fr' %}
+{% language 'en' %}
 
 
 <h1>{% trans "Rapport TiBillet" %}</h1>
@@ -64,7 +64,9 @@
 
 <div id="total_vente">
     <h2>{% trans "Total des ventes par moyen de paiement" %}</h2>
-    <span>{% trans "Ne comprend pas les recharges cashless." %}</span>
+
+    <span>{% trans "Cashless recharges not included." %}</span>
+
     <table class="content">
         <thead>
         <tr>
@@ -160,7 +162,7 @@
         </thead>
         <tbody>
         <tr>
-            <th colspan="2">{% trans "Recharge" %}</th>
+            <th colspan="2">{% trans "-Recharge-" %}</th>
         </tr>
         {% for nom, total in dict_moyenPaiement_recharge.items %}
             <tr class="test-item-recharge">
@@ -205,8 +207,9 @@
             </tr>
         {% endfor %}
         <tr>
-            <th colspan="2">{% trans "Par Moyen de paiement" %}</th>
+            <th colspan="2">{% trans "Tris par Moyen de paiement" %}</th>
         </tr>
+
         {% for name, total in dict_adhesion_par_moyen_paiement.items %}
             <tr class="test-item-adhesion">
                 <td class="test-item-adhesion-qt">{{ name }}</td>
@@ -312,7 +315,7 @@
         <tbody>
         {% for name, valeur in dict_toute_entrees_par_moyen_paiement.items %}
             <tr class="test-item-fond-caisse">
-                <td class="test-item-fond-caisse-total">{{ nom }}</td>
+                <td class="test-item-fond-caisse-total">{{ name }}</td>
                 <td class="test-item-fond-caisse-total">{{ valeur  | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
