@@ -59,13 +59,15 @@
 {% language 'en' %}
 <h1>{% trans "Ticket Z Simplifié" %}</h1>
 <h1><span class="test-tenant">{{ structure }}</span></h1>
-<h3>Début : {{ start_date }}</h3>
-<h3>Fin : {{ end_date }}</h3>
+<h3>{% trans "Début : "%}{{ start_date }}</h3>
+<h3>{% trans "Fin : "%}{{ end_date }}</h3>
 
 
 <div id="total_vente">
     <h2>{% trans "Total des ventes par moyen de paiement" %}</h2>
-    <span>{% trans "Ne comprend pas les recharges cashless." %}</span>
+
+    <span>{% trans "Cashless recharges not included." %}</span>
+
     <table class="content">
         <thead>
         <tr>
@@ -172,6 +174,7 @@
             <td class="test-item-fond-caisse-total">{{ remboursement_espece | floatformat:2 }}€</td>
         </tr>
         <tr class="test-item-fond-caisse">
+
             <td class="test-item-fond-caisse-nom">{% trans "Adhésion en espèce" %}</td>
             <td class="test-item-fond-caisse-total">{{ adhesion_espece | floatformat:2 }}€</td>
         </tr>

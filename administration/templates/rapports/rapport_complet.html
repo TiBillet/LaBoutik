@@ -87,7 +87,7 @@
             <td class="test-items1-mp-total">{{ total_HT | floatformat:2 }}€</td>
         </tr>
         <tr>
-            <th>TVA</th>
+            <th>{% trans "TVA" %}</th>
             <td class="total-taux-collecte">{{ total_collecte_toute_tva | floatformat:2 }}€</td>
         </tr>
         <tr style="border-bottom: 2px solid #1B1464; ">
@@ -101,8 +101,8 @@
             </tr>
         {% endfor %}
         <tr style="border-top: 2px solid #1B1464; ">
+            <th>{% trans "Total Cadeau" %}</th>
 
-            <th>TOTAL Offert</th>
             <td class="test-items2-mp-total">{{ total_gift_by_mp | floatformat:2 }}€</td>
         </tr>
         </tbody>
@@ -253,6 +253,7 @@
             <td class="test-item-fond-caisse-total">{{ remboursement_espece | floatformat:2 }}€</td>
         </tr>
         <tr class="test-item-fond-caisse">
+
             <td class="test-item-fond-caisse-nom">{% trans "Adhésion en espèce" %}</td>
             <td class="test-item-fond-caisse-total">{{ adhesion_espece | floatformat:2 }}€</td>
         </tr>
@@ -272,6 +273,7 @@
 
 
 <div id="monnaie_dormante">
+
     <h2>{% trans "Monnaie dormante" %}</h2>
     <span>{% trans "Le delta est la différence entre recharge et dépense." %}</span>
     <table class="content">
