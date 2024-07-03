@@ -1472,11 +1472,11 @@ msgstr "Annual report"
 #, fuzzy
 #| msgid "Début"
 msgid "Début : "
-msgstr "Start"
+msgstr "Start : "
 
 #: administration/templates/rapports/rapport_complet.html:59
 msgid "Fin : "
-msgstr "End"
+msgstr "End : "
 
 #: administration/templates/rapports/rapport_complet.html:63
 #: administration/templates/rapports/ticketZ_simple.html:63
