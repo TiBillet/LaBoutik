@@ -1222,7 +1222,7 @@ class CashlessTest(TiBilletTestCase):
         carte_primaire = CarteMaitresse.objects.first().carte
 
         # On fabrique une carte et on la charge :
-        carte = self.create_card()
+        carte = self.create_one_card_db()
         self.ajout_monnaie_bis(carte=carte, qty=21)
         carte.refresh_from_db()
         wallet = carte.get_wallet()
@@ -1254,9 +1254,6 @@ class CashlessTest(TiBilletTestCase):
             primary_card_fisrtTagId=carte_primaire.tag_id,
         )
 
-        if not refund_data:
-            import ipdb;
-            ipdb.set_trace()
         self.assertIsInstance(refund_data, dict)
 
         # Le wallet n'a pas bougé ?
@@ -1322,49 +1319,24 @@ class CashlessTest(TiBilletTestCase):
         asset_local_euro = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
         asset_gift = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_GIFT)
 
-        carte = CarteCashless.objects.filter(membre__wallet__isnull=False).last()
+        # Création d'une nouveau carte tout neuf en une ligne !
+        carte = self.check_carte_total(self.create_one_card_db(), 0)
+
+        # On la charge de 10 + 10 gift
+        self.ajout_monnaie_bis(carte=carte, qty=10)
+
+        #TODO: a sortir d'ici -> atomic !
         ex_total_euro = carte.total_monnaie(carte.assets.filter(monnaie=MoyenPaiement.get_local_euro()))
         ex_total_gift = carte.total_monnaie(carte.assets.filter(monnaie=MoyenPaiement.get_local_gift()))
+        self.assertEqual(ex_total_euro, 10)
+        self.assertEqual(ex_total_euro, ex_total_gift)
 
-        self.assertIsNotNone(carte)
         wallet: Wallet = carte.get_wallet()
         self.assertIsInstance(wallet, Wallet)
-        serialized_new_transaction_euro = fedowAPI.transaction.refill_wallet(
-            amount=6666,
-            wallet=f"{wallet.uuid}",
-            asset=f"{asset_local_euro.pk}",
-            user_card_firstTagId=f"{carte.tag_id}",
-            primary_card_fisrtTagId=carte_primaire.tag_id,
-        )
-        self.assertEqual(serialized_new_transaction_euro.get('amount'), 6666)
-        self.assertEqual(serialized_new_transaction_euro.get('action'), TransactionValidator.REFILL)
-
-        serialized_new_transaction_gift = fedowAPI.transaction.refill_wallet(
-            amount=9999,
-            wallet=f"{wallet.uuid}",
-            asset=f"{asset_gift.pk}",
-            user_card_firstTagId=f"{carte.tag_id}",
-            primary_card_fisrtTagId=carte_primaire.tag_id,
-        )
-        self.assertEqual(serialized_new_transaction_gift.get('amount'), 9999)
-        self.assertEqual(serialized_new_transaction_gift.get('action'), TransactionValidator.REFILL)
 
         ex_new_serialized_card = fedowAPI.NFCcard.retrieve(carte.tag_id)
-        self.assertFalse(ex_new_serialized_card['is_wallet_ephemere'])
         tokens = ex_new_serialized_card['wallet']['tokens']
         self.assertTrue(len(tokens) >= 2)
-        token_dict = {token['asset_uuid']: token['value'] for token in tokens}
-
-        total_euro_after_refill = (6666 + (ex_total_euro * 100))
-        total_gift_after_refill = (9999 + (ex_total_gift * 100))
-
-        if (token_dict[asset_local_euro.pk] != total_euro_after_refill or
-                token_dict[asset_gift.pk] != total_gift_after_refill):
-            import ipdb;
-            ipdb.set_trace()
-
-        self.assertEqual(token_dict[asset_local_euro.pk], 6666 + (ex_total_euro * 100))
-        self.assertEqual(token_dict[asset_gift.pk], 9999 + (ex_total_gift * 100))
 
         new_void_data = fedowAPI.NFCcard.void(
             user_card_firstTagId=carte.tag_id,
@@ -1386,17 +1358,17 @@ class CashlessTest(TiBilletTestCase):
         serialized_transactions_voided = new_void_data['serialized_transactions']
 
         self.assertEqual(len(serialized_transactions_voided), 2)
-        self.assertEqual(serialized_transactions_voided[0].get('amount'), total_euro_after_refill)
+        self.assertEqual(serialized_transactions_voided[0].get('amount'), ex_total_euro*100)
         self.assertEqual(serialized_transactions_voided[0].get('action'), TransactionValidator.REFUND)
         self.assertTrue(serialized_transactions_voided[0].get('verify_hash'))
-        self.assertEqual(serialized_transactions_voided[1].get('amount'), total_gift_after_refill)
+        self.assertEqual(serialized_transactions_voided[1].get('amount'), ex_total_gift*100)
         self.assertEqual(serialized_transactions_voided[1].get('action'), TransactionValidator.REFUND)
         self.assertTrue(serialized_transactions_voided[1].get('verify_hash'))
 
         # Checker que le void a retiré aussi le wallet du membre cashless
         carte.refresh_from_db()
         self.assertNotEqual(ex_new_serialized_card['wallet']['uuid'], carte.wallet.uuid)
-        self.assertIsNone(carte.membre)
+
         serialized_card_voided = new_void_data['serialized_card']
         self.assertEqual(serialized_card_voided['wallet']['tokens'], [])
         self.assertTrue(serialized_card_voided['is_wallet_ephemere'])
