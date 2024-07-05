@@ -134,12 +134,13 @@ class TokenValidator(serializers.Serializer):
     @staticmethod
     def update_or_create(serilized_tokens, card):
         tokens_cashless = []
-        #TODO: Virer les précédents tokens
+        #TODO: Virer les précédents tokens car fedow est sensé faire foi partout ?
         for token in serilized_tokens:
             try:
                 token_cashless = Assets.objects.get(monnaie__pk=token['asset']['uuid'], carte=card)
             except Assets.DoesNotExist:
                 token_cashless = Assets.objects.create(
+                    id=token['uuid'],
                     monnaie_id=token['asset']['uuid'],
                     carte=card,
                 )

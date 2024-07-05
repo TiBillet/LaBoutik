@@ -497,7 +497,8 @@ def check_carte(request):
         # Methode FEDOW Uniquement, on va mettre a jour la carte
         try:
             fedowApi = FedowAPI()
-            fedowApi.NFCcard.retrieve(tag_id_request)
+            # CardValidator. Mets à jour les assets/tokens depuis Fedow
+            serialized_card_from_fedow = fedowApi.NFCcard.retrieve(tag_id_request)
         except Exception as e:
             logger.error(f"Check carte FEDOW : {e}")
             return Response({"msg": f"Fedow error. Contact an admin : {e}"},

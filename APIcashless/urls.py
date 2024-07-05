@@ -33,24 +33,27 @@ urlpatterns = [
          name="check_apikey"),
     path('oceco_endpoint', views.oceco_endpoint.as_view(),
          name="oceco_endpoint"),
-    path('billetterie_endpoint', views.billetterie_endpoint.as_view(),
-         name="billetterie_endpoint"),
 
     path('salefromlespass', views.SaleFromLespass.as_view(),
          name="salefromlespass"),
 
-    path('billetterie_qrcode_adhesion', views.billetterie_qrcode_adhesion.as_view(),
-         name="billetterie_qrcode_adhesion"),
     path('preparations', views.preparations.as_view(),
          name="preparations"),
-    path('membre_check', views.membre_check.as_view(),
-         name="membre_check"),
-    path('chargecard', views.ChargeCard.as_view(),
-         name="chargecard"),
+
+    # API EX FEDOW
+    # path('billetterie_endpoint', views.billetterie_endpoint.as_view(),
+    #      name="billetterie_endpoint"),
+    # path('billetterie_qrcode_adhesion', views.billetterie_qrcode_adhesion.as_view(),
+    #      name="billetterie_qrcode_adhesion"),
+    # path('membre_check', views.membre_check.as_view(),
+    #      name="membre_check"),
+    # path('chargecard', views.ChargeCard.as_view(),
+    #      name="chargecard"),
     # path('updatefedwallet', views.UpdateFedWalletFromBilletterie.as_view(),
     #      name="updatefedwallet"),
-    path('membership', views.Membership.as_view(),
-         name="membership"),
+    # path('membership', views.Membership.as_view(),
+    #      name="membership"),
+
     path('onboard_stripe_return/<str:id_acc_connect>/', views.OnboardStripeReturn.as_view(),
          name="onboard_stripe_return"),
 

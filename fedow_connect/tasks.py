@@ -114,31 +114,33 @@ def send_existing_tokens():
         # # On lance un fedow retrieve, et si on est en TEST, on accepte les monnaies automatiquement
         call_command('import_assets')
 
-def send_existing_members():
-    # Envoie des comptes membres
-    fedowAPI = get_fedow()
+#TODO: Passer par un import json plutôt qu'un envoie de membre qui DDOS
 
-    # refaire ça en mode atomique !!!!
-    for membre in Membre.objects.filter(email__isnull=False).exclude(email=""):
-        carte = None
-        wallet = None
-        if membre.CarteCashless_Membre.count() > 0:
-            for carte in membre.CarteCashless_Membre.all():
-                wallet = fedowAPI.NFCcard.link_user(email=membre.email, card=carte)
-        if membre.date_derniere_cotisation:
-            if not wallet:
-                wallet, created = fedowAPI.wallet.get_or_create_wallet_from_email(email=membre.email)
-                if not membre.wallet:
-                    membre.wallet = wallet
-                    membre.save()
-                elif membre.wallet != wallet:
-                    raise Exception("Wallet and member mismatch")
-            adh = fedowAPI.subscription.create(
-                wallet=f"{wallet.uuid}",
-                amount=int(membre.cotisation * 100),
-                date=membre.date_derniere_cotisation,
-                user_card_firstTagId=carte.tag_id if carte else None,
-            )
+# def send_existing_members():
+#     # Envoie des comptes membres
+#     fedowAPI = get_fedow()
+#
+#     # refaire ça en mode atomique !!!!
+#     for membre in Membre.objects.filter(email__isnull=False).exclude(email=""):
+#         carte = None
+#         wallet = None
+#         if membre.CarteCashless_Membre.count() > 0:
+#             for carte in membre.CarteCashless_Membre.all():
+#                 wallet = fedowAPI.NFCcard.link_user(email=membre.email, card=carte)
+#         if membre.date_derniere_cotisation:
+#             if not wallet:
+#                 wallet, created = fedowAPI.wallet.get_or_create_wallet_from_email(email=membre.email)
+#                 if not membre.wallet:
+#                     membre.wallet = wallet
+#                     membre.save()
+#                 elif membre.wallet != wallet:
+#                     raise Exception("Wallet and member mismatch")
+#             adh = fedowAPI.subscription.create(
+#                 wallet=f"{wallet.uuid}",
+#                 amount=int(membre.cotisation * 100),
+#                 date=membre.date_derniere_cotisation,
+#                 user_card_firstTagId=carte.tag_id if carte else None,
+#             )
 
 @app.task
 def set_primary_card(card_pk):
