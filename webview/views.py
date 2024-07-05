@@ -210,9 +210,16 @@ def index(request):
     if not getattr(request.user, 'appareil', None) and not mode_demo:
         return HttpResponseNotFound(_(f"Terminal non appairé ou mode demo : {mode_demo}"))
 
-    if request.method == 'POST':
-        configuration = Configuration.get_solo()
+    print("----------------------------------------------")
+    print(f"-> request.method = {request.method}")
+    print("----------------------------------------------")
 
+    if request.method == 'POST':
+        print("----------------------------------------------")
+        # print(f"->data ={request.POST}")
+        print("----------------------------------------------")
+
+        configuration = Configuration.get_solo()
         # valider la carte primaire
         if request.POST.get('type-action') == 'valider_carte_maitresse':
             tag_id_cm = request.POST.get('tag-id-cm').upper()
