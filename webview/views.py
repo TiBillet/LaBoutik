@@ -647,7 +647,6 @@ class Commande:
                     self.reponse = {
                         'route': "transcation_nfc2_fonds_insuffisants",
                         'message': {
-                            # TODO: Nico se base sur cette string... il va falloir changer ça dans le front sinon c'est intraduisible
                             'msg': _("Fonds insuffisants sur deuxieme carte."),
                             'manque': f"{abs(self.manque)}"
                         }
@@ -719,9 +718,8 @@ class Commande:
                 logger.info(f"    Carte : {asset.carte.number} - {asset}")
 
             # Une fois tout les paiments passés, on met à jour les assets coté Fedow
-            if self.configuration.can_fedow():
-                self._send_to_fedow_used_assets()
-                self._send_to_fedow_refill_assets()
+            self._send_to_fedow_used_assets()
+            self._send_to_fedow_refill_assets()
 
             self.reponse['carte'] = CarteCashlessSerializer(self.carte_db).data
             self.reponse['total_sur_carte_avant_achats'] = f"{dround(self.total_in_payments_assets)}" \
@@ -884,6 +882,7 @@ class Commande:
                 user_card_firstTagId=f"{self.carte_db.tag_id}",
                 primary_card_fisrtTagId=self.primary_card_fisrtTagId,
             )
+
             # Ajout du hash de BC dans les paiements
             ArticleVendu.objects.filter(
                 uuid_paiement=self.uuid_paiement,

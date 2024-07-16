@@ -172,6 +172,8 @@ def after_handshake():
     Origin.objects.all().delete()
     Place.objects.all().delete()
     MoyenPaiement.objects.filter(categorie=MoyenPaiement.STRIPE_FED).delete()
+
+    # Oniquement ces deux pour la migration
     fedowAPI = FedowAPI()
     fedowAPI.place.get_accepted_assets()
 

@@ -135,12 +135,15 @@ class TokenValidator(serializers.Serializer):
     def update_or_create(serilized_tokens, card):
         tokens_cashless = []
         #TODO: Virer les précédents tokens car fedow est sensé faire foi partout ?
+        # Les tokens locaux sont créé avant d'être envoyé sur Fedow.
+        # Du coup, le pk des tokens fedow et asset laboutik ne correspondent pas.
+        # Revoir la methode Webview.view.Commande.asset_principal()
         for token in serilized_tokens:
             try:
                 token_cashless = Assets.objects.get(monnaie__pk=token['asset']['uuid'], carte=card)
             except Assets.DoesNotExist:
                 token_cashless = Assets.objects.create(
-                    id=token['uuid'],
+                    pk=token['uuid'],
                     monnaie_id=token['asset']['uuid'],
                     carte=card,
                 )

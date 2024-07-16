@@ -473,8 +473,8 @@ class Command(BaseCommand):
             def _fedow_handshake(self):
                 # On ping Fedow
                 config = Configuration.get_solo()
-
                 fedow_url = self.fedow_url
+
                 fedow_state = None
                 ping_count = 0
                 while not fedow_state:

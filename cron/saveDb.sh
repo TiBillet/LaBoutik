@@ -4,7 +4,7 @@
 
 export PGPASSWORD=$POSTGRES_PASSWORD
 export PGUSER=$POSTGRES_USER
-export PGHOST=cashless_postgres
+export PGHOST=postgres
 
 DATE_NOW=$(date +%Y-%m-%d-%H-%M)
 MIGRATION=$(ls /DjangoFiles/APIcashless/migrations | grep -E '^[0]' | tail -1 | head -c 4)

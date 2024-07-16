@@ -503,17 +503,6 @@ class PlaceFedow():
         logger.error(accepted_assets)
         raise Exception(f"{accepted_assets.status_code}")
 
-    def add_me_to_test_fed(self):
-        accepted_assets = _get(self.config, ['place/add_me_to_test_fed'])
-        if accepted_assets.status_code == 200:
-            # Mise à jour et création des assets s'ils n'existent pas
-            accepted_assets = self.get_accepted_assets()
-            fiducial_assets = [MoyenPaiement.objects.get(pk=asset.get('uuid')) for asset in accepted_assets if
-                               asset.get('category') == AssetValidator.TOKEN_LOCAL_FIAT]
-            config = Configuration.get_solo()
-            config.monnaies_acceptes.add(*fiducial_assets)
-            config.save()
-            return accepted_assets
 
 
 class AssetFedow():

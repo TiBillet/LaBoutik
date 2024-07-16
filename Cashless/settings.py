@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('DJANGO_SECRET')
-if len(SECRET_KEY) != 50:
+if len(SECRET_KEY) < 46:
     logger.warning('DJANGO_SECRET must be 50 characters long. run "./manage.py generate_secret_key"')
     # raise ValueError('DJANGO_SECRET must be 50 characters long. run "./manage.py generate_secret_key"')
 
