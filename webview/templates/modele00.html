@@ -5,16 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{{ titrePage }}</title>
     {% load static %}
-    <link
-      rel="stylesheet"
-      href="{% static 'webview/css/all_fontawesome-free-5-11-2.css' %}"
-    />
+    <link rel="stylesheet" href="{% static 'webview/css/all_fontawesome-free-5-11-2.css' %}"/>
     <link rel="stylesheet" href="{% static 'webview/css/modele00.css' %}" />
     <link rel="stylesheet" href="{% static 'webview/css/vk.css' %}" />
     <link rel="icon" href="{% static 'webview/images/favicon.ico' %}" />
     {% block css %} {% endblock css %}
     {% if not demo %}
-    <script src="https://js.sentry-cdn.com/677e4405e6f765888fdec02d174000d6.min.js" crossorigin="anonymous"></script>
+    <!-- <script src="https://js.sentry-cdn.com/677e4405e6f765888fdec02d174000d6.min.js" crossorigin="anonymous"></script> -->
     {% endif %}
   </head>
   <body id="contenu">

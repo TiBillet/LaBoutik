@@ -21,6 +21,7 @@ window.ledPossibilite = true
 window.intervalActualisationVuePreparations = 5000 // 3600000
 window.attenteLancerVerifierEtatCommandes = { rep: 0, etat: 0, interval: intervalActualisationVuePreparations }
 
+/*
 try {
   Sentry.init({
     dns: "https://677e4405e6f765888fdec02d174000d6@o262913.ingest.us.sentry.io/4506881155596288",
@@ -31,6 +32,7 @@ try {
 } catch (error) {
   console.log('sentry :', error) 
 }
+*/
 
 // récupère les données de l'appli
 try {
