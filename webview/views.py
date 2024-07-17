@@ -500,6 +500,7 @@ def check_carte(request):
     start = timezone.now()
     if request.method == 'POST':
         tag_id_request = request.data.get('tag_id_client').upper()
+        msg_error = ""
 
         # Methode FEDOW Uniquement, on va mettre a jour la carte
         try:
@@ -508,8 +509,9 @@ def check_carte(request):
             serialized_card_from_fedow = fedowApi.NFCcard.retrieve(tag_id_request)
         except Exception as e:
             logger.error(f"Check carte FEDOW : {e}")
-            return Response({"msg": f"Fedow error. Contact an admin : {e}"},
-                            status=status.HTTP_404_NOT_FOUND)
+            msg_error = _('Fedow error. Contact an admin : ') + e
+            data = {'msg': msg_error }
+            # return Response({"msg": f"Fedow error. Contact an admin : {e}"}, status=status.HTTP_404_NOT_FOUND)
 
         try:
             carte = CarteCashless.objects.get(tag_id=tag_id_request)
@@ -530,7 +532,10 @@ def check_carte(request):
 
         # data['route'] = "check_carte"
         logger.info(f"{timezone.now()} {timezone.now() - start} /wv/check_carte POST {carte}")
-        return Response(data, status=status.HTTP_200_OK)
+        
+        # ancienne réponse 
+        # return Response(data, status=status.HTTP_200_OK)
+        return render(request, 'popup_check_carte.html', data)
 
 
 class Commande:

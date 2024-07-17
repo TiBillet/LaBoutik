@@ -746,6 +746,8 @@ export function gererRetourPostCheckCarte(retour, status, donnees, callback) {
   console.log('-> fonction gererRetourPostCheckCarte !')
   // sys.logValeurs({retour: retour, status: status, donnees: donnees})
   if (donnees.typeCheckCarte === 'parLecteurNfc') {
+    /*
+    // ancien rendu retour POST check_carte
     // ---- carte ok ----
     if (status.code === 200) {
       checkCarteOk(retour)
@@ -792,6 +794,8 @@ export function gererRetourPostCheckCarte(retour, status, donnees, callback) {
       }
       fn.popup(options)
     }
+    */
+    document.querySelector('#contenu').insertAdjacentHTML('beforeend', retour)
   }
 
   if (donnees.typeCheckCarte === 'manuel') {
