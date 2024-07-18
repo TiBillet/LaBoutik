@@ -1,3 +1,6 @@
+# dev nico
+import json
+
 import threading
 from typing import List
 
@@ -541,7 +544,7 @@ def check_carte(request):
         # ancienne réponse 
         # return Response(data, status=status.HTTP_200_OK)
         print(f'-------- data = {data}')
-        return render(request, 'popup_check_carte.html', data)
+        return render(request, 'popup_check_carte.html', data )
 
 
 class Commande:
