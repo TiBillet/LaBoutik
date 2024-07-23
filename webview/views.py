@@ -544,6 +544,7 @@ def check_carte(request):
         # ancienne réponse 
         # return Response(data, status=status.HTTP_200_OK)
         print(f'-------- data = {data}')
+        # import ipdb; ipdb.set_trace()
         return render(request, 'popup_check_carte.html', data )
 
 
