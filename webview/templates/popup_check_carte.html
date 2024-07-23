@@ -1,14 +1,35 @@
-<div id="popup-cashless" style="background-color:{{ background }};" class="BF-col-uniforme popup-cashless-conteneur">
+{% load i18n %}
 
+<div id="popup-cashless" style="background-color:{{ background }};" class="BF-col-uniforme popup-cashless-conteneur">
+    {% if msg != None %}
+    <div class="BF-col check-carte-inconnue l100p h100p" style="white-space: pre-line; text-align: center;">{{ msg }}
+    </div>
+    {% else %}
+    <div class="BF-col-uniforme check-carte-ok">
+        <div class="check-carte-ok-nom test-return-name"><span>{% trans "Nom" %}</span> : {{ membre_name }}</div>
+        <div class="check-carte-ok-cotisation test-return-contribution">{{ cotisation_membre_a_jour }}</div>
+        <div class="check-carte-ok-total-carte test-return-total-card">
+            <span>{% trans "On card" %}</span> : {{ total_monnaie }} <span>{% trans "currency_symbol" %}</span>
+        </div>
+    </div>
+    {% endif %}
+    <!-- assets -->
     <table>
         {% for asset in assets %}
         <tr>
-            {% for item in asset.items %}
-            <td class="popup-msg1 test-return-monnaie-{{categorie}}" style="padding: 4px; border: 1px solid #000;">
-                {{ item.1 }}
+            {% for key, value in asset.items %}
+            {% if key == 'monnaie_name' or key == 'qty' %}
+            <td style="padding: 4px; border: 1px solid #000;">
+                {{ value }}
             </td>
+            {% endif %}
             {% endfor %}
         </tr>
         {% endfor %}
     </table>
+    <div class="popup-conteneur-bt-retour BF-col" style="margin: 10px 0;">
+        <!-- -->
+        <bouton-basique id="popup-retour" traiter-texte="0" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f"
+            icon="fa-undo-alt||2.5rem" width="400px" height="120px" onclick="fn.popupAnnuler();"></bouton-basique> 
+    </div>
 </div>
