@@ -6,13 +6,19 @@
     </div>
     {% else %}
     <div class="BF-col-uniforme check-carte-ok">
-        <div class="check-carte-ok-nom test-return-name"><span>{% trans "Nom" %}</span> : {{ membre_name }}</div>
+        <div class="check-carte-ok-nom test-return-name"><span>{% trans "membre_name" %}</span> : {{ membre_name }}</div>
         <div class="check-carte-ok-cotisation test-return-contribution">{{ cotisation_membre_a_jour }}</div>
         <div class="check-carte-ok-total-carte test-return-total-card">
-            <span>{% trans "On card" %}</span> : {{ total_monnaie }} <span>{% trans "currency_symbol" %}</span>
+            <span>{% trans "Sur carte" %}</span> : {{ total_monnaie }} <span>{% trans "currency_symbol" %}</span>
         </div>
     </div>
     {% endif %}
+  
+    {% for somefield in payment_form %}
+    {{ somefield.pretty }}
+    {% endfor %}
+
+
     <!-- assets -->
     <table>
         {% for asset in assets %}
@@ -27,9 +33,9 @@
         </tr>
         {% endfor %}
     </table>
+
     <div class="popup-conteneur-bt-retour BF-col" style="margin: 10px 0;">
-        <!-- -->
-        <bouton-basique id="popup-retour" traiter-texte="0" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f"
-            icon="fa-undo-alt||2.5rem" width="400px" height="120px" onclick="fn.popupAnnuler();"></bouton-basique> 
+        {% include "elements/bouton_return.html" %}
     </div>
+
 </div>

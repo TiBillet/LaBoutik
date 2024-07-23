@@ -1,6 +1,3 @@
-# dev nico
-import json
-
 import threading
 from typing import List
 

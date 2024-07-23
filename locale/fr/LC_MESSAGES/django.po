@@ -1825,3 +1825,19 @@ msgstr ""
 
 #~ msgid "Articles vendus"
 #~ msgstr "Article vendu"
+
+#: webview/templates/elements/bouton_return:39
+msgid "RETOUR"
+msgstr ""
+
+#: webview/templates/popup_check_carte.html
+msgid "currency_symbol"
+msgstr "€"
+
+#: webview/templates/popup_check_carte.html
+msgid "Sur carte"
+msgstr ""
+
+#: webview/templates/popup_check_carte.html
+msgid "membre_name"
+msgstr "Nom"

@@ -743,7 +743,7 @@ function checkCarteOk(retour) {
  * @param {Function} callback = fonction de retour pour typeCheckCarte = 'manuel'
  */
 export function gererRetourPostCheckCarte(retour, status, donnees, callback) {
-  console.log('-> fonction gererRetourPostCheckCarte !')
+//   console.log('-> fonction gererRetourPostCheckCarte !')
   // sys.logValeurs({retour: retour, status: status, donnees: donnees})
   if (donnees.typeCheckCarte === 'parLecteurNfc') {
     /*

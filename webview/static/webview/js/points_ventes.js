@@ -1049,7 +1049,7 @@ export function postCheckCarte(donnees, callback) {
     // sys.logJson('requete = ',requete)
     sys.ajax(requete, function (retour, status) {
         // sys.logJson('status = ',status)
-        sys.logJson('-> postCheckCarte retour = ',retour)
+        // sys.logJson('-> postCheckCarte retour = ',retour)
         // sys.logJson('donnees = ',donnees)
         gererRetourPostCheckCarte(retour, status, donnees, callback)
     })

@@ -2023,3 +2023,19 @@ msgstr "Work in progress. Sorry, memberships only accept cash or credit card."
 
 #~ msgid "Cartes & Membres"
 #~ msgstr "Members & Cards"
+
+#: webview/templates/elements/bouton_return:39
+msgid "RETOUR"
+msgstr "RETURN"
+
+#: webview/templates/popup_check_carte.html
+msgid "currency_symbol"
+msgstr "$"
+
+#: webview/templates/popup_check_carte.html
+msgid "Sur carte"
+msgstr "On card"
+
+#: webview/templates/popup_check_carte.html
+msgid "membre_name"
+msgstr "Name"
