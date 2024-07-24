@@ -1,9 +1,12 @@
 {% load i18n %}
 
 <div id="popup-cashless" style="background-color:{{ background }};" class="BF-col-uniforme popup-cashless-conteneur">
-    {% if msg != None %}
-    <div class="BF-col check-carte-inconnue l100p h100p" style="white-space: pre-line; text-align: center;">{{ msg }}
-    </div>
+    
+    {% if msg_content != None %}
+    <div  class="BF-col check-carte-inconnue l100p" style="white-space: pre-line; text-align: center;">{{ msg_title }}</div>
+    {% endif %}
+    {% if msg_content != None %}
+    <div class="BF-col check-carte-inconnue l100p" style="white-space: pre-line; text-align: center;">{{ msg_content }}</div>
     {% else %}
     <div class="BF-col-uniforme check-carte-ok">
         <div class="check-carte-ok-nom test-return-name"><span>{% trans "membre_name" %}</span> : {{ membre_name }}</div>

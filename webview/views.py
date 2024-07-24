@@ -508,10 +508,10 @@ def check_carte(request):
             serialized_card_from_fedow = fedowApi.NFCcard.retrieve(tag_id_request)
         except Exception as e:
             logger.error(f"Check carte FEDOW : {e}")
-            msg_error = _('Fedow error. Contact an admin :') + '\n' + str(e)
             data = {
                 'background': '#b85521',
-                'msg': msg_error
+                'msg_title': _("Erreur Fedow. Contacter l'administrateur :"),
+                'msg_content': _(str(e))
             }
             # return Response({"msg": f"Fedow error. Contact an admin : {e}"}, status=status.HTTP_404_NOT_FOUND)
             return render(request, 'popup_check_carte.html', data)
@@ -521,7 +521,7 @@ def check_carte(request):
         except CarteCashless.DoesNotExist:
             data = {
                 'background': '#b85521',
-                'msg': _('carte inconnue'),
+                'msg_content': _('Carte inconnue'),
                 'tag_id': tag_id_request,
                 'route': "check_carte",
             }

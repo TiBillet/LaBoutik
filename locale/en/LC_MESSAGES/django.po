@@ -1970,8 +1970,8 @@ msgid "reste a servir < qty"
 msgstr "remains to be served < qty"
 
 #: webview/views.py:510
-msgid "carte inconnue"
-msgstr "unknown card"
+msgid "Carte inconnue"
+msgstr "Unknown card"
 
 #: webview/views.py:643
 msgid "Fonds insuffisants sur deuxieme carte."
@@ -2039,3 +2039,7 @@ msgstr "On card"
 #: webview/templates/popup_check_carte.html
 msgid "membre_name"
 msgstr "Name"
+
+#: webview/views.py:511
+msgid "Erreur Fedow. Contacter l'administrateur :"
+msgstr "Fedow error. Contact an admin :"
