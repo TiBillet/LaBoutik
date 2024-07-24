@@ -1,12 +1,12 @@
 {% load i18n %}
 
 <div id="popup-cashless" style="background-color:{{ background }};" class="BF-col-uniforme popup-cashless-conteneur">
-    
+   
     {% if msg_content != None %}
-    <div  class="BF-col check-carte-inconnue l100p" style="white-space: pre-line; text-align: center;">{{ msg_title }}</div>
-    {% endif %}
-    {% if msg_content != None %}
-    <div class="BF-col check-carte-inconnue l100p" style="white-space: pre-line; text-align: center;">{{ msg_content }}</div>
+        {% if msg_title != None %}
+        <div  class="BF-col check-carte-inconnue l100p test-return-msg-title" style="white-space: pre-line; text-align: center;">{{ msg_title }}</div>
+        {% endif %}
+    <div class="BF-col check-carte-inconnue l100p test-return-msg-content" style="white-space: pre-line; text-align: center;">{{ msg_content }}</div>
     {% else %}
     <div class="BF-col-uniforme check-carte-ok">
         <div class="check-carte-ok-nom test-return-name"><span>{% trans "membre_name" %}</span> : {{ membre_name }}</div>
@@ -17,21 +17,22 @@
     </div>
     {% endif %}
   
-    {% for somefield in payment_form %}
-    {{ somefield.pretty }}
-    {% endfor %}
-
-
     <!-- assets -->
     <table>
         {% for asset in assets %}
-        <tr>
+        <tr class="test-return-monnaie-{{ asset.categorie }}">
             {% for key, value in asset.items %}
-            {% if key == 'monnaie_name' or key == 'qty' %}
-            <td style="padding: 4px; border: 1px solid #000;">
-                {{ value }}
-            </td>
+            {% if key == 'monnaie_name' %}
+                <td  class="test-return-nom-monnaie nom-monnaie-item{{ forloop.parentloop.counter }}" style="padding: 4px; border: 1px solid #000;">
+                    {{ value }}
+                </td>
             {% endif %}
+            {% if key == 'qty' %}
+                <td class="test-return-valeur-monnaie valeur-monnaie-item{{ forloop.parentloop.counter }}" style="padding: 4px; border: 1px solid #000;">
+                    {{ value }}
+                </td>
+            {% endif %}
+        </td>
             {% endfor %}
         </tr>
         {% endfor %}
