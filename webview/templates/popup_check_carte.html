@@ -20,15 +20,16 @@
     <!-- assets -->
     <table>
         {% for asset in assets %}
-        <tr class="test-return-monnaie-{{ asset.categorie }}">
+        <tr>
             {% for key, value in asset.items %}
             {% if key == 'monnaie_name' %}
-                <td  class="test-return-nom-monnaie nom-monnaie-item{{ forloop.parentloop.counter }}" style="padding: 4px; border: 1px solid #000;">
+                <td  class="test-return-nom-monnaie-item{{ forloop.parentloop.counter }}" style="padding: 4px; border: 1px solid #000;">
                     {{ value }}
                 </td>
             {% endif %}
             {% if key == 'qty' %}
-                <td class="test-return-valeur-monnaie valeur-monnaie-item{{ forloop.parentloop.counter }}" style="padding: 4px; border: 1px solid #000;">
+                <!-- pour les test qty = x.xx (2 chiffres après le point) -->
+                <td class="test-return-valeur-monnaie-item{{ forloop.parentloop.counter }}" style="padding: 4px; border: 1px solid #000;">
                     {{ value }}
                 </td>
             {% endif %}

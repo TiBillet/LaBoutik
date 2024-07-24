@@ -2030,7 +2030,7 @@ msgstr "RETURN"
 
 #: webview/templates/popup_check_carte.html
 msgid "currency_symbol"
-msgstr "$"
+msgstr "€"
 
 #: webview/templates/popup_check_carte.html
 msgid "Sur carte"

@@ -151,6 +151,7 @@ export const en = {
     prePurchaseCard: 'pre-purchase card',
     postPurchaseCard: 'post-purchase card',
     cardsTotal: 'cards total',
-    totalCardWallet: 'total card wallet'
+    totalCardWallet: 'total card wallet',
+    noContribution: 'no contribution'
   }
 }

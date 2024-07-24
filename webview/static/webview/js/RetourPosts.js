@@ -684,57 +684,6 @@ export function gererRetourPostPaiement(retour, status, options) {
   }
 }
 
-function checkCarteOk(retour) {
-  // console.log('-> fonction checkCarteOk !')
-  // sys.logJson('retour = ', retour)
-
-  const translateName = getTranslate('name') === '' ? "Nom" : getTranslate('name', 'capitalize')
-  let totalMonnaie = parseFloat(retour.total_monnaie)
-  let membreName = retour.membre_name
-  let typeMessage = 'succes'
-  if (retour.cotisation_membre_a_jour_booleen === false) {
-    typeMessage = 'attent'
-  }
-
-  // émet un message sur la matrice led, uniquement pour un raspberry "FPI"
-  if (window.ledPossibilite === true && SOCKET && glob.appConfig.front_type === "FPI") {
-    let assets = retour.assets
-    let ledMessage = `${translateName} : ${membreName}  --  `
-    for (let i = 0; i < assets.length; i++) {
-      let valeurAsset = parseFloat(assets[i].qty)
-      if (valeurAsset > 0) {
-        ledMessage += assets[i].monnaie_name + ' : ' + valeurAsset + '  --  '
-      }
-    }
-    SOCKET.emit('ecran_matrice', { data: ledMessage, scroll: 2 })
-  }
-
-  let msg = `
-    <div class="BF-col-uniforme check-carte-ok">
-      <!-- <div class="check-carte-ok-nom test-return-name">${translateName} : ${membreName}</div> -->
-      <div class="check-carte-ok-nom test-return-name"><span data-i8n="name,capitalize">Nom</span> : ${membreName}</div>
-      <div class="check-carte-ok-cotisation test-return-contribution">${retour.cotisation_membre_a_jour}</div>
-      <div class="check-carte-ok-total-carte test-return-total-card">
-      <span data-i8n="on,capitalize">Sur</span> <span data-i8n="card">carte</span> : ${totalMonnaie} <span data-i8n="currencySymbol"></span>
-      </div>
-      ${messageRetourAssets(retour)}
-    </div>
-  `
-
-  let bouton = `
-    <div class="popup-conteneur-bt-retour BF-col">
-        <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="fn.popupAnnuler();"></bouton-basique>
-    </div>
-  `
-
-  let options = {
-    message: msg,
-    boutons: bouton,
-    type: typeMessage
-  }
-  fn.popup(options)
-}
-
 /**
  * Gère le retour de la requètes POST "check_carte"
  * @param {Object} retour = données reçues de la requète
@@ -746,55 +695,6 @@ export function gererRetourPostCheckCarte(retour, status, donnees, callback) {
 //   console.log('-> fonction gererRetourPostCheckCarte !')
   // sys.logValeurs({retour: retour, status: status, donnees: donnees})
   if (donnees.typeCheckCarte === 'parLecteurNfc') {
-    /*
-    // ancien rendu retour POST check_carte
-    // ---- carte ok ----
-    if (status.code === 200) {
-      checkCarteOk(retour)
-    }
-    // ---- carte inconnue ----
-    if (status.code === 404) {
-      // carte inconnue
-      let message = `<div class="BF-col check-carte-inconnue l100p h100p">${retour.msg}</div>`
-      let bouton = `
-          <div class="popup-conteneur-bt-retour BF-col">
-              <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="fn.popupAnnuler();"></bouton-basique>
-          </div>
-        `
-      let options = {
-        message: message,
-        boutons: bouton,
-        type: 'attent'
-      }
-      fn.popup(options)
-    }
-    // ---- erreurs ----
-    if (status.code !== 200 && status.code !== 404) {
-      let msg = `
-          <!--
-          <div class="d-flex flex-column justify-content-center align-items-center" style="font-weight:bold;color:#FFFFFF;text-shadow: 0px 1px 0px rgba(255,255,255,0.5);">
-            <div style="font-size:2rem;margin-bottom:24px" class="test-erreur-dif200400">
-            <span data-i8n="stausCodeError,uppercase">ERREUR STATUS CODE</span> : ${status.code}
-            </div>
-            <div style="font-size:1.5rem;margin-bottom:8px" class="test-erreur-text">${status.texte}</div>
-          <div>
-          -->
-          <div class="popup-titre1"><span data-i8n="error,capitalize">Erreur</span> :</div>
-          <div class="popup-msg1 test-msg-paye-erreur" data-i8n="afterCheckCard">après un check-carte !</div>
-        `
-      let bouton = `
-          <div class="popup-conteneur-bt-retour BF-col">
-              <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="fn.popupAnnuler();"></bouton-basique>
-          </div>
-        `
-      let options = {
-        message: msg,
-        boutons: bouton,
-        type: 'danger'
-      }
-      fn.popup(options)
-    }
-    */
     document.querySelector('#contenu').insertAdjacentHTML('beforeend', retour)
   }
 
