@@ -152,7 +152,7 @@ export function assignerTableEphemere() {
     <small id="entree-nom-table-msg-erreur" style="margin-bottom:0.5rem;"></small>`
 
   // Sans clavier virtuel pour les autres fronts
-  if (glob.appConfig.periph !== 'FPI') {
+  if (glob.appConfig.front_type !== 'FPI') {
     entreeClavier = `<input id="entree-nom-table" class="input-nom-table" placeholder="${placeHolder}" autofocus>
       <small id="entree-nom-table-msg-erreur" style="margin-bottom:0.5rem;"></small>`
   }
@@ -397,7 +397,7 @@ export function demanderValeurAdditionFractionnee() {
 
     // Sans clavier virtuel pour les autres fronts
     // console.log('glob.storage = ', glob.storage)
-    if (glob.appConfig.periph !== 'FPI') {
+    if (glob.appConfig.front_type !== 'FPI') {
       message = `<input id="addition-fractionnee" class="addition-fractionnee-input">
       <small id="addition-fractionnee-msg-erreur"></small>`
     }
