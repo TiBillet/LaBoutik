@@ -409,7 +409,7 @@ class Command(BaseCommand):
             def _lespass_handshake(self):
                 # On ping LesPass
                 config = Configuration.get_solo()
-                lespass_url = self.lespass_url
+                lespass_url = os.environ['LESPASS_TENANT_URL']
                 lespass_state = None
                 ping_count = 0
 
@@ -434,6 +434,8 @@ class Command(BaseCommand):
                 lespass_admin_pub_pem = hello_lespass.json()['public_pem']
                 lespass_admin_public_key = get_public_key(lespass_admin_pub_pem)
 
+                # Pour les ancienne instances
+                # APIKey.objects.filter(name="billetterie_key").delete()
                 api_key, key = APIKey.objects.create_key(name="billetterie_key")
                 config.key_billetterie = api_key
 
@@ -443,6 +445,7 @@ class Command(BaseCommand):
                                                       "server_cashless": f"https://{os.environ['DOMAIN']}",
                                                       "key_cashless": f"{rsa_encrypt_string(utf8_string=key, public_key=lespass_admin_public_key)}",
                                                       "pum_pem_cashless": f"{config.get_public_pem()}",
+                                                      "email": f"{os.environ['ADMIN_EMAIL']}",
                                                   },
                                                   verify=bool(not settings.DEBUG))
 
@@ -453,9 +456,10 @@ class Command(BaseCommand):
                 fernet_key = rsa_decrypt_string(utf8_enc_string=cypher_rand_key, private_key=config.get_private_key())
                 cypher_json_key_to_cashless = handshake_lespass_data['cypher_json_key_to_cashless']
 
+                # from cryptography.fernet import Fernet
                 decryptor = Fernet(fernet_key)
                 config.string_connect = decryptor.decrypt(cypher_json_key_to_cashless.encode('utf-8')).decode('utf8')
-                config.billetterie_url = self.lespass_url
+                config.billetterie_url = lespass_url
                 # Le nom de la structure est le même que le tenant
 
                 config.structure = handshake_lespass_data.get('organisation_name')
@@ -473,7 +477,7 @@ class Command(BaseCommand):
             def _fedow_handshake(self):
                 # On ping Fedow
                 config = Configuration.get_solo()
-                fedow_url = self.fedow_url
+                fedow_url = os.environ['FEDOW_URL']
 
                 fedow_state = None
                 ping_count = 0
@@ -538,7 +542,8 @@ class Command(BaseCommand):
                 config.fedow_domain = fedow_url
                 config.save()
 
-                if handshake(config):
+                fedow_handshake = handshake(config)
+                if fedow_handshake:
                     after_handshake()
 
                 config.refresh_from_db()

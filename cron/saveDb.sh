@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 # a lancer sur l'hote qui heberge les conteneurs. Verifier que borgbackup soit bien installé !
 # Créer une clé ssh dans le conteneur et copier la avec : ssh-copy-id tibilletbackup@de.codecommun.co -p 49422
 

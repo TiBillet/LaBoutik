@@ -54,9 +54,8 @@ def login_admin(request):
             login(request, user)
 
 
-    # EN CAS DE DEBUG :
+    # EN CAS DE DEBUG On va chercher le premier admin et on log :
     if settings.DEBUG:
-        # On log automatioquement un admin non root :
         user = get_user_model().objects.filter(
             is_staff=True,
             is_superuser=False,

@@ -567,7 +567,6 @@ class WalletFedow():
     #     if response_link.status_code == 201:
     #         wallet, created = Wallet.objects.get_or_create(uuid=UUID(response_link.json()))
     #         return wallet, created
-    #
     #     raise Exception(f"Wallet FedowAPI create_from_email response : {response_link.status_code}")
 
 
@@ -634,6 +633,8 @@ class FedowAPI():
                 moyen_paiement=asset_g) else timezone.now().isoformat()
         })
 
+        """
+        # L'adhésion associative est gérée par Lespass
         # On ajoute l'adhésion associative
         uuid_adhesion = f"{uuid4()}"
         if self.config.methode_adhesion:
@@ -648,6 +649,10 @@ class FedowAPI():
                 'date_ajout').first().date_ajout.isoformat() if Membre.objects.count() > 0 else timezone.now().isoformat()
         })
 
+        """
+
+        """
+        # Badgeuse gérée par Lespass
         # La Badgeuse si elle existe
         try:
             asset_b = MoyenPaiement.objects.get(categorie=MoyenPaiement.BADGE)
@@ -666,6 +671,7 @@ class FedowAPI():
         except Exception as e:
             print(e)
             raise e
+        """
 
         responses = []
         for message in assets_to_send:

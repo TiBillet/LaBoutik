@@ -134,7 +134,7 @@ class TokenValidator(serializers.Serializer):
     @staticmethod
     def update_or_create(serilized_tokens, card):
         tokens_cashless = []
-        #TODO: Virer les précédents tokens car fedow est sensé faire foi partout ?
+        # TODO: Virer les précédents tokens car fedow est sensé faire foi partout ?
         # Les tokens locaux sont créé avant d'être envoyé sur Fedow.
         # Du coup, le pk des tokens fedow et asset laboutik ne correspondent pas.
         # Revoir la methode Webview.view.Commande.asset_principal()
@@ -150,7 +150,6 @@ class TokenValidator(serializers.Serializer):
             except Exception as e:
                 raise serializers.ValidationError(f"Erreur lors de la mise à jour des assets de la carte : {e}")
 
-
             # Que cela soit du token fiat ou non fiat ou d'adhésion, on mets à jour la valeur. Fedow a toujours raison.
             token_cashless.qty = (token['value'] / 100)
             logger.info(f"FEDOW ASSET {token_cashless.monnaie.name} TO asset.qty {token_cashless.qty}")
@@ -160,7 +159,7 @@ class TokenValidator(serializers.Serializer):
         # Si il existe une autre carte avec le même wallet dans le serveur,
         # on met les token à zero car cela sera compté en double par le serveur cashless.
         wallet = card.get_wallet()
-        if wallet :
+        if wallet:
             other_cards = wallet.cards.exclude(id=card.id)
             if other_cards.exists():
                 for card in other_cards:
@@ -226,6 +225,7 @@ class CardValidator(serializers.Serializer):
                 origin=self.fields['origin'].origin,
             )
         except Exception as e:
+            # import ipdb; ipdb.set_trace()
             raise serializers.ValidationError(f"Erreur lors de la récupération de la carte : {e}")
 
         # Mise à jour des assets de la carte :
