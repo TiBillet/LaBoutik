@@ -172,9 +172,9 @@ def after_handshake():
 
     # A faire a la main pour des updates de cashless déja existant.
     # TODO: A virer une fois tout les cashless convertis en laboutik
-    send_assets()
-    create_cards_and_pre_token()
-    send_existing_tokens()
+    # send_assets()
+    # create_cards_and_pre_token()
+    # send_existing_tokens()
     # send_existing_members()
 
     config = Configuration.get_solo()

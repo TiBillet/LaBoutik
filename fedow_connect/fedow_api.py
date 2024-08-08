@@ -606,10 +606,9 @@ class FedowAPI():
 
     def send_assets_from_cashless(self):
         # Envoie les moyens de paiements cashless, badge et adhésion déja existant à Fedow
-
         assets_to_send = []
-
         # Sera utilisé que pour les instances CASHLESS en cours
+
         asset = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
         assets_to_send.append({
             "uuid": str(asset.pk),

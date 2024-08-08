@@ -427,7 +427,7 @@ class Command(BaseCommand):
                     else:
                         ping_count += 1
                         logger.warning(
-                            f'ping lespass_url at {lespass_url} without succes. sleep(1) : count {ping_count}')
+                            f'ping lespass_url at {lespass_url} without success. sleep(1) : count {ping_count}')
                         sleep(1)
 
                 # noinspection PyUnboundLocalVariable
