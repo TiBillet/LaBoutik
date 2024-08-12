@@ -17,8 +17,6 @@ from kiosk.validators import AmountValidator, CardValidator, BillValidator
 from kiosk.models import ScannedNfcCard, Payment
 
 
-
-
 # First page
 def index(request):
     last_scanned = ScannedNfcCard.objects.all().order_by('created_at').last()
@@ -80,37 +78,6 @@ class CardViewset(viewsets.ViewSet):
         return render(request,
         'kiosk_pages/recharge.html',
         {'total':total, 'card': card})
-
-
-
-    # @action(detail=False, methods=['POST'])
-    # def confirmation_paiment(self, request):
-    #     confirmation_data = AmountValidator(data=request.data)
-    #     # check if the datas are well selected
-    #     if not confirmation_data.is_valid():
-    #         message = ("Error, of payment, please take the money from the device"
-    #                    "and try again!")
-    #
-    #         return render(request, 'paiment/error_paiment.html',
-    #                       {'message': message})
-    #
-    #     card: CarteCashless = confirmation_data.validated_data.get('uuid')
-    #     total: Decimal = confirmation_data.validated_data.get('total')
-    #     device_confirm_paiment = confirmation_data.validated_data.get('device_confirm_paiment')
-    #
-    #     """
-    #     if device_confirm_paiment != None:
-    #         card = Card.objects.get(uuid=uuid)
-    #         card.amount += int(total)
-    #         card.save()
-    #         return render(request, 'paiment/confirmation_paiement.html', {'card': card})
-    #     """
-    #
-    #     message = ("Error, of payment, please take the money from the device"
-    #                "and try again!")
-    #
-    #     return render(request, 'paiment/error_paiment.html',
-    #                   {'message': message})
 
 
 class DeviceViewset(viewsets.ViewSet):
