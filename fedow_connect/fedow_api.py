@@ -153,6 +153,8 @@ class Subscription():
         if not date:
             date = localtime()
 
+        if not article:
+            raise ValueError('Article must be an Membership product')
         if article.methode_choices != Articles.ADHESIONS:
             raise ValueError('Article must be an Membership product')
         if not article.subscription_fedow_asset:
@@ -165,12 +167,14 @@ class Subscription():
             "asset": f"{article.subscription_fedow_asset.pk}",
             "subscription_start_datetime": date.isoformat(),
         }
+
         if user_card_firstTagId:
             subscription['user_card_firstTagId'] = f"{user_card_firstTagId}"
         if primary_card_fisrtTagId:
             subscription['primary_card_fisrtTagId'] = f"{primary_card_fisrtTagId}"
 
         response_subscription = _post(self.config, 'transaction', subscription)
+
         if response_subscription.status_code == 201:
             serialized_transaction = TransactionValidator(data=response_subscription.json())
             if serialized_transaction.is_valid():
@@ -181,6 +185,7 @@ class Subscription():
 
         else:
             logger.error(response_subscription.json())
+            import ipdb; ipdb.set_trace()
             return response_subscription.status_code
 
     def retrieve(self, wallet: uuid4 = None):
@@ -363,18 +368,7 @@ class NFCCard():
              primary_card_fisrtTagId: str = None):
         return self.refund(user_card_firstTagId, primary_card_fisrtTagId, void=True)
 
-    def link_user(self, email: str = None, card: CarteCashless = None, membre=None):
-        if not membre :
-            membre = Membre.objects.get(email=email)
-
-        # Check if card is already linked to the good member
-        if card.membre is not None:
-            if card.membre != membre:
-                raise Exception("Card already linked to another member")
-        elif not card.membre:
-            card.membre = membre
-            card.save()
-
+    def link_user(self, email: str = None, card: CarteCashless = None):
         create_wallet_with_tag_id = {
             "email": email,
             "card_first_tag_id": card.tag_id,
@@ -382,10 +376,7 @@ class NFCCard():
         response_link = _post(self.config, 'wallet', create_wallet_with_tag_id)
         if response_link.status_code == 201:
             wallet, created = WalletDb.objects.get_or_create(uuid=UUID(response_link.json()))
-            membre.wallet = wallet
-            membre.save()
             card.wallet = wallet
-
             card.save()
             return card.wallet
 
@@ -512,17 +503,6 @@ class PlaceFedow():
         logger.error(accepted_assets)
         raise Exception(f"{accepted_assets.status_code}")
 
-    def add_me_to_test_fed(self):
-        accepted_assets = _get(self.config, ['place/add_me_to_test_fed'])
-        if accepted_assets.status_code == 200:
-            # Mise à jour et création des assets s'ils n'existent pas
-            accepted_assets = self.get_accepted_assets()
-            fiducial_assets = [MoyenPaiement.objects.get(pk=asset.get('uuid')) for asset in accepted_assets if
-                               asset.get('category') == AssetValidator.TOKEN_LOCAL_FIAT]
-            config = Configuration.get_solo()
-            config.monnaies_acceptes.add(*fiducial_assets)
-            config.save()
-            return accepted_assets
 
 
 class AssetFedow():
@@ -582,16 +562,13 @@ class WalletFedow():
         if config is None:
             self.config = Configuration.get_solo()
 
-    def get_or_create_wallet_from_email(self, email: str = None, save=True):
-        response_link = _post(self.config, 'wallet', {"email": email})
-        if response_link.status_code == 201:
-            wallet, created = Wallet.objects.get_or_create(uuid=UUID(response_link.json()))
-            return wallet, created
+    # def get_or_create_wallet_from_email(self, email: str = None, save=True):
+    #     response_link = _post(self.config, 'wallet', {"email": email})
+    #     if response_link.status_code == 201:
+    #         wallet, created = Wallet.objects.get_or_create(uuid=UUID(response_link.json()))
+    #         return wallet, created
+    #     raise Exception(f"Wallet FedowAPI create_from_email response : {response_link.status_code}")
 
-        raise Exception(f"Wallet FedowAPI create_from_email response : {response_link.status_code}")
-
-    def create(self, cards: list):
-        pass
 
     def retrieve(self, wallet: uuid4 = None):
         response_wallet = _get(self.config, ['wallet', f"{UUID(wallet)}"])
@@ -602,9 +579,6 @@ class WalletFedow():
 
         raise Exception(f"{response_wallet.status_code}")
 
-    def send_token(self):
-        # wallet to wallet
-        pass
 
 
 class FedowAPI():
@@ -632,10 +606,9 @@ class FedowAPI():
 
     def send_assets_from_cashless(self):
         # Envoie les moyens de paiements cashless, badge et adhésion déja existant à Fedow
-
         assets_to_send = []
-
         # Sera utilisé que pour les instances CASHLESS en cours
+
         asset = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
         assets_to_send.append({
             "uuid": str(asset.pk),
@@ -659,6 +632,8 @@ class FedowAPI():
                 moyen_paiement=asset_g) else timezone.now().isoformat()
         })
 
+        """
+        # L'adhésion associative est gérée par Lespass
         # On ajoute l'adhésion associative
         uuid_adhesion = f"{uuid4()}"
         if self.config.methode_adhesion:
@@ -673,6 +648,10 @@ class FedowAPI():
                 'date_ajout').first().date_ajout.isoformat() if Membre.objects.count() > 0 else timezone.now().isoformat()
         })
 
+        """
+
+        """
+        # Badgeuse gérée par Lespass
         # La Badgeuse si elle existe
         try:
             asset_b = MoyenPaiement.objects.get(categorie=MoyenPaiement.BADGE)
@@ -691,6 +670,7 @@ class FedowAPI():
         except Exception as e:
             print(e)
             raise e
+        """
 
         responses = []
         for message in assets_to_send:

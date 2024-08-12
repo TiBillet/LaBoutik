@@ -5,8 +5,14 @@ POSTGRES_USER='laboutik_user'
 POSTGRES_PASSWORD=''
 POSTGRES_DB='laboutik'
 
-# The domain of this instance ex : 'cashless.tibillet.localhost'
+# The domain of this instance ex : 'laboutik.tibillet.localhost'
 DOMAIN=''
+# No Cashless if no Fedow nor Lespass tenant manager
+FEDOW_URL='https://fedow.tibillet.localhost/'
+LESPASS_TENANT_URL='https://demo.tibillet.localhost/'
+
+# The name of your cashless asset ex : TestCoin, FestivalCoin, etc ....
+MAIN_ASSET_NAME='TestCoin'
 
 # admin email
 ADMIN_EMAIL=''
@@ -20,14 +26,6 @@ EMAIL_HOST_PASSWORD=""
 TIME_ZONE='Europe/Paris'
 LANGUAGE_CODE='fr'
 
-########## FOR CASHLESS ##########
-
-# No Cashless if no Fedow nor Lespass tenant manager
-FEDOW_URL='https://fedow.tibillet.localhost/'
-LESPASS_TENANT_URL='https://demo.tibillet.localhost/'
-
-# The name of your cashless asset ex : TestCoin, FestivalCoin, etc ....
-MAIN_ASSET_NAME='TestCoin'
 
 ########## FOR SAVE CRON TASK ##########dex
 

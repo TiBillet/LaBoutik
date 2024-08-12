@@ -21,6 +21,7 @@ window.ledPossibilite = true
 window.intervalActualisationVuePreparations = 5000 // 3600000
 window.attenteLancerVerifierEtatCommandes = { rep: 0, etat: 0, interval: intervalActualisationVuePreparations }
 
+/*
 try {
   Sentry.init({
     dns: "https://677e4405e6f765888fdec02d174000d6@o262913.ingest.us.sentry.io/4506881155596288",
@@ -31,6 +32,7 @@ try {
 } catch (error) {
   console.log('sentry :', error) 
 }
+*/
 
 // récupère les données de l'appli
 try {
@@ -64,8 +66,8 @@ const demande_pvs = function (data) {
     data: { "type-action": "valider_carte_maitresse", "type-post": "ajax", "tag-id-cm": tagIdCm }
   }
   sys.ajax(requete, function (retour, status) {
-    // sys.logJson('retour = ',retour)
-    // sys.logJson('status = ',status)
+    sys.logJson('retour = ',retour)
+    sys.logJson('status = ',status)
 
     // icon de chargement
     sys.affCharge({ etat: 1, largeur: 80, couleur: '#0F0', nbc: 8, rpt: 4, epaisseur: 8 })

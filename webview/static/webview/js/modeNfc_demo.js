@@ -137,7 +137,7 @@ let Nfc = class {
     window.glob['appConfig'] = {
       hostname: "appareilDemo",
       password: "passwordDemo",
-      periph: "FOR",
+      front_type: "FOR",
       locale: "fr",
       mode_nfc: "modeNfcDemo",
       ip_lan: "127.0.0.1",

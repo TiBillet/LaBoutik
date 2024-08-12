@@ -220,11 +220,11 @@ class oceco_endpoint(APIView):
             return Response(f"Not valid", status=status.HTTP_401_UNAUTHORIZED)
 
 
+# ex api pre fedow
+"""
 class membre_check(APIView):
     permission_classes = [HasAPIKey]
-
     # permission_classes = [AllowAny]
-
     def post(self, request):
         if not billetterie_white_list(request):
             return Response('no no no', status=status.HTTP_401_UNAUTHORIZED)
@@ -238,8 +238,11 @@ class membre_check(APIView):
         logger.error(
             f"{timezone.now()} /api/membre_check POST validator.errors : {validator.errors}")
         return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
+"""
 
 
+# ex api pre fedow
+"""
 class ChargeCard(APIView):
     permission_classes = [HasAPIKey]
 
@@ -309,7 +312,7 @@ class ChargeCard(APIView):
         logger.error(
             f"{timezone.now()} ChargeCard POST validator.errors : {validator.errors}")
         return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
-
+"""
 
 class OnboardStripeReturn(APIView):
     permission_classes = [AllowAny]
@@ -484,8 +487,8 @@ class SaleFromLespass(APIView):
         except Articles.DoesNotExist:
             raise Exception('Pas de correspondance article - price')
 
-
-
+# ex api pre fedow
+"""
 class billetterie_endpoint(APIView):
     permission_classes = [HasAPIKey]
 
@@ -603,7 +606,11 @@ class billetterie_endpoint(APIView):
         logger.info(
             f"{timezone.now()} {timezone.now() - start} /APIcashless/billetterie_endpoint POST paiement: {data}")
         return Response(json.dumps(json_reponse, cls=DecimalEncoder), status=status.HTTP_200_OK)
+"""
 
+
+# ex api pre fedow
+"""
 
 class billetterie_qrcode_adhesion(APIView):
     '''
@@ -685,6 +692,7 @@ class billetterie_qrcode_adhesion(APIView):
         else:
             logger.error(f'{validator_adhesionValidator.errors}')
             return Response(validator_adhesionValidator.errors, status=status.HTTP_400_BAD_REQUEST)
+"""
 
 
 class preparations(APIView):

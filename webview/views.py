@@ -54,9 +54,8 @@ def login_admin(request):
             login(request, user)
 
 
-    # EN CAS DE DEBUG :
+    # EN CAS DE DEBUG On va chercher le premier admin et on log :
     if settings.DEBUG:
-        # On log automatioquement un admin non root :
         user = get_user_model().objects.filter(
             is_staff=True,
             is_superuser=False,
@@ -210,9 +209,16 @@ def index(request):
     if not getattr(request.user, 'appareil', None) and not mode_demo:
         return HttpResponseNotFound(_(f"Terminal non appairé ou mode demo : {mode_demo}"))
 
-    if request.method == 'POST':
-        configuration = Configuration.get_solo()
+    print("----------------------------------------------")
+    print(f"-> request.method = {request.method}")
+    print("----------------------------------------------")
 
+    if request.method == 'POST':
+        print("----------------------------------------------")
+        # print(f"->data ={request.POST}")
+        print("----------------------------------------------")
+
+        configuration = Configuration.get_solo()
         # valider la carte primaire
         if request.POST.get('type-action') == 'valider_carte_maitresse':
             tag_id_cm = request.POST.get('tag-id-cm').upper()
@@ -497,7 +503,8 @@ def check_carte(request):
         # Methode FEDOW Uniquement, on va mettre a jour la carte
         try:
             fedowApi = FedowAPI()
-            fedowApi.NFCcard.retrieve(tag_id_request)
+            # CardValidator. Mets à jour les assets/tokens depuis Fedow
+            serialized_card_from_fedow = fedowApi.NFCcard.retrieve(tag_id_request)
         except Exception as e:
             logger.error(f"Check carte FEDOW : {e}")
             return Response({"msg": f"Fedow error. Contact an admin : {e}"},
@@ -639,7 +646,6 @@ class Commande:
                     self.reponse = {
                         'route': "transcation_nfc2_fonds_insuffisants",
                         'message': {
-                            # TODO: Nico se base sur cette string... il va falloir changer ça dans le front sinon c'est intraduisible
                             'msg': _("Fonds insuffisants sur deuxieme carte."),
                             'manque': f"{abs(self.manque)}"
                         }
@@ -711,9 +717,8 @@ class Commande:
                 logger.info(f"    Carte : {asset.carte.number} - {asset}")
 
             # Une fois tout les paiments passés, on met à jour les assets coté Fedow
-            if self.configuration.can_fedow():
-                self._send_to_fedow_used_assets()
-                self._send_to_fedow_refill_assets()
+            self._send_to_fedow_used_assets()
+            self._send_to_fedow_refill_assets()
 
             self.reponse['carte'] = CarteCashlessSerializer(self.carte_db).data
             self.reponse['total_sur_carte_avant_achats'] = f"{dround(self.total_in_payments_assets)}" \
@@ -876,6 +881,7 @@ class Commande:
                 user_card_firstTagId=f"{self.carte_db.tag_id}",
                 primary_card_fisrtTagId=self.primary_card_fisrtTagId,
             )
+
             # Ajout du hash de BC dans les paiements
             ArticleVendu.objects.filter(
                 uuid_paiement=self.uuid_paiement,

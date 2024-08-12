@@ -152,7 +152,7 @@ export function assignerTableEphemere() {
     <small id="entree-nom-table-msg-erreur" style="margin-bottom:0.5rem;"></small>`
 
   // Sans clavier virtuel pour les autres fronts
-  if (glob.appConfig.periph !== 'FPI') {
+  if (glob.appConfig.front_type !== 'FPI') {
     entreeClavier = `<input id="entree-nom-table" class="input-nom-table" placeholder="${placeHolder}" autofocus>
       <small id="entree-nom-table-msg-erreur" style="margin-bottom:0.5rem;"></small>`
   }
@@ -397,7 +397,7 @@ export function demanderValeurAdditionFractionnee() {
 
     // Sans clavier virtuel pour les autres fronts
     // console.log('glob.storage = ', glob.storage)
-    if (glob.appConfig.periph !== 'FPI') {
+    if (glob.appConfig.front_type !== 'FPI') {
       message = `<input id="addition-fractionnee" class="addition-fractionnee-input">
       <small id="addition-fractionnee-msg-erreur"></small>`
     }
@@ -1043,9 +1043,8 @@ export function visualiserEtatCommandes(retour) {
       if (maxNbArticleAServir > 0) {
         // ------------ entête ------------
         let dateStringTmp = new Date(commande.datetime)
-        // let dateStringTmp = new Date.parse(commande.datetime)
-        let heureLocaleTab = dateStringTmp.toLocaleTimeString(local, { hour12: false }).split(':')
-        const heureCommande = heureLocaleTab[0] + ':' + heureLocaleTab[1]
+        const baseTmp = commande.datetime.split('T')[1].split(':')
+        const heureCommande = baseTmp[0] + ':' + baseTmp[1]
         let dateJour = dateStringTmp.toLocaleDateString()
         let dateDuJour = (new Date()).toLocaleDateString()
         let styleCouleurAlerteDate = '', couleurIconTable = ''

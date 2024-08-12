@@ -984,10 +984,10 @@ class CarteCashless(models.Model):
         return assets.aggregate(Sum('qty')).get('qty__sum') or 0
 
     def get_wallet(self):
-        if self.membre:
+        # if self.membre:
             # Si le membre n'a pas d'email, il existe mais n'a pas de wallet
-            if self.membre.wallet:
-                return self.membre.wallet
+            # if self.membre.wallet:
+            #     return self.membre.wallet
         return self.wallet
 
     def get_local_euro(self):
@@ -1175,9 +1175,6 @@ class Table(models.Model):
             .exclude(statut=CommandeSauvegarde.ANNULEE)
         if commandes_ni_servie_ni_payee.count() == 0:
             self.statut = Table.LIBRE  # table libre
-            # A lancer le lendemain matin
-            # if self.ephemere :
-            #     self.archive = True
             self.save()
         else:
             self.statut = Table.EN_COURS  # pas d'ouverte, tout est servi !
@@ -1189,7 +1186,6 @@ class Table(models.Model):
                 .exclude(statut=CommandeSauvegarde.ANNULEE) \
                 .exclude(statut=CommandeSauvegarde.SERVIE_PAYEE) \
                 .exclude(statut=CommandeSauvegarde.PAYEE):
-            # print(commande.reste_a_payer())
             reste_a_payer += commande.reste_a_payer()
 
         return reste_a_payer

@@ -47,11 +47,8 @@ def get_fedow():
     return fedowAPI
 
 def send_assets():
-    pass
     # Envoie des assets et de l'adhésion
-    """
-    @return: 
-    fedowAPI = get_fedow()
+    fedowAPI = FedowAPI()
     responses = fedowAPI.send_assets_from_cashless()
     for response in responses:
         if response.status_code != 201:
@@ -63,22 +60,18 @@ def send_assets():
     assets = [MoyenPaiement.objects.get(pk=asset.get('uuid')) for asset in assets_acc]
 
     return assets
-    """
 
 
 
 def create_cards_and_pre_token():
     # Envoie des cartes et des uuid des tokens
-    fedowAPI = get_fedow()
+    fedowAPI = FedowAPI()
     cartes = CarteCashless.objects.all()
-    chunk_size = 200
-    cartes_chunks = [cartes[i:i + chunk_size] for i in range(0, len(cartes), chunk_size)]
-    for chunk in cartes_chunks:
-        response = fedowAPI.NFCcard.create(chunk)
+    for carte in cartes:
+        print(f"send carte number : {carte.number}")
+        response = fedowAPI.NFCcard.create([carte,])
         if response.status_code == 201:
-            sleep(1)
-            if len(chunk) != int(response.json()):
-                raise Exception(f"Erreur lors de l'envoi des cartes : {response}")
+            pass
         elif response.status_code == 206:
             logger.warning(f"Partial content, cards already exist, created {len(response.json())} only")
         else:
@@ -86,7 +79,7 @@ def create_cards_and_pre_token():
 
 def send_existing_tokens():
     # Envoi des tokens
-    fedowAPI = get_fedow()
+    fedowAPI = FedowAPI()
     cartes = CarteCashless.objects.all()
     carte_primaire = CarteMaitresse.objects.filter(carte__membre__isnull=False).first()
     for carte in cartes:
@@ -112,11 +105,13 @@ def send_existing_tokens():
                 )
 
         # # On lance un fedow retrieve, et si on est en TEST, on accepte les monnaies automatiquement
-        call_command('import_assets')
+        # call_command('import_assets')
+
+#TODO: Passer par un import json plutôt qu'un envoie de membre qui DDOS
 
 def send_existing_members():
     # Envoie des comptes membres
-    fedowAPI = get_fedow()
+    fedowAPI = FedowAPI()
 
     # refaire ça en mode atomique !!!!
     for membre in Membre.objects.filter(email__isnull=False).exclude(email=""):
@@ -170,8 +165,10 @@ def after_handshake():
     Origin.objects.all().delete()
     Place.objects.all().delete()
     MoyenPaiement.objects.filter(categorie=MoyenPaiement.STRIPE_FED).delete()
+
+    # Uniquement ces deux pour la migration
     fedowAPI = FedowAPI()
-    fedowAPI.place.get_accepted_assets()
+    assets = fedowAPI.place.get_accepted_assets()
 
     # A faire a la main pour des updates de cashless déja existant.
     # TODO: A virer une fois tout les cashless convertis en laboutik
@@ -179,6 +176,7 @@ def after_handshake():
     # create_cards_and_pre_token()
     # send_existing_tokens()
     # send_existing_members()
+
     config = Configuration.get_solo()
     config.fedow_synced = True
     config.save()

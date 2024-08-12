@@ -1,6 +1,7 @@
 database
 postgresql
 .env
+env*
 img
 SaveDb
 logs/Djangologfile
