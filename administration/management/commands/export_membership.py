@@ -10,7 +10,7 @@ class Command(BaseCommand):
         for membre in Membre.objects.filter(email__isnull=False).exclude(email=""):
             data.append(
                 {
-                    'email': membre.email,
+                    'email': membre.email.lower(),
                     'first_name': membre.prenom,
                     'last_name': membre.name,
                     'postal_code': membre.code_postal,
