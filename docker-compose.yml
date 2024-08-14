@@ -36,6 +36,7 @@ services:
     hostname: laboutik_django
     volumes:
       - ./:/DjangoFiles
+      - ./Backup:/Backup
     links:
       - laboutik_postgres:postgres
       - laboutik_redis:redis
