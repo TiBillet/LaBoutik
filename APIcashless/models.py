@@ -1777,9 +1777,15 @@ class ClotureCaisse(models.Model):
     # chiffre_affaire = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Chiffre d'affaire")
     ticketZ = JSONField(default=dict, max_length=50000)
 
-    CLOTURE, HEBDOMADAIRE, MENSUEL, ANNUEL = 'C', 'H', 'M', 'A'
+    #TODO: Ajouter point de vente et responsable
+    # pos = PointDeVente
+    # responsable = Membre
+
+    CUSTOM, POS, CLOTURE, HEBDOMADAIRE, MENSUEL, ANNUEL = 'K', 'P', 'C', 'H', 'M', 'A'
     CAT_CHOICES = [
-        (CLOTURE, _('Cloture de caisse')),
+        (CUSTOM, _('Custum')),
+        (POS, _("Cloture d'un point de vente")),
+        (CLOTURE, _('Cloture de toutes caisses')),
         (HEBDOMADAIRE, _('Rapport hebdomadaire')),
         (MENSUEL, _('Rapport mensuel')),
         (ANNUEL, _('Rapport annuel')),
