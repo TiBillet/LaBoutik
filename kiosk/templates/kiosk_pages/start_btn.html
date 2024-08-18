@@ -1,0 +1,31 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block content %}
+    <section>
+        <div class="center-text">
+            <div class="col-12">
+
+                <div class="row" id="cash_content">
+
+                    <div class="col-12" id="total_card">
+                        <input type="hidden" id="cardTagId" value="{{ card.tag_id }}" name="tag_id"/>
+                            <button class="btn btn-success" id="butonToMainPage"
+                            style="width: 690px; height: 180px; font-size: 90px;
+                                 border-radius: 20px;"> Press To Start</button>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+
+<script>
+document.getElementById('butonToMainPage').addEventListener('click', function() {
+    window.location.href = 'https://laboutik.tibillet.localhost/kiosk';
+});
+</script>
+
+{% endblock content %}

@@ -29,7 +29,7 @@
 
         <div
              hx-get="index/"
-             hx-trigger="load  delay:0.5s"
+             hx-trigger="load  delay:0.8s"
              hx-target="#mainPage"
              hx-swap="outerHTML"
         >
@@ -40,6 +40,19 @@
     </div>
 
 <script>
+        var startTime = new Date('{{ scan_time|date:"c" }}');
+        var timeoutDuration = 10; // Duration in seconds before redirecting
+
+        function checkTime() {
+            var now = new Date();
+            var elapsedSeconds = Math.floor((now - startTime) / 1000);
+
+            if (elapsedSeconds >= timeoutDuration) {
+                window.location.href = 'https://laboutik.tibillet.localhost/kiosk/press_start/'; // Redirect to main page
+            } else {
+                setTimeout(checkTime, 1000); // Check again in 1 second
+            }
+        }
     
 </script>
     

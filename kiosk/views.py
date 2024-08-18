@@ -17,8 +17,14 @@ from kiosk.validators import AmountValidator, CardValidator, BillValidator
 from kiosk.models import ScannedNfcCard, Payment
 
 
+# The waiting page with juste one button to start
+def press_to_start_page(request):
+    return render(request, 'kiosk_pages/start_btn.html')
+
+
 # First page
 def index(request):
+    scan_time = timezone.now()
     last_scanned = ScannedNfcCard.objects.all().order_by('created_at').last()
     if last_scanned:
         # Check if the last card has been scaned the last 2 seconds
@@ -26,7 +32,9 @@ def index(request):
             return render(request, 'kiosk_pages/send_card.html'
                           , {'tag_id': last_scanned.card.tag_id})
 
-    return render(request, 'kiosk_pages/first_page.html')
+    return render(request, 'kiosk_pages/first_page.html',{'scan_time': scan_time})
+
+
 
 class CardViewset(viewsets.ViewSet):
     # The permission might be used in different methods, but not all
