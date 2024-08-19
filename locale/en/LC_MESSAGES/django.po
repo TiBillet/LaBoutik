@@ -1485,8 +1485,8 @@ msgstr "Total sales by payment method"
 
 #: administration/templates/rapports/rapport_complet.html:68
 #: administration/templates/rapports/ticketZ_simple.html:69
-msgid "Cashless recharges not included."
-msgstr "Does not include cashless refill."
+msgid "Ne comprend pas les recharges cashless."
+msgstr "Cashless recharges not included."
 
 #: administration/templates/rapports/rapport_complet.html:74
 #: administration/templates/rapports/ticketZ_simple.html:75
