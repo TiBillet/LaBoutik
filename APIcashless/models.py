@@ -1783,7 +1783,7 @@ class ClotureCaisse(models.Model):
 
     CUSTOM, POS, CLOTURE, HEBDOMADAIRE, MENSUEL, ANNUEL = 'K', 'P', 'C', 'H', 'M', 'A'
     CAT_CHOICES = [
-        (CUSTOM, _('Custum')),
+        (CUSTOM, _('Custom')),
         (POS, _("Cloture d'un point de vente")),
         (CLOTURE, _('Cloture de toutes caisses')),
         (HEBDOMADAIRE, _('Rapport hebdomadaire')),
