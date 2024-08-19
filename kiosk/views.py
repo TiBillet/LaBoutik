@@ -138,8 +138,8 @@ class DeviceViewset(viewsets.ViewSet):
     @action(detail=False, methods=['POST'])
     # the page with the bill payment
     def paiment(self, request):
-        test = request.POST.get('tag_id')
-        print(test)
+        # test = request.POST.get('tag_id')
+        # print(test)
         card_data = CardValidator(data=request.data)
 
         # choosed_data = AmountValidator(data=request.data)
