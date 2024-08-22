@@ -1199,7 +1199,7 @@ class Commande:
         #         code=None
         #     )
 
-        adh = fedowAPI.subscription.create(
+        adh = fedowAPI.subscription.create_sub(
             wallet=f"{fedow_serialized_card['wallet']['uuid']}",
             amount=int(self.total_vente_article * 100),
             article=article,

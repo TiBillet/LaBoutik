@@ -107,8 +107,7 @@ def send_existing_tokens():
         # # On lance un fedow retrieve, et si on est en TEST, on accepte les monnaies automatiquement
         # call_command('import_assets')
 
-#TODO: Passer par un import json plutôt qu'un envoie de membre qui DDOS
-
+"""
 def send_existing_members():
     # Envoie des comptes membres
     fedowAPI = FedowAPI()
@@ -134,6 +133,7 @@ def send_existing_members():
                 date=membre.date_derniere_cotisation,
                 user_card_firstTagId=carte.tag_id if carte else None,
             )
+"""
 
 @app.task
 def set_primary_card(card_pk):

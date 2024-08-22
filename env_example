@@ -1,46 +1,52 @@
+##########################
+# TiBillet / LaBoutik
+# All the env are needed
+##########################
+
 DJANGO_SECRET=''
 FERNET_KEY=''
 
-POSTGRES_USER='laboutik_user'
 POSTGRES_PASSWORD=''
+POSTGRES_USER='laboutik_user'
 POSTGRES_DB='laboutik'
 
-# The domain of this instance ex : 'laboutik.tibillet.localhost'
-DOMAIN=''
-# No Cashless if no Fedow nor Lespass tenant manager
-FEDOW_URL='https://fedow.tibillet.localhost/'
-LESPASS_TENANT_URL='https://demo.tibillet.localhost/'
+DOMAIN='' # The domain of this instance ex : 'laboutik.tibillet.localhost'
+FEDOW_URL='' # ex : https://fedow.tibillet.localhost/
+LESPASS_TENANT_URL='' # ex : https://lespass.tibillet.localhost/
 
 # The name of your cashless asset ex : TestCoin, FestivalCoin, etc ....
 MAIN_ASSET_NAME='TestCoin'
 
-# admin email
+# admin email. Required for the first user.
 ADMIN_EMAIL=''
 
-# For transactionnal email :
+TIME_ZONE='Europe/Paris'
+LANGUAGE_CODE='fr'
+
+### OPTIONAL ENV ###
+
+# For transactionnal email
+# Usefull new admin and terminal verification
+# Required for production
 EMAIL_HOST=""
 EMAIL_PORT=""
 EMAIL_HOST_USER=""
 EMAIL_HOST_PASSWORD=""
 
-TIME_ZONE='Europe/Paris'
-LANGUAGE_CODE='fr'
-
-
-########## FOR SAVE CRON TASK ##########dex
+# BACKUP CRON TASK
 
 # can be empty if you don't backup
 BORG_PASSPHRASE=""
 
-########## FOR TEST AND DEBUG ONLY ##########
+# DEV AND TEST ONLY
+# admin auto login, flush database, demonstration data, etc ...
+# Don't push to production with debug, test or demo !
 
 # Sentry Debug for django backend
 SENTRY_DNS=""
 # Sentry Debug for js frontend
 SENTRY_FRONT_DNS=""
 SENTRY_FRONT_ASSET=""
-
-###!!!!!! Don't push to production with debug, test or demo !!!!!!###
 
 DEBUG=0
 TEST=0

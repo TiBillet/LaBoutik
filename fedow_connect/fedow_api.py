@@ -141,7 +141,7 @@ class Subscription():
         if config is None:
             self.config = Configuration.get_solo()
 
-    def create(self,
+    def create_sub(self,
                wallet,
                amount: int,
                date=None,
