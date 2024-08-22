@@ -380,7 +380,7 @@ class MembresAdmin(admin.ModelAdmin):
             'fields': (
                 ('name', 'prenom'),
                 ('email', 'demarchage'),
-                ('tel', 'code_postal'),
+                # ('tel', 'code_postal'),
                 # ('new_choice_adhesion', 'cotisation', 'paiment_adhesion'),
                 'nouvelle_carte_cashless',
                 'commentaire',
