@@ -63,7 +63,7 @@ staff_admin_site = StaffAdminSite(name='adminstaff')
 def send_password_reset_email(modeladmin, request, queryset):
     queryset.update(is_active=False)
     for user in queryset:
-        user.send_password_reset_email()
+        email_activation(user.uuid)
 
 
 class UserCreationForm(forms.ModelForm):
