@@ -47,11 +47,8 @@ def get_fedow():
     return fedowAPI
 
 def send_assets():
-    pass
     # Envoie des assets et de l'adhésion
-    """
-    @return: 
-    fedowAPI = get_fedow()
+    fedowAPI = FedowAPI()
     responses = fedowAPI.send_assets_from_cashless()
     for response in responses:
         if response.status_code != 201:
@@ -63,22 +60,18 @@ def send_assets():
     assets = [MoyenPaiement.objects.get(pk=asset.get('uuid')) for asset in assets_acc]
 
     return assets
-    """
 
 
 
 def create_cards_and_pre_token():
     # Envoie des cartes et des uuid des tokens
-    fedowAPI = get_fedow()
+    fedowAPI = FedowAPI()
     cartes = CarteCashless.objects.all()
-    chunk_size = 200
-    cartes_chunks = [cartes[i:i + chunk_size] for i in range(0, len(cartes), chunk_size)]
-    for chunk in cartes_chunks:
-        response = fedowAPI.NFCcard.create(chunk)
+    for carte in cartes:
+        print(f"send carte number : {carte.number}")
+        response = fedowAPI.NFCcard.create([carte,])
         if response.status_code == 201:
-            sleep(1)
-            if len(chunk) != int(response.json()):
-                raise Exception(f"Erreur lors de l'envoi des cartes : {response}")
+            pass
         elif response.status_code == 206:
             logger.warning(f"Partial content, cards already exist, created {len(response.json())} only")
         else:
@@ -86,7 +79,7 @@ def create_cards_and_pre_token():
 
 def send_existing_tokens():
     # Envoi des tokens
-    fedowAPI = get_fedow()
+    fedowAPI = FedowAPI()
     cartes = CarteCashless.objects.all()
     carte_primaire = CarteMaitresse.objects.filter(carte__membre__isnull=False).first()
     for carte in cartes:
@@ -112,35 +105,35 @@ def send_existing_tokens():
                 )
 
         # # On lance un fedow retrieve, et si on est en TEST, on accepte les monnaies automatiquement
-        call_command('import_assets')
+        # call_command('import_assets')
 
-#TODO: Passer par un import json plutôt qu'un envoie de membre qui DDOS
+"""
+def send_existing_members():
+    # Envoie des comptes membres
+    fedowAPI = FedowAPI()
 
-# def send_existing_members():
-#     # Envoie des comptes membres
-#     fedowAPI = get_fedow()
-#
-#     # refaire ça en mode atomique !!!!
-#     for membre in Membre.objects.filter(email__isnull=False).exclude(email=""):
-#         carte = None
-#         wallet = None
-#         if membre.CarteCashless_Membre.count() > 0:
-#             for carte in membre.CarteCashless_Membre.all():
-#                 wallet = fedowAPI.NFCcard.link_user(email=membre.email, card=carte)
-#         if membre.date_derniere_cotisation:
-#             if not wallet:
-#                 wallet, created = fedowAPI.wallet.get_or_create_wallet_from_email(email=membre.email)
-#                 if not membre.wallet:
-#                     membre.wallet = wallet
-#                     membre.save()
-#                 elif membre.wallet != wallet:
-#                     raise Exception("Wallet and member mismatch")
-#             adh = fedowAPI.subscription.create(
-#                 wallet=f"{wallet.uuid}",
-#                 amount=int(membre.cotisation * 100),
-#                 date=membre.date_derniere_cotisation,
-#                 user_card_firstTagId=carte.tag_id if carte else None,
-#             )
+    # refaire ça en mode atomique !!!!
+    for membre in Membre.objects.filter(email__isnull=False).exclude(email=""):
+        carte = None
+        wallet = None
+        if membre.CarteCashless_Membre.count() > 0:
+            for carte in membre.CarteCashless_Membre.all():
+                wallet = fedowAPI.NFCcard.link_user(email=membre.email, card=carte)
+        if membre.date_derniere_cotisation:
+            if not wallet:
+                wallet, created = fedowAPI.wallet.get_or_create_wallet_from_email(email=membre.email)
+                if not membre.wallet:
+                    membre.wallet = wallet
+                    membre.save()
+                elif membre.wallet != wallet:
+                    raise Exception("Wallet and member mismatch")
+            adh = fedowAPI.subscription.create(
+                wallet=f"{wallet.uuid}",
+                amount=int(membre.cotisation * 100),
+                date=membre.date_derniere_cotisation,
+                user_card_firstTagId=carte.tag_id if carte else None,
+            )
+"""
 
 @app.task
 def set_primary_card(card_pk):
@@ -173,9 +166,9 @@ def after_handshake():
     Place.objects.all().delete()
     MoyenPaiement.objects.filter(categorie=MoyenPaiement.STRIPE_FED).delete()
 
-    # Oniquement ces deux pour la migration
+    # Uniquement ces deux pour la migration
     fedowAPI = FedowAPI()
-    fedowAPI.place.get_accepted_assets()
+    assets = fedowAPI.place.get_accepted_assets()
 
     # A faire a la main pour des updates de cashless déja existant.
     # TODO: A virer une fois tout les cashless convertis en laboutik
@@ -183,6 +176,7 @@ def after_handshake():
     # create_cards_and_pre_token()
     # send_existing_tokens()
     # send_existing_members()
+
     config = Configuration.get_solo()
     config.fedow_synced = True
     config.save()

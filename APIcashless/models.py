@@ -262,7 +262,7 @@ class Membre(models.Model):
         elif self.email:
             return self.email
         else:
-            return "Anon"
+            return "Anonymous"
 
     class Meta:
         ordering = ('-date_ajout',)
@@ -279,21 +279,19 @@ class Membre(models.Model):
         elif self.email:
             return self.email
         else:
-            return "Anon"
+            return "Anonymous"
 
 
 # noinspection PyPep8Naming,PyUnusedLocal
-@receiver(post_save, sender=Membre)
-def membres_creation_receiver(sender, instance, created, **kwargs):
+@receiver(pre_save, sender=Membre)
+def membres_creation_receiver(sender, instance, **kwargs):
     # instance: Membre
-    if created:
-        if instance.name:
-            instance.name = instance.name.upper()
-        if instance.prenom:
-            instance.prenom = instance.prenom.capitalize()
-        if instance.email:
-            instance.email = instance.email.lower()
-        instance.save()
+    if instance.name:
+        instance.name = instance.name.upper()
+    if instance.prenom:
+        instance.prenom = instance.prenom.capitalize()
+    if instance.email:
+        instance.email = instance.email.lower()
 
 
 class Couleur(models.Model):
@@ -891,7 +889,7 @@ class CarteCashless(models.Model):
         db_index=True,
         max_length=8,
         unique=True,
-        verbose_name="First TagID (8)"
+        verbose_name="RFID TagID (8)"
     )
 
     uuid_qrcode = models.UUIDField(
@@ -1777,9 +1775,15 @@ class ClotureCaisse(models.Model):
     # chiffre_affaire = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Chiffre d'affaire")
     ticketZ = JSONField(default=dict, max_length=50000)
 
-    CLOTURE, HEBDOMADAIRE, MENSUEL, ANNUEL = 'C', 'H', 'M', 'A'
+    #TODO: Ajouter point de vente et responsable
+    # pos = PointDeVente
+    # responsable = Membre
+
+    CUSTOM, POS, CLOTURE, HEBDOMADAIRE, MENSUEL, ANNUEL = 'K', 'P', 'C', 'H', 'M', 'A'
     CAT_CHOICES = [
-        (CLOTURE, _('Cloture de caisse')),
+        (CUSTOM, _('Custom')),
+        (POS, _("Cloture d'un point de vente")),
+        (CLOTURE, _('Cloture de toutes caisses')),
         (HEBDOMADAIRE, _('Rapport hebdomadaire')),
         (MENSUEL, _('Rapport mensuel')),
         (ANNUEL, _('Rapport annuel')),

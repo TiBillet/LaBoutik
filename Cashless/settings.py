@@ -364,7 +364,6 @@ BROKER_URL = os.environ.get('CELERY_BROKER', 'redis://redis:6379/0')
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER', 'redis://redis:6379/0')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_BACKEND', 'redis://redis:6379/0')
 
-
 # Déclaration du serveur pour liaison des nouveaux terminaux :
 # Check https://github.com/TiBillet/Discovery
 url_validator = URLValidator()

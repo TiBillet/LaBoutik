@@ -56,8 +56,8 @@
 {% language 'en' %}
 <h1>{% trans "Ticket Z Simplifié" %}</h1>
 <h1><span class="test-tenant">{{ structure }}</span></h1>
-<h3>Début : {{ start_date }}</h3>
-<h3>Fin : {{ end_date }}</h3>
+<h3>{% trans "Début : "%}{{ start_date }}</h3>
+<h3>{% trans "Fin : "%}{{ end_date }}</h3>
 
 
 <div id="total_vente">

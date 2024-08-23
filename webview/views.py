@@ -54,9 +54,8 @@ def login_admin(request):
             login(request, user)
 
 
-    # EN CAS DE DEBUG :
+    # EN CAS DE DEBUG On va chercher le premier admin et on log :
     if settings.DEBUG:
-        # On log automatioquement un admin non root :
         user = get_user_model().objects.filter(
             is_staff=True,
             is_superuser=False,
@@ -265,8 +264,8 @@ def index(request):
                         {"erreur": 1, "msg": "Carte sans membre, ajoutez un responsable sur cette carte maitresse."})
 
     contexte = {
-        'version': '4.24.04',
-        'titrePage': _('Tibillet'),
+        'version': '0.9.10',
+        'titrePage': _('Laboutik | Tibillet'),
         'demo': mode_demo,
         'time_zone': settings.TIME_ZONE,
         'demoTagIdCm': os.getenv("DEMO_TAGID_CM"),
@@ -1212,7 +1211,7 @@ class Commande:
         #         code=None
         #     )
 
-        adh = fedowAPI.subscription.create(
+        adh = fedowAPI.subscription.create_sub(
             wallet=f"{fedow_serialized_card['wallet']['uuid']}",
             amount=int(self.total_vente_article * 100),
             article=article,

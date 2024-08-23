@@ -63,7 +63,7 @@ staff_admin_site = StaffAdminSite(name='adminstaff')
 def send_password_reset_email(modeladmin, request, queryset):
     queryset.update(is_active=False)
     for user in queryset:
-        user.send_password_reset_email()
+        email_activation(user.uuid)
 
 
 class UserCreationForm(forms.ModelForm):
@@ -516,7 +516,7 @@ class CarteCashlessAdmin(admin.ModelAdmin):
         "number",
         "tag_id",
         "membre",
-        "url_qrcode",
+        # "url_qrcode",
     )
 
     fields = (
@@ -542,7 +542,7 @@ class CarteCashlessAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return True
 
-    def save_model(self, request, instance, form, change):
+    def save_model(self, request, instance: CarteCashless, form, change):
         if form.is_valid():
             instance.tag_id = instance.tag_id.upper()
             if not instance.uuid_qrcode:
