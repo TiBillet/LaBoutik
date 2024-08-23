@@ -264,8 +264,8 @@ def index(request):
                         {"erreur": 1, "msg": "Carte sans membre, ajoutez un responsable sur cette carte maitresse."})
 
     contexte = {
-        'version': '4.24.04',
-        'titrePage': _('Tibillet'),
+        'version': '0.9.10',
+        'titrePage': _('Laboutik | Tibillet'),
         'demo': mode_demo,
         'time_zone': settings.TIME_ZONE,
         'demoTagIdCm': os.getenv("DEMO_TAGID_CM"),
