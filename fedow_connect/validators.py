@@ -1,5 +1,4 @@
 from decimal import Decimal
-
 from django.core.cache import cache
 from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _

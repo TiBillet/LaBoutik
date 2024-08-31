@@ -1894,6 +1894,9 @@ class CashlessTest(TiBilletTestCase):
         # self.checkout_stripe_from_fedow(email, carte)
         # self.remboursement_front_after_stripe_fed(carte)
 
+        # TODO:Tester la carte perdue : elle doit etre bien vide
+        # Tester la fusion d'un wallet existant non vide et d'un wallet ephémère non vide
+
         ### FEDERATION TEST
         self.add_me_to_test_fed()
 

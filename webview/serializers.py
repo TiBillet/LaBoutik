@@ -358,7 +358,7 @@ class GroupCategorieSerializer(serializers.ModelSerializer):
         super().__init__(*args, **kwargs)
 
         debut_journee, fin_journee = debut_fin_journee()
-        # c'est une de mande depuis la préparation d'une table en particulier
+        # c'est une demande depuis la préparation d'une table en particulier
         if table_pk:
             table = get_object_or_404(Table, pk=table_pk)
             # on garde les servies et payées sur 6H pour l'historique
@@ -366,7 +366,7 @@ class GroupCategorieSerializer(serializers.ModelSerializer):
                 archive=False,
                 table=table,
             ).exclude(
-                Q(datetime__lte=(timezone.now() - timedelta(hours=6))) & Q(statut=CommandeSauvegarde.SERVIE_PAYEE)
+                Q(datetime__lte=(timezone.now() - timedelta(hours=8)))
             ).distinct()
 
 
@@ -374,7 +374,7 @@ class GroupCategorieSerializer(serializers.ModelSerializer):
             self.all_commandes = CommandeSauvegarde.objects.filter(
                 archive=False,
             ).exclude(
-                Q(datetime__lte=(timezone.now() - timedelta(minutes=15))) & Q(statut=CommandeSauvegarde.SERVIE_PAYEE)
+                Q(datetime__lte=(timezone.now() - timedelta(hours=8)))
             ).distinct()
 
             # .exclude(statut=CommandeSauvegarde.ANNULEE) \
@@ -440,3 +440,4 @@ class GroupCategorieSerializer(serializers.ModelSerializer):
             'icon',
         )
         read_only_fields = fields
+
