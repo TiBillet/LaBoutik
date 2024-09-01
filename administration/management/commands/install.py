@@ -1,7 +1,4 @@
-import json
-import logging
-import os
-import random
+import socket
 import socket
 import sys
 from time import sleep
@@ -13,15 +10,15 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
+from django.utils.translation import gettext as _
+from faker import Faker
 
-from APIcashless.custom_utils import badgeuse_creation, declaration_to_discovery_server, jsonb64decode
+from APIcashless.custom_utils import jsonb64decode
 from APIcashless.models import *
 from APIcashless.tasks import email_activation
 from fedow_connect.tasks import after_handshake
 from fedow_connect.utils import get_public_key, rsa_encrypt_string, rsa_decrypt_string, data_to_b64
 from fedow_connect.views import handshake
-from faker import Faker
-from django.utils.translation import gettext as _
 
 logger = logging.getLogger(__name__)
 

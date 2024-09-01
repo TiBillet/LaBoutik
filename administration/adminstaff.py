@@ -300,6 +300,7 @@ class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
                 'decompte_ticket',
                 'subscription_fedow_asset',
                 'subscription_type',
+                'methode_choices',
             ),
         }),
     )
@@ -516,7 +517,7 @@ class CarteCashlessAdmin(admin.ModelAdmin):
         "number",
         "tag_id",
         "membre",
-        # "url_qrcode",
+        "url_qrcode",
     )
 
     fields = (
