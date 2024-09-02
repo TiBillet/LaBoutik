@@ -338,7 +338,7 @@ export default class BoutonArticle extends HTMLElement {
       groupe_actif = this.groupe
     }
 
-    if (this.groupe === groupe_actif && this.nb_commande < this.nb_commande_max) {
+    if (this.groupe === groupe_actif) {
       document.querySelector('#article-infos-divers').setAttribute('achat-possible', 1)
       this.nb_commande++
 
