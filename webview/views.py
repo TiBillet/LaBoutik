@@ -38,7 +38,6 @@ from decimal import Decimal
 def login_admin(request):
     user: TibiUser = request.user
 
-
     logger.info(f"User : {user.username}")
     # Si un modèle appareil est lié (One2One)
     if hasattr(user, 'appareil'):
@@ -504,7 +503,7 @@ def check_carte(request):
         try:
             fedowApi = FedowAPI()
             # CardValidator. Mets à jour les assets/tokens depuis Fedow
-            serialized_card_from_fedow = fedowApi.NFCcard.retrieve(tag_id_request)
+            serializer_from_fedow = fedowApi.NFCcard.retrieve(tag_id_request)
         except Exception as e:
             logger.error(f"Check carte FEDOW : {e}")
             data = {
@@ -540,8 +539,9 @@ def check_carte(request):
 
         # data['route'] = "check_carte"
         logger.info(f"{timezone.now()} {timezone.now() - start} /wv/check_carte POST {carte}")
-        
-        # ancienne réponse 
+
+        data['serializer_from_fedow'] = serializer_from_fedow
+        # ancienne réponse
         # return Response(data, status=status.HTTP_200_OK)
         print(f'-------- data = {data}')
         # import ipdb; ipdb.set_trace()
