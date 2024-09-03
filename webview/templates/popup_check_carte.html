@@ -1,4 +1,5 @@
 {% load i18n %}
+{% load webviewTags %}
 
 <div id="popup-cashless" style="background-color:{{ background }};" class="BF-col-uniforme popup-cashless-conteneur">
 
@@ -11,12 +12,22 @@
              style="white-space: pre-line; text-align: center;">{{ msg_content }}</div>
     {% else %}
         <div class="BF-col-uniforme check-carte-ok">
-            <div class="check-carte-ok-nom test-return-name"><span>{% trans "membre_name" %}</span> : {{ membre_name }}
-            </div>
-            <div class="check-carte-ok-cotisation test-return-contribution">{{ cotisation_membre_a_jour }}</div>
+            {#            <div class="check-carte-ok-nom test-return-name">#}
+            {#                <span>{% trans "membre_name" %}</span> : {{ membre_name }}#}
+            {#            </div>#}
+            {#            <div class="check-carte-ok-cotisation test-return-contribution">{{ cotisation_membre_a_jour }}</div>#}
             <div class="check-carte-ok-total-carte test-return-total-card">
-                <span>{% trans "Sur carte" %}</span> : {{ total_monnaie }} <span>{% trans "currency_symbol" %}</span>
+                <span>{% trans "Sur carte" %} : {{ total_monnaie }}</span>
             </div>
+            {% if serializer_from_fedow.is_wallet_ephemere %}
+                <div class="check-carte-ok-total-carte test-return-total-card">
+                    <span>{% trans "Carte anonyme" %}</span>
+                </div>
+            {% else %}
+                <div class="check-carte-ok-total-carte test-return-total-card">
+                    <span>{% trans "Carte liée" %}</span>
+                </div>
+            {% endif %}
         </div>
     {% endif %}
 
@@ -42,6 +53,41 @@
             </tr>
         {% endfor %}
     </table>
+
+    {% if tokens_cashless %}
+        <table>
+            <tr>
+                <th>{% trans "Name" %}</th>
+                <th>{% trans "Qty" %}</th>
+                <th>{% trans "Origin" %}</th>
+            </tr>
+            {% for token in tokens_cashless %}
+                <tr>
+                    <td>{{ token.name }}</td>
+                    <td>{{ token.value | dec2 }}</td>
+                    <td>{{ token.asset.place_origin.name }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
+
+
+    {% if tokens_membership %}
+        <table>
+            <tr>
+                <th>{% trans "Name" %}</th>
+                <th>{% trans "Valid" %}</th>
+                <th>{% trans "Origin" %}</th>
+            </tr>
+            {% for token in tokens_membership %}
+                <tr>
+                    <td>{{ token.name }}</td>
+                    <td>{{ token.start_membership_date }}</td>
+                    <td>{{ token.asset.place_origin.name }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
 
     <div class="popup-conteneur-bt-retour BF-col" style="margin: 10px 0;">
         {% include "elements/bouton_return.html" %}

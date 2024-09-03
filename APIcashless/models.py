@@ -783,6 +783,7 @@ class MoyenPaiement(models.Model):
         # unique=True,
     )
 
+
     @staticmethod
     def sort_assets(assets):
         # sort asset par importance

@@ -42,7 +42,7 @@ def login_admin(request):
     # Si un modèle appareil est lié (One2One)
     if hasattr(user, 'appareil'):
         logger.error(f"Terminal user : {request.user.username}")
-        return HttpResponseNotAllowed(['Terminal user not allowed',])
+        return HttpResponseNotAllowed(['Terminal user not allowed', ])
 
     if request.method == 'POST':
         user = authenticate(
@@ -52,7 +52,6 @@ def login_admin(request):
         if user:
             login(request, user)
 
-
     # EN CAS DE DEBUG On va chercher le premier admin et on log :
     if settings.DEBUG:
         user = get_user_model().objects.filter(
@@ -60,7 +59,7 @@ def login_admin(request):
             is_superuser=False,
             appareil=None,
         ).first()
-        if user :
+        if user:
             if user.is_staff:
                 logger.warning(f"DEBUG MODE, on log automatiquement sur {user.username}")
                 login(request, user)
@@ -68,7 +67,6 @@ def login_admin(request):
     if not user or user.is_anonymous:
         logger.warning("User anonyme, redirect to login")
         return render(request, 'login.html', {'erreur': True})
-
 
     # Si l'user est staff
     if user.is_staff:
@@ -116,7 +114,7 @@ def new_hardware(request):
     appareil.claimed_at = timezone.now()
     appareil.periph = valid_data['periph']
     appareil.hostname = valid_data['hostname']
-    appareil.version= valid_data['version']
+    appareil.version = valid_data['version']
 
     # Tache celery pour envoyer un mail de vérification à l'admin
     # via le signal.py si actif = True en post_save
@@ -143,9 +141,9 @@ def login_hardware(request):
         # L'user a été authentitifié
         user: TibiUser = login_hardware_validator.user
 
-        try :
+        try:
             appareil: Appareil = user.appareil
-        except Exception as e :
+        except Exception as e:
             # Un user existe mais l'appareil a été supprimé
             # TODO : supprimer l'user ?
             user.is_active = False
@@ -324,11 +322,13 @@ def close_all_pos(request):
             to_printer = ticketZ_tasks_printer.delay(ticketz_json)
             if not config.ticketZ_printer:
                 return Response({
-                    "message": _("Caisses cloturées mais aucune imprimante selectionnée dans la configuration pour le Ticket Z.\n"
-                               "Vous pouvez le ré-imprimer depuis l'interface d'administration.")},
+                    "message": _(
+                        "Caisses cloturées mais aucune imprimante selectionnée dans la configuration pour le Ticket Z.\n"
+                        "Vous pouvez le ré-imprimer depuis l'interface d'administration.")},
                     status=status.HTTP_200_OK)
 
-            return Response({"message": _("Caisses cloturées et ticket envoyé à l'impression")}, status=status.HTTP_200_OK)
+            return Response({"message": _("Caisses cloturées et ticket envoyé à l'impression")},
+                            status=status.HTTP_200_OK)
         return Response({"message": _("Erreur génération du ticket Z")}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
@@ -523,7 +523,8 @@ def check_carte(request):
                 'tag_id': tag_id_request,
                 'route': "check_carte",
             }
-            logger.error(f"{timezone.now()} {timezone.now() - start} CarteCashless.DoesNotExist /wv/check_carte POST {tag_id_request}")
+            logger.error(
+                f"{timezone.now()} {timezone.now() - start} CarteCashless.DoesNotExist /wv/check_carte POST {tag_id_request}")
             # return Response(data, status=status.HTTP_404_NOT_FOUND)
             return render(request, 'popup_check_carte.html', data)
         except Exception:
@@ -532,20 +533,25 @@ def check_carte(request):
         serializer = CarteCashlessSerializer(carte)
         data = serializer.data
 
-        data['background'] = '#339448'
-        # carte sans cotisation
-        if data["cotisation_membre_a_jour"] == _('Aucune cotisation'):
-          data['background'] = '#b85521'
-
-        # data['route'] = "check_carte"
-        logger.info(f"{timezone.now()} {timezone.now() - start} /wv/check_carte POST {carte}")
-
+        # On sépare les token pour l'affichage sur la table
+        data['tokens_cashless'] = [token for token in serializer_from_fedow['wallet']['tokens'] if
+                                   token['asset_category'] in ['TLF', 'TNF', 'FED']]
+        data['tokens_membership'] = [token for token in serializer_from_fedow['wallet']['tokens'] if
+                                     token['asset_category'] == 'SUB']
         data['serializer_from_fedow'] = serializer_from_fedow
+        logger.info(f"/wv/check_carte POST {data}")
+
+        data['background'] = '#b85521'  # FOND ORANGE
+        if not serializer_from_fedow['is_wallet_ephemere']:  # We get an user
+            # Check if the membership are OK
+            if data['tokens_membership']:
+                data['background'] = '#339448'  # FOND VERT
+
         # ancienne réponse
         # return Response(data, status=status.HTTP_200_OK)
-        print(f'-------- data = {data}')
-        # import ipdb; ipdb.set_trace()
-        return render(request, 'popup_check_carte.html', data )
+        # print(f'-------- data = {data}')
+
+        return render(request, 'popup_check_carte.html', data)
 
 
 class Commande:
@@ -957,7 +963,6 @@ class Commande:
             logger.warning(f"Article badge payant, en cours de dev.")
             raise NotAcceptable(detail=f"Pas de badge payant tout de suite :)", code=None)
 
-
         ligne_article_vendu = ArticleVendu.objects.create(
             article=article,
             prix=article.prix,
@@ -1184,7 +1189,7 @@ class Commande:
         carte_db: CarteCashless = self.carte_db
         self.total_vente_article += total
         primary_card_fisrtTagId = self.responsable.CarteCashless_Membre.first()
-        if not carte_db :
+        if not carte_db:
             logger.error('methode_adhesion : Pas de carte')
             raise NotAcceptable(
                 detail=_("Pas de carte."),
@@ -1193,14 +1198,13 @@ class Commande:
 
         # On permet de payer avec de la monnaie cashless, mais on vérifie quand même :
         if self.moyen_paiement.categorie == MoyenPaiement.LOCAL_EURO:
-            #TODO: Accepter les monnaies cashless Locale Euro et Fedéré uniquement
-            #vérifier le total wallet > prix adhésion & faire la transaction coté fédow
+            # TODO: Accepter les monnaies cashless Locale Euro et Fedéré uniquement
+            # vérifier le total wallet > prix adhésion & faire la transaction coté fédow
             raise NotAcceptable(
                 detail=_("Travail en cours. "
                          "Désolé, les adhésions n'acceptent que espèce ou CB."),
                 code=None
             )
-
 
         # Check carte fedow :
         fedowAPI = FedowAPI()

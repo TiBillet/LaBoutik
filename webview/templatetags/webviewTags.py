@@ -59,3 +59,8 @@ def boutonForm(context):
     index = str(context['selBouton'])
     context['infosBouton']= boutonsAction[index]
     return context
+
+
+@register.filter
+def dec2(value):
+    return f"{(int(value) / 100):.2f}"
