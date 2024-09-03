@@ -214,9 +214,9 @@ def index(request):
     print("----------------------------------------------")
 
     if request.method == 'POST':
-        print("----------------------------------------------")
+        # print("----------------------------------------------")
         # print(f"->data ={request.POST}")
-        print("----------------------------------------------")
+        # print("----------------------------------------------")
 
         configuration = Configuration.get_solo()
         # valider la carte primaire
