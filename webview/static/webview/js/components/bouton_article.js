@@ -28,12 +28,6 @@ function get_template(ctx) {
   // console.log('couleur_texte = '+ctx.couleur_texte + '  --  type = ' + typeof ctx.couleur_texte+ '  --  nom = '+ctx.nom);
   let template = `
     <style>
-      /*
-      @font-face {
-        font-family: 'Source Sans';
-        src: url('/static/webview/css/googlefonts/SourceSansPro-Regular.ttf') format("truetype");
-      }
-      */
       :host {
         box-sizing: border-box;
         width: 120px;
@@ -48,7 +42,6 @@ function get_template(ctx) {
 
       .ele-conteneur {
         position: relative;
-        /* font-family: 'Source Sans', sans-serif; */
         font-family: "Luciole-regular";
         box-sizing: border-box;
         width: 100%;
