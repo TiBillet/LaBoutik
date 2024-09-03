@@ -194,7 +194,7 @@ function get_template(ctx) {
         }
     
         /* sunmi d3mini */
-        @media (width >= 1280px) {
+        @media (width >= 1201px) {
           :host {
             width: 160px;
             height: 160px;
