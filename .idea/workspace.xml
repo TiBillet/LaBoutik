@@ -7,13 +7,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="21f16961-a23e-42b4-96f4-de54154eb384" name="Changes" comment="Table in check carte">
-      <change beforePath="$PROJECT_DIR$/.idea/LaBoutik.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/LaBoutik.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+    <list default="true" id="21f16961-a23e-42b4-96f4-de54154eb384" name="Changes" comment="tableau">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/webview/templates/popup_check_carte.html" beforeDir="false" afterPath="$PROJECT_DIR$/webview/templates/popup_check_carte.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/env_example" beforeDir="false" afterPath="$PROJECT_DIR$/env_example" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/webview/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/webview/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -118,7 +114,7 @@
       <updated>1725346627692</updated>
       <workItem from="1725346628664" duration="159000" />
       <workItem from="1725346811871" duration="7176000" />
-      <workItem from="1725354185991" duration="810000" />
+      <workItem from="1725354185991" duration="2036000" />
     </task>
     <task id="LOCAL-00001" summary="add fedow serializer">
       <option name="closed" value="true" />
@@ -136,7 +132,15 @@
       <option name="project" value="LOCAL" />
       <updated>1725353415092</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="tableau">
+      <option name="closed" value="true" />
+      <created>1725355000742</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1725355000742</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -156,6 +160,7 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="add fedow serializer" />
     <MESSAGE value="Table in check carte" />
-    <option name="LAST_COMMIT_MESSAGE" value="Table in check carte" />
+    <MESSAGE value="tableau" />
+    <option name="LAST_COMMIT_MESSAGE" value="tableau" />
   </component>
 </project>

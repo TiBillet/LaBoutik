@@ -532,12 +532,16 @@ def check_carte(request):
         serializer = CarteCashlessSerializer(carte)
         data = serializer.data
 
+        data['serializer_from_fedow'] = serializer_from_fedow
         # On sépare les token pour l'affichage sur la table
         data['tokens_cashless'] = [token for token in serializer_from_fedow['wallet']['tokens'] if
                                    token['asset_category'] in ['TLF', 'TNF', 'FED']]
         data['tokens_membership'] = [token for token in serializer_from_fedow['wallet']['tokens'] if
                                      token['asset_category'] == 'SUB']
-        data['serializer_from_fedow'] = serializer_from_fedow
+
+        # import ipdb; ipdb.set_trace()
+
+
         logger.info(f"/wv/check_carte POST {data}")
 
         data['background'] = '#b85521'  # FOND ORANGE
