@@ -32,11 +32,12 @@
                         </td>
                     {% endif %}
                     {% if key == 'qty' %}
-                    <!-- pour les test qty = x.xx (2 chiffres après le point) -->
-                    <td class="test-return-valeur-monnaie-item{{ forloop.parentloop.counter }}"
-                        style="padding: 4px; border: 1px solid #000;">
-                        {{ value }}
-                    </td>
+                        <!-- pour les test qty = x.xx (2 chiffres après le point) -->
+                        <td class="test-return-valeur-monnaie-item{{ forloop.parentloop.counter }}"
+                            style="padding: 4px; border: 1px solid #000;">
+                            {{ value }}
+                        </td>
+                    {% endif %}
                 {% endfor %}
             </tr>
         {% endfor %}
