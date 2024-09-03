@@ -28,10 +28,12 @@ function get_template(ctx) {
   // console.log('couleur_texte = '+ctx.couleur_texte + '  --  type = ' + typeof ctx.couleur_texte+ '  --  nom = '+ctx.nom);
   let template = `
     <style>
+      /*
       @font-face {
         font-family: 'Source Sans';
         src: url('/static/webview/css/googlefonts/SourceSansPro-Regular.ttf') format("truetype");
       }
+      */
       :host {
         box-sizing: border-box;
         width: 120px;
@@ -145,7 +147,7 @@ function get_template(ctx) {
         display: none;
       }
 
-      /* largeur maxi 600 pixels */
+      /* pour une largeur supérieure ou égale à 599 pixels */
       @media only screen and (min-width: 599px){
         :host {
           width: 140px;
@@ -172,55 +174,30 @@ function get_template(ctx) {
           flex-basis: 20%;
         }
       }
-
-      /* largeur maxi 1200 pixels */
-      /*@media only screen and (min-width: 1199px) {
+    
+      /* sunmi d3mini -- pour une largeur supérieure ou égale à 1279 pixels */
+      @media only screen and (min-width: 1279px) { 
         :host {
-          width: 240px;
-          height: 240px;
-          margin: 8px;
-        }
-        .bouton-article-image {
-          transform: scale(2);
+          width: 160px;
+          height: 160px;
         }
         .ele-nom {
-          font-size: 32px;
-          max-height: 120px;
-          width: 96%;
+          font-size: 1.5rem;
         }
         .article-pdp {
-          width: 96%;
-          font-size: 32px;
+          width: 95%;
+          left: 4px;
+          font-size: 1.4rem;
+        }
+        .ele-icon {
+          flex-basis: 20%;
         }
         .ele-prix {
-          flex-basis: 51%;
+          flex-basis: 55%;
+          overflow-wrap: break-word;
         }
-        */
-    
-        /* sunmi d3mini -- pour une largeur supérieure ou égale à 1279 pixels */
-        @media only screen and (min-width: 1279px) { 
-          :host {
-            width: 160px;
-            height: 160px;
-          }
-          .ele-nom {
-            font-size: 1.5rem;
-          }
-          .article-pdp {
-            width: 95%;
-            left: 4px;
-            font-size: 1.4rem;
-          }
-          .ele-icon {
-            flex-basis: 20%;
-          }
-          .ele-prix {
-            flex-basis: 55%;
-            overflow-wrap: break-word;
-          }
-          .ele-nombre {
-            flex-basis: 25%;
-          }
+        .ele-nombre {
+          flex-basis: 25%;
         }
       }
 
