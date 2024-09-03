@@ -214,9 +214,9 @@ def index(request):
     print("----------------------------------------------")
 
     if request.method == 'POST':
-        print("----------------------------------------------")
+        # print("----------------------------------------------")
         # print(f"->data ={request.POST}")
-        print("----------------------------------------------")
+        # print("----------------------------------------------")
 
         configuration = Configuration.get_solo()
         # valider la carte primaire
@@ -507,29 +507,45 @@ def check_carte(request):
             serialized_card_from_fedow = fedowApi.NFCcard.retrieve(tag_id_request)
         except Exception as e:
             logger.error(f"Check carte FEDOW : {e}")
-            return Response({"msg": f"Fedow error. Contact an admin : {e}"},
-                            status=status.HTTP_404_NOT_FOUND)
+            data = {
+                'background': '#b85521',
+                'msg_title': _("Erreur Fedow. Contacter l'administrateur :"),
+                'msg_content': _(str(e))
+            }
+            # return Response({"msg": f"Fedow error. Contact an admin : {e}"}, status=status.HTTP_404_NOT_FOUND)
+            return render(request, 'popup_check_carte.html', data)
 
         try:
             carte = CarteCashless.objects.get(tag_id=tag_id_request)
         except CarteCashless.DoesNotExist:
             data = {
-                'msg': _('carte inconnue'),
+                'background': '#b85521',
+                'msg_content': _('Carte inconnue'),
                 'tag_id': tag_id_request,
                 'route': "check_carte",
             }
-            logger.error(
-                f"{timezone.now()} {timezone.now() - start} CarteCashless.DoesNotExist /wv/check_carte POST {tag_id_request}")
-            return Response(data, status=status.HTTP_404_NOT_FOUND)
+            logger.error(f"{timezone.now()} {timezone.now() - start} CarteCashless.DoesNotExist /wv/check_carte POST {tag_id_request}")
+            # return Response(data, status=status.HTTP_404_NOT_FOUND)
+            return render(request, 'popup_check_carte.html', data)
         except Exception:
             raise Exception
 
         serializer = CarteCashlessSerializer(carte)
         data = serializer.data
 
+        data['background'] = '#339448'
+        # carte sans cotisation
+        if data["cotisation_membre_a_jour"] == _('Aucune cotisation'):
+          data['background'] = '#b85521'
+
         # data['route'] = "check_carte"
         logger.info(f"{timezone.now()} {timezone.now() - start} /wv/check_carte POST {carte}")
-        return Response(data, status=status.HTTP_200_OK)
+        
+        # ancienne réponse 
+        # return Response(data, status=status.HTTP_200_OK)
+        print(f'-------- data = {data}')
+        # import ipdb; ipdb.set_trace()
+        return render(request, 'popup_check_carte.html', data )
 
 
 class Commande:

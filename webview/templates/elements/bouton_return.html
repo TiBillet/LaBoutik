@@ -1,0 +1,41 @@
+{% load i18n %}
+<div id="popup-retour" class="sous-element BF-ligne-uniforme" onclick="fn.popupAnnuler();">
+    <div class="bt-basic-icon">
+        <i class="fas fa-undo-alt"></i>
+    </div>
+    <div class="sous-element-texte">{% trans 'RETOUR' %}</div>
+</div>
+<style>
+    .sous-element {
+        --bt-color: #fff;
+        --icon-size: 2.5rem;
+        --text-size: 2rem;
+        --bt-background: #3b567f;
+        box-sizing: border-box;
+        width: 400px;
+        height: 120px;
+        background: var(--bt-background);
+        cursor: pointer;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+
+    .bt-basic-icon {
+        color: var(--bt-color);
+        font-size: var(--icon-size);
+    }
+
+    .sous-element-texte {
+        color: var(--bt-color);
+        font-size: var(--text-size);
+        text-transform: uppercase;
+    }
+
+    /* largeur maxi 600 pixels */
+    @media only screen and (max-width: 599px) {
+        .sous-element {
+            width: 280px;
+            height: 90px;
+        }
+    }
+</style>

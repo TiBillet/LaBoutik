@@ -152,6 +152,7 @@ export const fr = {
     prePurchaseCard: 'carte avant achats',
     postPurchaseCard: 'carte après achats',
     cardsTotal: 'total des cartes',
-    totalCardWallet: 'total portefeuille carte'
+    totalCardWallet: 'total portefeuille carte',
+    noContribution: 'Aucune cotisation'
   }
 }

@@ -1,0 +1,50 @@
+{% load i18n %}
+
+<div id="popup-cashless" style="background-color:{{ background }};" class="BF-col-uniforme popup-cashless-conteneur">
+
+    {% if msg_content != None %}
+        {% if msg_title != None %}
+            <div class="BF-col check-carte-inconnue l100p test-return-msg-title"
+                 style="white-space: pre-line; text-align: center;">{{ msg_title }}</div>
+        {% endif %}
+        <div class="BF-col check-carte-inconnue l100p test-return-msg-content"
+             style="white-space: pre-line; text-align: center;">{{ msg_content }}</div>
+    {% else %}
+        <div class="BF-col-uniforme check-carte-ok">
+            <div class="check-carte-ok-nom test-return-name"><span>{% trans "membre_name" %}</span> : {{ membre_name }}
+            </div>
+            <div class="check-carte-ok-cotisation test-return-contribution">{{ cotisation_membre_a_jour }}</div>
+            <div class="check-carte-ok-total-carte test-return-total-card">
+                <span>{% trans "Sur carte" %}</span> : {{ total_monnaie }} <span>{% trans "currency_symbol" %}</span>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- assets -->
+    <table>
+        {% for asset in assets %}
+            <tr>
+                {% for key, value in asset.items %}
+                    {% if key == 'monnaie_name' %}
+                        <td class="test-return-nom-monnaie-item{{ forloop.parentloop.counter }}"
+                            style="padding: 4px; border: 1px solid #000;">
+                            {{ value }}
+                        </td>
+                    {% endif %}
+                    {% if key == 'qty' %}
+                        <!-- pour les test qty = x.xx (2 chiffres après le point) -->
+                        <td class="test-return-valeur-monnaie-item{{ forloop.parentloop.counter }}"
+                            style="padding: 4px; border: 1px solid #000;">
+                            {{ value }}
+                        </td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </table>
+
+    <div class="popup-conteneur-bt-retour BF-col" style="margin: 10px 0;">
+        {% include "elements/bouton_return.html" %}
+    </div>
+
+</div>
