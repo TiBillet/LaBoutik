@@ -495,7 +495,6 @@ def preparation(request, *args, **kwargs):
 @login_required
 @api_view(['POST'])
 def check_carte(request):
-    start = timezone.now()
     if request.method == 'POST':
         tag_id_request = request.data.get('tag_id_client').upper()
 
@@ -524,7 +523,7 @@ def check_carte(request):
                 'route': "check_carte",
             }
             logger.error(
-                f"{timezone.now()} {timezone.now() - start} CarteCashless.DoesNotExist /wv/check_carte POST {tag_id_request}")
+                f"{timezone.now()} CarteCashless.DoesNotExist /wv/check_carte POST {tag_id_request}")
             # return Response(data, status=status.HTTP_404_NOT_FOUND)
             return render(request, 'popup_check_carte.html', data)
         except Exception:

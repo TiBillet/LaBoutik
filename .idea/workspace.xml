@@ -1,11 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AnalysisUIOptions">
+    <option name="ANALYZE_INJECTED_CODE" value="false" />
+  </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3d91e341-fed0-477e-97b7-fbf5a8ebb5c5" name="Changes" comment="flush  opé">
-      <change beforePath="$PROJECT_DIR$/env_example" beforeDir="false" afterPath="$PROJECT_DIR$/env_example" afterDir="false" />
+    <list default="true" id="21f16961-a23e-42b4-96f4-de54154eb384" name="Changes" comment="Table in check carte">
+      <change beforePath="$PROJECT_DIR$/.idea/LaBoutik.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/LaBoutik.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webview/templates/popup_check_carte.html" beforeDir="false" afterPath="$PROJECT_DIR$/webview/templates/popup_check_carte.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webview/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/webview/views.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,13 +25,7 @@
     <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)" />
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_BRANCH_BY_REPOSITORY">
-      <map>
-        <entry key="$PROJECT_DIR$" value="htmx" />
-      </map>
-    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
-    <option name="ROOT_SYNC" value="DONT_SYNC" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -43,68 +46,35 @@
     &quot;accountId&quot;: &quot;89abe965-cbef-4b99-aec3-c176aa4ec774&quot;
   }
 }</component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 2
+  &quot;associatedIndex&quot;: 4
 }</component>
-  <component name="ProjectId" id="2fd9cgwSLanXEC3b3GZlfRunfu8" />
-  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectId" id="2lYARGh3Lznj4j3VlhXjDhsTxjR" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_ADD_EXTERNAL_FILES": "true",
-    "Notification.DisplayName-DoNotAsk-Vcs Notifications": "VCS notifications",
-    "Notification.DoNotAsk-Vcs Notifications": "true",
-    "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.pycharm.django.structure.promotion.once.per.project": "true",
-    "com.github.shiraji.findpullrequest.model.FindPullRequestConfig.HOSTING": "GitHub",
-    "django.template.preview.state": "SHOW_EDITOR_AND_PREVIEW",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "/home/slaan/TiBillet/dev/Test-Driven-Development",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.updates",
-    "vue.rearranger.settings.migration": "true"
-  },
-  "keyToStringList": {
-    "com.intellij.ide.scratch.ScratchImplUtil$2/New Scratch File": [
-      "TEXT",
-      "Python",
-      "Shell Script"
-    ]
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;django.template.preview.state&quot;: &quot;SHOW_EDITOR&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;PreProd&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/slaan/TiBillet/dev/LaBoutik&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;Errors&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
-    <configuration name="LaBoutik" type="Python.DjangoServer" factoryName="Django server">
-      <module name="LaBoutik" />
-      <option name="ENV_FILES" value="" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="" />
-      <option name="IS_MODULE_SDK" value="false" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="launchJavascriptDebuger" value="false" />
-      <option name="port" value="8000" />
-      <option name="host" value="localhost" />
-      <option name="additionalOptions" value="" />
-      <option name="browserUrl" value="" />
-      <option name="runTestServer" value="false" />
-      <option name="runNoReload" value="false" />
-      <option name="useCustomRunCommand" value="false" />
-      <option name="customRunCommand" value="" />
-      <method v="2" />
-    </configuration>
     <configuration name="LaBoutik" type="Python.DjangoServer" factoryName="Django server">
       <module name="LaBoutik" />
       <option name="ENV_FILES" value="" />
@@ -133,475 +103,40 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-PY-241.19072.16" />
-        <option value="bundled-python-sdk-8336bb23522e-2767605e8bc2-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-241.19072.16" />
+        <option value="bundled-js-predefined-d6986cc7102b-7c0b70fcd90d-JavaScript-PY-242.21829.153" />
+        <option value="bundled-python-sdk-464836ebc622-b74155a9e76b-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-242.21829.153" />
       </set>
     </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="3d91e341-fed0-477e-97b7-fbf5a8ebb5c5" name="Changes" comment="" />
-      <created>1714120170656</created>
+      <changelist id="21f16961-a23e-42b4-96f4-de54154eb384" name="Changes" comment="" />
+      <created>1725346627692</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1714120170656</updated>
-      <workItem from="1714120171796" duration="6197000" />
-      <workItem from="1714291305642" duration="954000" />
-      <workItem from="1714293473773" duration="18794000" />
-      <workItem from="1714642139893" duration="3300000" />
-      <workItem from="1715249802305" duration="1684000" />
-      <workItem from="1715275300165" duration="1875000" />
-      <workItem from="1715506846908" duration="853000" />
-      <workItem from="1715603415632" duration="47000" />
-      <workItem from="1715666040037" duration="12127000" />
-      <workItem from="1715692902165" duration="9102000" />
-      <workItem from="1715752856301" duration="22542000" />
-      <workItem from="1715958580221" duration="173000" />
-      <workItem from="1716015528915" duration="12388000" />
-      <workItem from="1716029701947" duration="117000" />
-      <workItem from="1716186637210" duration="4710000" />
-      <workItem from="1716209447063" duration="1788000" />
-      <workItem from="1716275020383" duration="18431000" />
-      <workItem from="1716359408553" duration="20380000" />
-      <workItem from="1716715058654" duration="22361000" />
-      <workItem from="1716791880361" duration="16182000" />
-      <workItem from="1716823308516" duration="647000" />
-      <workItem from="1716877153672" duration="9940000" />
-      <workItem from="1716990870409" duration="917000" />
-      <workItem from="1717003449519" duration="283000" />
-      <workItem from="1717165561296" duration="446000" />
-      <workItem from="1717231397008" duration="5621000" />
-      <workItem from="1717317831904" duration="4519000" />
-      <workItem from="1717324321551" duration="3541000" />
-      <workItem from="1717566536773" duration="4267000" />
-      <workItem from="1717570842715" duration="28873000" />
-      <workItem from="1717660864541" duration="32530000" />
-      <workItem from="1717959349083" duration="734000" />
-      <workItem from="1717962275004" duration="776000" />
-      <workItem from="1718107252391" duration="6069000" />
-      <workItem from="1718194275395" duration="448000" />
-      <workItem from="1719905321958" duration="4283000" />
-      <workItem from="1719984663201" duration="8225000" />
-      <workItem from="1720020179662" duration="3833000" />
-      <workItem from="1720097340866" duration="2756000" />
-      <workItem from="1720164596365" duration="28942000" />
-      <workItem from="1720418451979" duration="2201000" />
-      <workItem from="1720791674157" duration="9862000" />
-      <workItem from="1720846284173" duration="11682000" />
-      <workItem from="1721061340588" duration="3656000" />
-      <workItem from="1721113194930" duration="10012000" />
-      <workItem from="1721134248088" duration="249000" />
-      <workItem from="1721720659128" duration="1305000" />
-      <workItem from="1721734157315" duration="7242000" />
-      <workItem from="1721803711023" duration="2479000" />
-      <workItem from="1722013384340" duration="683000" />
-      <workItem from="1722839248640" duration="14168000" />
-      <workItem from="1722924958373" duration="1488000" />
-      <workItem from="1722927210223" duration="9125000" />
-      <workItem from="1723012141634" duration="3000" />
-      <workItem from="1723012161482" duration="5695000" />
-      <workItem from="1723037460351" duration="3000" />
-      <workItem from="1723037472397" duration="3304000" />
-      <workItem from="1723099441651" duration="3009000" />
-      <workItem from="1723107870905" duration="11470000" />
-      <workItem from="1723195537503" duration="653000" />
-      <workItem from="1723456285411" duration="813000" />
-      <workItem from="1723458293589" duration="1894000" />
+      <updated>1725346627692</updated>
+      <workItem from="1725346628664" duration="159000" />
+      <workItem from="1725346811871" duration="7176000" />
+      <workItem from="1725354185991" duration="810000" />
     </task>
-    <task id="LOCAL-00016" summary="install with fedow">
+    <task id="LOCAL-00001" summary="add fedow serializer">
       <option name="closed" value="true" />
-      <created>1715777815079</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
+      <created>1725348549060</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
       <option name="project" value="LOCAL" />
-      <updated>1715777815079</updated>
+      <updated>1725348549060</updated>
     </task>
-    <task id="LOCAL-00017" summary="handshake encrypted">
+    <task id="LOCAL-00002" summary="Table in check carte">
       <option name="closed" value="true" />
-      <created>1716029526735</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
+      <created>1725353415092</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
       <option name="project" value="LOCAL" />
-      <updated>1716029526735</updated>
+      <updated>1725353415092</updated>
     </task>
-    <task id="LOCAL-00018" summary="add config serializer">
-      <option name="closed" value="true" />
-      <created>1716188275064</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1716188275065</updated>
-    </task>
-    <task id="LOCAL-00019" summary="reduce card created on test mode with install --tdd">
-      <option name="closed" value="true" />
-      <created>1716211211309</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1716211211309</updated>
-    </task>
-    <task id="LOCAL-00020" summary="test unitaires">
-      <option name="closed" value="true" />
-      <created>1716286561332</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1716286561332</updated>
-    </task>
-    <task id="LOCAL-00021" summary="badgeuse from lespass">
-      <option name="closed" value="true" />
-      <created>1716298706291</created>
-      <option name="number" value="00021" />
-      <option name="presentableId" value="LOCAL-00021" />
-      <option name="project" value="LOCAL" />
-      <updated>1716298706291</updated>
-    </task>
-    <task id="LOCAL-00022" summary="badgeuse from lespass">
-      <option name="closed" value="true" />
-      <created>1716380924402</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1716380924402</updated>
-    </task>
-    <task id="LOCAL-00023" summary="rename url">
-      <option name="closed" value="true" />
-      <created>1716716786008</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1716716786008</updated>
-    </task>
-    <task id="LOCAL-00024" summary="Adhesion depuis Lespass">
-      <option name="closed" value="true" />
-      <created>1716742804753</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1716742804753</updated>
-    </task>
-    <task id="LOCAL-00025" summary="add methode_choices to article serializer">
-      <option name="closed" value="true" />
-      <created>1716812851699</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1716812851699</updated>
-    </task>
-    <task id="LOCAL-00026" summary="add methode_choices to article serializer">
-      <option name="closed" value="true" />
-      <created>1716813886349</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1716813886349</updated>
-    </task>
-    <task id="LOCAL-00027" summary="add methode_choices to article serializer">
-      <option name="closed" value="true" />
-      <created>1716817059181</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1716817059181</updated>
-    </task>
-    <task id="LOCAL-00028" summary="add methode_choices to article serializer">
-      <option name="closed" value="true" />
-      <created>1716817210245</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1716817210245</updated>
-    </task>
-    <task id="LOCAL-00029" summary="add methode_choices to article serializer">
-      <option name="closed" value="true" />
-      <created>1716817630516</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1716817630516</updated>
-    </task>
-    <task id="LOCAL-00030" summary="add methode_choices to article serializer">
-      <option name="closed" value="true" />
-      <created>1716819725766</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1716819725766</updated>
-    </task>
-    <task id="LOCAL-00031" summary="adhésions comportement">
-      <option name="closed" value="true" />
-      <created>1716822047669</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1716822047669</updated>
-    </task>
-    <task id="LOCAL-00032" summary="0.9.4">
-      <option name="closed" value="true" />
-      <created>1716823937958</created>
-      <option name="number" value="00032" />
-      <option name="presentableId" value="LOCAL-00032" />
-      <option name="project" value="LOCAL" />
-      <updated>1716823937958</updated>
-    </task>
-    <task id="LOCAL-00033" summary="no more membership in cashless admin">
-      <option name="closed" value="true" />
-      <created>1716887436213</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1716887436213</updated>
-    </task>
-    <task id="LOCAL-00034" summary="memcached">
-      <option name="closed" value="true" />
-      <created>1717233124197</created>
-      <option name="number" value="00034" />
-      <option name="presentableId" value="LOCAL-00034" />
-      <option name="project" value="LOCAL" />
-      <updated>1717233124197</updated>
-    </task>
-    <task id="LOCAL-00035" summary="start script on run docker">
-      <option name="closed" value="true" />
-      <created>1717237279641</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1717237279641</updated>
-    </task>
-    <task id="LOCAL-00036" summary="translate machine">
-      <option name="closed" value="true" />
-      <created>1717320361822</created>
-      <option name="number" value="00036" />
-      <option name="presentableId" value="LOCAL-00036" />
-      <option name="project" value="LOCAL" />
-      <updated>1717320361822</updated>
-    </task>
-    <task id="LOCAL-00037" summary="translate machine">
-      <option name="closed" value="true" />
-      <created>1717320578110</created>
-      <option name="number" value="00037" />
-      <option name="presentableId" value="LOCAL-00037" />
-      <option name="project" value="LOCAL" />
-      <updated>1717320578110</updated>
-    </task>
-    <task id="LOCAL-00038" summary="translate machine">
-      <option name="closed" value="true" />
-      <created>1717320686262</created>
-      <option name="number" value="00038" />
-      <option name="presentableId" value="LOCAL-00038" />
-      <option name="project" value="LOCAL" />
-      <updated>1717320686262</updated>
-    </task>
-    <task id="LOCAL-00039" summary="traduction">
-      <option name="closed" value="true" />
-      <created>1717321462994</created>
-      <option name="number" value="00039" />
-      <option name="presentableId" value="LOCAL-00039" />
-      <option name="project" value="LOCAL" />
-      <updated>1717321462994</updated>
-    </task>
-    <task id="LOCAL-00040" summary="email admin">
-      <option name="closed" value="true" />
-      <created>1717326063143</created>
-      <option name="number" value="00040" />
-      <option name="presentableId" value="LOCAL-00040" />
-      <option name="project" value="LOCAL" />
-      <updated>1717326063143</updated>
-    </task>
-    <task id="LOCAL-00041" summary="error to warning">
-      <option name="closed" value="true" />
-      <created>1717327884164</created>
-      <option name="number" value="00041" />
-      <option name="presentableId" value="LOCAL-00041" />
-      <option name="project" value="LOCAL" />
-      <updated>1717327884164</updated>
-    </task>
-    <task id="LOCAL-00042" summary="time bomb">
-      <option name="closed" value="true" />
-      <created>1717576520785</created>
-      <option name="number" value="00042" />
-      <option name="presentableId" value="LOCAL-00042" />
-      <option name="project" value="LOCAL" />
-      <updated>1717576520785</updated>
-    </task>
-    <task id="LOCAL-00043" summary="void and time bomb">
-      <option name="closed" value="true" />
-      <created>1717589672400</created>
-      <option name="number" value="00043" />
-      <option name="presentableId" value="LOCAL-00043" />
-      <option name="project" value="LOCAL" />
-      <updated>1717589672400</updated>
-    </task>
-    <task id="LOCAL-00044" summary="trad, article cashless name">
-      <option name="closed" value="true" />
-      <created>1717595729334</created>
-      <option name="number" value="00044" />
-      <option name="presentableId" value="LOCAL-00044" />
-      <option name="project" value="LOCAL" />
-      <updated>1717595729334</updated>
-    </task>
-    <task id="LOCAL-00045" summary="admmin script and POS open to new article">
-      <option name="closed" value="true" />
-      <created>1717611276458</created>
-      <option name="number" value="00045" />
-      <option name="presentableId" value="LOCAL-00045" />
-      <option name="project" value="LOCAL" />
-      <updated>1717611276458</updated>
-    </task>
-    <task id="LOCAL-00046" summary="don't resend card to fedow if created from fedow">
-      <option name="closed" value="true" />
-      <created>1717679222974</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1717679222974</updated>
-    </task>
-    <task id="LOCAL-00047" summary="Update 0.9.6&#10;LaBoutik&#10;Can refill multiple asset one the Cashless point of sale&#10;&#10;Usefull to add a consumption fee, taken into account in the accounting reports, but non-refundable when the card is emptied.&#10;Thanks to the Moloset and @dibranoice for financing this feature !">
-      <option name="closed" value="true" />
-      <created>1717686465224</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1717686465224</updated>
-    </task>
-    <task id="LOCAL-00048" summary="Traduction">
-      <option name="closed" value="true" />
-      <created>1717743081616</created>
-      <option name="number" value="00048" />
-      <option name="presentableId" value="LOCAL-00048" />
-      <option name="project" value="LOCAL" />
-      <updated>1717743081616</updated>
-    </task>
-    <task id="LOCAL-00049" summary="Traduction">
-      <option name="closed" value="true" />
-      <created>1717743359263</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1717743359263</updated>
-    </task>
-    <task id="LOCAL-00050" summary="Traduction">
-      <option name="closed" value="true" />
-      <created>1717743448067</created>
-      <option name="number" value="00050" />
-      <option name="presentableId" value="LOCAL-00050" />
-      <option name="project" value="LOCAL" />
-      <updated>1717743448068</updated>
-    </task>
-    <task id="LOCAL-00051" summary="gremlins bug on ticket z and report">
-      <option name="closed" value="true" />
-      <created>1717747544617</created>
-      <option name="number" value="00051" />
-      <option name="presentableId" value="LOCAL-00051" />
-      <option name="project" value="LOCAL" />
-      <updated>1717747544617</updated>
-    </task>
-    <task id="LOCAL-00052" summary="gremlins bug on ticket z and report">
-      <option name="closed" value="true" />
-      <created>1717748177408</created>
-      <option name="number" value="00052" />
-      <option name="presentableId" value="LOCAL-00052" />
-      <option name="project" value="LOCAL" />
-      <updated>1717748177408</updated>
-    </task>
-    <task id="LOCAL-00053" summary="time bomb on .env">
-      <option name="closed" value="true" />
-      <created>1717756268421</created>
-      <option name="number" value="00053" />
-      <option name="presentableId" value="LOCAL-00053" />
-      <option name="project" value="LOCAL" />
-      <updated>1717756268421</updated>
-    </task>
-    <task id="LOCAL-00054" summary="time bomb on .env">
-      <option name="closed" value="true" />
-      <created>1717760461037</created>
-      <option name="number" value="00054" />
-      <option name="presentableId" value="LOCAL-00054" />
-      <option name="project" value="LOCAL" />
-      <updated>1717760461037</updated>
-    </task>
-    <task id="LOCAL-00055" summary="compose dev">
-      <option name="closed" value="true" />
-      <created>1718108755259</created>
-      <option name="number" value="00055" />
-      <option name="presentableId" value="LOCAL-00055" />
-      <option name="project" value="LOCAL" />
-      <updated>1718108755259</updated>
-    </task>
-    <task id="LOCAL-00056" summary="Lost my card !">
-      <option name="closed" value="true" />
-      <created>1718117526056</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1718117526056</updated>
-    </task>
-    <task id="LOCAL-00057" summary="remove function membre et old api billetterie">
-      <option name="closed" value="true" />
-      <created>1720195468920</created>
-      <option name="number" value="00057" />
-      <option name="presentableId" value="LOCAL-00057" />
-      <option name="project" value="LOCAL" />
-      <updated>1720195468920</updated>
-    </task>
-    <task id="LOCAL-00058" summary="remove function membre et old api billetterie">
-      <option name="closed" value="true" />
-      <created>1720203448588</created>
-      <option name="number" value="00058" />
-      <option name="presentableId" value="LOCAL-00058" />
-      <option name="project" value="LOCAL" />
-      <updated>1720203448588</updated>
-    </task>
-    <task id="LOCAL-00059" summary="post migration">
-      <option name="closed" value="true" />
-      <created>1721120219337</created>
-      <option name="number" value="00059" />
-      <option name="presentableId" value="LOCAL-00059" />
-      <option name="project" value="LOCAL" />
-      <updated>1721120219338</updated>
-    </task>
-    <task id="LOCAL-00060" summary="post migration">
-      <option name="closed" value="true" />
-      <created>1721120583770</created>
-      <option name="number" value="00060" />
-      <option name="presentableId" value="LOCAL-00060" />
-      <option name="project" value="LOCAL" />
-      <updated>1721120583770</updated>
-    </task>
-    <task id="LOCAL-00061" summary="add exemple ipdb">
-      <option name="closed" value="true" />
-      <created>1721721245188</created>
-      <option name="number" value="00061" />
-      <option name="presentableId" value="LOCAL-00061" />
-      <option name="project" value="LOCAL" />
-      <updated>1721721245188</updated>
-    </task>
-    <task id="LOCAL-00062" summary="dumps directory for backup">
-      <option name="closed" value="true" />
-      <created>1721745012945</created>
-      <option name="number" value="00062" />
-      <option name="presentableId" value="LOCAL-00062" />
-      <option name="project" value="LOCAL" />
-      <updated>1721745012946</updated>
-    </task>
-    <task id="LOCAL-00063" summary="export membership and migration script">
-      <option name="closed" value="true" />
-      <created>1723016897603</created>
-      <option name="number" value="00063" />
-      <option name="presentableId" value="LOCAL-00063" />
-      <option name="project" value="LOCAL" />
-      <updated>1723016897605</updated>
-    </task>
-    <task id="LOCAL-00064" summary="flush  opé">
-      <option name="closed" value="true" />
-      <created>1723123696481</created>
-      <option name="number" value="00064" />
-      <option name="presentableId" value="LOCAL-00064" />
-      <option name="project" value="LOCAL" />
-      <updated>1723123696481</updated>
-    </task>
-    <option name="localTasksCounter" value="65" />
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -612,47 +147,15 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State>
-              <option name="COLUMN_ID_WIDTH">
-                <map>
-                  <entry key="Table.Default.Author.ColumnIdWidth" value="90" />
-                  <entry key="Table.Default.Date.ColumnIdWidth" value="156" />
-                  <entry key="Table.GitHub.CommitStatus.ColumnIdWidth" value="55" />
-                  <entry key="Table.Space.CommitStatus.ColumnIdWidth" value="54" />
-                </map>
-              </option>
-            </State>
+            <State />
           </value>
         </entry>
       </map>
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="0.9.4" />
-    <MESSAGE value="no more membership in cashless admin" />
-    <MESSAGE value="memcached" />
-    <MESSAGE value="start script on run docker" />
-    <MESSAGE value="translate machine" />
-    <MESSAGE value="traduction" />
-    <MESSAGE value="email admin" />
-    <MESSAGE value="error to warning" />
-    <MESSAGE value="time bomb" />
-    <MESSAGE value="void and time bomb" />
-    <MESSAGE value="trad, article cashless name" />
-    <MESSAGE value="admmin script and POS open to new article" />
-    <MESSAGE value="don't resend card to fedow if created from fedow" />
-    <MESSAGE value="Update 0.9.6&#10;LaBoutik&#10;Can refill multiple asset one the Cashless point of sale&#10;&#10;Usefull to add a consumption fee, taken into account in the accounting reports, but non-refundable when the card is emptied.&#10;Thanks to the Moloset and @dibranoice for financing this feature !" />
-    <MESSAGE value="Traduction" />
-    <MESSAGE value="gremlins bug on ticket z and report" />
-    <MESSAGE value="time bomb on .env" />
-    <MESSAGE value="compose dev" />
-    <MESSAGE value="Lost my card !" />
-    <MESSAGE value="remove function membre et old api billetterie" />
-    <MESSAGE value="post migration" />
-    <MESSAGE value="add exemple ipdb" />
-    <MESSAGE value="dumps directory for backup" />
-    <MESSAGE value="export membership and migration script" />
-    <MESSAGE value="flush  opé" />
-    <option name="LAST_COMMIT_MESSAGE" value="flush  opé" />
+    <MESSAGE value="add fedow serializer" />
+    <MESSAGE value="Table in check carte" />
+    <option name="LAST_COMMIT_MESSAGE" value="Table in check carte" />
   </component>
 </project>
