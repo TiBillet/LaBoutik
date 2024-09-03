@@ -532,7 +532,11 @@ def check_carte(request):
 
         serializer = CarteCashlessSerializer(carte)
         data = serializer.data
+
         data['background'] = '#339448'
+        # carte sans cotisation
+        if data["cotisation_membre_a_jour"] == _('Aucune cotisation'):
+          data['background'] = '#b85521'
 
         # data['route'] = "check_carte"
         logger.info(f"{timezone.now()} {timezone.now() - start} /wv/check_carte POST {carte}")
