@@ -152,11 +152,14 @@ function get_template(ctx) {
         }
       }
 
-      /* largeur maxi 1024 pixels */
+      /* pour une largeur supérieure ou égale à 1023 pixels */
       @media only screen and (min-width: 1023px) {
         :host {
           width: 100px;
           height: 100px;
+        }
+        .article-pdp {
+          font-size: 0.8rem;
         }
         .ele.img {
           width: 100px;
@@ -165,13 +168,13 @@ function get_template(ctx) {
         .ele-nom {
           font-size: 16px;
         }
-        .ele-prix {
-          flex-basis: 40%;
+        .ele-icon {
+          flex-basis: 20%;
         }
       }
 
       /* largeur maxi 1200 pixels */
-      @media only screen and (min-width: 1199px) {
+      /*@media only screen and (min-width: 1199px) {
         :host {
           width: 240px;
           height: 240px;
@@ -192,10 +195,10 @@ function get_template(ctx) {
         .ele-prix {
           flex-basis: 51%;
         }
+        */
     
-        /* sunmi d3mini */
-        @media only screen and (max-width: 1280px) { 
-        /*@media (width >= 1201px) {*/
+        /* sunmi d3mini -- pour une largeur supérieure ou égale à 1279 pixels */
+        @media only screen and (min-width: 1279px) { 
           :host {
             width: 160px;
             height: 160px;
