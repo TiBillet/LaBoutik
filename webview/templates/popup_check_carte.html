@@ -1,5 +1,6 @@
 {% load i18n %}
 {% load webviewTags %}
+{% load humanize %}
 
 <div id="popup-cashless" style="background-color:{{ background }};" class="BF-col-uniforme popup-cashless-conteneur">
 
@@ -88,7 +89,7 @@
             {% for token in tokens_membership %}
                 <tr>
                     <td>{{ token.name }}</td>
-                    <td>{{ token.start_membership_date }}</td>
+                    <td>{{ token.start_membership_date | naturalday }}</td>
                     <td>{{ token.asset.place_origin.name }}</td>
                 </tr>
             {% endfor %}
