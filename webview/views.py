@@ -541,7 +541,6 @@ def check_carte(request):
 
         # import ipdb; ipdb.set_trace()
 
-
         logger.info(f"/wv/check_carte POST {data}")
 
         data['background'] = '#b85521'  # FOND ORANGE
