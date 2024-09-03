@@ -46,7 +46,8 @@ function get_template(ctx) {
 
       .ele-conteneur {
         position: relative;
-        font-family: 'Source Sans', sans-serif;
+        /* font-family: 'Source Sans', sans-serif; */
+        font-family: "Luciole-regular";
         box-sizing: border-box;
         width: 100%;
         height: 100%;
@@ -192,6 +193,31 @@ function get_template(ctx) {
           flex-basis: 51%;
         }
     
+        /* sunmi d3mini */
+        @media (width >= 1280px) {
+          :host {
+            width: 160px;
+            height: 160px;
+          }
+          .ele-nom {
+            font-size: 1.5rem;
+          }
+          .article-pdp {
+            width: 95%;
+            left: 4px;
+            font-size: 1.4rem;
+          }
+          .ele-icon {
+            flex-basis: 20%;
+          }
+          .ele-prix {
+            flex-basis: 55%;
+            overflow-wrap: break-word;
+          }
+          .ele-nombre {
+            flex-basis: 25%;
+          }
+        }
       }
 
     </style>
