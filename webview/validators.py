@@ -1,24 +1,19 @@
+import logging
 import os
 from decimal import Decimal
 from typing import List
 
-from django.contrib.auth import authenticate, login
+from cryptography.exceptions import InvalidSignature
+from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from django.db.models import Sum
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 from rest_framework.fields import empty
-from cryptography.exceptions import InvalidSignature
-from rest_framework.generics import get_object_or_404
 
 from APIcashless.models import Articles, Membre, PointDeVente, Configuration, CarteCashless, MoyenPaiement, Table, \
     CommandeSauvegarde, CarteMaitresse, Assets, Appareil
-
-import logging
-
-from fedow_connect.utils import get_public_key, verify_signature, rsa_decrypt_string
+from fedow_connect.utils import get_public_key, verify_signature
 from tibiauth.models import TibiUser
 
 logger = logging.getLogger(__name__)
