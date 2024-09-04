@@ -144,7 +144,6 @@ class ProductFromLespassValidator(serializers.Serializer):
     terms_and_conditions_document = serializers.URLField(allow_null=True)
     uuid = serializers.UUIDField()
 
-
     def validate(self, attrs):
         product = attrs
         categorie = product['categorie_article']

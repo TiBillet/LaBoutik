@@ -138,6 +138,9 @@ def send_new_asset_to_fedow(sender, instance: MoyenPaiement, created, **kwargs):
 def create_article_membreship_badge(sender, instance: MoyenPaiement, created, **kwargs):
     # Création des Moyen de paiement lors du fedowAPI.place.get_accepted_assets(),
     # ou de n'importe quel appel vers AssetValidator
+
+    pass
+    """
     if created:
         logger.info(f'MoyenPaiement {instance.get_categorie_display()} created !')
         if instance.categorie in [
@@ -152,7 +155,8 @@ def create_article_membreship_badge(sender, instance: MoyenPaiement, created, **
                 f"{config.billetterie_url}/api/products/{instance.pk}/",
                 verify=bool(not settings.DEBUG))
 
-            if retrieve_product.status_code != 200 :
+            if retrieve_product.status_code != 200:
+                logger.error(f"create_article_membreship_badge : Billetterie réponse : {retrieve_product.status_code}")
                 raise Exception(
                     f"create_article_membreship_badge : Billetterie réponse : {retrieve_product.status_code}")
 
@@ -164,4 +168,4 @@ def create_article_membreship_badge(sender, instance: MoyenPaiement, created, **
             if not product.is_valid():
                 raise Exception(
                     f"create_article_membreship_badge : Création d'Asset Adhésion ou Badge {ProductFromLespassValidator.errors}")
-
+    """
