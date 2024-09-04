@@ -3,12 +3,11 @@
 # This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
-#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-08-19 13:54+0000\n"
+"POT-Creation-Date: 2024-09-04 08:20+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,9 +41,9 @@ msgstr ""
 "Connection error to discovery server for device : "
 "{discovery_new_client_request.status_code}"
 
-#: APIcashless/models.py:53 APIcashless/models.py:143 APIcashless/models.py:300
-#: APIcashless/models.py:378 APIcashless/models.py:407
-#: APIcashless/models.py:491 APIcashless/models.py:680
+#: APIcashless/models.py:53 APIcashless/models.py:143 APIcashless/models.py:298
+#: APIcashless/models.py:376 APIcashless/models.py:405
+#: APIcashless/models.py:489 APIcashless/models.py:678
 #: administration/templates/rapports/rapport_complet.html:71
 #: administration/templates/rapports/rapport_complet.html:157
 #: administration/templates/rapports/ticketZ_simple.html:69
@@ -104,10 +103,6 @@ msgid "J'accepte de recevoir la newsletter"
 msgstr "I agree to receive the newsletter"
 
 #: APIcashless/models.py:170
-#, fuzzy
-#| msgid ""
-#| "Vous pouvez modifier la valeur par défault dans la page de configuration "
-#| "générale"
 msgid ""
 "Vous pouvez modifier la valeur par default dans la page de configuration "
 "générale"
@@ -141,11 +136,11 @@ msgstr "Source"
 msgid "Espece"
 msgstr "Cash"
 
-#: APIcashless/models.py:191 APIcashless/models.py:1711
+#: APIcashless/models.py:191 APIcashless/models.py:1710
 msgid "CB"
 msgstr "Credit Card"
 
-#: APIcashless/models.py:192 APIcashless/models.py:939
+#: APIcashless/models.py:192 APIcashless/models.py:938
 msgid "Gratuit"
 msgstr "Free"
 
@@ -169,369 +164,348 @@ msgstr "Member"
 msgid "Membres"
 msgstr "Members"
 
-#: APIcashless/models.py:302
+#: APIcashless/models.py:300
 msgid "Nom FR"
 msgstr "Last name FR"
 
-#: APIcashless/models.py:304
+#: APIcashless/models.py:302
 msgid "Code Couleur Hexa"
 msgstr "Hexa Color Code"
 
-#: APIcashless/models.py:310
+#: APIcashless/models.py:308
 msgid "Couleur"
 msgstr "Color"
 
-#: APIcashless/models.py:311
+#: APIcashless/models.py:309
 msgid "Couleurs"
 msgstr "Colors"
 
-#: APIcashless/models.py:321
+#: APIcashless/models.py:319
 msgid "articles"
 msgstr "items"
 
-#: APIcashless/models.py:326
+#: APIcashless/models.py:324
 msgid "categories"
 msgstr "categories"
 
-#: APIcashless/models.py:334
+#: APIcashless/models.py:332
 msgid "Service direct ( vente au comptoir )"
 msgstr "Direct service ( bar sales )"
 
-#: APIcashless/models.py:338 APIcashless/models.py:539
-#: APIcashless/models.py:1613 administration/adminstaff.py:484
+#: APIcashless/models.py:336 APIcashless/models.py:537
+#: APIcashless/models.py:1612 administration/adminstaff.py:485
 msgid "Vente"
 msgstr "Sales"
 
-#: APIcashless/models.py:339
+#: APIcashless/models.py:337
 msgid "Rechargement"
 msgstr "Topping up"
 
-#: APIcashless/models.py:348 APIcashless/models.py:410
-#: APIcashless/models.py:496
+#: APIcashless/models.py:346 APIcashless/models.py:408
+#: APIcashless/models.py:494
 msgid "Poids"
 msgstr "Weight"
 
-#: APIcashless/models.py:355 APIcashless/models.py:1108
+#: APIcashless/models.py:353 APIcashless/models.py:1107
 msgid "Point de vente"
 msgstr "Point of sale"
 
-#: APIcashless/models.py:356
+#: APIcashless/models.py:354
 msgid "Points de vente"
 msgstr "Points of sale"
 
-#: APIcashless/models.py:380
+#: APIcashless/models.py:378
 msgid "Information"
 msgstr "Information"
 
-#: APIcashless/models.py:389 APIcashless/models.py:1564
+#: APIcashless/models.py:387 APIcashless/models.py:1563
 msgid "Taux"
 msgstr "(VAT) Rate"
 
-#: APIcashless/models.py:401 APIcashless/models.py:402
+#: APIcashless/models.py:399 APIcashless/models.py:400
 msgid "Taux TVA"
 msgstr "VAT Rate"
 
-#: APIcashless/models.py:413
+#: APIcashless/models.py:411
 msgid "Url Image"
 msgstr "Image Url"
 
-#: APIcashless/models.py:445 APIcashless/models.py:446
+#: APIcashless/models.py:443 APIcashless/models.py:444
 msgid "Catégorie d'articles"
 msgstr "Items category"
 
-#: APIcashless/models.py:463 administration/adminstaff.py:1240
-#, fuzzy
-#| msgid "Catégorie d'articles"
+#: APIcashless/models.py:461 administration/adminstaff.py:1241
 msgid "Catégories"
 msgstr "Items category"
 
-#: APIcashless/models.py:474
+#: APIcashless/models.py:472
 msgid "Imprimante"
 msgstr "Printer"
 
-#: APIcashless/models.py:476
+#: APIcashless/models.py:474
 msgid "Compteur de ticket"
 msgstr "Ticket counter"
 
-#: APIcashless/models.py:478
+#: APIcashless/models.py:476
 msgid "Nombre de copie à imprimer"
 msgstr "Number of copies to print"
 
-#: APIcashless/models.py:484
-#, fuzzy
-#| msgid "Préparations & impressions"
+#: APIcashless/models.py:482
 msgid "Préparation & impréssion"
 msgstr "Preparations & printing"
 
-#: APIcashless/models.py:485
-#, fuzzy
-#| msgid "Préparations & impressions"
+#: APIcashless/models.py:483
 msgid "Préparations & impréssions"
 msgstr "Preparations & printing"
 
-#: APIcashless/models.py:492
+#: APIcashless/models.py:490
 msgid "Prix de vente"
 msgstr "Selling price"
 
-#: APIcashless/models.py:494
+#: APIcashless/models.py:492
 msgid "Prix d'achat"
 msgstr "Buying price"
 
-#: APIcashless/models.py:502
+#: APIcashless/models.py:500
 #: administration/templates/rapports/rapport_complet.html:347
-#, fuzzy
-#| msgid "Catégorie d'articles"
 msgid "Catégorie"
 msgstr "Items category"
 
-#: APIcashless/models.py:522
+#: APIcashless/models.py:520
 msgid "Archiver"
 msgstr "Archive"
 
-#: APIcashless/models.py:540
+#: APIcashless/models.py:538
 msgid "Recharge €"
 msgstr "Top-up €"
 
-#: APIcashless/models.py:541
+#: APIcashless/models.py:539
 msgid "Recharge fédérée €"
 msgstr "Federated top-up €"
 
-#: APIcashless/models.py:542 administration/adminstaff.py:482
+#: APIcashless/models.py:540 administration/adminstaff.py:483
 msgid "Recharge Cadeau"
 msgstr "Gift top-up"
 
-#: APIcashless/models.py:543 APIcashless/validator.py:155
+#: APIcashless/models.py:541 APIcashless/validator.py:155
 #: administration/templates/rapports/rapport_complet.html:192
+#: webview/templates/popup_check_carte.html:86
 msgid "Adhésions"
 msgstr "Memberships"
 
-#: APIcashless/models.py:544
+#: APIcashless/models.py:542
 msgid "Retour de consigne"
 msgstr "Return of deposit"
 
-#: APIcashless/models.py:545
+#: APIcashless/models.py:543
 msgid "Vider Carte"
 msgstr "Clear card"
 
-#: APIcashless/models.py:546
+#: APIcashless/models.py:544
 msgid "Void Carte"
 msgstr "Void Card"
 
-#: APIcashless/models.py:547 APIcashless/models.py:756
+#: APIcashless/models.py:545 APIcashless/models.py:754
 msgid "Fractionné"
 msgstr "Split"
 
-#: APIcashless/models.py:548
+#: APIcashless/models.py:546
 msgid "Billet de concert"
 msgstr "Concert ticket"
 
-#: APIcashless/models.py:549 APIcashless/models.py:768
+#: APIcashless/models.py:547 APIcashless/models.py:766
 #: APIcashless/validator.py:125
 msgid "Badgeuse"
 msgstr "Time clock device"
 
-#: APIcashless/models.py:550
+#: APIcashless/models.py:548
 msgid "Fidélité"
 msgstr "Loyalty"
 
-#: APIcashless/models.py:566
-#, fuzzy
-#| msgid ""
-#| "Incrémente le décompte des billets vendu à la journée et imprimé sur le "
-#| "ticket"
+#: APIcashless/models.py:564
 msgid ""
 "Incrémente le décompte des billets vendu à la journée et imprimé sur le "
 "ticket."
 msgstr "Increment the count of tickets sold per day and printed on the ticket"
 
-#: APIcashless/models.py:573
+#: APIcashless/models.py:571
 msgid "Asset Fedow utilisé pour un abonnement, adhésion ou une badgeuse"
 msgstr "Fedow asset used for a subscription, membership or time clock device"
 
-#: APIcashless/models.py:577 APIcashless/validator.py:68
+#: APIcashless/models.py:575 APIcashless/validator.py:68
 #: APIcashless/validator.py:79
 msgid "Non applicable"
 msgstr "Not applicable"
 
-#: APIcashless/models.py:578 APIcashless/models.py:1838
+#: APIcashless/models.py:576 APIcashless/models.py:1837
 #: APIcashless/validator.py:69
 msgid "365 Jours"
 msgstr "365 days"
 
-#: APIcashless/models.py:579 APIcashless/validator.py:70
-#, fuzzy
-#| msgid "365 Jours"
+#: APIcashless/models.py:577 APIcashless/validator.py:70
 msgid "30 Jours"
 msgstr "30 days"
 
-#: APIcashless/models.py:580 APIcashless/validator.py:71
-#, fuzzy
-#| msgid "365 Jours"
+#: APIcashless/models.py:578 APIcashless/validator.py:71
 msgid "1 Jour"
 msgstr "1 day"
 
-#: APIcashless/models.py:581 APIcashless/validator.py:72
+#: APIcashless/models.py:579 APIcashless/validator.py:72
 msgid "1 Heure"
 msgstr "1 hour"
 
-#: APIcashless/models.py:582 APIcashless/validator.py:73
+#: APIcashless/models.py:580 APIcashless/validator.py:73
 msgid "Civile"
 msgstr "Civil"
 
-#: APIcashless/models.py:588
-#, fuzzy
-#| msgid "Adhésion ou abonnement"
+#: APIcashless/models.py:586
 msgid "durée d'abonnement"
 msgstr "subscription duration"
 
-#: APIcashless/models.py:626
+#: APIcashless/models.py:624
 #, python-brace-format
 msgid "Pas de methode pour {self.name}"
 msgstr "No method for {self.name}"
 
-#: APIcashless/models.py:645
+#: APIcashless/models.py:643
 msgid "article"
 msgstr "item"
 
-#: APIcashless/models.py:646
+#: APIcashless/models.py:644
 msgid "Articles et tarifs"
 msgstr "items and prices"
 
-#: APIcashless/models.py:754
+#: APIcashless/models.py:752
 msgid "Token local €"
 msgstr "Local token €"
 
-#: APIcashless/models.py:755
+#: APIcashless/models.py:753
 msgid "Token local cadeau"
 msgstr "Local token gift"
 
-#: APIcashless/models.py:757
+#: APIcashless/models.py:755
 msgid "Stripe"
 msgstr "Stripe"
 
-#: APIcashless/models.py:758
+#: APIcashless/models.py:756
 msgid "Token fédéré exterieur €"
 msgstr "External federated token €"
 
-#: APIcashless/models.py:759
+#: APIcashless/models.py:757
 msgid "Token fédéré cadeau"
 msgstr "External federated token gift "
 
-#: APIcashless/models.py:760
+#: APIcashless/models.py:758
 msgid "Fedow"
 msgstr "Fedow"
 
-#: APIcashless/models.py:761
+#: APIcashless/models.py:759
 msgid "Web (Stripe)"
 msgstr "Web (Stripe)"
 
-#: APIcashless/models.py:762
+#: APIcashless/models.py:760
 #: administration/templates/rapports/rapport_complet.html:236
 #: administration/templates/rapports/ticketZ_simple.html:154
 msgid "Espèces"
 msgstr "Cash"
 
-#: APIcashless/models.py:763
+#: APIcashless/models.py:761
 msgid "Carte bancaire"
 msgstr "Credit card"
 
-#: APIcashless/models.py:764
+#: APIcashless/models.py:762
 msgid "Cheque"
 msgstr "Bank check"
 
-#: APIcashless/models.py:765
+#: APIcashless/models.py:763
 msgid "Oceco"
 msgstr "Oceco"
 
-#: APIcashless/models.py:766
+#: APIcashless/models.py:764
 msgid "Ardoise"
 msgstr "Money owed"
 
-#: APIcashless/models.py:767 APIcashless/models.py:1300
+#: APIcashless/models.py:765 APIcashless/models.py:1299
 msgid "Commande"
 msgstr "Order"
 
-#: APIcashless/models.py:769
+#: APIcashless/models.py:767
 msgid "Badgeuse fédérée"
 msgstr "Federated time clock device"
 
-#: APIcashless/models.py:770
+#: APIcashless/models.py:768
 msgid "Temps"
 msgstr "Time"
 
-#: APIcashless/models.py:771
+#: APIcashless/models.py:769
 msgid "Temps fédéré"
 msgstr "Federated time"
 
-#: APIcashless/models.py:772
+#: APIcashless/models.py:770
 msgid "Adhésion associative"
 msgstr "Association membership"
 
-#: APIcashless/models.py:773
+#: APIcashless/models.py:771
 msgid "Abonnement"
 msgstr "Subscription"
 
-#: APIcashless/models.py:774
+#: APIcashless/models.py:772
 msgid "Abonnement fédéré"
 msgstr "Federated subscription"
 
-#: APIcashless/models.py:775
-#, fuzzy
-#| msgid "Points de vente"
+#: APIcashless/models.py:773
 msgid "Points de fidélité"
 msgstr "Loyalty points"
 
-#: APIcashless/models.py:776
+#: APIcashless/models.py:774
 msgid "Points de fidélité fédérés"
 msgstr "ederated loyalty points"
 
-#: APIcashless/models.py:869 APIcashless/models.py:877
+#: APIcashless/models.py:868 APIcashless/models.py:876
 #, python-brace-format
 msgid "{self.name} (Fédéré)"
 msgstr "{self.name} (Federated)"
 
-#: APIcashless/models.py:899
+#: APIcashless/models.py:898
 msgid "uuid4 pour QrCode"
 msgstr "QRcode uuid4"
 
-#: APIcashless/models.py:900 APIcashless/models.py:910
+#: APIcashless/models.py:899 APIcashless/models.py:909
 msgid ""
 "Non obligatoire lors de la création, il sera généré aléatoirement si non "
 "rempli."
 msgstr ""
 "Not mandatory at creation, it will be randomly generated if not provided"
 
-#: APIcashless/models.py:909
+#: APIcashless/models.py:908
 msgid "Numéro imprimé"
 msgstr "Printed number"
 
-#: APIcashless/models.py:936
+#: APIcashless/models.py:935
 msgid "Aucune"
 msgstr "None"
 
-#: APIcashless/models.py:937
+#: APIcashless/models.py:936
 msgid "Carte Bancaire"
 msgstr "Credit card"
 
-#: APIcashless/models.py:938
+#: APIcashless/models.py:937
 msgid "Espèce"
 msgstr "Cash"
 
-#: APIcashless/models.py:1011
-#, fuzzy
-#| msgid "365 Jours"
+#: APIcashless/models.py:1010
 msgid "A Jour "
 msgstr "Up to date"
 
-#: APIcashless/models.py:1013
+#: APIcashless/models.py:1012
 msgid "PAS A Jour "
 msgstr "NOT up to date"
 
-#: APIcashless/models.py:1015
+#: APIcashless/models.py:1014
 msgid "Aucune cotisation"
 msgstr "No contribution"
 
-#: APIcashless/models.py:1018
+#: APIcashless/models.py:1017
 msgid ""
 "Adhésion suspendue. Merci de créer la fiche membre via l'administraion ou en "
 "scannant le QRCode au dos de la carte."
@@ -539,252 +513,229 @@ msgstr ""
 "Membership suspended. Please create the membership file using administration "
 "or by scanning the QRCode on the back of the card."
 
-#: APIcashless/models.py:1020
+#: APIcashless/models.py:1019
 msgid "Carte Anonyme"
 msgstr "Anonymous card"
 
-#: APIcashless/models.py:1046
-#, fuzzy
-#| msgid "Cashless"
+#: APIcashless/models.py:1045
 msgid "Carte cashless"
 msgstr "Cashless card"
 
-#: APIcashless/models.py:1047
-#, fuzzy
-#| msgid "Cashless"
+#: APIcashless/models.py:1046
 msgid "Cartes cashless"
 msgstr "Cashless cards"
 
-#: APIcashless/models.py:1092
+#: APIcashless/models.py:1091
 msgid "Asset"
 msgstr "Asset"
 
-#: APIcashless/models.py:1093
+#: APIcashless/models.py:1092
 msgid "Portefeuilles"
 msgstr "Wallet"
 
-#: APIcashless/models.py:1113
+#: APIcashless/models.py:1112
 msgid "Mise a jour le"
 msgstr "Updated"
 
-#: APIcashless/models.py:1115
+#: APIcashless/models.py:1114
 msgid "Mode gérant.e"
 msgstr "Manager mode"
 
-#: APIcashless/models.py:1132
-#, fuzzy
-#| msgid "Carte Primaire OK"
+#: APIcashless/models.py:1131
 msgid "Carte primaire"
 msgstr "Primary card"
 
-#: APIcashless/models.py:1133
-#, fuzzy
-#| msgid "Carte Primaire OK"
+#: APIcashless/models.py:1132
 msgid "Cartes primaires"
 msgstr "Primary cards"
 
-#: APIcashless/models.py:1164
+#: APIcashless/models.py:1163
 msgid "Libre"
 msgstr "Free"
 
-#: APIcashless/models.py:1165
+#: APIcashless/models.py:1164
 msgid "Occupée"
 msgstr "Taken"
 
-#: APIcashless/models.py:1197
+#: APIcashless/models.py:1196
 msgid "Table"
 msgstr "Table"
 
-#: APIcashless/models.py:1198
+#: APIcashless/models.py:1197
 msgid "Tables"
 msgstr "Tables"
 
-#: APIcashless/models.py:1231
+#: APIcashless/models.py:1230
 msgid "Ouverte"
 msgstr "Open"
 
-#: APIcashless/models.py:1232
+#: APIcashless/models.py:1231
 msgid "Servie"
 msgstr "Served"
 
-#: APIcashless/models.py:1233
+#: APIcashless/models.py:1232
 msgid "Payée"
 msgstr "Paid"
 
-#: APIcashless/models.py:1234
+#: APIcashless/models.py:1233
 msgid "Servie et payée"
 msgstr "Served and paid"
 
-#: APIcashless/models.py:1235
+#: APIcashless/models.py:1234
 msgid "Annulée"
 msgstr "Canceled"
 
-#: APIcashless/models.py:1301
-#, fuzzy
-#| msgid "Commande"
+#: APIcashless/models.py:1300
 msgid "Commandes"
 msgstr "Orders"
 
-#: APIcashless/models.py:1327
+#: APIcashless/models.py:1326
 msgid "En préparation"
 msgstr "In progress"
 
-#: APIcashless/models.py:1328
+#: APIcashless/models.py:1327
 msgid "Prêt à servir"
 msgstr "Ready to be served"
 
-#: APIcashless/models.py:1329
+#: APIcashless/models.py:1328
 msgid "Servis"
 msgstr "Served"
 
-#: APIcashless/models.py:1330
+#: APIcashless/models.py:1329
 msgid "Payés"
 msgstr "Paid"
 
-#: APIcashless/models.py:1331
+#: APIcashless/models.py:1330
 msgid "Servis et payés"
 msgstr "Served and paid"
 
-#: APIcashless/models.py:1332
+#: APIcashless/models.py:1331
 msgid "Annulés"
 msgstr "Canceled"
 
-#: APIcashless/models.py:1428
+#: APIcashless/models.py:1427
 msgid ""
 "Erreur lors d'un rapprochement de paiement fractionné. Aucun paiement en Db."
 msgstr "Fractional payment reconciliation error. No payment in database."
 
-#: APIcashless/models.py:1604
+#: APIcashless/models.py:1603
 msgid "Envoyé sur Odoo"
 msgstr "Send to Odoo"
 
-#: APIcashless/models.py:1614
-#, fuzzy
-#| msgid "Vente"
+#: APIcashless/models.py:1613
 msgid "Ventes"
 msgstr "Sales"
 
-#: APIcashless/models.py:1690
-#, fuzzy
-#| msgid "Information"
+#: APIcashless/models.py:1689
 msgid "information Generale"
 msgstr "General Information"
 
-#: APIcashless/models.py:1691
-#, fuzzy
-#| msgid "Information"
+#: APIcashless/models.py:1690
 msgid "informations Generale"
 msgstr "General Information"
 
-#: APIcashless/models.py:1712 administration/admin_commun.py:474
+#: APIcashless/models.py:1711 administration/admin_commun.py:474
+#: webview/templates/popup_check_carte.html:68
 msgid "Cashless"
 msgstr "Cashless"
 
-#: APIcashless/models.py:1773
+#: APIcashless/models.py:1772
 msgid "Généré le"
 msgstr "Generated"
 
-#: APIcashless/models.py:1774
+#: APIcashless/models.py:1773
 msgid "Début"
 msgstr "Start"
 
-#: APIcashless/models.py:1775
+#: APIcashless/models.py:1774
 msgid "Fin"
 msgstr "End"
 
-#: APIcashless/models.py:1786
+#: APIcashless/models.py:1785
 msgid "Custom"
 msgstr "Custom"
 
-#: APIcashless/models.py:1787
-#, fuzzy
-#| msgid "Comportement du point de vente invalide"
+#: APIcashless/models.py:1786
 msgid "Cloture d'un point de vente"
 msgstr "Invalid Point Of Sale behavior"
 
-#: APIcashless/models.py:1788
-#, fuzzy
-#| msgid "Cloture de caisse"
+#: APIcashless/models.py:1787
 msgid "Cloture de toutes caisses"
 msgstr "Cash register closing"
 
-#: APIcashless/models.py:1789
+#: APIcashless/models.py:1788
 msgid "Rapport hebdomadaire"
 msgstr "Weekly report"
 
-#: APIcashless/models.py:1790
+#: APIcashless/models.py:1789
 msgid "Rapport mensuel"
 msgstr "Monthly report"
 
-#: APIcashless/models.py:1791
+#: APIcashless/models.py:1790
 msgid "Rapport annuel"
 msgstr "Annual report"
 
-#: APIcashless/models.py:1805
+#: APIcashless/models.py:1804
 msgid "Cloture de caisse"
 msgstr "Cash register closing"
 
-#: APIcashless/models.py:1806
+#: APIcashless/models.py:1805
 msgid "Clotures de caisse"
 msgstr "Cash registers closing"
 
-#: APIcashless/models.py:1814
+#: APIcashless/models.py:1813
 msgid "Nom de la structure"
 msgstr "Organization name"
 
-#: APIcashless/models.py:1834
+#: APIcashless/models.py:1833
 msgid "Prix de l'adhésion par default"
 msgstr "Default Membership Price"
 
-#: APIcashless/models.py:1839
+#: APIcashless/models.py:1838
 msgid "31 Decembre"
 msgstr "Decembre 31st"
 
-#: APIcashless/models.py:1840
+#: APIcashless/models.py:1839
 msgid "Année glissante : Octobre -> Decembre +1"
 msgstr "Year on year : October -> December +1"
 
-#: APIcashless/models.py:1846
+#: APIcashless/models.py:1845
 msgid "Durée d'adhésion"
 msgstr "Membership duration"
 
-#: APIcashless/models.py:1854
+#: APIcashless/models.py:1853
 msgid "Indian/Reunion"
 msgstr "Indian/Reunion"
 
-#: APIcashless/models.py:1855
+#: APIcashless/models.py:1854
 msgid "Europe/Paris"
 msgstr "Europe/Paris"
 
-#: APIcashless/models.py:1871
-#, fuzzy
-#| msgid "Monnaie Disponible"
+#: APIcashless/models.py:1870
 msgid "Monnaie Principale"
 msgstr "Main Currency"
 
-#: APIcashless/models.py:1876
-#, fuzzy
-#| msgid "Monnaie Disponible"
+#: APIcashless/models.py:1875
 msgid "Monnaie Principale Cadeau"
 msgstr "Main Currency gift"
 
-#: APIcashless/models.py:1881
+#: APIcashless/models.py:1880
 msgid "Monnaie Principale Ardoise"
 msgstr "Main Currency owed"
 
-#: APIcashless/models.py:1912
+#: APIcashless/models.py:1911
 msgid "Assets acceptés pour ventes"
 msgstr "Assets accepted for sales"
 
-#: APIcashless/models.py:1962
+#: APIcashless/models.py:1961
 msgid "Code PIN pour appareillement"
 msgstr "PIN code for pairing"
 
-#: APIcashless/models.py:1967
+#: APIcashless/models.py:1966
 msgid "Validation manuelle de la préparation sur ecran tactile"
 msgstr "Manual validation of the preparation on touch screen"
 
-#: APIcashless/models.py:1971
+#: APIcashless/models.py:1970
 msgid ""
 "Si annulation d'un article déja payé par cashless, on rembourse "
 "automatiquement sur la carte"
@@ -792,19 +743,19 @@ msgstr ""
 "If you cancel an item already paid for by cashless, it will be automatically "
 "refunded to your card."
 
-#: APIcashless/models.py:1973
+#: APIcashless/models.py:1972
 msgid "Url publique du serveur cashless"
 msgstr "Cashless server Public Url"
 
-#: APIcashless/models.py:1974
+#: APIcashless/models.py:1973
 msgid "IP publique du serveur cashless"
 msgstr "Cashless server Public IP"
 
-#: APIcashless/models.py:1987 APIcashless/models.py:2015
+#: APIcashless/models.py:1986 APIcashless/models.py:2014
 msgid "Créer / Révoquer"
 msgstr "Create / Revoke"
 
-#: APIcashless/models.py:1989 APIcashless/models.py:2016
+#: APIcashless/models.py:1988 APIcashless/models.py:2015
 msgid ""
 "Selectionnez et validez pour générer ou supprimer une clé API. La clé ne "
 "sera affiché qu'a la création, notez la bien !"
@@ -812,188 +763,174 @@ msgstr ""
 "Select and validate to generate or delete an API key. The key will only be "
 "displayed upon creation, take note of it!"
 
-#: APIcashless/models.py:1999
+#: APIcashless/models.py:1998
 msgid "Ip serveur oceco"
 msgstr "oceco server IP"
 
-#: APIcashless/models.py:2021
-#, fuzzy
-#| msgid "Billetterie"
+#: APIcashless/models.py:2020
 msgid "Ip serveur Billetterie"
 msgstr "Ticketing server IP"
 
-#: APIcashless/models.py:2026
+#: APIcashless/models.py:2025
 msgid "Url du serveur SaaS"
 msgstr "Saas server Url"
 
-#: APIcashless/models.py:2035
+#: APIcashless/models.py:2034
 msgid "Activez le cashbash pour les rechargements cashless"
 msgstr "Activate cashback for cashless top-up"
 
-#: APIcashless/models.py:2038
+#: APIcashless/models.py:2037
 msgid "Valeur du rechargement à partir de laquelle les cadeaux s'enclenchent"
 msgstr "Top-up value at which gifts are activated"
 
-#: APIcashless/models.py:2040
+#: APIcashless/models.py:2039
 msgid "Valeur donnée en monnaie cadeau"
 msgstr "Gift currency value given"
 
-#: APIcashless/models.py:2047
+#: APIcashless/models.py:2046
 msgid "Incrémentez des points de fidélité pour chaque achat."
 msgstr "Increment loyalty points for each purchase."
 
-#: APIcashless/models.py:2051
+#: APIcashless/models.py:2050
 msgid "Asset déclencheur de l'incrémentation des points de fidélité"
 msgstr "Asset triggering the increment of loyalty points"
 
-#: APIcashless/models.py:2053
+#: APIcashless/models.py:2052
 msgid "Asset de fidélité"
 msgstr "Loyalty asset"
 
-#: APIcashless/models.py:2055
+#: APIcashless/models.py:2054
 msgid "Facteur de point."
 msgstr "Point factor."
 
-#: APIcashless/models.py:2056
+#: APIcashless/models.py:2055
 msgid "10€ de vente X facteur = X*10 points de fidélité."
 msgstr "€10 sales X factor = X*10 loyalty points."
 
-#: APIcashless/models.py:2063
+#: APIcashless/models.py:2062
 msgid "Envoyer les adhésions vers Odoo"
 msgstr "Send memberships to Odoo"
 
-#: APIcashless/models.py:2066
+#: APIcashless/models.py:2065
 msgid "Url du serveur odoo"
 msgstr "odoo server URL"
 
-#: APIcashless/models.py:2087
+#: APIcashless/models.py:2086
 msgid "Révoquer la clé API"
 msgstr "Revoke API key"
 
-#: APIcashless/models.py:2088 APIcashless/models.py:2159
+#: APIcashless/models.py:2087 APIcashless/models.py:2158
 msgid ""
 "Selectionnez et validez pour supprimer la clé API et entrer une nouvelle."
 msgstr "Select and validate to delete the API key and enter a new one."
 
-#: APIcashless/models.py:2098
+#: APIcashless/models.py:2097
 msgid "Créer les facture pour chaque adhésion"
 msgstr "Create invoices for each membership"
 
-#: APIcashless/models.py:2100
+#: APIcashless/models.py:2099
 msgid "Valider le paiement automatiquement"
 msgstr "Confirm payment automatically"
 
-#: APIcashless/models.py:2105
-#, fuzzy
-#| msgid "Carte Bancaire"
+#: APIcashless/models.py:2104
 msgid "Nom du journal Facture Client"
 msgstr "Customer Invoice journal name"
 
-#: APIcashless/models.py:2111
+#: APIcashless/models.py:2110
 msgid "Nom du journal Espèce"
 msgstr "Cash journal Name"
 
-#: APIcashless/models.py:2117
-#, fuzzy
-#| msgid "Carte Bancaire"
+#: APIcashless/models.py:2116
 msgid "Nom du journal Carte Bancaire"
 msgstr "Credit card journal Name"
 
-#: APIcashless/models.py:2123
+#: APIcashless/models.py:2122
 msgid "Nom du journal Stripe"
 msgstr "Stripe journal Name"
 
-#: APIcashless/models.py:2137
+#: APIcashless/models.py:2136
 msgid "Fond de caisse par défaut"
 msgstr "Default cash float"
 
-#: APIcashless/models.py:2139
-#, fuzzy
-#| msgid "EX Tableau comptable"
+#: APIcashless/models.py:2138
 msgid "Email de la compta."
 msgstr "Accounting email"
 
-#: APIcashless/models.py:2141
+#: APIcashless/models.py:2140
 msgid ""
 "Email de la compta. Envoie des rapports de la veille en pdf tout les matins."
 msgstr ""
 "Accounting email. Sends reports from the day before in pdf every morning."
 
-#: APIcashless/models.py:2143
+#: APIcashless/models.py:2142
 msgid "Heure de cloture automatique de toutes les caisses"
 msgstr "Automatic closing time for all cash registers"
 
-#: APIcashless/models.py:2149
+#: APIcashless/models.py:2148
 msgid "Url du serveur Dokos"
 msgstr "Dokos server URL"
 
-#: APIcashless/models.py:2150
+#: APIcashless/models.py:2149
 msgid "ex: http://demobadge.dokos.cloud/"
 msgstr "ex: http://demobadge.dokos.cloud/"
 
-#: APIcashless/models.py:2151
+#: APIcashless/models.py:2150
 msgid "Clé API Dokos"
 msgstr "Dokos API key"
 
-#: APIcashless/models.py:2152
+#: APIcashless/models.py:2151
 msgid "Format pub_key:priv_key"
 msgstr "Format pub_key:priv_key"
 
-#: APIcashless/models.py:2154
+#: APIcashless/models.py:2153
 msgid "Id du lieu Dokos (client_venue)"
 msgstr "Location ID Dokos (client_venue)"
 
-#: APIcashless/models.py:2157
+#: APIcashless/models.py:2156
 msgid "Révoquer la clé Dokos"
 msgstr "Revoke Dokos key"
 
-#: APIcashless/models.py:2171
+#: APIcashless/models.py:2170
 msgid "Clé API Serveur de découverte"
 msgstr "Discovery Server API Key"
 
-#: APIcashless/models.py:2184
+#: APIcashless/models.py:2183
 msgid "Entrez la clé FEDOW pour activer le modèle fédéré :"
 msgstr "Enter the FEDOW key to enable the federated model :"
 
-#: APIcashless/models.py:2185
+#: APIcashless/models.py:2184
 msgid "Validez votre compte stripe :"
 msgstr "Validate your stripe account :"
 
-#: APIcashless/models.py:2210
-#, fuzzy
-#| msgid "Badgeuse"
+#: APIcashless/models.py:2209
 msgid "Badgeuse active"
 msgstr "Active Time clock"
 
-#: APIcashless/models.py:2211
+#: APIcashless/models.py:2210
 msgid "Création de l'article et du points de vente Badge si activé."
 msgstr "Creation of the item and the Badge points of sale if activated."
 
-#: APIcashless/models.py:2269
+#: APIcashless/models.py:2268
 msgid "Aucune fédération configurée"
 msgstr "No federation configured"
 
-#: APIcashless/models.py:2272 APIcashless/models.py:2273
-#, fuzzy
-#| msgid "Configuration générale"
+#: APIcashless/models.py:2271 APIcashless/models.py:2272
 msgid "Configuration"
 msgstr "Configuration"
 
-#: APIcashless/models.py:2302
+#: APIcashless/models.py:2301
 msgid "Fond de caisse."
 msgstr "Cash float."
 
-#: APIcashless/models.py:2358
+#: APIcashless/models.py:2357
 msgid "EX Tableau comptable"
 msgstr "EX Accounting chart"
 
-#: APIcashless/models.py:2359
+#: APIcashless/models.py:2358
 msgid "EX Tableaux comptable"
 msgstr "EX Accounting charts"
 
 #: APIcashless/tasks.py:186
-#, fuzzy
-#| msgid "Point de vente"
 msgid "Point de fidélité"
 msgstr "Loyalty point"
 
@@ -1014,10 +951,6 @@ msgid "Décollage imminent"
 msgstr "Imminent takeoff"
 
 #: APIcashless/tasks.py:383
-#, fuzzy
-#| msgid ""
-#| "Vous avez été invité à créer votre compte pour l'administration de "
-#| "l'instance TiBillet de {config.structure}."
 msgid ""
 "Vous avez été invité à créer votre compte pour l'administration de "
 "l'instance TiBillet de "
@@ -1080,8 +1013,6 @@ msgid "Selectionnez une catégorie"
 msgstr "Select a category"
 
 #: APIcashless/validator.py:118
-#, fuzzy
-#| msgid "Billet de concert"
 msgid "Billet payant"
 msgstr "Paid ticket"
 
@@ -1090,32 +1021,22 @@ msgid "Pack d'objets"
 msgstr "Item pack"
 
 #: APIcashless/validator.py:120
-#, fuzzy
-#| msgid "Cashless"
 msgid "Recharge cashless"
 msgstr "Cashless top-up"
 
 #: APIcashless/validator.py:121
-#, fuzzy
-#| msgid "Recharge Euros"
 msgid "Recharge suspendue"
 msgstr "Suspended top-up"
 
 #: APIcashless/validator.py:122
-#, fuzzy
-#| msgid "Rechargement"
 msgid "Vetement"
 msgstr "clothing"
 
 #: APIcashless/validator.py:123
-#, fuzzy
-#| msgid "Merchandising"
 msgid "Merchandasing"
 msgstr "Merchandising"
 
 #: APIcashless/validator.py:124
-#, fuzzy
-#| msgid "Adhésion associative"
 msgid "Abonnement et/ou adhésion associative"
 msgstr "Subscription and/or associative membership"
 
@@ -1124,8 +1045,6 @@ msgid "Don"
 msgstr "Donation"
 
 #: APIcashless/validator.py:127
-#, fuzzy
-#| msgid "Réservation gratuite"
 msgid "Reservation gratuite"
 msgstr "Free reservation"
 
@@ -1134,14 +1053,10 @@ msgid "Nécessite une validation manuelle"
 msgstr "Requires manual validation"
 
 #: APIcashless/validator.py:154
-#, fuzzy
-#| msgid "Badgeuse"
 msgid "Badge"
 msgstr "Badge"
 
 #: APIcashless/validator.py:156
-#, fuzzy
-#| msgid "Tibillet"
 msgid "Billet"
 msgstr "Bill"
 
@@ -1162,8 +1077,6 @@ msgid "phone est obligatoire"
 msgstr "phone required"
 
 #: administration/admin_commun.py:42
-#, fuzzy
-#| msgid "Exporter la selection"
 msgid "Exporter la sélection"
 msgstr "Export selection"
 
@@ -1188,8 +1101,6 @@ msgid "Séparer le prénom du nom"
 msgstr "Separate first name from last name"
 
 #: administration/admin_commun.py:262
-#, fuzzy
-#| msgid "Cashless"
 msgid "Nouvelle carte cashless"
 msgstr "New Cashless card"
 
@@ -1265,14 +1176,10 @@ msgid "Refuse especes"
 msgstr "refuse cash"
 
 #: administration/adminstaff.py:162
-#, fuzzy
-#| msgid "Carte bancaire"
 msgid "Accepte carte bancaire"
 msgstr "Accepts Credit card"
 
 #: administration/adminstaff.py:170
-#, fuzzy
-#| msgid "Carte bancaire"
 msgid "Refuse carte bancaire"
 msgstr "Refuse Credit card"
 
@@ -1289,15 +1196,15 @@ msgstr ""
 msgid "Activez pour une impression directe après chaque vente."
 msgstr "Enable for direct printing after each sale."
 
-#: administration/adminstaff.py:404
+#: administration/adminstaff.py:405
 msgid "Commande(s) servie(s)"
 msgstr "Served order(s)"
 
-#: administration/adminstaff.py:419
+#: administration/adminstaff.py:420
 msgid "Supprimer les commandes"
 msgstr "Delete orders"
 
-#: administration/adminstaff.py:449
+#: administration/adminstaff.py:450
 msgid ""
 "Colonne \" Liste des articles x/x/x \" :  Qty Commandées / Reste à servir / "
 "Reste à payer "
@@ -1305,57 +1212,57 @@ msgstr ""
 "Column \"List of items x/x/x\": Qty Ordered / Remaining to be served / Left "
 "to pay "
 
-#: administration/adminstaff.py:467
+#: administration/adminstaff.py:468
 msgid "methode"
 msgstr "method"
 
-#: administration/adminstaff.py:481
+#: administration/adminstaff.py:482
 msgid "Recharge Euros"
 msgstr "Euros top-up"
 
-#: administration/adminstaff.py:483
+#: administration/adminstaff.py:484
 msgid "RechargeS"
 msgstr "top-ups"
 
-#: administration/adminstaff.py:564
+#: administration/adminstaff.py:565
 msgid "Des articles sélectionnés ne sont pas des adhésions. ACTION CANCELED"
 msgstr "Selected articles are not memberships. ACTION CANCELED"
 
-#: administration/adminstaff.py:665
+#: administration/adminstaff.py:666
 msgid "Le nom du modèle est obligatoire. Merci de le renseigner."
 msgstr "The model name is mandatory. Please enter it."
 
-#: administration/adminstaff.py:677
+#: administration/adminstaff.py:678
 #, python-brace-format
 msgid "declaration_to_discovery_server erreur : {e}"
 msgstr "declaration_to_discovery_server erreur : {e}"
 
-#: administration/adminstaff.py:690
+#: administration/adminstaff.py:691
 #, python-brace-format
 msgid "Desactivation du terminal {instance.name}"
 msgstr "Terminal deactivation {instance.name}"
 
-#: administration/adminstaff.py:696
+#: administration/adminstaff.py:697
 #, python-brace-format
 msgid "Activation manuelle du terminal {instance.name} impossible : "
 msgstr "Manual activation of terminal {instance.name} impossible: "
 
-#: administration/adminstaff.py:703
+#: administration/adminstaff.py:704
 #, python-brace-format
 msgid "RE - Activation du terminal {instance.name}"
 msgstr "RE - Terminal activation {instance.name}"
 
-#: administration/adminstaff.py:714
+#: administration/adminstaff.py:715
 #, python-brace-format
 msgid ""
 "Erreur lors de la récupération du code pin, contactez l'administrateur : {e}"
 msgstr "Pin recovery error, contact an admin. {e}"
 
-#: administration/adminstaff.py:991
+#: administration/adminstaff.py:992
 msgid "Copiez bien la clé suivante et mettez la en lieu sur ! "
 msgstr "Copy the following key carefully and put it somewhere safe!"
 
-#: administration/adminstaff.py:1055
+#: administration/adminstaff.py:1056
 msgid ""
 "L'id du lieu ne correspond pas à un id de lieu connu : https://doc.dokos.io/"
 "federation-lieux/federation-de-lieux/api/"
@@ -1363,7 +1270,7 @@ msgstr ""
 "The location id does not match a known location id: https://doc.dokos.io/"
 "federation-lieux/federation-de-lieux/api/"
 
-#: administration/adminstaff.py:1060
+#: administration/adminstaff.py:1061
 msgid ""
 "Erreur de connexion à Dokos, vérifiez l'url et la clé API : https://doc."
 "dokos.io/federation-lieux/federation-de-lieux/api/"
@@ -1371,20 +1278,20 @@ msgstr ""
 "Dokos connection error, check URL and API key: https://doc.dokos.io/"
 "federation-lieux/federation-de-lieux/api/"
 
-#: administration/adminstaff.py:1131 administration/adminstaff.py:1138
+#: administration/adminstaff.py:1132 administration/adminstaff.py:1139
 #, python-brace-format
 msgid "Fedow non connecté. Asset non mis à jour : {e}"
 msgstr "Fedow not connected. Asset not updated: {e}"
 
-#: administration/adminstaff.py:1136
+#: administration/adminstaff.py:1137
 msgid "Mise à jour des assets Fedow OK"
 msgstr "Fedow assets update OK"
 
-#: administration/adminstaff.py:1193
+#: administration/adminstaff.py:1194
 msgid "Libérer les tables selectionnées"
 msgstr "Free the selected tables"
 
-#: administration/adminstaff.py:1253
+#: administration/adminstaff.py:1254
 msgid "groupement pour préparation"
 msgstr "group for preparation"
 
@@ -1420,29 +1327,27 @@ msgstr "Available Currency"
 msgid "Cartes"
 msgstr "Cards"
 
-#: administration/management/commands/install.py:286
-#, fuzzy
-#| msgid "Retour de consigne"
+#: administration/management/commands/install.py:283
 msgid "Retour Consigne"
 msgstr "Deposit return"
 
-#: administration/management/commands/install.py:296
+#: administration/management/commands/install.py:293
 msgid "Cadeau +0.1"
 msgstr "Gift +0.1"
 
-#: administration/management/commands/install.py:304
+#: administration/management/commands/install.py:301
 msgid "Cadeau +0.5"
 msgstr "Gift +0.5"
 
-#: administration/management/commands/install.py:312
+#: administration/management/commands/install.py:309
 msgid "Cadeau +1"
 msgstr "Gift +1"
 
-#: administration/management/commands/install.py:320
+#: administration/management/commands/install.py:317
 msgid "Cadeau +5"
 msgstr "Gift +5"
 
-#: administration/management/commands/install.py:335
+#: administration/management/commands/install.py:332
 msgid "VIDER CARTE"
 msgstr "EMPTY CARD"
 
@@ -1484,21 +1389,15 @@ msgid "View on site"
 msgstr "View on site"
 
 #: administration/templates/rapports/rapport_complet.html:8
-#, fuzzy
-#| msgid "Rapport mensuel"
 msgid "Rapport complet"
 msgstr "Full report"
 
 #: administration/templates/rapports/rapport_complet.html:59
-#, fuzzy
-#| msgid "Rapport annuel"
 msgid "Rapport TiBillet"
 msgstr "TiBillet report"
 
 #: administration/templates/rapports/rapport_complet.html:61
 #: administration/templates/rapports/ticketZ_simple.html:59
-#, fuzzy
-#| msgid "Début"
 msgid "Début : "
 msgstr "Start"
 
@@ -1514,15 +1413,11 @@ msgstr "Total sales by payment method"
 
 #: administration/templates/rapports/rapport_complet.html:67
 #: administration/templates/rapports/ticketZ_simple.html:65
-#, fuzzy
-#| msgid "Activez le cashbash pour les rechargements cashless"
 msgid "Ne comprend pas les recharges cashless."
 msgstr "Does not include cashless top-ups "
 
 #: administration/templates/rapports/rapport_complet.html:72
 #: administration/templates/rapports/ticketZ_simple.html:70
-#, fuzzy
-#| msgid "Point de vente"
 msgid "Total vente"
 msgstr "Total sale"
 
@@ -1544,8 +1439,6 @@ msgid "TVA"
 msgstr "VAT"
 
 #: administration/templates/rapports/rapport_complet.html:102
-#, fuzzy
-#| msgid "TOTAL HT"
 msgid "TOTAL Offert"
 msgstr "TOTAL Taxe Excluded"
 
@@ -1579,8 +1472,6 @@ msgstr "TOTAL"
 
 #: administration/templates/rapports/rapport_complet.html:153
 #: administration/templates/rapports/ticketZ_simple.html:191
-#, fuzzy
-#| msgid "Cashless"
 msgid "Recharge Cashless"
 msgstr "Cashless top-up"
 
@@ -1593,14 +1484,10 @@ msgstr "Total"
 
 #: administration/templates/rapports/rapport_complet.html:163
 #: administration/templates/rapports/ticketZ_simple.html:201
-#, fuzzy
-#| msgid "RechargeS"
 msgid "Recharge"
 msgstr "Refill"
 
 #: administration/templates/rapports/rapport_complet.html:172
-#, fuzzy
-#| msgid "Rechargement"
 msgid "Remboursement"
 msgstr "Refund"
 
@@ -1613,29 +1500,21 @@ msgid "Tarif"
 msgstr "Price"
 
 #: administration/templates/rapports/rapport_complet.html:208
-#, fuzzy
-#| msgid "Methode de paiement"
 msgid "Par Moyen de paiement"
 msgstr "Payment method"
 
 #: administration/templates/rapports/rapport_complet.html:232
 #: administration/templates/rapports/ticketZ_simple.html:150
-#, fuzzy
-#| msgid "Fond de caisse."
 msgid "Fond de caisse espèce"
 msgstr "Cash float"
 
 #: administration/templates/rapports/rapport_complet.html:242
 #: administration/templates/rapports/ticketZ_simple.html:160
-#, fuzzy
-#| msgid "Fond de caisse."
 msgid "Fond de caisse"
 msgstr "Cash float"
 
 #: administration/templates/rapports/rapport_complet.html:246
 #: administration/templates/rapports/ticketZ_simple.html:164
-#, fuzzy
-#| msgid "Cashless"
 msgid "Recharge cashless en espèce"
 msgstr "Cashless top-up in cash"
 
@@ -1645,8 +1524,6 @@ msgstr "Refund in cash"
 
 #: administration/templates/rapports/rapport_complet.html:254
 #: administration/templates/rapports/ticketZ_simple.html:172
-#, fuzzy
-#| msgid "Adhésions"
 msgid "Adhésion en espèce"
 msgstr "Membership in cash"
 
@@ -1661,8 +1538,6 @@ msgid "TOTAL CAISSE :"
 msgstr "TOTAL CASH REGISTER: "
 
 #: administration/templates/rapports/rapport_complet.html:273
-#, fuzzy
-#| msgid "Monnaie Disponible"
 msgid "Monnaie dormante"
 msgstr "Dormant Currency"
 
@@ -1703,8 +1578,6 @@ msgstr "Item (Price/Purchase)"
 
 #: administration/templates/rapports/rapport_complet.html:331
 #: administration/templates/rapports/rapport_complet.html:369
-#, fuzzy
-#| msgid "Articles"
 msgid "Qty vendue"
 msgstr "Sold quantity"
 
@@ -1719,20 +1592,14 @@ msgid "Qty Totale"
 msgstr "Total quantity"
 
 #: administration/templates/rapports/rapport_complet.html:334
-#, fuzzy
-#| msgid "Articles"
 msgid "Qty vendu"
 msgstr "Sold quantity"
 
 #: administration/templates/rapports/rapport_complet.html:335
-#, fuzzy
-#| msgid "Qty offerte"
 msgid "Qty offert"
 msgstr "Gifted quantity"
 
 #: administration/templates/rapports/rapport_complet.html:336
-#, fuzzy
-#| msgid "Qty Totale"
 msgid "Qty total"
 msgstr "Total quantity"
 
@@ -1747,14 +1614,10 @@ msgid "Total TTC"
 msgstr "Total Including All Taxes"
 
 #: administration/templates/rapports/rapport_complet.html:354
-#, fuzzy
-#| msgid "sous total :"
 msgid "sous total : "
 msgstr "sub total"
 
 #: administration/templates/rapports/rapport_complet.html:372
-#, fuzzy
-#| msgid "Articles"
 msgid "Cout vendu"
 msgstr "Selling Cost"
 
@@ -1771,8 +1634,6 @@ msgid "Nombre de cartes badgées distinctes :"
 msgstr "Number of distinct scanned cards:"
 
 #: administration/templates/rapports/rapport_complet.html:423
-#, fuzzy
-#| msgid "Cashless"
 msgid "Cartes Badgées"
 msgstr "Scanned Cards"
 
@@ -1785,8 +1646,6 @@ msgid "Nbr de carte utilisées"
 msgstr "Nbr of used cards"
 
 #: administration/templates/rapports/rapport_complet.html:438
-#, fuzzy
-#| msgid "Rechargement"
 msgid "Recharge médiane"
 msgstr "Median top-up"
 
@@ -1819,8 +1678,6 @@ msgid "Ticket Z Simplifié"
 msgstr "Simplified Ticket Z"
 
 #: administration/templates/rapports/ticketZ_simple.html:168
-#, fuzzy
-#| msgid "Fond de caisse."
 msgid "Fond de caisse "
 msgstr "Cash float"
 
@@ -1840,66 +1697,94 @@ msgstr ""
 msgid "Les mots de passe ne correspondent pas"
 msgstr "Passwords don't match"
 
-#: fedow_connect/validators.py:68
+#: fedow_connect/validators.py:67
 msgid "Token équivalent euro"
 msgstr "Euro equivalent token"
 
-#: fedow_connect/validators.py:69
+#: fedow_connect/validators.py:68
 msgid "Non fiduciaire"
 msgstr "Non-fiduciary"
 
-#: fedow_connect/validators.py:70
+#: fedow_connect/validators.py:69
 msgid "Stripe Connect"
 msgstr "Stripe connect"
 
-#: fedow_connect/validators.py:71
+#: fedow_connect/validators.py:70
 msgid "Monnaie temps, decompte d'utilisation"
 msgstr "Time currency, usage count"
 
-#: fedow_connect/validators.py:72
+#: fedow_connect/validators.py:71
 msgid "Badgeuse/Pointeuse"
 msgstr "Punching/Time clock"
 
-#: fedow_connect/validators.py:73
+#: fedow_connect/validators.py:72
 msgid "Adhésion ou abonnement"
 msgstr "Membership or subscription"
 
-#: fedow_connect/validators.py:74
-#, fuzzy
-#| msgid "Points de vente"
+#: fedow_connect/validators.py:73
 msgid "Points de fidélités"
 msgstr "Loyalty Points"
 
-#: webview/validators.py:49
+#: webview/templates/elements/bouton_return.html:6
+msgid "RETOUR"
+msgstr "RETURN"
+
+#: webview/templates/popup_check_carte.html:22
+msgid "Total sur carte"
+msgstr "Total on card"
+
+#: webview/templates/popup_check_carte.html:26
+msgid "Carte anonyme"
+msgstr "Anonymous card"
+
+#: webview/templates/popup_check_carte.html:30
+msgid "Carte liée à un email."
+msgstr "Card linked to an email"
+
+#: webview/templates/popup_check_carte.html:35
+msgid "Aucune adhésion"
+msgstr "No membership"
+
+#: webview/templates/popup_check_carte.html:71
+#: webview/templates/popup_check_carte.html:89
+msgid "Qtt"
+msgstr "Qty"
+
+#: webview/templates/popup_check_carte.html:72
+#: webview/templates/popup_check_carte.html:90
+msgid "Origine"
+msgstr "Origin"
+
+#: webview/validators.py:44
 msgid "Nom d'utilisateur déjà utilisé"
 msgstr "Usename already taken"
 
-#: webview/validators.py:62
+#: webview/validators.py:57
 msgid "Clé publique trop petite"
 msgstr "Public key too small"
 
-#: webview/validators.py:64
+#: webview/validators.py:59
 #, python-brace-format
 msgid "Erreur get rsa key : {e}"
 msgstr "Error get rsa key : {e}"
 
-#: webview/validators.py:74
+#: webview/validators.py:69
 msgid "Code pin invalide"
 msgstr "Invalid pin code"
 
-#: webview/validators.py:92
+#: webview/validators.py:87
 msgid "Utilisateur ou mot de passe incorrect."
 msgstr "Incorrect user or password."
 
-#: webview/validators.py:98
+#: webview/validators.py:93
 msgid "Clé publique non trouvée pour cet utilisateur. Relancez l'appairage."
 msgstr "Public key not found for this user. Restart pairing."
 
-#: webview/validators.py:100
+#: webview/validators.py:95
 msgid "Signature non valide."
 msgstr "Invalid signature."
 
-#: webview/validators.py:161
+#: webview/validators.py:156
 #, python-brace-format
 msgid ""
 "ERREUR /wv/paiement -> SERIALIZER DataAchatDepuisClientValidator -> "
@@ -1910,15 +1795,15 @@ msgstr ""
 "validate_articles() -> total_temp : {total_temp} - total_sended : "
 "{total_sended} - self.initial_data : {self.initial_data}"
 
-#: webview/validators.py:170
+#: webview/validators.py:165
 msgid "Le total ne peut pas être négatif"
 msgstr "Total cannot be negative."
 
-#: webview/validators.py:196
+#: webview/validators.py:191
 msgid "Les deux cartes ont le même portefeuille."
 msgstr "Both cards have the same wallet."
 
-#: webview/validators.py:298
+#: webview/validators.py:293
 #, python-brace-format
 msgid ""
 "Moyen de paiement indiqué NFC mais pas de tag id dans la requete. self."
@@ -1927,46 +1812,46 @@ msgstr ""
 "Payment method indicated NFC but no ID tag in the request. self."
 "initial_data : {self.initial_data}"
 
-#: webview/validators.py:329
+#: webview/validators.py:324
 msgid "Pas de tag id !"
 msgstr "No ID tag !"
 
-#: webview/validators.py:336
+#: webview/validators.py:331
 msgid "Comportement du point de vente invalide"
 msgstr "Invalid Point Of Sale behavior"
 
-#: webview/validators.py:349
+#: webview/validators.py:344
 msgid "Cette carte n'existe pas, Néo."
 msgstr "This card does not exist, Neo."
 
-#: webview/validators.py:363
+#: webview/validators.py:358
 msgid "Une table non éphémère avec ce nom existe déja."
 msgstr "A permanent table with this name already exists"
 
-#: webview/validators.py:399
+#: webview/validators.py:394
 msgid "Carte maitresse inconnue."
 msgstr "Unknown primary Card"
 
-#: webview/views.py:104
+#: webview/views.py:101
 msgid ""
 "Appareil déja en cours d'utilisation. Désactivez le d'abord pour un nouvel "
 "appairage."
 msgstr "Device already in use. Disable it first for new pairing."
 
-#: webview/views.py:154 webview/views.py:165
+#: webview/views.py:151 webview/views.py:162
 msgid "Utilisateur non actif. Relancez l'appairage."
 msgstr "Non-active user. Restart pairing."
 
-#: webview/views.py:210
+#: webview/views.py:207
 #, python-brace-format
 msgid "Terminal non appairé ou mode demo : {mode_demo}"
 msgstr "Terminal not paired or demo mode : {mode_demo}"
 
-#: webview/views.py:268
-msgid "Tibillet"
-msgstr "Tibillet"
+#: webview/views.py:265
+msgid "Laboutik | Tibillet"
+msgstr "TiBillet report"
 
-#: webview/views.py:328
+#: webview/views.py:326
 msgid ""
 "Caisses cloturées mais aucune imprimante selectionnée dans la configuration "
 "pour le Ticket Z.\n"
@@ -1976,46 +1861,53 @@ msgstr ""
 "Ticket Z.\n"
 "You can re-print it from the administration interface."
 
-#: webview/views.py:332
+#: webview/views.py:330
 msgid "Caisses cloturées et ticket envoyé à l'impression"
 msgstr "Cash registers closed and receipt sent to print"
 
-#: webview/views.py:333
+#: webview/views.py:332
 msgid "Erreur génération du ticket Z"
 msgstr "Z ticket generation error"
 
-#: webview/views.py:474
+#: webview/views.py:473
 msgid "Carte maitresse non gérante."
 msgstr "Non-managing primary card."
 
-#: webview/views.py:481
+#: webview/views.py:480
 msgid "reste a servir < qty"
 msgstr "remains to be served < qty"
 
-#: webview/views.py:517
-msgid "carte inconnue"
+#: webview/views.py:510
+msgid "Erreur Fedow. Contacter l'administrateur :"
+msgstr "Pin recovery error, contact an admin. {e}"
+
+#: webview/views.py:521
+msgid "Carte inconnue"
 msgstr "unknown card"
 
-#: webview/views.py:649
+#: webview/views.py:673
 msgid "Fonds insuffisants sur deuxieme carte."
 msgstr "Insufficient funds on second card."
 
-#: webview/views.py:660
+#: webview/views.py:684
 msgid "Fonds insuffisants. Il manque"
 msgstr "Insufficient funds. Missing"
 
-#: webview/views.py:696
+#: webview/views.py:720
 #, python-brace-format
 msgid "Trop d'articles {article.name}."
 msgstr "Too many items {article.name}."
 
-#: webview/views.py:1174
+#: webview/views.py:1197
 msgid "Pas de carte."
 msgstr "No card"
 
-#: webview/views.py:1183
+#: webview/views.py:1206
 msgid "Travail en cours. Désolé, les adhésions n'acceptent que espèce ou CB."
 msgstr "Work in progress. Sorry, memberships only accept cash or credit card."
+
+#~ msgid "Tibillet"
+#~ msgstr "Tibillet"
 
 #~ msgid "La carte est déja liée a une autre adresse email."
 #~ msgstr "Card already linked to another email address"
@@ -2023,7 +1915,6 @@ msgstr "Work in progress. Sorry, memberships only accept cash or credit card."
 #~ msgid "Preparation & impression"
 #~ msgstr "Preparation & printing"
 
-#, fuzzy
 #~| msgid "Information"
 #~ msgid "informations Générale"
 #~ msgstr "Generale informations"
@@ -2034,7 +1925,6 @@ msgstr "Work in progress. Sorry, memberships only accept cash or credit card."
 #~ msgid "Token expiré"
 #~ msgstr "Expired Token"
 
-#, fuzzy
 #~| msgid "Articles"
 #~ msgid "Articles vendus"
 #~ msgstr "Items sold"
@@ -2042,7 +1932,6 @@ msgstr "Work in progress. Sorry, memberships only accept cash or credit card."
 #~ msgid "Blanchir Carte"
 #~ msgstr "Reset card"
 
-#, fuzzy, python-brace-format
 #~| msgid "Recharge Cadeau"
 #~ msgid "Recharge {self.name}"
 #~ msgstr "Top-up {self.name}"

@@ -1,6 +1,7 @@
 {% load i18n %}
 {% load webviewTags %}
 {% load humanize %}
+{% get_current_language as LANGUAGE_CODE %}
 
 <div id="popup-cashless" style="background-color:{{ background }};" class="BF-col-uniforme popup-cashless-conteneur">
 
@@ -26,7 +27,7 @@
                 </div>
             {% else %}
                 <div class="check-carte-ok-total-carte test-return-total-card">
-                    <span>{% trans "Carte liée" %}</span>
+                    <span>{% trans "Carte liée à un email." %}</span>
                 </div>
             {% endif %}
             {% if not tokens_membership %}
@@ -65,9 +66,9 @@
         <table>
             <span>{% trans "Cashless" %}</span>
             <tr>
-                <th>{% trans "Name" %}</th>
-                <th>{% trans "Qty" %}</th>
-                <th>{% trans "Origin" %}</th>
+                <th></th>
+                <th>{% trans "Qtt" %}</th>
+                <th>{% trans "Origine" %}</th>
             </tr>
             {% for token in tokens_cashless %}
                 <tr>
@@ -83,9 +84,9 @@
         <table>
             <span>{% trans "Adhésions" %}</span>
             <tr>
-                <th>{% trans "Name" %}</th>
-                <th>{% trans "Valid" %}</th>
-                <th>{% trans "Origin" %}</th>
+                <th></th>
+                <th>{% trans "Qtt" %}</th>
+                <th>{% trans "Origine" %}</th>
             </tr>
             {% for token in tokens_membership %}
                 <tr>

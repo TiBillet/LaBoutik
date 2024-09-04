@@ -206,9 +206,9 @@ def index(request):
     if not getattr(request.user, 'appareil', None) and not mode_demo:
         return HttpResponseNotFound(_(f"Terminal non appairé ou mode demo : {mode_demo}"))
 
-    print("----------------------------------------------")
-    print(f"-> request.method = {request.method}")
-    print("----------------------------------------------")
+    # print("----------------------------------------------")
+    # print(f"-> request.method = {request.method}")
+    # print("----------------------------------------------")
 
     if request.method == 'POST':
         # print("----------------------------------------------")
