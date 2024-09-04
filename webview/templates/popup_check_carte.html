@@ -14,10 +14,6 @@
              style="white-space: pre-line; text-align: center;">{{ msg_content }}</div>
     {% else %}
         <div class="BF-col-uniforme check-carte-ok">
-            {#            <div class="check-carte-ok-nom test-return-name">#}
-            {#                <span>{% trans "membre_name" %}</span> : {{ membre_name }}#}
-            {#            </div>#}
-            {#            <div class="check-carte-ok-cotisation test-return-contribution">{{ cotisation_membre_a_jour }}</div>#}
             <div class="check-carte-ok-total-carte test-return-total-card">
                 <span>{% trans "Total sur carte" %} : {{ total_monnaie }}</span>
             </div>
@@ -30,73 +26,58 @@
                     <span>{% trans "Carte liée à un email." %}</span>
                 </div>
             {% endif %}
+
             {% if not tokens_membership %}
                 <div class="check-carte-ok-total-carte test-return-total-card">
                     <span>{% trans "Aucune adhésion" %}</span>
                 </div>
 
             {% endif %}
+
         </div>
     {% endif %}
 
-    <!-- assets -->
-    {#    <table>#}
-    {#        {% for asset in assets %}#}
-    {#            <tr>#}
-    {#                {% for key, value in asset.items %}#}
-    {#                    {% if key == 'monnaie_name' %}#}
-    {#                        <td class="test-return-nom-monnaie-item{{ forloop.parentloop.counter }}"#}
-    {#                            style="padding: 4px; border: 1px solid #000;">#}
-    {#                            {{ value }}#}
-    {#                        </td>#}
-    {#                    {% endif %}#}
-    {#                    {% if key == 'qty' %}#}
-    {#                        <!-- pour les test qty = x.xx (2 chiffres après le point) -->#}
-    {#                        <td class="test-return-valeur-monnaie-item{{ forloop.parentloop.counter }}"#}
-    {#                            style="padding: 4px; border: 1px solid #000;">#}
-    {#                            {{ value }}#}
-    {#                        </td>#}
-    {#                    {% endif %}#}
-    {#                {% endfor %}#}
-    {#            </tr>#}
-    {#        {% endfor %}#}
-    {#    </table>#}
+    <div class="containe" style="font-size: 1.2em">
+        {% if tokens_cashless %}
+            <div>
+                <span>{% trans "Cashless" %} :</span>
+                <table>
+                    <tr>
+                        <th></th>
+                        <th>{% trans "Qtt" %}</th>
+                        <th>{% trans "Origine" %}</th>
+                    </tr>
+                    {% for token in tokens_cashless %}
+                        <tr>
+                            <td style="padding: 0 1em 0 1em;">{{ token.name }}</td>
+                            <td style="padding: 0 1em 0 1em;">{{ token.value | dec2 }}</td>
+                            <td style="padding: 0 1em 0 1em;">{{ token.asset.place_origin.name }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endif %}
 
-    {% if tokens_cashless %}
-        <table>
-            <span>{% trans "Cashless" %}</span>
-            <tr>
-                <th></th>
-                <th>{% trans "Qtt" %}</th>
-                <th>{% trans "Origine" %}</th>
-            </tr>
-            {% for token in tokens_cashless %}
-                <tr>
-                    <td style="padding: 0 1em 0 1em;">{{ token.name }}</td>
-                    <td style="padding: 0 1em 0 1em;">{{ token.value | dec2 }}</td>
-                    <td style="padding: 0 1em 0 1em;">{{ token.asset.place_origin.name }}</td>
-                </tr>
-            {% endfor %}
-        </table>
-    {% endif %}
-
-    {% if tokens_membership %}
-        <table>
-            <span>{% trans "Adhésions" %}</span>
-            <tr>
-                <th></th>
-                <th>{% trans "Qtt" %}</th>
-                <th>{% trans "Origine" %}</th>
-            </tr>
-            {% for token in tokens_membership %}
-                <tr>
-                    <td style="padding: 0 1em 0 1em;">{{ token.name }}</td>
-                    <td style="padding: 0 1em 0 1em;">{{ token.start_membership_date | naturalday }}</td>
-                    <td style="padding: 0 1em 0 1em;">{{ token.asset.place_origin.name }}</td>
-                </tr>
-            {% endfor %}
-        </table>
-    {% endif %}
+        {% if tokens_membership %}
+            <div style="margin-top: 1em;">
+                <span>{% trans "Adhésions" %} :</span>
+                <table>
+                    <tr>
+                        <th></th>
+                        <th>{% trans "Qtt" %}</th>
+                        <th>{% trans "Origine" %}</th>
+                    </tr>
+                    {% for token in tokens_membership %}
+                        <tr>
+                            <td style="padding: 0 1em 0 1em;">{{ token.name }}</td>
+                            <td style="padding: 0 1em 0 1em;">{{ token.start_membership_date | naturalday }}</td>
+                            <td style="padding: 0 1em 0 1em;">{{ token.asset.place_origin.name }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endif %}
+    </div>
 
     <div class="popup-conteneur-bt-retour BF-col" style="margin: 10px 0;">
         {% include "elements/bouton_return.html" %}
