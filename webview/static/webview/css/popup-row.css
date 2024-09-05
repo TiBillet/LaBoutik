@@ -1,5 +1,5 @@
 .popup-total-value {
-    font-size: x-large;
+    font-size: xx-large;
     display: inline-block;
     text-align: right;
 }
@@ -8,11 +8,9 @@
     background: white;
     color: #3b567f;
     display: grid;
-    /* gap: 0 0; */
-    grid-template-columns: 1fr 2fr;
+    grid-template-columns: 2fr 1fr;
     grid-template-rows: 1fr auto;
-    /* grid-auto-flow: row; */
-    grid-template-areas: "value name" "value origin";
+    grid-template-areas: "name value" "origin value";
     margin: 0;
     padding: .5rem 0;
 }
@@ -22,7 +20,6 @@
     }
 
 .membership-row {
-    grid-template-columns: 2fr 1fr;
     grid-template-areas: "name start" "name origin";
 }
 
@@ -31,8 +28,11 @@
 }
 
 .popup-row-header {
+    align-items: center;
+    border-bottom: 2px solid;
 	display: flex;
 	justify-content: space-between;
+    margin-bottom: .5rem;
 }
 
 .popup-row-name {
