@@ -47,6 +47,9 @@ adh = assets.first() # vérifier que c'est bien l'adhésion
 assets_a_sup = assets.exclude(pk=adh.pk)
 wallet_archive = wallet_creator(name='archive')
 assets_a_sup.update(wallet_origin=wallet_archive, archive=True)
+for asset in assets_a_sup:
+    asset.name=asset.name + "_archived"
+    asset.save()
 
 ### SUR LESPASS
 
