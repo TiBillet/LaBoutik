@@ -46,7 +46,8 @@ adh = assets.first() # vérifier que c'est bien l'adhésion
 
 assets_a_sup = assets.exclude(pk=adh.pk)
 wallet_archive = wallet_creator(name='archive')
-assets_a_sup.update(wallet_origin=wallet_archive)
+assets_a_sup.update(wallet_origin=wallet_archive, archive=True)
+
 ### SUR LESPASS
 
 # Pour cleaner un lieu avant le onboard
