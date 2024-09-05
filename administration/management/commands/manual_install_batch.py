@@ -13,6 +13,7 @@ from APIcashless.tasks import email_activation
 from fedow_connect.tasks import after_handshake
 from fedow_connect.utils import get_public_key, rsa_encrypt_string, rsa_decrypt_string, data_to_b64
 from fedow_connect.views import handshake
+from fedow_connect.fedow_api import FedowAPI
 
 logger = logging.getLogger(__name__)
 
