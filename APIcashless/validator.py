@@ -54,8 +54,8 @@ class EmailMembreValidator(serializers.Serializer):
 class PriceFromLespassValidator(serializers.Serializer):
     adhesion_obligatoire = serializers.BooleanField(allow_null=True)
     name = serializers.CharField(max_length=250)
-    short_description = serializers.CharField(max_length=250, allow_null=True)
-    long_description = serializers.CharField(max_length=2500, allow_null=True)
+    short_description = serializers.CharField(max_length=250, allow_null=True, allow_blank=True)
+    long_description = serializers.CharField(max_length=2500, allow_null=True, allow_blank=True)
     max_per_user = serializers.IntegerField()
     prix = serializers.DecimalField(max_digits=8, decimal_places=2)
     product = serializers.UUIDField()

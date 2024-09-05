@@ -14,6 +14,21 @@ from fedow_connect.tasks import after_handshake
 from fedow_connect.utils import get_public_key, rsa_encrypt_string, rsa_decrypt_string, data_to_b64
 from fedow_connect.views import handshake
 from fedow_connect.fedow_api import FedowAPI
+import requests
+from django.conf import settings
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
+
+from APIcashless.models import ArticleVendu, Configuration, Appareil, CarteCashless, CarteMaitresse, MoyenPaiement, \
+    Categorie, Articles, PointDeVente, Membre
+from APIcashless.validator import ProductFromLespassValidator
+from epsonprinter.tasks import direct_to_print
+from APIcashless.tasks import adhesion_to_odoo, cashback, badgeuse_to_dokos, fidelity_task, email_new_hardware
+from fedow_connect.fedow_api import FedowAPI
+from fedow_connect.tasks import badgeuse_to_fedow, create_card_to_fedow, set_primary_card
+from django.utils.translation import gettext_lazy as _
+
+import logging
 
 logger = logging.getLogger(__name__)
 
