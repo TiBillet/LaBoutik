@@ -152,16 +152,23 @@ def create_article_membreship_badge(sender, instance: MoyenPaiement, created, **
                 f"{config.billetterie_url}/api/products/{instance.pk}/",
                 verify=bool(not settings.DEBUG))
 
-            if retrieve_product.status_code != 200 :
-                raise Exception(
-                    f"create_article_membreship_badge : Billetterie réponse : {retrieve_product.status_code}")
+            if retrieve_product.status_code == 200 :
+                # raise Exception(
+                #     f"create_article_membreship_badge : Billetterie réponse : {retrieve_product.status_code}")
 
-            # Fabrique et mets à jour les articles adhésions ou badges
-            product = ProductFromLespassValidator(data=retrieve_product.json(),
-                                                  context={
-                                                      'MoyenPaiement': instance,
-                                                  })
-            if not product.is_valid():
-                raise Exception(
-                    f"create_article_membreship_badge : Création d'Asset Adhésion ou Badge {ProductFromLespassValidator.errors}")
+                # Fabrique et mets à jour les articles adhésions ou badges
+                product = ProductFromLespassValidator(data=retrieve_product.json(),
+                                                      context={
+                                                          'MoyenPaiement': instance,
+                                                      })
+                if not product.is_valid():
+                    for error in product.errors:
+                        logger.error(error)
+                    raise Exception(
+                        f"create_article_membreship_badge : Création d'Asset Adhésion ou Badge {product.errors}")
+            else :
+                # Peut arriver si Lespass à envoyé des assets membership sur fedow, qui les as gardé.
+                # Fedow envoie les ref' à Laboutik, qui va vérifier sur Lespass
+                # Ça n'existe plus, donc ça plante.
+                logger.warning("Asset non visible sur Lespass, as t il été créé puis supprimé avant le onboard ?")
 

@@ -37,8 +37,8 @@ class Command(BaseCommand):
             def __init__(self, options):
                 self.main_asset = os.environ['MAIN_ASSET_NAME']
                 self.admin_email = os.environ['ADMIN_EMAIL']
-                self.fedow_url = os.environ['FEDOW_URL']
 
+                self.fedow_url = os.environ['FEDOW_URL']
                 # Au format https://fedow.tibillet.localhost/
                 if not self.fedow_url.endswith("/"):
                     self.fedow_url += "/"
@@ -46,6 +46,12 @@ class Command(BaseCommand):
                     raise Exception("Fedow URL must start with https://")
 
                 self.lespass_url = os.environ['LESPASS_TENANT_URL']
+                # Au format https://fedow.tibillet.localhost/
+                if not self.lespass_url.endswith("/"):
+                    self.lespass_url += "/"
+                if not self.lespass_url.startswith("https://"):
+                    raise Exception("Lespass URL must start with https://")
+
 
                 # Les variables du fichier env dans config
                 self.config = self._base_config(options)
