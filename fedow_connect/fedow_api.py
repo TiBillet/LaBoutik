@@ -538,7 +538,7 @@ class AssetFedow():
         except Exception as e:
             asset = {
                     "uuid": f"{mp.pk}",
-                    "name": f"{mp.name} {self.config.structure}",
+                    "name": f"{mp.name}",
                     "currency_code": f"{mp.name[:2]}{mp.categorie[1:]}".upper(),
                     "category": f"{mp.fedow_category()}",
                     "created_at": ArticleVendu.objects.filter(moyen_paiement=mp).order_by(

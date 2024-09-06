@@ -783,7 +783,6 @@ class MoyenPaiement(models.Model):
         # unique=True,
     )
 
-
     @staticmethod
     def sort_assets(assets):
         # sort asset par importance
@@ -984,9 +983,9 @@ class CarteCashless(models.Model):
 
     def get_wallet(self):
         # if self.membre:
-            # Si le membre n'a pas d'email, il existe mais n'a pas de wallet
-            # if self.membre.wallet:
-            #     return self.membre.wallet
+        # Si le membre n'a pas d'email, il existe mais n'a pas de wallet
+        # if self.membre.wallet:
+        #     return self.membre.wallet
         return self.wallet
 
     def get_local_euro(self):
@@ -1074,17 +1073,17 @@ class Assets(models.Model):
             return ""
 
     # def a_jour_cotisation(self):
-        # if calcul_adh == Configuration.ADH_365JOURS:
-        #     return timezone.now().date() <= (self.date_derniere_cotisation + timedelta(days=365))
-        #
-        # elif calcul_adh == Configuration.ADH_CIVILE:
-        #     return timezone.now().date().year == self.date_derniere_cotisation.year
-        #
-        # elif calcul_adh == Configuration.ADH_GLISSANTE_OCT:
-        #     if timezone.now().date().year == (self.date_derniere_cotisation.year + 1):
-        #         if self.date_derniere_cotisation.month >= 10:
-        #             return True
-        #     return timezone.now().date().year == self.date_derniere_cotisation.year
+    # if calcul_adh == Configuration.ADH_365JOURS:
+    #     return timezone.now().date() <= (self.date_derniere_cotisation + timedelta(days=365))
+    #
+    # elif calcul_adh == Configuration.ADH_CIVILE:
+    #     return timezone.now().date().year == self.date_derniere_cotisation.year
+    #
+    # elif calcul_adh == Configuration.ADH_GLISSANTE_OCT:
+    #     if timezone.now().date().year == (self.date_derniere_cotisation.year + 1):
+    #         if self.date_derniere_cotisation.month >= 10:
+    #             return True
+    #     return timezone.now().date().year == self.date_derniere_cotisation.year
 
     class Meta:
         unique_together = [['monnaie', 'carte']]
@@ -1776,7 +1775,7 @@ class ClotureCaisse(models.Model):
     # chiffre_affaire = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Chiffre d'affaire")
     ticketZ = JSONField(default=dict, max_length=50000)
 
-    #TODO: Ajouter point de vente et responsable
+    # TODO: Ajouter point de vente et responsable
     # pos = PointDeVente
     # responsable = Membre
 
@@ -1847,7 +1846,7 @@ class Configuration(SingletonModel):
     horaire_ouverture = models.TimeField(null=True, blank=True)
     horaire_fermeture = models.TimeField(null=True, blank=True)
 
-    #TODO: utiliser settings.TIME_ZONE
+    # TODO: utiliser settings.TIME_ZONE
     TZ_REUNION, TZ_PARIS = "Indian/Reunion", "Europe/Paris"
     TZ_CHOICES = [
         (TZ_REUNION, _('Indian/Reunion')),
