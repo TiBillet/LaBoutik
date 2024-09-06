@@ -20,7 +20,7 @@
                 </div>
             {% else %}
                 <div class="check-carte-ok-total-carte test-return-total-card">
-                    <span>{% trans "Carte suivie" %}</span>
+                    <span>{% trans "Carte fédérée" %}</span>
                 </div>
             {% endif %}
         </div>
@@ -30,17 +30,20 @@
         {% if tokens_cashless %}
             <div>
                 <p class="popup-row-header">
-                    <span>{% trans "Tirelire" %}</span>
+                    <span>{% trans "Tirelire fédérée" %}</span>
 
-                    <span class="popup-total-value check-carte-ok-total-carte test-return-total-card">
-                        <span>{{ total_monnaie }}</span>
+                    <span class="popup-total-value check-carte-ok-total-carte test-return-total-card" title="{% trans "total" %}">
+                        {{ total_monnaie }}
                     </span>
                 </p>
 
                 {% for token in tokens_cashless %}
                 <p class="popup-row">
                     <span class="popup-row-value">{{ token.value | dec2 }}</span>
-                    <span class="popup-row-name">{{ token.name }}</span>
+                    <span class="popup-row-name">
+                        {# temp fix for origin getting added to every name in dev #}
+                        {{ token.name|cut:token.asset.place_origin.name }}
+                    </span>
                     <span class="popup-row-origin" title="{% trans "Provenance" %}">
                         {{ token.asset.place_origin.name }}
                     </span>
