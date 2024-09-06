@@ -41,8 +41,7 @@
                 <p class="popup-row">
                     <span class="popup-row-value">{{ token.value | dec2 }}</span>
                     <span class="popup-row-name">
-                        {# temp fix for origin getting added to every name in dev #}
-                        {{ token.name|cut:token.asset.place_origin.name }}
+                        {{ token.name }}
                     </span>
                     <span class="popup-row-origin" title="{% trans "Provenance" %}">
                         {{ token.asset.place_origin.name }}
