@@ -249,14 +249,17 @@ class CustomArticleRequiredForm(forms.ModelForm):
         self.fields['direct_to_printer'].help_text = help_text_direct_to_printer
 
 
-class Meta:
-    model = Articles
-    fields = '__all__'
+class PosInline(admin.TabularInline):
+    model = Articles.points_de_ventes.through
+    extra = 1
+    verbose_name = u"Point de vente"
+    verbose_name_plural = u"Points de vente"
 
 
 class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
     form = CustomArticleRequiredForm
     categorie = forms.ModelChoiceField(queryset=Categorie.objects.exclude(cashless=True))
+    inlines = [PosInline]
 
     list_display = (
         'poid_liste',
@@ -1269,6 +1272,7 @@ class GroupementCategorieFilter(SimpleListFilter):
             return queryset
         else:
             return queryset.filter(article__categorie__groupements__name=self.value())
+
 
 #
 # def recalculer_la_tva(modeladmin, request, queryset):
