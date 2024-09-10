@@ -35,8 +35,11 @@ EMAIL_HOST_PASSWORD=""
 
 # BACKUP CRON TASK
 
-# can be empty if you don't backup
-BORG_PASSPHRASE=""
+# can be empty if you don't want to backup
+# ex : borg init --encryption=repokey-blake2 .
+PREFIX_SAVE_DB=''
+BORG_REPO=''
+BORG_PASSPHRASE=''
 
 # DEV AND TEST ONLY
 # admin auto login, flush database, demonstration data, etc ...
