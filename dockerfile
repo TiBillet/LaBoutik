@@ -10,27 +10,25 @@ RUN apt-get install -y --no-install-recommends postgresql-client
 
 RUN apt-get install -y nano iputils-ping curl borgbackup cron gettext
 
-
 RUN useradd -ms /bin/bash tibillet
+
+# Cron for Dump and Backup task
+RUN chmod u+s /usr/sbin/cron
+COPY ./cron/cron_task /etc/cron.d/cron_task
+RUN chmod 0644 /etc/cron.d/cron_task
+RUN crontab -u tibillet /etc/cron.d/cron_task
+
 USER tibillet
 
-ENV POETRY_NO_INTERACTION=1
-
 ## PYTHON
+ENV POETRY_NO_INTERACTION=1
 RUN curl -sSL https://install.python-poetry.org | python3 -
 ENV PATH="/home/tibillet/.local/bin:$PATH"
 
 COPY --chown=tibillet:tibillet ./ /DjangoFiles
 COPY --chown=tibillet:tibillet ./bashrc /home/tibillet/.bashrc
-COPY --chown=tibillet:tibillet ./cron /cron
 
 WORKDIR /DjangoFiles
 RUN poetry install
 
 CMD ["bash", "start.sh"]
-
-
-
-# Before build : collectstatic
-# docker build -t tibillet/laboutik:beta4 .
-# docker push tibillet/laboutik:beta4 .

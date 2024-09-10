@@ -273,7 +273,6 @@ class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
     )
 
     list_display_links = ('name',)
-
     list_editable = (
         'prix',
         'prix_achat',

@@ -1,0 +1,9 @@
+# Django création des rapports, et archive des tables ephemeres
+# 7H AM
+1 7 * * * /home/tibillet/.local/bin/poetry run python /DjangoFiles/manage.py cron_morning
+
+# borgbackup de la db dumpée par le conteneur postgres
+# tout les jours a 6h et à 18h
+1 6 * * * /bin/bash /cron/dump_and_borg.sh
+1 18 * * * /bin/bash /cron/dump_and_borg.sh
+
