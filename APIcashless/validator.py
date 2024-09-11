@@ -1,8 +1,12 @@
 from collections import OrderedDict
 
+from IPython.utils.coloransi import value
 from django.utils import timezone
 from rest_framework import serializers
-from APIcashless.models import CarteCashless, Configuration, Assets, Membre, MoyenPaiement, Articles, Categorie, Wallet
+from werkzeug.routing import ValidationError
+
+from APIcashless.models import CarteCashless, Configuration, Assets, Membre, MoyenPaiement, Articles, Categorie, Wallet, \
+    ArticleVendu
 from django.utils.translation import gettext, gettext_lazy as _
 from rest_framework.generics import get_object_or_404
 import logging
@@ -96,6 +100,11 @@ class SaleFromLespassValidator(serializers.Serializer):
     qty = serializers.DecimalField(max_digits=8, decimal_places=2)
     vat = serializers.DecimalField(max_digits=4, decimal_places=2)
     user_uuid_wallet = serializers.UUIDField()
+
+    def validate_uuid(self, value):
+        if ArticleVendu.objects.filter(uuid=value).exists():
+            raise serializers.ValidationError("Sale already recorded")
+        return value
 
     def validate_user_uuid_wallet(self, value):
         try :

@@ -444,6 +444,7 @@ class SaleFromLespass(APIView):
         logger.info(request.data)
         validator = SaleFromLespassValidator(data=request.data)
         if not validator.is_valid():
+            logger.error(f"Sale from lespass not valid : {validator.errors}")
             return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
 
         # Un seul article par requete
