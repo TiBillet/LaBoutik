@@ -53,17 +53,17 @@ def setup_periodic_tasks(sender, **kwargs):
     # defined to avoid this task replacing the previous one defined.
     # sender.add_periodic_task(30.0, periodic_test.s(f'{timezone.now()} - hello 30'), name='add every 30')
 
-
     # Calls test('world') every 30 seconds
     # sender.add_periodic_task(30.0, periodic_test.s('world'), expires=10)
 
-    # Executes every Monday morning at 7:30 a.m.
-    # sender.add_periodic_task(
-    #     crontab(hour=7, minute=30, day_of_week=1),
-    #     periodic_test.s('Happy Mondays!'),
-    # )
+    # doc : https://docs.celeryq.dev/en/stable/userguide/periodic-tasks.html#crontab-schedules
+    logger.info(f'setup_periodic_tasks cron_morning at 7AM')
+    sender.add_periodic_task(
+        crontab(hour=7, minute=0),
+        cron_morning.s(),
+    )
+    logger.info(f'setup_periodic_tasks DONE')
 
-    pass
 
 @app.task
 def periodic_test(arg):
@@ -76,4 +76,6 @@ def periodic_test(arg):
 
 @app.task
 def cron_morning():
+    logger.info(f'call_command cron_morning START')
     call_command('cron_morning')
+    logger.info(f'call_command cron_morning END')
