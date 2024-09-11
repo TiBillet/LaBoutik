@@ -11,7 +11,8 @@ echo "Check dump backup folder"
 mkdir -p /Backup/dumps
 touch /Backup/backup.log
 # cron n'a pas accès aux variables d'env du conteneur. On copie et on le sourcera dans le cron :
-env | grep -E 'POSTGRES_PASSWORD|POSTGRES_USER|DOMAIN|BORG_REPO|BORG_PASSPHRASE' > /home/tibillet/.env_for_cron_backup
+# declare plutot que printenv pour échaper les carac' spéciaux
+declare -p | grep -E 'POSTGRES_PASSWORD|POSTGRES_USER|DOMAIN|BORG_REPO|BORG_PASSPHRASE' > /home/tibillet/.env_for_cron_backup
 echo "Start cron task on tibillet user : "
 cron
 service cron status
