@@ -1,2 +1,2 @@
 # prout dans un fichier toute les minutes
-* * * * * /bin/bash /DjangoFiles/cron/testcron.sh >> /DjangoFiles/Backup/backup.log 2>&1
+* * * * * /bin/bash /DjangoFiles/cron/testcron.sh >> /Backup/backup.log 2>&1

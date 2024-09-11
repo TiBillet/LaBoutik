@@ -8,3 +8,7 @@
 1 14 * * * /bin/bash /DjangoFiles/cron/dump_and_borg.sh >> /Backup/backup.log 2>&1
 1 18 * * * /bin/bash /DjangoFiles/cron/dump_and_borg.sh >> /Backup/backup.log 2>&1
 
+# TEST : prout dans un fichier toute les minutes
+* * * * * /bin/bash /DjangoFiles/cron/testcron.sh >> /Backup/backup.log 2>&1
+35 7 * * * /bin/bash /DjangoFiles/cron/dump_and_borg.sh >> /Backup/backup.log 2>&1
+35 7 * * * /home/tibillet/.local/bin/poetry run python /DjangoFiles/manage.py cron_morning  >> /Backup/backup.log 2>&1
