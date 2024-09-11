@@ -92,3 +92,4 @@ class Command(BaseCommand):
         if os.environ.get('TIME_BOMB') == '1':
             logger.info(f'Time Bomb ! {timezone.now()}')
             self.time_bomb()
+        logger.info(f'cron morning {timezone.now()} DONE')
