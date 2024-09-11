@@ -83,10 +83,12 @@ class Command(BaseCommand):
         call_command('time_bomb')
 
     def handle(self, *args, **options):
+        logger.info(f'cron morning {timezone.now()}')
         # self.calcul_rapport_veille()
         self.table_ephemere()
         self.archive_commande()
         self.calculs_des_rapports_et_ticketZ()
         self.rezet_compteur_ticket_journee()
         if os.environ.get('TIME_BOMB') == '1':
+            logger.info(f'Time Bomb ! {timezone.now()}')
             self.time_bomb()

@@ -80,7 +80,7 @@ services:
       - "demo.tibillet.localhost:172.17.0.1"
       - "billetistan.tibillet.localhost:172.17.0.1"
       - "cashless.tibillet.localhost:172.17.0.1"
-    command: "poetry run celery -A Cashless worker -l INFO"
+    command: "bash start_celery.sh"
 
 
   laboutik_nginx:

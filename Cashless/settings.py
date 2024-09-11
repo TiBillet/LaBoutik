@@ -84,6 +84,7 @@ INSTALLED_APPS = [
     # 'debug_toolbar',
 ]
 
+
 # def show_toolbar_callback(request):
 #     return DEBUG
 # if DEBUG:

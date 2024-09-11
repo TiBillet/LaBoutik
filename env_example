@@ -38,7 +38,6 @@ EMAIL_HOST_PASSWORD=""
 # can be empty if you don't want to backup
 # ex : borg init --encryption=repokey-blake2 .
 # save key : borg key export . ./key && cat key && rm key
-PREFIX_SAVE_DB=''
 BORG_REPO=''
 BORG_PASSPHRASE=''
 

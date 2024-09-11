@@ -408,9 +408,10 @@ class TicketZPrinter():
 
     def _footer(self):
         config = self.config
+        pied = config.pied_ticket if config.pied_ticket else ""
         footer = str()
         footer += LINE
-        footer += f"{centrer(config.pied_ticket)}"
+        footer += f"{centrer(pied)}"
         return footer
 
     def can_print(self):
