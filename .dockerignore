@@ -7,3 +7,8 @@ SaveDb
 logs/Djangologfile
 logs/nginxAccess.log
 logs/nginxError.log
+
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
