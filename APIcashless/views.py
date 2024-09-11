@@ -68,27 +68,27 @@ def get_client_ip(request):
     return ip
 
 
-def same_domaine_origin(request, config: Configuration):
-    try:
-        origin = request.build_absolute_uri()
-        parse_origin = urlparse(origin)
-        hostname_origin: str = f"{parse_origin.hostname}"
-        domain_origin = '.'.join(hostname_origin.split('.')[-2:])
-
-        url_bill_config = config.billetterie_url
-        parse_url_bill_config = urlparse(url_bill_config)
-        hostname_url_bill_config: str = f"{parse_url_bill_config.hostname}"
-        domain_url_bill_config = '.'.join(hostname_url_bill_config.split('.')[-2:])
-
-        if domain_origin == domain_url_bill_config:
-            return True
-
-    except Exception as e:
-        logger.error(e)
-        raise e
-
-    logger.error(f"check api key : same_domaine_origin : {domain_origin} != {domain_url_bill_config}")
-    return False
+# def same_domaine_origin(request, config: Configuration):
+#     try:
+#         origin = request.build_absolute_uri()
+#         parse_origin = urlparse(origin)
+#         hostname_origin: str = f"{parse_origin.hostname}"
+#         domain_origin = '.'.join(hostname_origin.split('.')[-2:])
+#
+#         url_bill_config = config.billetterie_url
+#         parse_url_bill_config = urlparse(url_bill_config)
+#         hostname_url_bill_config: str = f"{parse_url_bill_config.hostname}"
+#         domain_url_bill_config = '.'.join(hostname_url_bill_config.split('.')[-2:])
+#
+#         if domain_origin == domain_url_bill_config:
+#             return True
+#
+#     except Exception as e:
+#         logger.error(e)
+#         raise e
+#
+#     logger.error(f"check api key : same_domaine_origin : {domain_origin} != {domain_url_bill_config}")
+#     return False
 
 
 def billetterie_white_list(request):
@@ -99,19 +99,10 @@ def billetterie_white_list(request):
     configuration = Configuration.get_solo()
     ip = get_client_ip(request)
 
-    # import ipdb; ipdb.set_trace()
-
     logger.info(f"{timezone.now()} {timezone.now() - start} - {request.get_full_path()} - {ip} DATA : {request.data}")
 
-    # En prod, on check l'ip. Pas en dev'.
-    if settings.DEBUG:
-        ip = configuration.billetterie_ip_white_list
-
-    if api_key == configuration.key_billetterie \
-            and ip == configuration.billetterie_ip_white_list:
+    if api_key == configuration.key_billetterie :
         return True
-    else:
-        logger.warning(f"ip : {ip}")
     return False
 
 
@@ -125,12 +116,7 @@ class check_apikey(APIView):
         api_key = APIKey.objects.get_from_key(key)
         ip = get_client_ip(request)
 
-        # on utilise urlparse pour vérifier les url et retirer les / si besoin
-        # if parse_config.scheme != parse_value.scheme or parse_config.netloc != parse_value.netloc:
-
-        if billetterie_white_list(request) \
-                and same_domaine_origin(request, config):
-            # if api_key:
+        if api_key == config.key_billetterie :
             logger.info(f"{timezone.now()} {timezone.now() - start} /api/check_apikey GET depuis {ip}")
             data = {
                 "ip": ip,
