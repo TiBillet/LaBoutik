@@ -2,6 +2,8 @@
 set -e
 # a lancer sur l'hote qui heberge les conteneurs. Verifier que borgbackup soit bien installé !
 # Créer une clé ssh dans le conteneur et copier la avec : ssh-copy-id tibilletbackup@de.codecommun.co -p 49422
+source /home/tibillet/.env_for_cron_backup
+echo "Start backup script for : "$DOMAIN
 
 export PGPASSWORD=$POSTGRES_PASSWORD
 export PGUSER=$POSTGRES_USER
