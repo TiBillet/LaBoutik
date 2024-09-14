@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-09-06 13:51+0000\n"
+"POT-Creation-Date: 2024-09-14 10:43+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -118,7 +118,7 @@ msgstr ""
 msgid "Scan QR Code"
 msgstr ""
 
-#: APIcashless/models.py:182 APIcashless/views.py:469
+#: APIcashless/models.py:182 APIcashless/views.py:465
 msgid "Billetterie"
 msgstr ""
 
@@ -191,7 +191,7 @@ msgid "Service direct ( vente au comptoir )"
 msgstr ""
 
 #: APIcashless/models.py:336 APIcashless/models.py:537
-#: APIcashless/models.py:1611 administration/adminstaff.py:485
+#: APIcashless/models.py:1611 administration/adminstaff.py:487
 msgid "Vente"
 msgstr ""
 
@@ -232,7 +232,7 @@ msgstr ""
 msgid "Catégorie d'articles"
 msgstr ""
 
-#: APIcashless/models.py:461 administration/adminstaff.py:1241
+#: APIcashless/models.py:461 administration/adminstaff.py:1243
 msgid "Catégories"
 msgstr ""
 
@@ -281,13 +281,13 @@ msgstr ""
 msgid "Recharge fédérée €"
 msgstr ""
 
-#: APIcashless/models.py:540 administration/adminstaff.py:483
+#: APIcashless/models.py:540 administration/adminstaff.py:485
 msgid "Recharge Cadeau"
 msgstr ""
 
-#: APIcashless/models.py:541 APIcashless/validator.py:154
+#: APIcashless/models.py:541 APIcashless/validator.py:164
 #: administration/templates/rapports/rapport_complet.html:192
-#: webview/templates/popup_check_carte.html:62
+#: webview/templates/popup_check_carte.html:61
 msgid "Adhésions"
 msgstr ""
 
@@ -312,7 +312,7 @@ msgid "Billet de concert"
 msgstr ""
 
 #: APIcashless/models.py:547 APIcashless/models.py:766
-#: APIcashless/validator.py:125
+#: APIcashless/validator.py:135
 msgid "Badgeuse"
 msgstr ""
 
@@ -330,29 +330,29 @@ msgstr ""
 msgid "Asset Fedow utilisé pour un abonnement, adhésion ou une badgeuse"
 msgstr ""
 
-#: APIcashless/models.py:575 APIcashless/validator.py:68
-#: APIcashless/validator.py:79
+#: APIcashless/models.py:575 APIcashless/validator.py:72
+#: APIcashless/validator.py:83
 msgid "Non applicable"
 msgstr ""
 
 #: APIcashless/models.py:576 APIcashless/models.py:1836
-#: APIcashless/validator.py:69
+#: APIcashless/validator.py:73
 msgid "365 Jours"
 msgstr ""
 
-#: APIcashless/models.py:577 APIcashless/validator.py:70
+#: APIcashless/models.py:577 APIcashless/validator.py:74
 msgid "30 Jours"
 msgstr ""
 
-#: APIcashless/models.py:578 APIcashless/validator.py:71
+#: APIcashless/models.py:578 APIcashless/validator.py:75
 msgid "1 Jour"
 msgstr ""
 
-#: APIcashless/models.py:579 APIcashless/validator.py:72
+#: APIcashless/models.py:579 APIcashless/validator.py:76
 msgid "1 Heure"
 msgstr ""
 
-#: APIcashless/models.py:580 APIcashless/validator.py:73
+#: APIcashless/models.py:580 APIcashless/validator.py:77
 msgid "Civile"
 msgstr ""
 
@@ -977,87 +977,87 @@ msgid ""
 "TiBillet {structure_name}"
 msgstr ""
 
-#: APIcashless/validator.py:80
+#: APIcashless/validator.py:84
 msgid "10 %"
 msgstr ""
 
-#: APIcashless/validator.py:81
+#: APIcashless/validator.py:85
 msgid "20 %"
 msgstr ""
 
-#: APIcashless/validator.py:82
+#: APIcashless/validator.py:86
 msgid "8.5 %"
 msgstr ""
 
-#: APIcashless/validator.py:83
+#: APIcashless/validator.py:87
 msgid "2.2 %"
 msgstr ""
 
-#: APIcashless/validator.py:117
+#: APIcashless/validator.py:127
 msgid "Selectionnez une catégorie"
 msgstr ""
 
-#: APIcashless/validator.py:118
+#: APIcashless/validator.py:128
 msgid "Billet payant"
 msgstr ""
 
-#: APIcashless/validator.py:119
+#: APIcashless/validator.py:129
 msgid "Pack d'objets"
 msgstr ""
 
-#: APIcashless/validator.py:120
+#: APIcashless/validator.py:130
 msgid "Recharge cashless"
 msgstr ""
 
-#: APIcashless/validator.py:121
+#: APIcashless/validator.py:131
 msgid "Recharge suspendue"
 msgstr ""
 
-#: APIcashless/validator.py:122
+#: APIcashless/validator.py:132
 msgid "Vetement"
 msgstr ""
 
-#: APIcashless/validator.py:123
+#: APIcashless/validator.py:133
 msgid "Merchandasing"
 msgstr ""
 
-#: APIcashless/validator.py:124
+#: APIcashless/validator.py:134
 msgid "Abonnement et/ou adhésion associative"
 msgstr ""
 
-#: APIcashless/validator.py:126
+#: APIcashless/validator.py:136
 msgid "Don"
 msgstr ""
 
-#: APIcashless/validator.py:127
+#: APIcashless/validator.py:137
 msgid "Reservation gratuite"
 msgstr ""
 
-#: APIcashless/validator.py:128
+#: APIcashless/validator.py:138
 msgid "Nécessite une validation manuelle"
 msgstr ""
 
-#: APIcashless/validator.py:153
+#: APIcashless/validator.py:163
 msgid "Badge"
 msgstr ""
 
-#: APIcashless/validator.py:155
+#: APIcashless/validator.py:165
 msgid "Billet"
 msgstr ""
 
-#: APIcashless/validator.py:229
+#: APIcashless/validator.py:239
 msgid "Cette carte est au nom d'une autre personne"
 msgstr ""
 
-#: APIcashless/validator.py:235
+#: APIcashless/validator.py:245
 msgid "first_name est obligatoire"
 msgstr ""
 
-#: APIcashless/validator.py:239
+#: APIcashless/validator.py:249
 msgid "last_name est obligatoire"
 msgstr ""
 
-#: APIcashless/validator.py:243
+#: APIcashless/validator.py:253
 msgid "phone est obligatoire"
 msgstr ""
 
@@ -1174,96 +1174,96 @@ msgstr ""
 msgid "Activez pour une impression directe après chaque vente."
 msgstr ""
 
-#: administration/adminstaff.py:405
+#: administration/adminstaff.py:407
 msgid "Commande(s) servie(s)"
 msgstr ""
 
-#: administration/adminstaff.py:420
+#: administration/adminstaff.py:422
 msgid "Supprimer les commandes"
 msgstr ""
 
-#: administration/adminstaff.py:450
+#: administration/adminstaff.py:452
 msgid ""
 "Colonne \" Liste des articles x/x/x \" :  Qty Commandées / Reste à servir / "
 "Reste à payer "
 msgstr ""
 
-#: administration/adminstaff.py:468
+#: administration/adminstaff.py:470
 msgid "methode"
 msgstr ""
 
-#: administration/adminstaff.py:482
+#: administration/adminstaff.py:484
 msgid "Recharge Euros"
 msgstr ""
 
-#: administration/adminstaff.py:484
+#: administration/adminstaff.py:486
 msgid "RechargeS"
 msgstr ""
 
-#: administration/adminstaff.py:565
+#: administration/adminstaff.py:567
 msgid "Des articles sélectionnés ne sont pas des adhésions. ACTION CANCELED"
 msgstr ""
 
-#: administration/adminstaff.py:666
+#: administration/adminstaff.py:668
 msgid "Le nom du modèle est obligatoire. Merci de le renseigner."
 msgstr ""
 
-#: administration/adminstaff.py:678
+#: administration/adminstaff.py:680
 #, python-brace-format
 msgid "declaration_to_discovery_server erreur : {e}"
 msgstr ""
 
-#: administration/adminstaff.py:691
+#: administration/adminstaff.py:693
 #, python-brace-format
 msgid "Desactivation du terminal {instance.name}"
 msgstr ""
 
-#: administration/adminstaff.py:697
+#: administration/adminstaff.py:699
 #, python-brace-format
 msgid "Activation manuelle du terminal {instance.name} impossible : "
 msgstr ""
 
-#: administration/adminstaff.py:704
+#: administration/adminstaff.py:706
 #, python-brace-format
 msgid "RE - Activation du terminal {instance.name}"
 msgstr ""
 
-#: administration/adminstaff.py:715
+#: administration/adminstaff.py:717
 #, python-brace-format
 msgid ""
 "Erreur lors de la récupération du code pin, contactez l'administrateur : {e}"
 msgstr ""
 
-#: administration/adminstaff.py:992
+#: administration/adminstaff.py:994
 msgid "Copiez bien la clé suivante et mettez la en lieu sur ! "
 msgstr ""
 
-#: administration/adminstaff.py:1056
+#: administration/adminstaff.py:1058
 msgid ""
 "L'id du lieu ne correspond pas à un id de lieu connu : https://doc.dokos.io/"
 "federation-lieux/federation-de-lieux/api/"
 msgstr ""
 
-#: administration/adminstaff.py:1061
+#: administration/adminstaff.py:1063
 msgid ""
 "Erreur de connexion à Dokos, vérifiez l'url et la clé API : https://doc."
 "dokos.io/federation-lieux/federation-de-lieux/api/"
 msgstr ""
 
-#: administration/adminstaff.py:1132 administration/adminstaff.py:1139
+#: administration/adminstaff.py:1134 administration/adminstaff.py:1141
 #, python-brace-format
 msgid "Fedow non connecté. Asset non mis à jour : {e}"
 msgstr ""
 
-#: administration/adminstaff.py:1137
+#: administration/adminstaff.py:1139
 msgid "Mise à jour des assets Fedow OK"
 msgstr ""
 
-#: administration/adminstaff.py:1194
+#: administration/adminstaff.py:1196
 msgid "Libérer les tables selectionnées"
 msgstr ""
 
-#: administration/adminstaff.py:1254
+#: administration/adminstaff.py:1256
 msgid "groupement pour préparation"
 msgstr ""
 
@@ -1716,20 +1716,20 @@ msgstr ""
 msgid "total"
 msgstr ""
 
-#: webview/templates/popup_check_carte.html:47
-#: webview/templates/popup_check_carte.html:74
+#: webview/templates/popup_check_carte.html:46
+#: webview/templates/popup_check_carte.html:73
 msgid "Provenance"
 msgstr ""
 
-#: webview/templates/popup_check_carte.html:55
+#: webview/templates/popup_check_carte.html:54
 msgid "Tirelire vide"
 msgstr ""
 
-#: webview/templates/popup_check_carte.html:71
+#: webview/templates/popup_check_carte.html:70
 msgid "Activation"
 msgstr ""
 
-#: webview/templates/popup_check_carte.html:82
+#: webview/templates/popup_check_carte.html:81
 msgid "Aucune adhésion"
 msgstr ""
 

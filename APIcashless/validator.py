@@ -96,6 +96,7 @@ class PriceSoldFromLespassValidator(serializers.Serializer):
 
 class SaleFromLespassValidator(serializers.Serializer):
     uuid = serializers.UUIDField()
+    datetime = serializers.DateTimeField()
     pricesold = PriceSoldFromLespassValidator()
     qty = serializers.DecimalField(max_digits=8, decimal_places=2)
     vat = serializers.DecimalField(max_digits=4, decimal_places=2)

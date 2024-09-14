@@ -451,13 +451,23 @@ class SaleFromLespass(APIView):
         try :
             price_lespass_uuid =  validator.validated_data['pricesold']['price']['uuid']
             wallet = validator.validated_data['user_uuid_wallet']
-            moyen_paiement_stripe = Configuration.get_solo().moyen_paiement_mollie
-            article = Articles.objects.get(pk=price_lespass_uuid)
+            moyen_paiement_stripe = MoyenPaiement.objects.get(categorie=MoyenPaiement.STRIPE_NOFED)
+
+            try :
+                article = Articles.objects.get(pk=price_lespass_uuid)
+            except Articles.DoesNotExist:
+                # Si l'article n'existe pas ? On va refresh les assets qui vont probablement le créer
+                logger.warning(f"Article existe pas, on va le chercher dans Fedow")
+                fedowAPI = FedowAPI()
+                fedowAPI.place.get_accepted_assets()
+                article = Articles.objects.get(pk=price_lespass_uuid)
+
             pos, created = PointDeVente.objects.get_or_create(name=_('Billetterie'))
 
             art = ArticleVendu.objects.create(
                 article=article,
                 prix=validator.validated_data['pricesold']['prix'],
+                date_time=validator.validated_data['datetime'],
                 qty=validator.validated_data['qty'],
                 pos=pos,
                 tva=validator.validated_data['vat'],
