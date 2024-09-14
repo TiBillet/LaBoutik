@@ -95,6 +95,7 @@ class PriceSoldFromLespassValidator(serializers.Serializer):
 
 
 class SaleFromLespassValidator(serializers.Serializer):
+    paiement_stripe_uuid = serializers.UUIDField()
     uuid = serializers.UUIDField()
     datetime = serializers.DateTimeField()
     pricesold = PriceSoldFromLespassValidator()
@@ -103,9 +104,19 @@ class SaleFromLespassValidator(serializers.Serializer):
     user_uuid_wallet = serializers.UUIDField()
 
     def validate_uuid(self, value):
+        # uuid_paiement = uuid LigneArticle sur Lespass
         if ArticleVendu.objects.filter(uuid=value).exists():
-            raise serializers.ValidationError("Sale already recorded")
+            raise serializers.ValidationError("Sale already recorded : uuid")
         return value
+
+
+    def validate_paiement_stripe_uuid(self, value):
+        # uuid_paiement = uuid LigneArticle sur Lespass
+        if ArticleVendu.objects.filter(uuid_paiement=value).exists():
+            raise serializers.ValidationError("Sale already recorded : uuid_paiement")
+        return value
+
+
 
     def validate_user_uuid_wallet(self, value):
         try :

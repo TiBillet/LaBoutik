@@ -464,7 +464,8 @@ class SaleFromLespass(APIView):
 
             pos, created = PointDeVente.objects.get_or_create(name=_('Billetterie'))
 
-            art = ArticleVendu.objects.create(
+            vente_depuis_lespass = ArticleVendu.objects.create(
+                uuid=validator.validated_data['uuid'],
                 article=article,
                 prix=validator.validated_data['pricesold']['prix'],
                 date_time=validator.validated_data['datetime'],
@@ -475,9 +476,8 @@ class SaleFromLespass(APIView):
                 responsable=None,
                 carte=wallet.cards.first(),
                 moyen_paiement=moyen_paiement_stripe,
-                uuid=validator.validated_data['uuid'],
-                commande=validator.validated_data['uuid'],
-                # ip_user=get_client_ip(request),
+                uuid_paiement=validator.validated_data['paiement_stripe_uuid'],
+                commande=validator.validated_data['paiement_stripe_uuid'],
             )
             return Response("", status=status.HTTP_200_OK)
 
