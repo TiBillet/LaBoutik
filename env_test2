@@ -1,0 +1,47 @@
+DJANGO_SECRET='+9d-=wa2+he26z#eg54gr+!t@4vj)scye5b46ve6xm2m^ht7xo'
+FERNET_KEY='_XK3tItWvGOcUHrNXM0dvuxcZXV3EoEbWRJ3uBjmLBU='
+
+POSTGRES_USER='laboutik_user'
+POSTGRES_DB='laboutik'
+POSTGRES_PASSWORD='K4g8g73Zt2E0BDI2PPhqDwaot37adiREZOEmDbFeRr4='
+
+# The domain of this instance ex : 'laboutik.tibillet.localhost'
+DOMAIN='laboutik2.tibillet.localhost'
+# No Cashless if no Fedow nor Lespass tenant manager
+FEDOW_URL='https://fedow.tibillet.localhost/' # ex : https://fedow.tibillet.localhost/
+LESPASS_TENANT_URL='https://lespass.tibillet.localhost/' # ex : https://lespass.tibillet.localhost/
+
+# The name of your cashless asset ex : TestCoin, FestivalCoin, etc ....
+MAIN_ASSET_NAME='CoinCoin'
+
+# admin email
+ADMIN_EMAIL='jturbeaux@pm.me'
+
+# For transactionnal email :
+EMAIL_HOST=""
+EMAIL_PORT=""
+EMAIL_HOST_USER=""
+EMAIL_HOST_PASSWORD=""
+
+TIME_ZONE='Europe/Paris'
+LANGUAGE_CODE='fr'
+
+
+########## FOR SAVE CRON TASK ##########dex
+
+# can be empty if you don't backup
+PREFIX_SAVE_DB=''
+BORG_PASSPHRASE='
+BORG_REPO='ssh://backup@server....'
+
+###!!!!!! Don't push to production with debug, test or demo !!!!!!###
+
+DEBUG=1
+TEST=1
+DEMO=1
+SENTRY_DNS=''
+
+DEMO_TAGID_CM='CAAAAAA1'
+DEMO_TAGID_CLIENT1='41726643'
+DEMO_TAGID_CLIENT2='93BD3684'
+
