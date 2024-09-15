@@ -5,13 +5,11 @@
 
 <div id="popup-cashless" style="background-color:{{ background }};" class="BF-col-uniforme popup-cashless-conteneur">
 
-    {% if msg_content != None %}
-        {% if msg_title != None %}
-            <div class="BF-col check-carte-inconnue l100p test-return-msg-title"
-                 style="white-space: pre-line; text-align: center;">{{ msg_title }}</div>
-        {% endif %}
+    {% if error_msg %}
         <div class="BF-col check-carte-inconnue l100p test-return-msg-content"
-             style="white-space: pre-line; text-align: center;">{{ msg_content }}</div>
+             style="white-space: pre-line; text-align: center;">
+            {{ error_msg }}
+        </div>
     {% else %}
         <div class="BF-col-uniforme check-carte-ok">
             {% if serializer_from_fedow.is_wallet_ephemere %}
@@ -24,64 +22,52 @@
                 </div>
             {% endif %}
         </div>
-    {% endif %}
 
-    <div class="containe" style="font-size: 1.2em">
-        {% if tokens_cashless %}
+        <div class="containe" style="font-size: 1.2em">
             <div>
                 <p class="popup-row-header">
                     <span>{% trans "Tirelire" %}</span>
-
-                    <span class="popup-total-value check-carte-ok-total-carte test-return-total-card" title="{% trans "total" %}">
-                        {{ total_monnaie }}
-                    </span>
+                    <span class="popup-total-value check-carte-ok-total-carte test-return-total-card"
+                          title="total">{{ total_monnaie }}</span>
                 </p>
 
                 {% for token in tokens_cashless %}
-                <p class="popup-row">
-                    <span class="popup-row-value">{{ token.value | dec2 }}</span>
-                    <span class="popup-row-name">
+                    <p class="popup-row">
+                        <span class="popup-row-value">{{ token.value | dec2 }}</span>
+                        <span class="popup-row-name">
                         {{ token.name }}
                     </span>
-                    <span class="popup-row-origin" title="{% trans "Provenance" %}">
+                        <span class="popup-row-origin" title="{% trans "Provenance" %}">
                         {{ token.asset.place_origin.name }}
                     </span>
-                </p>
+                    </p>
                 {% endfor %}
             </div>
-        {% else %}
-        <div class="check-carte-ok-total-carte test-return-total-card">
-            <p>{% trans "Tirelire vide" %}</p>
-        </div>
-        {% endif %}
 
-        {% if tokens_membership %}
-            <div style="margin-top: 1em;">
-                <p class="popup-row-header">
-                    <span>{% trans "Adhésions" %}</span>
+            {% if tokens_membership %}
+                <div style="margin-top: 1em;">
+                    <p class="popup-row-header">
+                        <span>{% trans "Adhésions" %}</span>
 
-                    <span class="popup-total-value check-carte-ok-total-carte test-return-total-card">
+                        <span class="popup-total-value check-carte-ok-total-carte test-return-total-card">
                         <span>{{ tokens_membership | length }}</span>
                     </span>
-                </p>
-                {% for token in tokens_membership %}
-                <p class="popup-row membership-row">
-                    <span class="popup-row-name">{{ token.name }}</span>
-                    <span class="popup-row-start" title="{% trans "Activation" %}">
+                    </p>
+                    {% for token in tokens_membership %}
+                        <p class="popup-row membership-row">
+                            <span class="popup-row-name">{{ token.name }}</span>
+                            <span class="popup-row-start" title="{% trans "Activation" %}">
                         {{ token.start_membership_date | naturalday }}
                     </span>
-                    <span class="popup-row-origin" title="{% trans "Provenance" %}">
+                            <span class="popup-row-origin" title="{% trans "Provenance" %}">
                         {{ token.asset.place_origin.name }}
                     </span>
-                </p>
-                {% endfor %}
-            </div>
-        {% else %}
-        <div class="check-carte-ok-total-carte test-return-total-card">
-            <p>{% trans "Aucune adhésion" %}</p>
+                        </p>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </div>
-        {% endif %}
-    </div>
+    {% endif %}
 
     <div class="popup-conteneur-bt-retour BF-col" style="margin: 10px 0;">
         {% include "elements/bouton_return.html" %}

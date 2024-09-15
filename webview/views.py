@@ -506,29 +506,12 @@ def check_carte(request):
         except Exception as e:
             logger.error(f"Check carte FEDOW : {e}")
             data = {
-                'background': '#b85521',
-                'msg_title': _("Erreur Fedow. Contacter l'administrateur :"),
-                'msg_content': _(str(e))
+                'background': '#e93363',
+                'error_msg': _('Carte inconnue'),
             }
-            # return Response({"msg": f"Fedow error. Contact an admin : {e}"}, status=status.HTTP_404_NOT_FOUND)
             return render(request, 'popup_check_carte.html', data)
 
-        try:
-            carte = CarteCashless.objects.get(tag_id=tag_id_request)
-        except CarteCashless.DoesNotExist:
-            data = {
-                'background': '#b85521',
-                'msg_content': _('Carte inconnue'),
-                'tag_id': tag_id_request,
-                'route': "check_carte",
-            }
-            logger.error(
-                f"{timezone.now()} CarteCashless.DoesNotExist /wv/check_carte POST {tag_id_request}")
-            # return Response(data, status=status.HTTP_404_NOT_FOUND)
-            return render(request, 'popup_check_carte.html', data)
-        except Exception:
-            raise Exception
-
+        carte = CarteCashless.objects.get(tag_id=tag_id_request)
         serializer = CarteCashlessSerializer(carte)
         data = serializer.data
 

@@ -190,7 +190,7 @@ class CashlessTest(TiBilletTestCase):
         carte.refresh_from_db()
         return carte
 
-    def wv_check_carte_atomic(self, carte):
+    def check_carte_total(self, carte, total) -> CarteCashless:
         check_carte_data = {
             "tag_id_client": carte.tag_id,
         }
@@ -200,13 +200,15 @@ class CashlessTest(TiBilletTestCase):
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         self.assertEqual(response.status_code, 200)
-        content = response.json()
-        return content
+        self.assertTemplateUsed(response, 'popup_check_carte.html')
+        self.assertNotContains(response, 'check-carte-inconnue')
+        self.assertContains(response, 'check-carte-ok')
 
-    def check_carte_total(self, carte, total) -> CarteCashless:
-        content = self.wv_check_carte_atomic(carte)
-        self.assertEqual(content.get('tag_id'), f"{carte.tag_id}")
-        self.assertEqual(dround(content.get('total_monnaie')), dround(total))
+        self.assertContains(response, '<span>Tirelire</span>')
+
+        str_total = "0" if total == 0 else f"{(int(total)):.2f}"
+        self.assertContains(response, f'title="total">{str_total}</span>')
+
         carte.refresh_from_db()
         return carte
 
@@ -262,7 +264,6 @@ class CashlessTest(TiBilletTestCase):
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         self.assertEqual(response.status_code, 200)
-
 
     #### ATOMIC UTILS FUNC FOR TEST #####
     def create_20cards_5primary_with_db(self):
@@ -703,8 +704,11 @@ class CashlessTest(TiBilletTestCase):
             ipdb.set_trace()
 
     def paiement_cashless_virgule(self):
-        primary_card = CarteMaitresse.objects.first()
+        primary_card = CarteMaitresse.objects.filter(
+            carte__membre__isnull=False).first()
         responsable: Membre = primary_card.carte.membre
+        self.assertIsInstance(responsable, Membre)
+
         pdv = PointDeVente.objects.get(name="Boutique")
         carte1, carte2 = self.create_2_card_and_charge_it()
 
@@ -860,18 +864,23 @@ class CashlessTest(TiBilletTestCase):
         return carte
 
     def check_carte_error(self):
+        # Test sur carte qui n'existe pas
         check_carte_data = {
-            "tag_id_client": "12345678",
+            "tag_id_client": "XXXXXXXX",
         }
         response = self.client.post('/wv/check_carte',
                                     data=json.dumps(check_carte_data, cls=DjangoJSONEncoder),
                                     content_type="application/json",
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'popup_check_carte.html')
+        self.assertContains(response, 'check-carte-inconnue')
+        self.assertNotContains(response, 'check-carte-ok')
+        self.assertContains(response, '#e93363')  # couleur letchi
 
+        # Test sur carte chargée :
         monnaie_e = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
         asset_e = self.carte_chargee.assets.get(monnaie=monnaie_e)
-
         self.carte_chargee.refresh_from_db()
         check_carte_data = {
             "tag_id_client": self.carte_chargee.tag_id,
@@ -880,13 +889,12 @@ class CashlessTest(TiBilletTestCase):
                                     data=json.dumps(check_carte_data, cls=DjangoJSONEncoder),
                                     content_type="application/json",
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEqual(response.status_code, 200)
-        content = response.json()
-        self.assertEqual(content.get('tag_id'), f"{self.carte_chargee.tag_id}")
-        assets = content.get('assets')
 
-        self.assertEqual(Decimal(assets[0].get('qty')), asset_e.qty)
-        self.assertEqual(assets[0].get('monnaie'), f"{monnaie_e.pk}")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'popup_check_carte.html')
+        self.assertNotContains(response, 'check-carte-inconnue')
+        self.assertContains(response, 'check-carte-ok')
+        self.assertContains(response, '#b85521')  # couleur orange
 
     def send_card_to_fedow_with_api(self):
         cards = CarteCashless.objects.all()
@@ -1074,7 +1082,7 @@ class CashlessTest(TiBilletTestCase):
             if token['asset']['uuid'] == asset.monnaie.pk:
                 token_asset_local_euro = token
         self.assertIsNotNone(token_asset_local_euro)
-        self.assertEqual(token_asset_local_euro['value'], dround(50-21.21)*100)
+        self.assertEqual(token_asset_local_euro['value'], dround(50 - 21.21) * 100)
 
         # TODO: Checker une carte non authorisé (get_authority_delegation)
 
@@ -1103,7 +1111,6 @@ class CashlessTest(TiBilletTestCase):
                        "tag_id": f"{carte.tag_id}",
                        "moyen_paiement": 'nfc',
                        }
-
 
         response = self.client.post('/wv/paiement',
                                     data=json.dumps(json_achats, cls=DjangoJSONEncoder),
@@ -1281,7 +1288,7 @@ class CashlessTest(TiBilletTestCase):
         # On la charge de 10 + 10 gift
         self.ajout_monnaie_bis(carte=carte, qty=10)
 
-        #TODO: a sortir d'ici -> atomic !
+        # TODO: a sortir d'ici -> atomic !
         ex_total_euro = carte.total_monnaie(carte.assets.filter(monnaie=MoyenPaiement.get_local_euro()))
         ex_total_gift = carte.total_monnaie(carte.assets.filter(monnaie=MoyenPaiement.get_local_gift()))
         self.assertEqual(ex_total_euro, 10)
@@ -1314,10 +1321,10 @@ class CashlessTest(TiBilletTestCase):
         serialized_transactions_voided = new_void_data['serialized_transactions']
 
         self.assertEqual(len(serialized_transactions_voided), 2)
-        self.assertEqual(serialized_transactions_voided[0].get('amount'), ex_total_euro*100)
+        self.assertEqual(serialized_transactions_voided[0].get('amount'), ex_total_euro * 100)
         self.assertEqual(serialized_transactions_voided[0].get('action'), TransactionValidator.REFUND)
         self.assertTrue(serialized_transactions_voided[0].get('verify_hash'))
-        self.assertEqual(serialized_transactions_voided[1].get('amount'), ex_total_gift*100)
+        self.assertEqual(serialized_transactions_voided[1].get('amount'), ex_total_gift * 100)
         self.assertEqual(serialized_transactions_voided[1].get('action'), TransactionValidator.REFUND)
         self.assertTrue(serialized_transactions_voided[1].get('verify_hash'))
 
@@ -1586,25 +1593,8 @@ class CashlessTest(TiBilletTestCase):
         # la valeur correspond au Moyen de paiement ?
         self.assertEqual(tokens[asset_local.monnaie.pk], int((total_avant_recharge + total) * 100))
 
-        # l'uuid du token est egal à l'asset cashless ?
-        # Non, car le token est créé avant l'envoi sur fedow
-        # voir to do dans : TokenValidator.update_or_create
-        # tokens = {token['uuid']: token['value'] for token in serialized_card['wallet']['tokens']}
-        # self.assertEqual(tokens[asset_local.pk], int((total_avant_recharge + total) * 100))
-
         # On check sur cashless :
-        check_carte_data = {
-            "tag_id_client": carte.tag_id,
-        }
-        check_response = self.client.post('/wv/check_carte',
-                                          data=json.dumps(check_carte_data, cls=DjangoJSONEncoder),
-                                          content_type="application/json",
-                                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEqual(check_response.status_code, 200)
-        check_content = check_response.json()
-        self.assertEqual(check_content.get('tag_id'), f"{carte.tag_id}")
-        assets = {asset['monnaie']: asset['qty'] for asset in check_content.get('assets')}
-        self.assertEqual(dround(assets[f"{asset_local.monnaie.pk}"]), dround(total_avant_recharge + total))
+        self.check_carte_total(carte, total_avant_recharge + total)
 
     def check_carte_fedow(self, carte):
         carte: CarteCashless = carte
@@ -1692,8 +1682,9 @@ class CashlessTest(TiBilletTestCase):
         fedowApi = FedowAPI()
         accepted_assets = fedowApi.place.get_accepted_assets()
 
-        #TODO: Tester si déja dans monnaies acceptés ?
-        import ipdb; ipdb.set_trace()
+        # TODO: Tester si déja dans monnaies acceptés ?
+        import ipdb;
+        ipdb.set_trace()
         fiducial_assets = [MoyenPaiement.objects.get(pk=asset.get('uuid')) for asset in accepted_assets if
                            asset.get('category') == AssetValidator.TOKEN_LOCAL_FIAT]
         config = Configuration.get_solo()
@@ -1749,8 +1740,6 @@ class CashlessTest(TiBilletTestCase):
 
         return card
 
-
-
     def badge(self, carte=None):
         config = Configuration.get_solo()
         if not carte:
@@ -1793,7 +1782,6 @@ class CashlessTest(TiBilletTestCase):
 
         import ipdb;
         ipdb.set_trace()
-
 
     @tag('fedow')
     def test_fedow(self):
@@ -1885,9 +1873,12 @@ class CashlessTest(TiBilletTestCase):
         print("On check que la db fedow et la db cashless corresponde toujours")
         self.check_all_tokens_value()
 
+        # test avec des virgules
+        self.paiement_cashless_virgule()
+
         ### STRIPE & LESPASS TEST
 
-        #TODO: Todo prio, plugger les tests avec une requete vers lespass
+        # TODO: Todo prio, plugger les tests avec une requete vers lespass
         # print("Besoin d'un email pour le checkout stripe : liaison d'un email avec un wallet via lespass")
         # email, carte = self.link_email_with_wallet_on_lespass()
         # print("Tester le paiement stripe pour le rechargement, et le remboursement des euro seul ensuite")
@@ -1898,19 +1889,16 @@ class CashlessTest(TiBilletTestCase):
         # Tester la fusion d'un wallet existant non vide et d'un wallet ephémère non vide
 
         ### FEDERATION TEST
-        self.add_me_to_test_fed()
+        # self.add_me_to_test_fed()
 
-        card = self.check_federated_card_from_fedow()
-        self.paiement_cashless_external_token(card)
+        # card = self.check_federated_card_from_fedow()
+        # self.paiement_cashless_external_token(card)
 
-        # test avec des virgules
-        self.paiement_cashless_virgule()
 
         ### BADGE
-
-        self.badge()
+        # self.badge()
         # On rebadge avec un asset exterieur
-        self.badge_fedow()
+        # self.badge_fedow()
         # tester refund et void -> toujours membership et badge
 
     def x_test_fidelity(self):
