@@ -306,7 +306,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for name, valeur in dict_toute_entrees_par_moyen_paiement.items %}
+        {% for nom, valeur in dict_toute_entrees_par_moyen_paiement.items %}
             <tr class="test-item-fond-caisse">
                 <td class="test-item-fond-caisse-total">{{ nom }}</td>
                 <td class="test-item-fond-caisse-total">{{ valeur  | floatformat:2 }}€</td>
