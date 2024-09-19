@@ -166,25 +166,15 @@ def after_handshake():
     Place.objects.all().delete()
     MoyenPaiement.objects.filter(categorie=MoyenPaiement.STRIPE_FED).delete()
 
-    # Uniquement ces deux pour la migration
+    # Va récupérer les assets adhésions/badge
     fedowAPI = FedowAPI()
-    assets = fedowAPI.place.get_accepted_assets()
-
-    # A faire a la main pour des updates de cashless déja existant.
-    # TODO: A virer une fois tout les cashless convertis en laboutik
-    # send_assets()
-    # create_cards_and_pre_token()
-    # send_existing_tokens()
-    # send_existing_members()
+    fedowAPI.place.get_accepted_assets()
 
     config = Configuration.get_solo()
+    # Le bolléen qui indique que tout s'est bien passé
     config.fedow_synced = True
     config.save()
     cache.clear()
-
-    # if settings.TEST and settings.DEBUG:
-        # On ajoute à la federation de test
-        # fedowAPI
 
 
 @app.task

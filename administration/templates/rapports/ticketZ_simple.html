@@ -2,7 +2,7 @@
 
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
-<html lang="">
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
     <meta charset="UTF-8">
     <title>Ticket Z {{ start_date }}</title>
@@ -53,11 +53,10 @@
     </style>
 </head>
 <body>
-{% language 'en' %}
 <h1>{% trans "Ticket Z Simplifié" %}</h1>
 <h1><span class="test-tenant">{{ structure }}</span></h1>
-<h3>{% trans "Début : "%}{{ start_date }}</h3>
-<h3>{% trans "Fin : "%}{{ end_date }}</h3>
+<h3>{% trans "Début : " %}{{ start_date }}</h3>
+<h3>{% trans "Fin : " %}{{ end_date }}</h3>
 
 
 <div id="total_vente">
@@ -145,7 +144,6 @@
 </div>
 
 
-
 <div id="fond_caisse">
     <h2>{% trans "Fond de caisse espèce" %}</h2>
     <table class="content">
@@ -188,7 +186,7 @@
 
 
 <div id="recharge_cashless">
-    <h2 class="test-nom-monnaie"> {% trans "Recharge Cashless"%} {{ nom_monnaie }}</h2>
+    <h2 class="test-nom-monnaie"> {% trans "Recharge Cashless" %} {{ nom_monnaie }}</h2>
     <table class="content">
         <thead>
         <tr>
@@ -248,11 +246,11 @@
     </table>
 </div>
 <div id="contact">
-    {% trans "Rapport généré par l'outil libre et coopératif" %} <a href="https://tibillet.org">https://tibillet.org</a>.
+    {% trans "Rapport généré par l'outil libre et coopératif" %} <a
+        href="https://tibillet.org">https://tibillet.org</a>.
 </div>
 <div>
     {% trans "Si vous pensez à des améliorations, n'hésitez pas à nous contacter, on adore ça :)" %}
 </div>
-{% endlanguage %}
 </body>
 </html>

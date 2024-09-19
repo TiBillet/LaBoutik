@@ -1642,7 +1642,7 @@ class CashlessTest(TiBilletTestCase):
     def link_email_with_wallet_on_lespass(self):
         # Création d'une nouvelle carte et check carte pour récupérer le wallet
         carte = self.create_one_card_db()
-        content_check_carte = self.wv_check_carte_atomic(carte)
+        self.wv_check_carte_atomic(carte)
         email = Faker().email()
 
         # On fait une requete vers lespass (comme si on validait le scan de la carte)
@@ -1650,7 +1650,7 @@ class CashlessTest(TiBilletTestCase):
 
     def checkout_stripe_from_fedow(self, email, carte):
         # Lancer stripe :
-        # stripe listen --forward-to http://127.0.0.1:8442/webhook_stripe/
+        # stripe listen --forward-to https://fedow.tibillet.localhost/webhook_stripe/ --skip-verify
         # S'assurer que la clé de signature soit la même que dans le .env
 
         # Un token de monnaie fédérée n'existe pas encore
@@ -1663,7 +1663,7 @@ class CashlessTest(TiBilletTestCase):
         self.assertIn('https://checkout.stripe.com/c/pay/cs_test', checkout_url)
         print('')
         print('Test du paiement. Lancez stripe cli avec :')
-        print('stripe listen --forward-to http://127.0.0.1:8442/webhook_stripe/')
+        print('stripe listen --forward-to https://fedow.tibillet.localhost/webhook_stripe/ --skip-verify')
         print('pour relancer un event : stripe events resend <id>')
         print('')
         print('lancez le paiement avec 42€ et la carte 4242 :')
