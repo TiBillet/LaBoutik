@@ -23,8 +23,8 @@ EMAIL_PORT=""
 EMAIL_HOST_USER=""
 EMAIL_HOST_PASSWORD=""
 
-TIME_ZONE='Europe/Paris'
-LANGUAGE_CODE='fr'
+TIME_ZONE='Indian/Mauritius'
+LANGUAGE_CODE='en'
 
 
 ########## FOR SAVE CRON TASK ##########dex
