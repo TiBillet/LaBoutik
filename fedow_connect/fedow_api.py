@@ -383,6 +383,8 @@ class NFCCard():
         logger.error(response_link.json())
         raise Exception(response_link.json())
 
+    """
+    # Ex méthodep pour les test. On passe par lespass maintenant
     def get_checkout(self, email: str = None, tag_id: str = None):
         data = {
             "email": email,
@@ -394,6 +396,7 @@ class NFCCard():
 
         logger.error(response_link.json())
         raise Exception(response_link.json())
+    """
 
 
 class Transaction():
