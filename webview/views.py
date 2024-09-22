@@ -1381,10 +1381,15 @@ class Commande:
         self.total_vente_article = a_rembourser
         # Asset principal :
         asset_principal.qty = 0
-        # Si l'asset gift existe, on le vide
+
         for asset in self.payments_assets:
+            # Si l'asset gift existe, on le vide
             if asset.monnaie.categorie == MoyenPaiement.LOCAL_GIFT:
                 asset.qty = 0
+            # Si l'asset fed stripe existe, on le vide
+            if asset.monnaie.categorie == MoyenPaiement.STRIPE_FED:
+                asset.qty = 0
+
 
         self.reponse['route'] = "transaction_vider_carte"
 

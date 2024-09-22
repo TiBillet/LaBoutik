@@ -1148,6 +1148,9 @@ class CashlessTest(TiBilletTestCase):
 
         ex_total_asset_euro = carte.assets.get(monnaie__categorie=MoyenPaiement.LOCAL_EURO).qty
         self.assertTrue(ex_total_asset_euro >= 5)
+        ex_total_asset_fed = carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty
+        self.assertTrue(ex_total_asset_fed == 42)
+        ex_total_a_rembourser = ex_total_asset_euro + ex_total_asset_fed
 
         #### PREPARATION DE LA REQUETE
         article_vider_carte: Articles = Articles.objects.get(
@@ -1182,16 +1185,18 @@ class CashlessTest(TiBilletTestCase):
         # On check que les deux assets locaux sont vide
         self.assertEqual(carte.assets.get(monnaie__categorie=MoyenPaiement.LOCAL_EURO).qty, 0)
         self.assertEqual(carte.assets.get(monnaie__categorie=MoyenPaiement.LOCAL_GIFT).qty, 0)
-        # Mais il reste le fédéré
-        self.assertEqual(carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty, 42)
+        # Fédéré remboursé :
+        self.assertEqual(carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty, 0)
+
         # A rembourser = uniquement les assets locaux euro
-        self.assertEqual(content.get('somme_totale'), f"{ex_total_asset_euro}")
+        self.assertEqual(content.get('somme_totale'), f"{ex_total_a_rembourser}")
 
-        self.check_carte_total(carte=carte, total=42)
-
+        # On a bien remboursé en espèce :
         art_v = ArticleVendu.objects.first()
         self.assertEqual(art_v.moyen_paiement.categorie, MoyenPaiement.CASH)
-        self.assertEqual(art_v.total(), Decimal(-ex_total_asset_euro))
+
+        self.assertEqual(art_v.total(), Decimal(-(ex_total_a_rembourser)))
+        self.check_carte_total(carte=carte, total=0)
 
     def remboursement_et_vidage_direct_api(self):
         fedowAPI = FedowAPI()
@@ -1686,8 +1691,12 @@ class CashlessTest(TiBilletTestCase):
                                         content_type="application/json",
                                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
+            carte.refresh_from_db()
             self.assertTrue(carte.assets.filter(monnaie__categorie=MoyenPaiement.STRIPE_FED).exists())
+            if carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty != Decimal(42):
+                import ipdb; ipdb.set_trace()
             self.assertEqual(carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty, Decimal(42))
+
             print("checkout verifié & Paiement non vérifié")
         else :
             logger.warning("Paiement non vérifié")
