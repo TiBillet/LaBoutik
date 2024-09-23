@@ -2,8 +2,8 @@
 {% load i18n %}
 {% get_current_language as LANGUAGE_CODE %}
 
+<html lang="{{ LANGUAGE_CODE }}">
 <head>
-<html lang="en">
     <meta charset="UTF-8">
     <title>{% trans "Rapport complet" %} {{ start_date }}</title>
     <style>
@@ -53,9 +53,6 @@
     </style>
 </head>
 <body>
-{% language 'en' %}
-
-
 <h1>{% trans "Rapport TiBillet" %}</h1>
 <h1><span class="test-tenant">{{ structure }} </span></h1>
 <h3>{% trans "Début : " %}{{ start_date }}</h3>
@@ -147,10 +144,8 @@
 </div>
 
 
-
-
 <div id="recharge_cashless">
-    <h2 class="test-nom-monnaie">{%  trans "Recharge Cashless" %} {{ nom_monnaie }}</h2>
+    <h2 class="test-nom-monnaie">{% trans "Recharge Cashless" %} {{ nom_monnaie }}</h2>
     <table class="content">
         <thead>
         <tr>
@@ -288,15 +283,15 @@
             <td class="test-item-monnaie-dormante-reste">{{ dormante_j_rapport | floatformat:2 }}€</td>
         </tr>
         <tr>
-            <th colspan="2">{{ nom_monnaie_cadeau }} (+{{ total_recharge_cadeau }})</th>
+            <th colspan="2">{{ nom_monnaie_cadeau }} (+{{ total_recharge_cadeau | floatformat:2 }})</th>
         </tr>
         <tr class="test-item-monnaie-dormante">
             <td class="test-item-monnaie-dormante-valeur">{{ delta_cashless_gift | floatformat:2 }}€</td>
             <td class="test-item-monnaie-dormante-reste">{{ dormante_gift_j_rapport | floatformat:2 }}€</td>
         </tr>
         </tbody>
-        <tfTotaloot>
-        </tfTotaloot>
+        <tfoot>
+        </tfoot>
     </table>
 </div>
 
@@ -311,7 +306,7 @@
         </tr>
         </thead>
         <tbody>
-        {% for name, valeur in dict_toute_entrees_par_moyen_paiement.items %}
+        {% for nom, valeur in dict_toute_entrees_par_moyen_paiement.items %}
             <tr class="test-item-fond-caisse">
                 <td class="test-item-fond-caisse-total">{{ nom }}</td>
                 <td class="test-item-fond-caisse-total">{{ valeur  | floatformat:2 }}€</td>
@@ -445,7 +440,7 @@
         <tr>
             <td>{{ nbr_carte_distinct }}</td>
             <td>{{ recharge_mediane | floatformat:2 }}€</td>
-            <td>{{ panier_moyen | floatformat:2  }}€</td>
+            <td>{{ panier_moyen | floatformat:2 }}€</td>
             <td>{{ reste_moyenne }}€</td>
             <td>{{ nouveaux_membres }}</td>
         </tr>
@@ -454,11 +449,11 @@
 </div>
 
 <div>
-    {% trans "Rapport généré par l'outil libre et coopératif  " %}<a href="https://tibillet.org">https://tibillet.org</a>.
+    {% trans "Rapport généré par l'outil libre et coopératif  " %}<a
+        href="https://tibillet.org">https://tibillet.org</a>.
 </div>
 <div>
     {% trans "Si vous pensez à des améliorations, n'hésitez pas à nous contacter, on adore ça :)" %}
 </div>
-{% endlanguage %}
 </body>
 </html>

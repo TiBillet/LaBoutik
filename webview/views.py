@@ -628,6 +628,20 @@ class Commande:
         self.payments_assets.append(asset_gift)
         return asset_gift
 
+    def asset_stripe_primaire(self):
+        # On récupère le wallet sérialisé par le validateur
+        wallet = self.carte_db.get_wallet()
+        serialized_wallet = self.data['wallets'][wallet.uuid]
+        token_primaire_list = [token for token in serialized_wallet['tokens'] if token['asset']['is_stripe_primary'] ]
+        if len(token_primaire_list)> 1:
+            logger.error(f"Il ne peut y avoir qu'un seul token primaire. Contactez un administrateur FEDOW - {serialized_wallet}")
+            raise Exception(f"Il ne peut y avoir qu'un seul token primaire. Contactez un administrateur FEDOW - {serialized_wallet}")
+        qty_token_primaire = None
+        for token in token_primaire_list:
+            return token
+
+        return None
+
     def validation(self):
         """
         Fonction appellée par la vue paiement une fois que l'instance de classe commande a été générée.
@@ -1276,17 +1290,16 @@ class Commande:
         # si c'est un paiement par carte NFC :
         else:
             ### FEDOW ###
-            if self.configuration.can_fedow():
-                wallet = self.carte_db.get_wallet()
-                fedowApi = FedowAPI()
-                asset_local_euro = MoyenPaiement.get_local_euro()
-                serialized_transaction = fedowApi.transaction.refill_wallet(
-                    amount=int(total * 100),
-                    wallet=f"{wallet.uuid}",
-                    asset=f"{asset_local_euro.pk}",
-                    user_card_firstTagId=f"{self.carte_db.tag_id}",
-                    primary_card_fisrtTagId=self.primary_card_fisrtTagId,
-                )
+            wallet = self.carte_db.get_wallet()
+            fedowApi = FedowAPI()
+            asset_local_euro = MoyenPaiement.get_local_euro()
+            serialized_transaction = fedowApi.transaction.refill_wallet(
+                amount=int(total * 100),
+                wallet=f"{wallet.uuid}",
+                asset=f"{asset_local_euro.pk}",
+                user_card_firstTagId=f"{self.carte_db.tag_id}",
+                primary_card_fisrtTagId=self.primary_card_fisrtTagId,
+            )
 
             asset_principal = self.asset_principal()
             asset_principal.qty += - total
@@ -1311,20 +1324,48 @@ class Commande:
     # VIDER_CARTE = 'VC'
     def methode_VC(self, article, qty):
         asset_principal = self.asset_principal()
-        ex_qty = abs(asset_principal.qty)
+        # La monnaie euro locale
+        ex_qty_token_local = abs(asset_principal.qty)
+
+        # La monnaie fédérée :
+        token_primaire = self.asset_stripe_primaire()
+        ex_qty_token_primaire = dround(token_primaire['value'] / 100) if token_primaire else 0
+        asset_primaire = MoyenPaiement.objects.get(
+            pk=token_primaire['asset']['uuid'],
+            categorie=MoyenPaiement.STRIPE_FED,
+        ) if token_primaire else None
 
         ### FEDOW ###
-        if self.configuration.can_fedow():
-            wallet = self.carte_db.get_wallet()
-            fedowApi = FedowAPI()
-            refund_data = fedowApi.NFCcard.refund(
-                user_card_firstTagId=f"{self.carte_db.tag_id}",
-                primary_card_fisrtTagId=self.primary_card_fisrtTagId,
-            )
+        # On prévient Fedow qu'on vide la carte :
+        fedowApi = FedowAPI()
+        serialized_card_refunded = fedowApi.NFCcard.refund(
+            user_card_firstTagId=f"{self.carte_db.tag_id}",
+            primary_card_fisrtTagId=self.primary_card_fisrtTagId,
+        )
 
+        if ex_qty_token_primaire and asset_primaire :
+            ArticleVendu.objects.create(
+                article=article,
+                prix=ex_qty_token_primaire,
+                qty=1,
+                pos=self.point_de_vente,
+                carte=self.carte_db,
+                membre=self.carte_db.membre,
+                responsable=self.responsable,
+                moyen_paiement=asset_primaire,
+                commande=self.uuid_commande,
+                uuid_paiement=self.uuid_paiement,
+                table=self.table,
+                ip_user=self.ip_user,
+            )
+        # Creation d'un article de vente
+        # pour encaisser les asset primaire TiBillet Fédéré
+        # avant de les rembourser.
+
+        a_rembourser = abs(ex_qty_token_local + ex_qty_token_primaire)
         ArticleVendu.objects.create(
             article=article,
-            prix=-ex_qty,
+            prix=-a_rembourser, # en négatif car ce sont des remboursement en espèce
             qty=1,
             pos=self.point_de_vente,
             carte=self.carte_db,
@@ -1337,13 +1378,18 @@ class Commande:
             ip_user=self.ip_user,
         )
 
-        self.total_vente_article = ex_qty
+        self.total_vente_article = a_rembourser
+        # Asset principal :
         asset_principal.qty = 0
 
-        # Si l'asset gift existe, on le vide
         for asset in self.payments_assets:
+            # Si l'asset gift existe, on le vide
             if asset.monnaie.categorie == MoyenPaiement.LOCAL_GIFT:
                 asset.qty = 0
+            # Si l'asset fed stripe existe, on le vide
+            if asset.monnaie.categorie == MoyenPaiement.STRIPE_FED:
+                asset.qty = 0
+
 
         self.reponse['route'] = "transaction_vider_carte"
 
@@ -1386,14 +1432,10 @@ def tables_et_commandes(request):
 @login_required
 @api_view(['POST', 'GET'])
 def tables(request):
-    start = timezone.now()
-
     serializer = TableSerializer(Table.objects.filter(archive=False), many=True)
-
     data = {
         'tables': serializer.data,
     }
-
     # logger.info(f"{timezone.now()} - durée d'execution : {timezone.now() - start} /wv/tables_et_commandes")
     return Response(data, status=status.HTTP_200_OK)
 

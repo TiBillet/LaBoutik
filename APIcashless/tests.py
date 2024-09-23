@@ -1,6 +1,9 @@
+import time
 from io import StringIO
 from uuid import UUID
 
+import requests
+from OpenSSL.crypto import verify
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.serializers.json import DjangoJSONEncoder
@@ -191,11 +194,8 @@ class CashlessTest(TiBilletTestCase):
         return carte
 
     def check_carte_total(self, carte, total) -> CarteCashless:
-        check_carte_data = {
-            "tag_id_client": carte.tag_id,
-        }
         response = self.client.post('/wv/check_carte',
-                                    data=json.dumps(check_carte_data, cls=DjangoJSONEncoder),
+                                    data=json.dumps({"tag_id_client": carte.tag_id}, cls=DjangoJSONEncoder),
                                     content_type="application/json",
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
@@ -210,6 +210,9 @@ class CashlessTest(TiBilletTestCase):
         self.assertContains(response, f'title="total">{str_total}</span>')
 
         carte.refresh_from_db()
+        # Check la fonction interne total monnaie après un refresh from db
+        self.assertEqual(carte.total_monnaie(), total)
+
         return carte
 
     def ajout_monnaie_bis(self, carte=None, qty=None):
@@ -985,12 +988,13 @@ class CashlessTest(TiBilletTestCase):
 
         return serialized_card
 
-    def refill_card_wallet(self):
+    def refill_card_wallet(self, carte=None, amount=4242):
         fedowAPI = FedowAPI()
         asset_local_euro = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
         carte_primaire = CarteMaitresse.objects.first().carte
 
-        carte = self.create_one_card_db()
+        if not carte :
+            carte = self.create_one_card_db()
         # Le check carte va créer le wallet du coté de Fedow
         carte_avec_wallet_ephemere = self.check_carte_total(carte, 0)
         self.assertIsNotNone(carte_avec_wallet_ephemere.wallet)
@@ -999,7 +1003,7 @@ class CashlessTest(TiBilletTestCase):
         self.assertIsInstance(wallet, Wallet)
 
         serialized_transaction = fedowAPI.transaction.refill_wallet(
-            amount=4242,
+            amount=amount,
             wallet=f"{wallet.uuid}",
             asset=f"{asset_local_euro.pk}",
             user_card_firstTagId=f"{carte.tag_id}",
@@ -1007,7 +1011,7 @@ class CashlessTest(TiBilletTestCase):
         )
 
         self.assertIsInstance(serialized_transaction, dict)
-        self.assertEqual(serialized_transaction.get('amount'), 4242)
+        self.assertEqual(serialized_transaction.get('amount'), amount)
         self.assertEqual(serialized_transaction.get('action'), TransactionValidator.REFILL)
         self.assertEqual(serialized_transaction.get('sender'), fedowAPI.config.fedow_place_wallet_uuid)
         self.assertEqual(serialized_transaction.get('receiver'), wallet.uuid)
@@ -1019,13 +1023,15 @@ class CashlessTest(TiBilletTestCase):
         serialized_card = fedowAPI.NFCcard.retrieve(f"{carte.tag_id}")
         self.assertIsInstance(serialized_card['wallet']['tokens'], list)
         tokens = [(token['asset_uuid'], token['value']) for token in serialized_card['wallet']['tokens']]
-        self.assertIn((asset_local_euro.pk, 4242), tokens)
+        self.assertIn((asset_local_euro.pk, amount), tokens)
 
         self.assertTrue(serialized_card.get('is_wallet_ephemere'))
 
         # tester que l'asset interne est bien a jour
-        self.assertEqual(Assets.objects.get(carte=carte, monnaie=asset_local_euro).qty, dround(42.42))
-        self.assertEqual(carte.total_monnaie(), dround(42.42))
+        self.assertEqual(Assets.objects.get(carte=carte, monnaie=asset_local_euro).qty, dround(amount/100))
+        self.assertEqual(carte.total_monnaie(), dround(amount/100))
+
+        return carte
 
     def refill_user_wallet_without_card_test_error(self):
         fedowAPI = FedowAPI()
@@ -1137,15 +1143,25 @@ class CashlessTest(TiBilletTestCase):
         self.check_carte_total(carte=carte, total=ex_total_monnaie)
 
         # On rajoute local euro et local cadeau pour pouvoir les vider ensuite
-        self.ajout_monnaie_bis(carte=carte, qty=5)
+        self.ajout_monnaie_bis(carte=carte, qty=5) # 5 cadeau + 5 local
         self.check_carte_total(carte=carte, total=ex_total_monnaie + 10)
 
         ex_total_asset_euro = carte.assets.get(monnaie__categorie=MoyenPaiement.LOCAL_EURO).qty
         self.assertTrue(ex_total_asset_euro >= 5)
+        ex_total_asset_fed = carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty
+        self.assertTrue(ex_total_asset_fed == 42)
+        ex_total_a_rembourser = ex_total_asset_euro + ex_total_asset_fed
 
+        #### PREPARATION DE LA REQUETE
         article_vider_carte: Articles = Articles.objects.get(
             methode_choices=Articles.VIDER_CARTE,
         )
+        responsable = CarteMaitresse.objects.filter(
+            carte__isnull=False,
+            carte__membre__isnull=False,
+        ).first().carte.membre
+
+        pdv = PointDeVente.objects.get(comportement=PointDeVente.CASHLESS)
 
         json_achats = {"articles": [{"pk": f"{article_vider_carte.pk}", "qty": 1}],
                        "pk_responsable": f"{responsable.pk}",
@@ -1169,16 +1185,18 @@ class CashlessTest(TiBilletTestCase):
         # On check que les deux assets locaux sont vide
         self.assertEqual(carte.assets.get(monnaie__categorie=MoyenPaiement.LOCAL_EURO).qty, 0)
         self.assertEqual(carte.assets.get(monnaie__categorie=MoyenPaiement.LOCAL_GIFT).qty, 0)
-        # Mais il reste le fédéré
-        self.assertEqual(carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty, 42)
+        # Fédéré remboursé :
+        self.assertEqual(carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty, 0)
+
         # A rembourser = uniquement les assets locaux euro
-        self.assertEqual(content.get('somme_totale'), f"{ex_total_asset_euro}")
+        self.assertEqual(content.get('somme_totale'), f"{ex_total_a_rembourser}")
 
-        self.check_carte_total(carte=carte, total=42)
-
+        # On a bien remboursé en espèce :
         art_v = ArticleVendu.objects.first()
         self.assertEqual(art_v.moyen_paiement.categorie, MoyenPaiement.CASH)
-        self.assertEqual(art_v.total(), Decimal(-ex_total_asset_euro))
+
+        self.assertEqual(art_v.total(), Decimal(-(ex_total_a_rembourser)))
+        self.check_carte_total(carte=carte, total=0)
 
     def remboursement_et_vidage_direct_api(self):
         fedowAPI = FedowAPI()
@@ -1596,85 +1614,93 @@ class CashlessTest(TiBilletTestCase):
         # On check sur cashless :
         self.check_carte_total(carte, total_avant_recharge + total)
 
-    def check_carte_fedow(self, carte):
-        carte: CarteCashless = carte
-        wallet = carte.wallet
-
-        asset_local = carte.assets.get(monnaie__categorie=MoyenPaiement.LOCAL_EURO)
-        qty_avant_check_fedow = asset_local.qty
-
-        # On check sur Fedow
+    def link_email_with_wallet_on_lespass(self, card=None, email=None):
         fedowAPI = FedowAPI()
-        serialized_card = fedowAPI.NFCcard.retrieve(carte.tag_id)
-        wallet_uuid = serialized_card['wallet']['uuid']
-        self.assertEqual(wallet_uuid, wallet.uuid)
-        tokens = {token['asset_uuid']: token['value'] for token in serialized_card['wallet']['tokens']}
-        # la valeur correspond au Moyen de paiement ?
-        self.assertEqual(tokens[asset_local.monnaie.pk], int(qty_avant_check_fedow * 100))
-        tokens = {token['uuid']: token['value'] for token in serialized_card['wallet']['tokens']}
-        # l'uuid du token est egal à l'asset cashless ?
 
-        self.assertEqual(tokens[asset_local.pk], int(qty_avant_check_fedow * 100))
+        if not card:
+            # Création d'une nouvelle carte et check carte pour récupérer le wallet
+            card = self.create_one_card_db()
+        if not email :
+            email = Faker().email()
 
-        # On check sur cashless :
-        check_carte_data = {
-            "tag_id_client": carte.tag_id,
-        }
-        check_response = self.client.post('/wv/check_carte',
-                                          data=json.dumps(check_carte_data, cls=DjangoJSONEncoder),
-                                          content_type="application/json",
-                                          HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        self.assertEqual(check_response.status_code, 200)
-        check_content = check_response.json()
-        self.assertEqual(check_content.get('tag_id'), f"{carte.tag_id}")
-        assets = {asset['monnaie']: asset['qty'] for asset in check_content.get('assets')}
-        self.assertEqual(dround(assets[f"{asset_local.monnaie.pk}"]), dround(qty_avant_check_fedow))
+        # La carte est sensé être ephemère
+        before_link_serialized_card = fedowAPI.NFCcard.retrieve(card.tag_id)
+        self.assertTrue(before_link_serialized_card['is_wallet_ephemere'])
 
-        # On vérifie depuis la db que les assets correspondent
-        carte.refresh_from_db()
-        assets_from_db = carte.assets.all()
-        for monnaie_uuid, qty in assets.items():
-            asset_db = assets_from_db.get(monnaie__pk=monnaie_uuid)
-            self.assertEqual((asset_db.qty), dround(qty))
+        config = Configuration.get_solo()
+        lespass_link = requests.post(
+            f"{config.billetterie_url}qr/link/",
+            # Renvoie un redirect referer si erreur
+            headers={'referer': 'https://laboutik.tibillet.localhost/test/'},
+            data={
+                'email': email,
+                'cgu': True,
+                'qrcode_uuid': f"{card.uuid_qrcode}"
+            },
+            verify=False,
+        )
+        self.assertEqual(lespass_link.status_code, 200)
 
-        return serialized_card
+        # On vérifie sur Fedow que la card n'est plus ephémère :
+        serialized_card = fedowAPI.NFCcard.retrieve(card.tag_id)
+        self.assertFalse(serialized_card['is_wallet_ephemere'])
+        # Le wallet de la carte a changé après la fusion :
+        self.assertNotEqual(before_link_serialized_card['wallet']['uuid'], serialized_card['wallet']['uuid'])
 
-    def link_email_with_wallet_on_lespass(self):
-        # Création d'une nouvelle carte et check carte pour récupérer le wallet
-        carte = self.create_one_card_db()
-        content_check_carte = self.wv_check_carte_atomic(carte)
-        email = Faker().email()
+        # On test la page my_account de lespass :
+        my_account = requests.get(f"{config.billetterie_url}qr/{card.uuid_qrcode}", verify=False)
+        if my_account.status_code != 200:
+            import ipdb; ipdb.set_trace()
+        self.assertEqual(my_account.status_code, 200)
 
-        # On fait une requete vers lespass (comme si on validait le scan de la carte)
-        return email, carte
+        return email, card
 
-    def checkout_stripe_from_fedow(self, email, carte):
+    def checkout_stripe_from_fedow(self, carte):
         # Lancer stripe :
-        # stripe listen --forward-to http://127.0.0.1:8442/webhook_stripe/
+        # stripe listen --forward-to https://fedow.tibillet.localhost/webhook_stripe/ --skip-verify
         # S'assurer que la clé de signature soit la même que dans le .env
 
-        # Un token de monnaie fédérée n'existe pas encore
+        # Token fédéré n'existe pas encore sur la carte
         self.assertFalse(carte.assets.filter(monnaie__categorie=MoyenPaiement.STRIPE_FED).exists())
 
-        fedowAPI = FedowAPI()
-        checkout_url = fedowAPI.NFCcard.get_checkout(email=email, tag_id=carte.tag_id)
+        session = requests.session()
+        config = Configuration.get_solo()
+        # On se connecte sur lespass avec le scan qrcode qui loggue l'user automatiquement
+        session.get(f"{config.billetterie_url}qr/{carte.uuid_qrcode}", verify=False)
+        # On fait comme si on cliquais sur le bouton "recharger mon portefeuille"
+        get_stripe_checkout = session.get(f"{config.billetterie_url}my_account/refill_wallet", verify=False)
+        # Lespass utilise Hx-redirect :
+        checkout_url = get_stripe_checkout.headers.get('Hx-Redirect')
 
         self.assertIsInstance(checkout_url, str)
         self.assertIn('https://checkout.stripe.com/c/pay/cs_test', checkout_url)
         print('')
         print('Test du paiement. Lancez stripe cli avec :')
-        print('stripe listen --forward-to http://127.0.0.1:8442/webhook_stripe/')
+        print('stripe listen --forward-to https://fedow.tibillet.localhost/webhook_stripe/ --skip-verify')
         print('pour relancer un event : stripe events resend <id>')
         print('')
         print('lancez le paiement avec 42€ et la carte 4242 :')
         print(f"{checkout_url}")
         print('')
         check_stripe = input("Une fois le paiement validé, 'entrée' pour tester le paiement réussi. NO pour passer :\n")
-        serialized_card = self.check_carte_fedow(carte)
+
         if check_stripe != "NO":
+            # Check cart pour refresh from fedow
+            response = self.client.post('/wv/check_carte',
+                                        data=json.dumps({"tag_id_client": carte.tag_id}, cls=DjangoJSONEncoder),
+                                        content_type="application/json",
+                                        HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+            carte.refresh_from_db()
             self.assertTrue(carte.assets.filter(monnaie__categorie=MoyenPaiement.STRIPE_FED).exists())
+            if carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty != Decimal(42):
+                import ipdb; ipdb.set_trace()
             self.assertEqual(carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty, Decimal(42))
-            print("checkout verifié ! bravo :)")
+
+            print("checkout verifié & Paiement non vérifié")
+        else :
+            logger.warning("Paiement non vérifié")
+            print("Paiement non vérifié")
 
     def add_me_to_test_fed(self):
         # En setting TEST, Fedow ajoute automatiquement
@@ -1878,22 +1904,27 @@ class CashlessTest(TiBilletTestCase):
 
         ### STRIPE & LESPASS TEST
 
-        # TODO: Todo prio, plugger les tests avec une requete vers lespass
-        # print("Besoin d'un email pour le checkout stripe : liaison d'un email avec un wallet via lespass")
-        # email, carte = self.link_email_with_wallet_on_lespass()
+        print("Création d'une carte vierge et liaison avec nouvel email")
+        email, carte = self.link_email_with_wallet_on_lespass()
+        print("Carte ephemère et déja chargée, liaison avec nouvel email, vérification que la fusion de wallet est ok")
+        # create and refill card
+        carte = self.refill_card_wallet(amount=6600)
+        email, carte = self.link_email_with_wallet_on_lespass(card=carte)
+        self.check_carte_total(carte,66)
+
         # print("Tester le paiement stripe pour le rechargement, et le remboursement des euro seul ensuite")
-        # self.checkout_stripe_from_fedow(email, carte)
-        # self.remboursement_front_after_stripe_fed(carte)
+        self.checkout_stripe_from_fedow(carte)
+        self.check_carte_total(carte,66+42)
+
+        self.remboursement_front_after_stripe_fed(carte)
 
         # TODO:Tester la carte perdue : elle doit etre bien vide
-        # Tester la fusion d'un wallet existant non vide et d'un wallet ephémère non vide
 
         ### FEDERATION TEST
         # self.add_me_to_test_fed()
 
         # card = self.check_federated_card_from_fedow()
         # self.paiement_cashless_external_token(card)
-
 
         ### BADGE
         # self.badge()

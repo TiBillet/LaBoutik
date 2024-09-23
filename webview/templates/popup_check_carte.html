@@ -37,9 +37,11 @@
                         <span class="popup-row-name">
                         {{ token.name }}
                     </span>
-                        <span class="popup-row-origin" title="{% trans "Provenance" %}">
-                        {{ token.asset.place_origin.name }}
-                    </span>
+                        {% if token.asset.place_origin.name %}
+                            <span class="popup-row-origin" title="{% trans "Provenance" %}">
+                            {{ token.asset.place_origin.name }}
+                            </span>
+                        {% endif %}
                     </p>
                 {% endfor %}
             </div>
