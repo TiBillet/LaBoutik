@@ -993,7 +993,7 @@ class CashlessTest(TiBilletTestCase):
         asset_local_euro = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
         carte_primaire = CarteMaitresse.objects.first().carte
 
-        if not carte :
+        if not carte:
             carte = self.create_one_card_db()
         # Le check carte va créer le wallet du coté de Fedow
         carte_avec_wallet_ephemere = self.check_carte_total(carte, 0)
@@ -1028,8 +1028,8 @@ class CashlessTest(TiBilletTestCase):
         self.assertTrue(serialized_card.get('is_wallet_ephemere'))
 
         # tester que l'asset interne est bien a jour
-        self.assertEqual(Assets.objects.get(carte=carte, monnaie=asset_local_euro).qty, dround(amount/100))
-        self.assertEqual(carte.total_monnaie(), dround(amount/100))
+        self.assertEqual(Assets.objects.get(carte=carte, monnaie=asset_local_euro).qty, dround(amount / 100))
+        self.assertEqual(carte.total_monnaie(), dround(amount / 100))
 
         return carte
 
@@ -1143,7 +1143,7 @@ class CashlessTest(TiBilletTestCase):
         self.check_carte_total(carte=carte, total=ex_total_monnaie)
 
         # On rajoute local euro et local cadeau pour pouvoir les vider ensuite
-        self.ajout_monnaie_bis(carte=carte, qty=5) # 5 cadeau + 5 local
+        self.ajout_monnaie_bis(carte=carte, qty=5)  # 5 cadeau + 5 local
         self.check_carte_total(carte=carte, total=ex_total_monnaie + 10)
 
         ex_total_asset_euro = carte.assets.get(monnaie__categorie=MoyenPaiement.LOCAL_EURO).qty
@@ -1616,11 +1616,10 @@ class CashlessTest(TiBilletTestCase):
 
     def link_email_with_wallet_on_lespass(self, card=None, email=None):
         fedowAPI = FedowAPI()
-
         if not card:
             # Création d'une nouvelle carte et check carte pour récupérer le wallet
             card = self.create_one_card_db()
-        if not email :
+        if not email:
             email = Faker().email()
 
         # La carte est sensé être ephemère
@@ -1650,7 +1649,8 @@ class CashlessTest(TiBilletTestCase):
         # On test la page my_account de lespass :
         my_account = requests.get(f"{config.billetterie_url}qr/{card.uuid_qrcode}", verify=False)
         if my_account.status_code != 200:
-            import ipdb; ipdb.set_trace()
+            import ipdb;
+            ipdb.set_trace()
         self.assertEqual(my_account.status_code, 200)
 
         return email, card
@@ -1694,11 +1694,12 @@ class CashlessTest(TiBilletTestCase):
             carte.refresh_from_db()
             self.assertTrue(carte.assets.filter(monnaie__categorie=MoyenPaiement.STRIPE_FED).exists())
             if carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty != Decimal(42):
-                import ipdb; ipdb.set_trace()
+                import ipdb;
+                ipdb.set_trace()
             self.assertEqual(carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty, Decimal(42))
 
             print("checkout verifié & Paiement non vérifié")
-        else :
+        else:
             logger.warning("Paiement non vérifié")
             print("Paiement non vérifié")
 
@@ -1809,6 +1810,62 @@ class CashlessTest(TiBilletTestCase):
         import ipdb;
         ipdb.set_trace()
 
+    def retour_consigne(self):
+        # Création d'une nouvelle carte et check carte pour récupérer le wallet
+        carte = self.create_one_card_db()
+
+        primary_card = CarteMaitresse.objects.filter(carte__isnull=False, carte__membre__isnull=False).first()
+        responsable: Membre = primary_card.carte.membre
+        pdv = PointDeVente.objects.get(comportement=PointDeVente.CASHLESS)
+
+        article: Articles = Articles.objects.filter(methode_choices=Articles.RETOUR_CONSIGNE)[0]
+        self.assertEqual(article.prix, -1)
+
+        # Retour espèce
+        json_achats = {"articles": [{"pk": f"{article.pk}", "qty": 3}],
+                       "pk_responsable": f"{responsable.pk}",
+                       "pk_pdv": f"{pdv.pk}",
+                       "total": 3,
+                       "moyen_paiement": 'espece',
+                       }
+
+        response_cash = self.client.post('/wv/paiement',
+                                         data=json.dumps(json_achats, cls=DjangoJSONEncoder),
+                                         content_type="application/json",
+                                         HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        self.assertEqual(response_cash.status_code, 200)
+
+        av = ArticleVendu.objects.first()
+        self.assertEqual(av.article, article)
+        self.assertEqual(av.total(), Decimal(-3))
+        self.assertEqual(av.moyen_paiement.categorie, MoyenPaiement.CASH)
+
+        # Retour NFC
+        json_achats = {"articles": [{"pk": f"{article.pk}", "qty": 6}],
+                       "pk_responsable": f"{responsable.pk}",
+                       "pk_pdv": f"{pdv.pk}",
+                       "total": 6,
+                       "tag_id": f"{carte.tag_id}",
+                       "moyen_paiement": 'nfc',
+                       }
+
+        response_nfc = self.client.post('/wv/paiement',
+                                        data=json.dumps(json_achats, cls=DjangoJSONEncoder),
+                                        content_type="application/json",
+                                        HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        self.assertEqual(response_nfc.status_code, 200)
+
+        av = ArticleVendu.objects.first()
+        self.assertEqual(av.article, article)
+        self.assertEqual(av.total(), Decimal(-6))
+        self.assertEqual(av.moyen_paiement.categorie, MoyenPaiement.LOCAL_EURO)
+
+        self.check_carte_total(carte=carte, total=6)
+        carte.refresh_from_db()
+        self.assertEqual(carte.total_monnaie(), Decimal(6))
+
     @tag('fedow')
     def test_fedow(self):
         print("log user test to admin")
@@ -1902,23 +1959,27 @@ class CashlessTest(TiBilletTestCase):
         # test avec des virgules
         self.paiement_cashless_virgule()
 
-        ### STRIPE & LESPASS TEST
+        ### Retour Consigne
+        self.retour_consigne()
 
+        ### STRIPE & LESPASS TEST
         print("Création d'une carte vierge et liaison avec nouvel email")
         email, carte = self.link_email_with_wallet_on_lespass()
         print("Carte ephemère et déja chargée, liaison avec nouvel email, vérification que la fusion de wallet est ok")
         # create and refill card
         carte = self.refill_card_wallet(amount=6600)
         email, carte = self.link_email_with_wallet_on_lespass(card=carte)
-        self.check_carte_total(carte,66)
+        self.check_carte_total(carte, 66)
 
         # print("Tester le paiement stripe pour le rechargement, et le remboursement des euro seul ensuite")
         self.checkout_stripe_from_fedow(carte)
-        self.check_carte_total(carte,66+42)
+        self.check_carte_total(carte, 66 + 42)
 
         self.remboursement_front_after_stripe_fed(carte)
 
         # TODO:Tester la carte perdue : elle doit etre bien vide
+
+
 
         ### FEDERATION TEST
         # self.add_me_to_test_fed()
