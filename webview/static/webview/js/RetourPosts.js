@@ -692,10 +692,31 @@ export function gererRetourPostPaiement(retour, status, options) {
  * @param {Function} callback = fonction de retour pour typeCheckCarte = 'manuel'
  */
 export function gererRetourPostCheckCarte(retour, status, donnees, callback) {
-//   console.log('-> fonction gererRetourPostCheckCarte !')
+  console.log('-> fonction gererRetourPostCheckCarte !')
   // sys.logValeurs({retour: retour, status: status, donnees: donnees})
+  console.log('status =', status);
+  console.log('retour =', typeof(retour));
   if (donnees.typeCheckCarte === 'parLecteurNfc') {
-    document.querySelector('#contenu').insertAdjacentHTML('beforeend', retour)
+    if (status.code === 200) {
+      document.querySelector('#contenu').insertAdjacentHTML('beforeend', retour)
+    } else {
+      let message = `
+      <div class="BF-col">
+        <div class="ft-1r mb16px">${JSON.parse(retour).detail}</div>
+      </div>
+    `
+      let bouton = `
+     <div class="popup-conteneur-bt-retour BF-col">
+      <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="fn.popupAnnuler();"></bouton-basique>
+     </div>
+    `
+      let options = {
+        message: message,
+        boutons: bouton,
+        type: 'attent'
+      }
+      fn.popup(options)
+    }
   }
 
   if (donnees.typeCheckCarte === 'manuel') {
