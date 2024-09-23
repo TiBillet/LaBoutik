@@ -153,6 +153,7 @@ export const fr = {
     postPurchaseCard: 'carte après achats',
     cardsTotal: 'total des cartes',
     totalCardWallet: 'total portefeuille carte',
-    noContribution: 'Aucune cotisation'
+    noContribution: 'Aucune cotisation',
+    allOrders: 'toutes commandes'
   }
 }
