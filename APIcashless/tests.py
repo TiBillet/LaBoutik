@@ -1616,7 +1616,6 @@ class CashlessTest(TiBilletTestCase):
 
     def link_email_with_wallet_on_lespass(self, card=None, email=None):
         fedowAPI = FedowAPI()
-
         if not card:
             # Création d'une nouvelle carte et check carte pour récupérer le wallet
             card = self.create_one_card_db()
@@ -1809,6 +1808,48 @@ class CashlessTest(TiBilletTestCase):
         import ipdb;
         ipdb.set_trace()
 
+    def retour_consigne(self, carte=None):
+        if not carte:
+            # Création d'une nouvelle carte et check carte pour récupérer le wallet
+            carte = self.create_one_card_db()
+
+        primary_card = CarteMaitresse.objects.first()
+        responsable: Membre = primary_card.carte.membre
+        pdv = PointDeVente.objects.get(comportement=PointDeVente.CASHLESS)
+        article: Articles = Articles.objects.get(methode_choices=Articles.RETOUR_CONSIGNE)
+
+        # Retour espèce
+        json_achats = {"articles": [{"pk": f"{article.pk}", "qty": 1}],
+                       "pk_responsable": f"{responsable.pk}",
+                       "pk_pdv": f"{pdv.pk}",
+                       "total": f"{0}",
+                       "moyen_paiement": 'espece',
+                       }
+
+        response = self.client.post('/wv/paiement',
+                                    data=json.dumps(json_achats, cls=DjangoJSONEncoder),
+                                    content_type="application/json",
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        av = ArticleVendu.objects.first()
+        self.assertEqual(av.article, article)
+        self.assertEqual(av.carte, carte)
+
+        # Retour NFC
+        json_achats = {"articles": [{"pk": f"{article.pk}", "qty": 1}],
+                       "pk_responsable": f"{responsable.pk}",
+                       "pk_pdv": f"{pdv.pk}",
+                       "total": f"{0}",
+                       "tag_id": f"{carte.tag_id}",
+                       "moyen_paiement": 'nfc',
+                       }
+
+        response = self.client.post('/wv/paiement',
+                                    data=json.dumps(json_achats, cls=DjangoJSONEncoder),
+                                    content_type="application/json",
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+
     @tag('fedow')
     def test_fedow(self):
         print("log user test to admin")
@@ -1919,6 +1960,9 @@ class CashlessTest(TiBilletTestCase):
         self.remboursement_front_after_stripe_fed(carte)
 
         # TODO:Tester la carte perdue : elle doit etre bien vide
+
+        ### Retour Consigne
+        self.retour_consigne()
 
         ### FEDERATION TEST
         # self.add_me_to_test_fed()

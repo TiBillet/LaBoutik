@@ -1288,13 +1288,13 @@ class Commande:
             self._to_db_cash_cb(article, qty)
 
         # si c'est un paiement par carte NFC :
-        else:
+        elif self.moyen_paiement.categorie == MoyenPaiement.LOCAL_EURO:
             ### FEDOW ###
             wallet = self.carte_db.get_wallet()
             fedowApi = FedowAPI()
             asset_local_euro = MoyenPaiement.get_local_euro()
             serialized_transaction = fedowApi.transaction.refill_wallet(
-                amount=int(total * 100),
+                amount=int(abs(total) * 100),
                 wallet=f"{wallet.uuid}",
                 asset=f"{asset_local_euro.pk}",
                 user_card_firstTagId=f"{self.carte_db.tag_id}",
@@ -1466,9 +1466,10 @@ def paiement(request):
 
             return Response(reponse, status=status.HTTP_200_OK)
 
-        else:
-            logger.error(
-                f"/wv/paiement validator.errors : {validator.errors}")
-            return Response(validator.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
+        logger.error(
+            f"/wv/paiement validator.errors : {validator.errors}")
+        # errors = [validator.errors[error][0] for error in validator.errors]
+        # import ipdb; ipdb.set_trace()
+        return Response(validator.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     return HttpResponseNotFound()

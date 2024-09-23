@@ -151,7 +151,8 @@ class DataAchatDepuisClientValidator(serializers.Serializer):
 
         # On vérifie que les virgules du total soit max 0.00
         if total_sended:
-            if total_sended != total_temp:
+            # valuer absolue pour les retour consigne négatives
+            if abs(total_sended) != abs(total_temp):
                 error_msg = _(
                     f"ERREUR /wv/paiement -> SERIALIZER DataAchatDepuisClientValidator -> validate_articles() -> total_temp : {total_temp} - total_sended : {total_sended} - self.initial_data : {self.initial_data}")
                 logger.error(f"{error_msg}")
