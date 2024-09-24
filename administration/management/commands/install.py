@@ -278,6 +278,14 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
+                d["+50"] = \
+                    Articles.objects.get_or_create(name="+50",
+                                                   prix=520,
+                                                   categorie=CatCashless,
+                                                   methode_choices=Articles.RECHARGE_EUROS,
+                                                   methode=self.methode_articles.get(
+                                                       'ajout_monnaie_virtuelle'))[0]
+
                 # d["+1F"] = \
                 #     Articles.objects.get_or_create(name="+1€ Fed",
                 #                                    prix=1,
@@ -321,6 +329,22 @@ class Command(BaseCommand):
                 d["Cadeau +5"] = \
                     Articles.objects.get_or_create(name=_("Cadeau +5"),
                                                    prix=5,
+                                                   categorie=CatCadeau,
+                                                   methode_choices=Articles.RECHARGE_CADEAU,
+                                                   methode=self.methode_articles.get(
+                                                       'ajout_monnaie_virtuelle_cadeau'))[0]
+
+                d["Cadeau +10"] = \
+                    Articles.objects.get_or_create(name=_("Cadeau +10"),
+                                                   prix=10,
+                                                   categorie=CatCadeau,
+                                                   methode_choices=Articles.RECHARGE_CADEAU,
+                                                   methode=self.methode_articles.get(
+                                                       'ajout_monnaie_virtuelle_cadeau'))[0]
+
+                d["Cadeau +20"] = \
+                    Articles.objects.get_or_create(name=_("Cadeau +20"),
+                                                   prix=20,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
                                                    methode=self.methode_articles.get(
