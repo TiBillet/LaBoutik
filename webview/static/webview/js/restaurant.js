@@ -1960,14 +1960,5 @@ export function afficherTables(mode, nomTable) {
       console.log('status.code =', status.code)
       vue_pv.afficher_message_erreur_requete(retour, status)
     }
-  }, (code) => {
-    // fonction erreur
-    console.log('code =', code)
-    vue_pv.afficher_message_erreur_requete({}, {
-      code: code,
-      texte: `<div data-i8n="errorFunctionShowTables,capitalize">Restaurant, fonction afficherTables :</div>
-      <hr>
-      <div><span data-i8n="serveur,capitalize">Serveur</span> ?, <span data-i8n="network">réseau</span> ?</div>`
-    })
   })
 }

@@ -437,6 +437,7 @@ body {
     height: 100vh;
     background-color: #000000;
     opacity: 0.8;
+    z-index: 999999;
 }
 
 #network-offline p {

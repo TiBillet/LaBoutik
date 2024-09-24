@@ -154,6 +154,7 @@ export const en = {
     totalCardWallet: 'total card wallet',
     noContribution: 'no contribution',
     allOrders: 'all orders',
-    noNetwork : 'Server connection lost.\nPlease check your network.'
+    noNetwork : 'Server connection lost.\nPlease check your network.',
+    anonymousCard: 'Anonymous card'
   }
 }

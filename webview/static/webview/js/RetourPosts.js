@@ -692,10 +692,10 @@ export function gererRetourPostPaiement(retour, status, options) {
  * @param {Function} callback = fonction de retour pour typeCheckCarte = 'manuel'
  */
 export function gererRetourPostCheckCarte(retour, status, donnees, callback) {
-  console.log('-> fonction gererRetourPostCheckCarte !')
+  // console.log('-> fonction gererRetourPostCheckCarte !')
   // sys.logValeurs({retour: retour, status: status, donnees: donnees})
-  console.log('status =', status);
-  console.log('retour =', typeof(retour));
+  // console.log('status =', status);
+  // console.log('retour =', typeof(retour));
   if (donnees.typeCheckCarte === 'parLecteurNfc') {
     if (status.code === 200) {
       document.querySelector('#contenu').insertAdjacentHTML('beforeend', retour)

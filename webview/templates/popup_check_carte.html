@@ -13,11 +13,11 @@
     {% else %}
         <div class="BF-col-uniforme check-carte-ok">
             {% if serializer_from_fedow.is_wallet_ephemere %}
-                <div class="check-carte-ok-total-carte test-return-total-card">
+                <div class="check-carte-ok-total-carte test-return-card-type">
                     <span>{% trans "Carte anonyme" %}</span>
                 </div>
             {% else %}
-                <div class="check-carte-ok-total-carte test-return-total-card">
+                <div class="check-carte-ok-total-carte test-return-card-type">
                     <span>{% trans "Carte fédérée" %}</span>
                 </div>
             {% endif %}
@@ -31,14 +31,14 @@
                           title="total">{{ total_monnaie }}</span>
                 </p>
 
-                {% for token in tokens_cashless %}
+                {% for token in tokens_cashless|dictsort:"name" %}
                     <p class="popup-row">
-                        <span class="popup-row-value">{{ token.value | dec2 }}</span>
-                        <span class="popup-row-name">
+                        <span class="popup-row-value test-return-monnaie-item-value{{ forloop.counter }}">{{ token.value | dec2 }}</span>
+                        <span class="popup-row-name test-return-monnaie-item-name{{ forloop.counter }}">
                         {{ token.name }}
                     </span>
                         {% if token.asset.place_origin.name %}
-                            <span class="popup-row-origin" title="{% trans "Provenance" %}">
+                            <span class="popup-row-origin test-return-monnaie-item-place{{ forloop.counter }}" title="{% trans "Provenance" %}">
                             {{ token.asset.place_origin.name }}
                             </span>
                         {% endif %}
@@ -55,13 +55,13 @@
                         <span>{{ tokens_membership | length }}</span>
                     </span>
                     </p>
-                    {% for token in tokens_membership %}
+                    {% for token in tokens_membership|dictsort:"name" %}
                         <p class="popup-row membership-row">
-                            <span class="popup-row-name">{{ token.name }}</span>
-                            <span class="popup-row-start" title="{% trans "Activation" %}">
+                            <span class="popup-row-name test-return-membership-item-name{{ forloop.counter }}">{{ token.name }}</span>
+                            <span class="popup-row-start test-return-membership-item-activation{{ forloop.counter }}" title="{% trans "Activation" %}">
                         {{ token.start_membership_date | naturalday }}
                     </span>
-                            <span class="popup-row-origin" title="{% trans "Provenance" %}">
+                            <span class="popup-row-origin test-return-membership-item-place{{ forloop.counter }}" title="{% trans "Provenance" %}">
                         {{ token.asset.place_origin.name }}
                     </span>
                         </p>

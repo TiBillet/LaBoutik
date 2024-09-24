@@ -155,6 +155,7 @@ export const fr = {
     totalCardWallet: 'total portefeuille carte',
     noContribution: 'Aucune cotisation',
     allOrders: 'toutes commandes',
-    noNetwork: 'Connexion au serveur perdue.\nVeuillez vérifier votre réseau.'
+    noNetwork: 'Connexion au serveur perdue.\nVeuillez vérifier votre réseau.',
+    anonymousCard: 'Carte anonyme'
   }
 }
