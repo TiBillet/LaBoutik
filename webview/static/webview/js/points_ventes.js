@@ -76,14 +76,8 @@ customElements.define('bouton-commande-article', BoutonCommandeArticle)
 customElements.define('bouton-service-article', BoutonServiceArticle)
 
 // etat de la connexion
-export function afficherEtatConnexion() {
-  if (navigator.onLine) {
-    if (document.querySelector('#network-offline') !== null) {
-      document.querySelector('#network-offline').remove()
-      reloadData()
-    }
-  } else {
-    const content = `<div id="network-offline">
+function showNetworkOff() {
+  const content = `<div id="network-offline">
        <svg xmlns="http://www.w3.org/2000/svg" width="100px" height="100px" style="color:#FF0000;" viewBox="0 0 24 24">
            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
                <path d="M6.528 6.536a6 6 0 0 0 7.942 7.933m2.247-1.76A6 6 0 0 0 8.29 4.284"/>
@@ -92,14 +86,19 @@ export function afficherEtatConnexion() {
        </svg>
        <p data-i8n="noNetwork">Connexion au serveur perdue.\nVeuillez vérifier votre réseau.</p>
    </div>`
-    document.body.insertAdjacentHTML('beforeend', content)
-    translate('#network-offline')
-  }
+  document.body.insertAdjacentHTML('beforeend', content)
+  translate('#network-offline')
+  // 5 secondes
+  setTimeout(() => {
+    if (window.navigator.onLine === false) {
+			document.dispatchEvent(new CustomEvent('netWorkOffLine', {}))
+		} else {
+      document.querySelector('#network-offline').remove()
+      reloadData()
+    }
+  }, 5000)
 }
-
-window.addEventListener('offline', afficherEtatConnexion, false)
-window.addEventListener('online', afficherEtatConnexion, false)
-
+document.addEventListener('netWorkOffLine', showNetworkOff, false)
 
 // les boutons contenant le total des achats
 export var liste_id_totaux = ['bt-valider']
