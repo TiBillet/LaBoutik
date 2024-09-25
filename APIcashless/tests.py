@@ -1866,6 +1866,13 @@ class CashlessTest(TiBilletTestCase):
         carte.refresh_from_db()
         self.assertEqual(carte.total_monnaie(), Decimal(6))
 
+    def refund_user_online(self):
+        email, carte = self.link_email_with_wallet_on_lespass()
+        self.checkout_stripe_from_fedow(carte)
+        self.check_carte_total(carte, 42)
+        import ipdb; ipdb.set_trace()
+
+
     @tag('fedow')
     def test_fedow(self):
         print("log user test to admin")
@@ -1971,7 +1978,7 @@ class CashlessTest(TiBilletTestCase):
         email, carte = self.link_email_with_wallet_on_lespass(card=carte)
         self.check_carte_total(carte, 66)
 
-        # print("Tester le paiement stripe pour le rechargement, et le remboursement des euro seul ensuite")
+        # print("Tester le paiement stripe pour le rechargement, et le remboursement des euros seul ensuite")
         self.checkout_stripe_from_fedow(carte)
         self.check_carte_total(carte, 66 + 42)
 
@@ -1979,6 +1986,9 @@ class CashlessTest(TiBilletTestCase):
 
         # TODO:Tester la carte perdue : elle doit etre bien vide
 
+        #### REFUND USER ONLINE WITH STRIPE
+
+        self.refund_user_online()
 
 
         ### FEDERATION TEST
