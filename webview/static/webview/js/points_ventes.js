@@ -77,6 +77,9 @@ customElements.define('bouton-service-article', BoutonServiceArticle)
 
 // etat de la connexion
 function showNetworkOff() {
+  if (document.querySelector('#network-offline') !== null) {
+    document.querySelector('#network-offline').remove()
+  }
   const content = `<div id="network-offline">
        <svg xmlns="http://www.w3.org/2000/svg" width="100px" height="100px" style="color:#FF0000;" viewBox="0 0 24 24">
            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2">
