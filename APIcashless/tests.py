@@ -1870,7 +1870,7 @@ class CashlessTest(TiBilletTestCase):
         email, carte = self.link_email_with_wallet_on_lespass()
         self.checkout_stripe_from_fedow(carte)
         self.check_carte_total(carte, 42)
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
 
 
     @tag('fedow')
