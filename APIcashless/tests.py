@@ -2060,13 +2060,16 @@ class CashlessTest(TiBilletTestCase):
 
         #### REFUND USER ONLINE WITH STRIPE
         # Génère une nouvelle carte :
-        self.remboursement_online_after_stripe_fed()
+
+        # A activer lorsqu'il y aura le remboursement
+        # self.remboursement_online_after_stripe_fed()
 
         # TODO: moteur de lecture du dashboard
         logger.info("TEST OK. Pensez à vérifier : ")
         logger.info("- Sur le dashboard fedow, le place wallet doit être positif (42)")
         # TODO:Tester la carte perdue : elle doit etre bien vide
 
+        # TODO: tester la carte perdue : si on en associe une autre, vérifier que les token existent toujours
 
         ### FEDERATION TEST
         # self.add_me_to_test_fed()
