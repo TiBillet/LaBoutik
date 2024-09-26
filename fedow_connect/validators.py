@@ -137,12 +137,13 @@ class TokenValidator(serializers.Serializer):
         # On vire les précédents tokens car fedow est fait foi.
         card.assets.all().delete()
         for token in serilized_tokens:
+            # Dans le cas ou un utilisateur possède plusieurs cartes, le token existe déja mais sur une autre carte.
+            # On supprime
             try:
-                token_cashless = Assets.objects.create(
-                    pk=token['uuid'],
-                    monnaie_id=token['asset']['uuid'],
-                    carte=card,
-                )
+                token_cashless, created = Assets.objects.get_or_create(pk=token['uuid'])
+                token_cashless.monnaie_id=token['asset']['uuid'],
+                token_cashless.carte=card
+                token_cashless.save()
             except Exception as e:
                 raise serializers.ValidationError(f"Erreur lors de la mise à jour des assets de la carte : {e}")
 
