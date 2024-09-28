@@ -845,7 +845,6 @@ class CashlessTest(TiBilletTestCase):
         carte.refresh_from_db()
         return carte
 
-
     def paiement_cashless(self):
 
         boisson: Articles = Articles.objects.create(
@@ -1247,7 +1246,6 @@ class CashlessTest(TiBilletTestCase):
 
         self.assertEqual(art_v.total(), Decimal(-(ex_total_a_rembourser)))
         self.check_carte_total(carte=carte, total=0)
-
 
     def remboursement_et_vidage_direct_api(self):
         fedowAPI = FedowAPI()
@@ -1726,6 +1724,8 @@ class CashlessTest(TiBilletTestCase):
         session.close()
 
         # Check stripe checkout link
+        if type(checkout_url) != str:
+            import ipdb; ipdb.set_trace()
         self.assertIsInstance(checkout_url, str)
         self.assertIn('https://checkout.stripe.com/c/pay/cs_test', checkout_url)
         print('')
@@ -1943,8 +1943,9 @@ class CashlessTest(TiBilletTestCase):
         # La carte a été vidée, elle est à zero
         self.check_carte_total(carte, 0)
 
-        # Checker dashboard fedow :
-        import ipdb; ipdb.set_trace()
+        # TODO :Checker dashboard fedow :
+        # import ipdb;
+        # ipdb.set_trace()
         # https://fedow.tibillet.localhost/dashboard/asset/d85124bc-3c98-4928-9612-690cef2d46ba/
 
     @tag('fedow')
@@ -2056,7 +2057,6 @@ class CashlessTest(TiBilletTestCase):
         self.checkout_stripe_from_fedow_thru_lespass(carte)
         self.check_carte_total(carte, 66 + 42)
         self.remboursement_front_after_stripe_fed(carte)
-
 
         #### REFUND USER ONLINE WITH STRIPE
         # Génère une nouvelle carte :
