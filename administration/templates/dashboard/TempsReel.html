@@ -30,14 +30,17 @@
 
 <div style="margin: 1em">
     <div>
-        <a href="/rapport/TicketZToday/" target="_blank">Ticket Z temporaire</a>
+        <a href="/rapport/TicketZToday/" target="_blank">{% trans "Ticket Z temporaire" %}</a>
     </div>
     <div style="margin-top: 0.5em">
-        <a href="/rapport/RapportToday/" target="_blank">Rapport complet temporaire</a>
+        <a href="/rapport/RapportToday/" target="_blank">{% trans "Rapport complet temporaire" %}</a>
     </div>
+    {% for badgeuse in badge_assets %}
         <div style="margin-top: 0.5em">
-        <a href="/rapport/badgeuse/" target="_blank">Rapport badgeuse</a>
-    </div>
+            <a href="{{ fedow_url }}dashboard/asset/{{ badgeuse.pk }}/"
+               target="_blank">{% trans "Rapport badgeuses" %} : {{ badgeuse.name }}</a>
+        </div>
+    {% endfor %}
 </div>
 
 <script type="text/javascript">

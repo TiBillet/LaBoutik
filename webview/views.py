@@ -235,8 +235,7 @@ def index(request):
                 responsable = carte_m.carte.membre
                 if responsable:
                     monnaie_principale_name = Configuration.objects.get().monnaie_principale.name
-                    article_paiement_fractionne = Articles.objects.get(
-                        methode=configuration.methode_paiement_fractionne)
+                    article_paiement_fractionne = Articles.objects.get(methode_choices=Articles.FRACTIONNE)
                     # noinspection PyDictCreation
                     data = {'data': PointDeVenteSerializer(carte_m.points_de_vente.all(), many=True).data,
                             'tables': TableSerializer(Table.objects.filter(archive=False), many=True).data,

@@ -16,7 +16,7 @@ Including another URLconf
 
 from django.urls import path
 from administration.views import TicketZhtml, InvoicePdf, TicketZapi, TicketZpdf, TicketZsimpleFromCloture, \
-    RapportFromCloture, ClotureToPrinter, ClotureToMail, RecalculerCloture, TicketZToday, RapportToday, badgeuse, \
+    RapportFromCloture, ClotureToPrinter, ClotureToMail, RecalculerCloture, TicketZToday, RapportToday, \
     test_new_terminal, test_email_activation, activate
 
 urlpatterns = [
@@ -34,7 +34,7 @@ urlpatterns = [
     path('ClotureToMail/<uuid:pk_uuid>', ClotureToMail.as_view()),
     path('RecalculerCloture/<uuid:pk_uuid>', RecalculerCloture.as_view()),
 
-    path('badgeuse/', badgeuse, name='badgeuse'),
+    # path('badgeuse/<uuid:pk_uuid>/', badgeuse, name='badgeuse'),
 
     path('activate/<str:uid>/<str:token>/', activate, name='activate'),
 
