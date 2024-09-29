@@ -1921,7 +1921,7 @@ class CashlessTest(TiBilletTestCase):
         json_achats = {"articles": [{"pk": f"{article.pk}", "qty": 1}],
                        "pk_responsable": f"{responsable.pk}",
                        "pk_pdv": f"{pdv.pk}",
-                       "total": f"{0}",
+                       "total": 0,
                        "tag_id": f"{carte.tag_id}",
                        "moyen_paiement": 'nfc',
                        }
