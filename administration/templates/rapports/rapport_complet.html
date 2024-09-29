@@ -433,7 +433,6 @@
             <th>{% trans "Recharge médiane" %}</th>
             <th>{% trans "Panier moyen" %}</th>
             <th>{% trans "Reste sur carte (moyenne)" %}</th>
-            <th>{% trans "Nouveaux membres" %}</th>
         </tr>
         </thead>
         <tbody>
@@ -442,7 +441,6 @@
             <td>{{ recharge_mediane | floatformat:2 }}€</td>
             <td>{{ panier_moyen | floatformat:2 }}€</td>
             <td>{{ reste_moyenne }}€</td>
-            <td>{{ nouveaux_membres }}</td>
         </tr>
         </tbody>
     </table>
