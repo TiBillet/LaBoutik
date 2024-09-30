@@ -44,7 +44,13 @@ glob.bt_groupement = {
     groupe: 'groupe5',
     nb_commande_max: nombreMaxSelectionArticle
   },
-  'ViderCarte': { moyens_paiement: '', besoin_tag_id: 'tout', groupe: 'groupe6', nb_commande_max: 1 },
+  'BG': {
+    moyens_paiement: '',
+    besoin_tag_id: 'tout',
+    groupe: 'groupe6',
+    nb_commande_max: nombreMaxSelectionArticle
+  },
+  'ViderCarte': { moyens_paiement: '', besoin_tag_id: 'tout', groupe: 'groupe7', nb_commande_max: 1 },
   'Inconnue': { moyens_paiement: '', besoin_tag_id: '', groupe: 'groupe888', nb_commande_max: 0 },
 }
 // pour vérifier si les méthodes ont été renseignées
