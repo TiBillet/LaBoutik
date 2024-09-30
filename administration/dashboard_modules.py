@@ -44,6 +44,9 @@ class TempsReel(DashboardModule):
 
     def init_with_context(self, context):
         config = Configuration.get_solo()
+
+        # Les Badgeuses :
+
         heure_cloture = config.cloture_de_caisse_auto
         matin = timezone.make_aware(dt.combine(timezone.localdate(), heure_cloture))
         ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
@@ -68,6 +71,10 @@ class TempsReel(DashboardModule):
             except Exception as e:
                 logger.warning(f"DASHBOARD : Erreur lors du calcul de la monnaie disponible. Db toute neuve ? : {e}")
 
+        # Lien vers les bagdeuse sur Fedow
+        self.context['badge_assets'] = MoyenPaiement.objects.filter(
+            categorie__in=[MoyenPaiement.BADGE, MoyenPaiement.EXTERNAL_BADGE])
+        self.context['fedow_url'] = f"https://{config.fedow_domain}/"
 
 class Informations(DashboardModule):
     title = _('Monnaie Disponible')

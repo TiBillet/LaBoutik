@@ -367,41 +367,44 @@ def activate(request, uid, token):
 
 
 ### BADGEUSE VIEW
-
-def badgeuse(request):
-    config = Configuration.get_solo()
-    article_badge = Articles.objects.get(methode_choices=Articles.BADGEUSE)
-
-    # Pour l'instant, un seul type de badgeuse.
-    # Si la badgeuse est connecté à un fedow :
-    # if config.can_fedow():
-    # mp_badgeuse = MoyenPaiement.objects.get(categorie=MoyenPaiement.BADGE)
-    # On redirige vers l'interface Fedow
-    # return HttpResponseRedirect(f'{config.fedow_domain}/asset/{mp_badgeuse.id}')
-
-    # Tout les actions de badgeuse sont des articles vendus avec la methode BADGEUSE
-    ligne_badgeuse = (ArticleVendu.objects.filter(article=article_badge)
-                      .order_by('carte__tag_id', 'date_time'))
-
-    dict_carte_passage = {}
-    for ligne in ligne_badgeuse:
-        if ligne.carte not in dict_carte_passage:
-            dict_carte_passage[ligne.carte] = []
-        dict_carte_passage[ligne.carte].append(ligne.date_time)
-
-    passages = []
-    for carte, horaires in dict_carte_passage.items():
-        horaires_sorted = sorted(horaires)
-        if len(horaires_sorted) % 2 != 0:
-            horaires_sorted.append(None)
-        for couple_de_passage in list(zip(horaires_sorted[::2], horaires_sorted[1::2])):
-            passages.append({carte: couple_de_passage})
-
-    context = {
-        'passages': passages,
-        'config': config,
-    }
-    return render(request, 'badgeuse/badgeuse.html', context=context)
+#### PLU BESOIN, ON ENVOIE DANS FEDOW DIRECT
+# def badgeuse(request, pk_uuid):
+#     config = Configuration.get_solo()
+#     import ipdb; ipdb.set_trace()
+#     config.fedow_domain
+#
+#     article_badge = Articles.objects.get(methode_choices=Articles.BADGEUSE)
+#
+#     # Pour l'instant, un seul type de badgeuse.
+#     # Si la badgeuse est connecté à un fedow :
+#     # if config.can_fedow():
+#     # mp_badgeuse = MoyenPaiement.objects.get(categorie=MoyenPaiement.BADGE)
+#     # On redirige vers l'interface Fedow
+#     # return HttpResponseRedirect(f'{config.fedow_domain}/asset/{mp_badgeuse.id}')
+#
+#     # Tout les actions de badgeuse sont des articles vendus avec la methode BADGEUSE
+#     ligne_badgeuse = (ArticleVendu.objects.filter(article=article_badge)
+#                       .order_by('carte__tag_id', 'date_time'))
+#
+#     dict_carte_passage = {}
+#     for ligne in ligne_badgeuse:
+#         if ligne.carte not in dict_carte_passage:
+#             dict_carte_passage[ligne.carte] = []
+#         dict_carte_passage[ligne.carte].append(ligne.date_time)
+#
+#     passages = []
+#     for carte, horaires in dict_carte_passage.items():
+#         horaires_sorted = sorted(horaires)
+#         if len(horaires_sorted) % 2 != 0:
+#             horaires_sorted.append(None)
+#         for couple_de_passage in list(zip(horaires_sorted[::2], horaires_sorted[1::2])):
+#             passages.append({carte: couple_de_passage})
+#
+#     context = {
+#         'passages': passages,
+#         'config': config,
+#     }
+#     return render(request, 'badgeuse/badgeuse.html', context=context)
 
 
 ### Test templates

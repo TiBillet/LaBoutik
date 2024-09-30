@@ -138,6 +138,12 @@ class TokenValidator(serializers.Serializer):
         card.assets.all().delete()
         for token in serilized_tokens:
             try:
+                # Dans le cas d'une carte perdue :
+                # On supprime au cas ou l'asset existe sur une autre carte
+                ex_token = Assets.objects.filter(pk=token['uuid'])
+                if ex_token.exists():
+                    ex_token.delete()
+
                 token_cashless = Assets.objects.create(
                     pk=token['uuid'],
                     monnaie_id=token['asset']['uuid'],
