@@ -61,14 +61,23 @@ class TriggerMethodeArticleVenduPOSTSAVE:
                     and self.article_vendu.carte:
                 cashback.delay(self.article_vendu.pk)
 
+
     def trigger_BG(self):
         # badgeuse
         logger.info(f"TRIGGER ArticleVendu.methode_choices -> BADGEUSE")
 
-        badgeuse_to_fedow(self.article_vendu.pk)
+        try :
+            logger.info(f"    badgeuse_to_fedow : ")
+            badgeuse_to_fedow(self.article_vendu.pk)
+        except Exception as exc:
+            logger.error(f"trigger_BG badgeuse_to_fedow : {exc}")
 
-        # TODO: Déplacer dans LesPass
-        badgeuse_to_dokos(self.article_vendu.pk)
+        try :
+            # TODO: Déplacer dans Fedow
+            logger.info(f"    badgeuse_to_fedow : badgeuse_to_dokos")
+            badgeuse_to_dokos(self.article_vendu.pk)
+        except Exception as exc:
+            logger.error(f"trigger_BG badgeuse_to_dokos : {exc}")
 
         #
         # task_fedow = badgeuse_to_fedow.delay(self.article_vendu.pk)

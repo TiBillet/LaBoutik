@@ -1936,6 +1936,7 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(av.carte, carte)
         # Le moyen de paiement est l'asset badgeuse
         self.assertEqual(av.moyen_paiement, article.subscription_fedow_asset)
+        import ipdb; ipdb.set_trace()
 
     def badge_fedow(self, carte=None):
         config = Configuration.get_solo()
@@ -2079,8 +2080,6 @@ class CashlessTest(TiBilletTestCase):
         # self.paiement_cashless_external_token(card)
 
         ### BADGE
-        import ipdb;
-        ipdb.set_trace()
         self.badge()
         # On rebadge avec un asset exterieur
         # self.badge_fedow()
