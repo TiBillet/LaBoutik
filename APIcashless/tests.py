@@ -1936,18 +1936,8 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(av.carte, carte)
         # Le moyen de paiement est l'asset badgeuse
         self.assertEqual(av.moyen_paiement, article.subscription_fedow_asset)
-        import ipdb; ipdb.set_trace()
 
-    def badge_fedow(self, carte=None):
-        config = Configuration.get_solo()
-        if not carte:
-            carte = CarteCashless.objects.filter(membre__isnull=False).last()
-
-        primary_card = CarteMaitresse.objects.first()
-        responsable: Membre = primary_card.carte.membre
-        pdv = PointDeVente.objects.get(name="Badgeuse")
-        article: Articles = Articles.objects.get(methode_choices=Articles.BADGEUSE)
-
+        #TODO: tester badge sur dashboard fedow
         import ipdb;
         ipdb.set_trace()
 
