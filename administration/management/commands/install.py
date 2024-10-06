@@ -653,12 +653,20 @@ class Command(BaseCommand):
                          "86DC433C",
                          "8E144CE8"],
                     ]
-                    for i in range(100):
+                    for i in range(20):
                         fake_uuid = str(uuid4()).upper()
                         cards.append(
                             [f"https://billetistan.tibillet.localhost/qr/{fake_uuid}", fake_uuid[:8],
                              str(uuid4())[:8].upper()]
                         )
+
+                    # Vrai cartes de Jonas pour la demo sur https://linterupteur.laboutik.demo.tibillet.org/
+                    cards.append(
+                        ["https://linterupteur.demo.tibillet.org/qr/e9003d20-c806-4991-adf8-6cb44ee5e6d1", "E9003D20",
+                         "3B270240"],
+                        ["https://linterupteur.demo.tibillet.org/qr/36da2bb7-c806-4991-adf8-6cb44ee5e6d1", "36DA2BB7",
+                         "14B9C364"],
+                    )
 
                 cards_db = []
                 for card in cards:
