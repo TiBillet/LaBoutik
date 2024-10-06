@@ -278,7 +278,7 @@ class Command(BaseCommand):
 
                 d["+50"] = \
                     Articles.objects.get_or_create(name="+50",
-                                                   prix=520,
+                                                   prix=50,
                                                    categorie=CatCashless,
                                                    methode_choices=Articles.RECHARGE_EUROS,
                                                    methode=self.methode_articles.get(
@@ -587,7 +587,7 @@ class Command(BaseCommand):
             def pop_membre_articles_cartes_test(self):
                 testMembre, created = Membre.objects.get_or_create(name="TEST")
                 jonas_membre, created = Membre.objects.get_or_create(name="JONAS")
-                robocop_membre, created = Membre.objects.get_or_create(name="ROBOCOP")
+                client_1_membre, created = Membre.objects.get_or_create(name="CLIENT 1")
                 framboise_membre, created = Membre.objects.get_or_create(name="FRAMBOISIÉ")
                 origin = Origin.objects.get_or_create(generation=1)[0]
 
@@ -677,7 +677,7 @@ class Command(BaseCommand):
 
                 cards_db[0].membre = testMembre
                 cards_db[0].save()
-                cards_db[2].membre = robocop_membre
+                cards_db[2].membre = client_1_membre
                 cards_db[2].save()
                 cards_db[3].membre = jonas_membre
                 cards_db[3].save()
@@ -723,23 +723,23 @@ class Command(BaseCommand):
                 carteM5.points_de_vente.add(self.pdv_cashless)
 
                 ### FIN DE CREATION DE CARTES
-
-                if os.environ.get('MAIN_ASSET_NAME') == 'Bilstou':
-                    # On mets des valeurs d'assets au pif pour le cashless2
-                    mp_primary = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
-                    mp_gift = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_GIFT)
-
-                    for card in CarteCashless.objects.all():
-                        asset_primary = Assets.objects.create(
-                            qty=random.randint(0, 100),
-                            carte=card,
-                            monnaie=mp_primary,
-                        )
-                        asset_gift = Assets.objects.create(
-                            qty=random.randint(0, 100),
-                            carte=card,
-                            monnaie=mp_gift,
-                        )
+                #
+                # if os.environ.get('MAIN_ASSET_NAME') == 'Bilstou':
+                #     # On mets des valeurs d'assets au pif pour le cashless2
+                #     mp_primary = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
+                #     mp_gift = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_GIFT)
+                #
+                #     for card in CarteCashless.objects.all():
+                #         asset_primary = Assets.objects.create(
+                #             qty=random.randint(0, 100),
+                #             carte=card,
+                #             monnaie=mp_primary,
+                #         )
+                #         asset_gift = Assets.objects.create(
+                #             qty=random.randint(0, 100),
+                #             carte=card,
+                #             monnaie=mp_gift,
+                #         )
 
             def pop_articles_test(self):
 
