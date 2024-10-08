@@ -1,0 +1,14 @@
+<h1>All orders</h1>
+
+{% for item in data %}
+  {% for cmd in item.commandes %}
+  <div pk="{{ item.pk }}" name="{{item.name}}" uuid-cmd="{{ cmd.uuid }}" manager="{{ cmd.responssable}}" class="BF-col" style="margin:6px">
+    <div>date = {{ cmd.datetime }} / status = {{ cmd.statut }}</div>
+
+    {% for article in cmd.articles %}
+    <p style="margin-bottom: 10px">{{ article }}</p>
+    {% endfor %}
+
+  </div>
+  {% endfor %}
+{% endfor %}
