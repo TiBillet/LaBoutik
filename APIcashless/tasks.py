@@ -247,16 +247,17 @@ class CeleryMailerClass():
     def config_valid(self):
         EMAIL_HOST = os.environ.get('EMAIL_HOST')
         EMAIL_PORT = os.environ.get('EMAIL_PORT')
-        EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
-        EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 
-        self.return_email = EMAIL_HOST_USER
+        # not required if local mail server :
+        # EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+        # EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+
+        # raise error if not DEFAULT nor HOST
+        self.return_email = os.environ.get('DEFAULT_FROM_EMAIL',  os.environ['EMAIL_HOST_USER'] )
 
         if all([
             EMAIL_HOST,
             EMAIL_PORT,
-            EMAIL_HOST_USER,
-            EMAIL_HOST_PASSWORD,
             self.return_email,
             self.title,
             self.email,

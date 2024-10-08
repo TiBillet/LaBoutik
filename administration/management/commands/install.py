@@ -51,7 +51,6 @@ class Command(BaseCommand):
                 if not self.lespass_url.startswith("https://"):
                     raise Exception("Lespass URL must start with https://")
 
-
                 # Les variables du fichier env dans config
                 self.config = self._base_config(options)
 
@@ -114,7 +113,6 @@ class Command(BaseCommand):
 
                 config.save()
                 return config
-
 
             def _assets_fedow(self):
                 mp = {}
@@ -280,7 +278,7 @@ class Command(BaseCommand):
 
                 d["+50"] = \
                     Articles.objects.get_or_create(name="+50",
-                                                   prix=520,
+                                                   prix=50,
                                                    categorie=CatCashless,
                                                    methode_choices=Articles.RECHARGE_EUROS,
                                                    methode=self.methode_articles.get(
@@ -299,8 +297,6 @@ class Command(BaseCommand):
                                                    methode_choices=Articles.RETOUR_CONSIGNE,
                                                    methode=self.methode_articles.get(
                                                        'retour_consigne'))[0]
-
-
 
                 d["Cadeau +0.1"] = \
                     Articles.objects.get_or_create(name=_("Cadeau +0.1"),
@@ -425,9 +421,9 @@ class Command(BaseCommand):
                 )
                 admin.groups.add(staff_group)
                 admin.save()
-                try :
+                try:
                     email_activation(admin.uuid)
-                except :
+                except:
                     logger.error("Email for admin activation FAILED")
                 call_command('check_permissions')
                 return admin
@@ -477,7 +473,7 @@ class Command(BaseCommand):
 
                 # Le serveur LesPass renvoie la clé pour se connecter à Fedow, chiffrée avec une clé Fernet aléatoire
                 # La clé fernet qui déchiffre le json :
-                handshake_lespass_data =handshake_lespass.json()
+                handshake_lespass_data = handshake_lespass.json()
                 cypher_rand_key = handshake_lespass_data['cypher_rand_key']
                 fernet_key = rsa_decrypt_string(utf8_enc_string=cypher_rand_key, private_key=config.get_private_key())
                 cypher_json_key_to_cashless = handshake_lespass_data['cypher_json_key_to_cashless']
@@ -591,7 +587,7 @@ class Command(BaseCommand):
             def pop_membre_articles_cartes_test(self):
                 testMembre, created = Membre.objects.get_or_create(name="TEST")
                 jonas_membre, created = Membre.objects.get_or_create(name="JONAS")
-                robocop_membre, created = Membre.objects.get_or_create(name="ROBOCOP")
+                client_1_membre, created = Membre.objects.get_or_create(name="CLIENT 1")
                 framboise_membre, created = Membre.objects.get_or_create(name="FRAMBOISIÉ")
                 origin = Origin.objects.get_or_create(generation=1)[0]
 
@@ -649,16 +645,21 @@ class Command(BaseCommand):
                          "6172BACA"],
                         ["https://demo.tibillet.localhost/qr/a84133d3-7855-4cb9-ae2c-f54dee027301", "A84133D3",
                          "F3892ACB"],
-                        ["https://billetistan.tibillet.localhost/qr/86dc433c-00ac-479c-93c4-b7a0710246af",
-                         "86DC433C",
+                        ["https://billetistan.tibillet.localhost/qr/86dc433c-00ac-479c-93c4-b7a0710246af", "86DC433C",
                          "8E144CE8"],
+                        # Vrai cartes de Jonas pour la demo sur https://linterupteur.laboutik.demo.tibillet.org/
+                        ["https://linterupteur.demo.tibillet.org/qr/e9003d20-c806-4991-adf8-6cb44ee5e6d1", "E9003D20",
+                         "3B270240"],
+                        ["https://linterupteur.demo.tibillet.org/qr/36da2bb7-c806-4991-adf8-6cb44ee5e6d1", "36DA2BB7",
+                         "14B9C364"],
                     ]
-                    for i in range(100):
+                    for i in range(20):
                         fake_uuid = str(uuid4()).upper()
                         cards.append(
                             [f"https://billetistan.tibillet.localhost/qr/{fake_uuid}", fake_uuid[:8],
                              str(uuid4())[:8].upper()]
                         )
+
 
                 cards_db = []
                 for card in cards:
@@ -676,7 +677,7 @@ class Command(BaseCommand):
 
                 cards_db[0].membre = testMembre
                 cards_db[0].save()
-                cards_db[2].membre = robocop_membre
+                cards_db[2].membre = client_1_membre
                 cards_db[2].save()
                 cards_db[3].membre = jonas_membre
                 cards_db[3].save()
@@ -721,25 +722,24 @@ class Command(BaseCommand):
                 carteM5.points_de_vente.add(Boutique)
                 carteM5.points_de_vente.add(self.pdv_cashless)
 
-
                 ### FIN DE CREATION DE CARTES
-
-                if os.environ.get('MAIN_ASSET_NAME') == 'Bilstou':
-                    # On mets des valeurs d'assets au pif pour le cashless2
-                    mp_primary = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
-                    mp_gift = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_GIFT)
-
-                    for card in CarteCashless.objects.all():
-                        asset_primary = Assets.objects.create(
-                            qty=random.randint(0, 100),
-                            carte=card,
-                            monnaie=mp_primary,
-                        )
-                        asset_gift = Assets.objects.create(
-                            qty=random.randint(0, 100),
-                            carte=card,
-                            monnaie=mp_gift,
-                        )
+                #
+                # if os.environ.get('MAIN_ASSET_NAME') == 'Bilstou':
+                #     # On mets des valeurs d'assets au pif pour le cashless2
+                #     mp_primary = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
+                #     mp_gift = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_GIFT)
+                #
+                #     for card in CarteCashless.objects.all():
+                #         asset_primary = Assets.objects.create(
+                #             qty=random.randint(0, 100),
+                #             carte=card,
+                #             monnaie=mp_primary,
+                #         )
+                #         asset_gift = Assets.objects.create(
+                #             qty=random.randint(0, 100),
+                #             carte=card,
+                #             monnaie=mp_gift,
+                #         )
 
             def pop_articles_test(self):
 
@@ -836,8 +836,8 @@ class Command(BaseCommand):
                 ## LE PDV TEST POUR NICO
                 test = PointDeVente.objects.get(name="Test")
                 test.articles.add(Articles.objects.get_or_create(name="Retour Consigne bis",
-                                                   prix=-1,
-                                                   methode_choices=Articles.RETOUR_CONSIGNE)[0])
+                                                                 prix=-1,
+                                                                 methode_choices=Articles.RETOUR_CONSIGNE)[0])
 
                 test.articles.add(Articles.objects.get_or_create(name="Retour Consigne Rebis",
                                                                  prix=-1,
@@ -915,7 +915,6 @@ class Command(BaseCommand):
                     return True
                 return False
 
-
             def add_membership_and_badge_articles(self):
                 # On est dans un environnement de test/dev/debug,
                 # on rajoute ces articles dans un point de vente et dans toutes les cartes primaires.
@@ -932,8 +931,6 @@ class Command(BaseCommand):
                     pdv_adh.articles.add(price)
                 for carte in CarteMaitresse.objects.all():
                     carte.points_de_vente.add(pdv_adh)
-
-
 
         ### RUNER ###
         if PointDeVente.objects.count() > 0:
