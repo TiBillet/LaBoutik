@@ -372,6 +372,22 @@ def reprint(request):
 
 @login_required
 @api_view(['POST', 'GET'])
+def allOrders(request, *args, **kwargs):
+    start = timezone.now()
+    if request.method == 'GET':
+        table = kwargs.get('table')
+        commandes_classee_par_groupe = GroupCategorieSerializer(GroupementCategorie.objects.all(), many=True, table=kwargs.get('table'))
+
+        data_cmd = commandes_classee_par_groupe.data
+        logger.info(f"{timezone.now()} {timezone.now() - start} /wv/allOrders")
+        print(f'data_cmd = ${data_cmd}')
+        contexte = { 'data': data_cmd }
+
+        return render(request, 'allOrders.html', contexte)
+
+
+@login_required
+@api_view(['POST', 'GET'])
 def preparation(request, *args, **kwargs):
     start = timezone.now()
     if request.method == 'GET':
