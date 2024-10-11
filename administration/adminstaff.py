@@ -186,7 +186,6 @@ class PointOfSaleAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display = (
         'poid_liste',
         'name',
-        'afficher_les_prix',
         'accepte_especes',
         'accepte_carte_bancaire',
         'accepte_cheque',
@@ -197,8 +196,7 @@ class PointOfSaleAdmin(SortableAdminMixin, admin.ModelAdmin):
     list_display_links = ('name',)
     list_filter = ('name',)
 
-    list_editable = ('afficher_les_prix',
-                     'accepte_especes',
+    list_editable = ('accepte_especes',
                      'accepte_carte_bancaire',
                      'accepte_cheque',
                      'service_direct',
