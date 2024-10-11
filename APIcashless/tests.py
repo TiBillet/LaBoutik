@@ -2050,9 +2050,6 @@ class CashlessTest(TiBilletTestCase):
         # Le moyen de paiement est l'asset badgeuse
         self.assertEqual(av.moyen_paiement, article.subscription_fedow_asset)
 
-        #TODO: tester badge sur dashboard fedow
-        import ipdb;
-        ipdb.set_trace()
 
     @tag('fedow')
     def test_fedow(self):
@@ -2191,8 +2188,9 @@ class CashlessTest(TiBilletTestCase):
 
         ### BADGE
         self.badge()
+        #TODO: tester badge sur dashboard fedow
+
         # On rebadge avec un asset exterieur
-        # self.badge_fedow()
         # tester refund et void -> toujours membership et badge
 
     def x_test_fidelity(self):
