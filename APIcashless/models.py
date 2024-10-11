@@ -326,9 +326,11 @@ class PointDeVente(models.Model):
     )
 
     afficher_les_prix = models.BooleanField(default=True)
-    accepte_commandes = models.BooleanField(default=True)
     accepte_especes = models.BooleanField(default=True)
     accepte_carte_bancaire = models.BooleanField(default=True)
+    accepte_cheque = models.BooleanField(default=False)
+
+    accepte_commandes = models.BooleanField(default=True)
     service_direct = models.BooleanField(default=True, verbose_name=_("Service direct ( vente au comptoir )"))
 
     VENTE, CASHLESS = 'A', 'C'
@@ -355,16 +357,18 @@ class PointDeVente(models.Model):
 
 
 @receiver(post_save, sender=PointDeVente)
-def poids_PointDeVente_trigger(sender, instance: PointDeVente, created, **kwargs):
+def pointDeVente_postsave(sender, instance: PointDeVente, created, **kwargs):
     if created:
         if instance.poid_liste == 0:
             instance.poid_liste = PointDeVente.objects.all().count() + 1
             instance.save()
 
-        # Les cashless toujours à la fin
-        for pdv in PointDeVente.objects.filter(comportement=PointDeVente.CASHLESS):
-            pdv.poid_liste = 2000
-            pdv.save()
+    # Les cashless toujours à la fin
+    PointDeVente.objects.filter(comportement=PointDeVente.CASHLESS).update(poid_liste=2000)
+
+    # Fabrication du moyen de paiement cheque s'il n'exsite pas
+    if instance.accepte_cheque:
+        MoyenPaiement.objects.get_or_create(name=_("Chèque"), blockchain=False, categorie=MoyenPaiement.CHEQUE)
 
 
 # Utilisé par le front pour connaitre le comportement de l'article

@@ -215,6 +215,7 @@ class PointDeVenteSerializer(serializers.ModelSerializer):
             'afficher_les_prix',
             'accepte_especes',
             'accepte_carte_bancaire',
+            'accepte_cheque',
             'accepte_commandes',
             'service_direct',
             'articles',

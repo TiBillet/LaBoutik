@@ -381,6 +381,59 @@ class CashlessTest(TiBilletTestCase):
 
         return user_terminal
 
+    def paiement_cheque(self):
+        pdv = PointDeVente.objects.get(name="Boutique")
+        responsable = pdv.cartes_maitresses.first().carte.membre
+
+        # Vérification de la création du moyen de paiement chequier
+        # D'abord, il n'existe pas :
+        self.assertFalse(pdv.accepte_cheque)
+        self.assertFalse(MoyenPaiement.objects.filter(categorie=MoyenPaiement.CHEQUE).exists())
+        # On active le cheque dans le point de vente, le post_save doit le créer
+        pdv.accepte_cheque = True
+        pdv.save()
+        self.assertTrue(MoyenPaiement.objects.filter(categorie=MoyenPaiement.CHEQUE).exists())
+
+        import ipdb; ipdb.set_trace()
+
+        boisson: Articles = Articles.objects.get_or_create(
+            name="art_pour_cheque",
+            prix=10,
+            prix_achat="1",
+            methode_choices=Articles.VENTE,
+        )[0]
+
+        qty = 5
+        total: Decimal = dround((boisson.prix * qty))
+        json_achats = {"articles": [{"pk": f"{boisson.pk}", "qty": qty}],
+                       "pk_responsable": f"{responsable.pk}",
+                       "pk_pdv": f"{pdv.pk}",
+                       "total": total,
+                       "moyen_paiement": 'CH',
+                       }
+
+        response = self.client.post('/wv/paiement',
+                                    data=json.dumps(json_achats, cls=DjangoJSONEncoder),
+                                    content_type="application/json",
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest',
+                                    )
+
+        import ipdb; ipdb.set_trace()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json().get('route'), f"transaction_chèque")
+        self.assertEqual(response.json().get('somme_totale'), f"{total}")
+        art_v: ArticleVendu = ArticleVendu.objects.first()
+        self.assertEqual(art_v.article, boisson)
+        self.assertEqual(art_v.qty, qty)
+        self.assertEqual(art_v.total(), total)
+        self.assertEqual(art_v.responsable, responsable)
+        self.assertEqual(art_v.pos, pdv)
+        self.assertEqual(art_v.moyen_paiement.categorie, MoyenPaiement.CHEQUE)
+        self.assertIsNone(art_v.carte)
+
+    def recharge_check(self):
+
     def paiement_espece_carte_bancaire(self):
         # point de vente créé par install --tdd
         pdv = PointDeVente.objects.get(name="Boutique")
@@ -1037,7 +1090,7 @@ class CashlessTest(TiBilletTestCase):
 
         return serialized_card
 
-    def refill_card_wallet(self, carte=None, amount=4242):
+    def refill_card_wallet_API(self, carte=None, amount=4242):
         fedowAPI = FedowAPI()
         asset_local_euro = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
         carte_primaire = CarteMaitresse.objects.first().carte
@@ -1587,7 +1640,7 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(total_in_place + total_in_wallet_not_place, total_token_value)
         self.assertEqual(total_gift, total_in_wallet_not_place)
 
-    def ajout_monnaie_locale_post_fedow(self):
+    def refill_card_wallet_CLIENT(self):
         recharge_local_euro_10: Articles = Articles.objects.get(
             name="+10",
             methode_choices=Articles.RECHARGE_EUROS,
@@ -1980,6 +2033,9 @@ class CashlessTest(TiBilletTestCase):
         print('recharge de carte puis remboursement via le front')
         self.remboursement_front()
 
+        print('test cheque')
+        self.paiement_cheque()
+
         # END EX TEST TIBILLET SANS FEDOW
 
         print('handshake avec serveur fedow')
@@ -2005,7 +2061,8 @@ class CashlessTest(TiBilletTestCase):
         self.serialized_card = self.fedow_wallet_with_tagid()
 
         print("Recharge d'une carte vierge (wallet ephemere)")
-        self.refill_card_wallet()
+        self.refill_card_wallet_API()
+
 
         print("Recharge d'un wallet user sans carte = Erreur !")
         self.refill_user_wallet_without_card_test_error()
@@ -2026,7 +2083,7 @@ class CashlessTest(TiBilletTestCase):
         self.remboursement_front()
 
         # On ajoute des token locaux avec la webview
-        self.ajout_monnaie_locale_post_fedow()
+        self.refill_card_wallet_CLIENT()
 
         print("On check que la db fedow et la db cashless corresponde toujours")
         self.check_all_tokens_value()
@@ -2042,7 +2099,7 @@ class CashlessTest(TiBilletTestCase):
         email, carte = self.link_email_with_wallet_on_lespass()
         print("Carte ephemère et déja chargée, liaison avec nouvel email, vérification que la fusion de wallet est ok")
         # create and refill card
-        carte = self.refill_card_wallet(amount=6600)
+        carte = self.refill_card_wallet_API(amount=6600)
         email, carte = self.link_email_with_wallet_on_lespass(card=carte)
         self.check_carte_total(carte, 66)
 
