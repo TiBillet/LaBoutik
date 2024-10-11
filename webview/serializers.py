@@ -352,8 +352,6 @@ class TableSerializerWithCommand(serializers.ModelSerializer):
 class GroupCategorieSerializer(serializers.ModelSerializer):
 
     def __init__(self, *args, **kwargs):
-        start = timezone.now()
-
         table_pk = kwargs.get('table')
         kwargs.pop('table', None)
         super().__init__(*args, **kwargs)
@@ -387,12 +385,10 @@ class GroupCategorieSerializer(serializers.ModelSerializer):
             #     .exclude(Q(datetime__lte=debut_journee) & Q(statut=CommandeSauvegarde.ANNULEE)) \
             #     .distinct()
 
-        logger.info(f"{timezone.now()} {timezone.now() - start} __init__ GroupCategorieSerializer")
 
     commandes = serializers.SerializerMethodField('get_items')
 
     def get_items(self, instance: Categorie):
-        start = timezone.now()
         categorie = instance
 
         # on filtre par catégorie, mais si une commande à des articles venant de plusieurs groupements de catégories
@@ -402,7 +398,6 @@ class GroupCategorieSerializer(serializers.ModelSerializer):
         logger.info(f"len(commandes) : {len(commandes)}")
         serializer = CommandeSerializer(instance=commandes, many=True)
         data_cmd = serializer.data
-        logger.info(f"{timezone.now()} {timezone.now() - start} get_items {categorie} GroupCategorieSerializer")
         return data_cmd
 
     def to_representation(self, instance):

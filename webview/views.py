@@ -27,7 +27,8 @@ from epsonprinter.tasks import print_command_epson_tm20, ticketZ_tasks_printer
 from fedow_connect.fedow_api import FedowAPI
 from tibiauth.models import TibiUser
 from webview.serializers import CarteCashlessSerializer, PointDeVenteSerializer, \
-    TableSerializerWithCommand, GroupCategorieSerializer, TableSerializer, ConfigurationSerializer
+    TableSerializerWithCommand, GroupCategorieSerializer, TableSerializer, ConfigurationSerializer, CommandeSerializer, \
+    debut_fin_journee
 from webview.validators import DataAchatDepuisClientValidator, PreparationValidator, LoginHardwareValidator, \
     NewPeriphPinValidator
 
@@ -371,32 +372,32 @@ def reprint(request):
 
 
 @login_required
-@api_view(['POST', 'GET'])
+@api_view(['GET'])
 def allOrders(request, *args, **kwargs):
-    start = timezone.now()
     if request.method == 'GET':
-        table = kwargs.get('table')
-        commandes_classee_par_groupe = GroupCategorieSerializer(GroupementCategorie.objects.all(), many=True, table=kwargs.get('table'))
+        debut_journee, fin_journee = debut_fin_journee()
 
-        data_cmd = commandes_classee_par_groupe.data
-        logger.info(f"{timezone.now()} {timezone.now() - start} /wv/allOrders")
-        print(f'data_cmd = ${data_cmd}')
-        contexte = { 'data': data_cmd }
+        commands_today = CommandeSauvegarde.objects.filter(
+            archive=False,
+            datetime__gte=debut_journee
+        ).distinct()
 
-        return render(request, 'allOrders.html', contexte)
+        all_order = CommandeSerializer(instance=commands_today, many=True)
+        logger.info(f'all_order. = {all_order.data}')
+
+        return Response(all_order.data)
 
 
 @login_required
 @api_view(['POST', 'GET'])
 def preparation(request, *args, **kwargs):
-    start = timezone.now()
     if request.method == 'GET':
         table = kwargs.get('table')
         commandes_classee_par_groupe = GroupCategorieSerializer(GroupementCategorie.objects.all(), many=True,
                                                                 table=kwargs.get('table'))
 
         data_cmd = commandes_classee_par_groupe.data
-        logger.info(f"{timezone.now()} {timezone.now() - start} /wv/preparation GET table:{table}")
+        # logger.info(f"{timezone.now()} {timezone.now() - start} /wv/preparation GET table:{table}")
         return Response(data_cmd)
 
     if request.method == 'POST':
@@ -499,7 +500,7 @@ def preparation(request, *args, **kwargs):
             commandes_classee_par_groupe = GroupCategorieSerializer(GroupementCategorie.objects.all(), many=True)
             data_cmd = commandes_classee_par_groupe.data
 
-            logger.info(f"{timezone.now()} {timezone.now() - start} /wv/preparation POST")
+            # logger.info(f"{timezone.now()} {timezone.now() - start} /wv/preparation POST")
             # data_cmd.append(dict_message)
             return Response(data_cmd, status=status.HTTP_200_OK)
 
@@ -647,10 +648,12 @@ class Commande:
         # On récupère le wallet sérialisé par le validateur
         wallet = self.carte_db.get_wallet()
         serialized_wallet = self.data['wallets'][wallet.uuid]
-        token_primaire_list = [token for token in serialized_wallet['tokens'] if token['asset']['is_stripe_primary'] ]
-        if len(token_primaire_list)> 1:
-            logger.error(f"Il ne peut y avoir qu'un seul token primaire. Contactez un administrateur FEDOW - {serialized_wallet}")
-            raise Exception(f"Il ne peut y avoir qu'un seul token primaire. Contactez un administrateur FEDOW - {serialized_wallet}")
+        token_primaire_list = [token for token in serialized_wallet['tokens'] if token['asset']['is_stripe_primary']]
+        if len(token_primaire_list) > 1:
+            logger.error(
+                f"Il ne peut y avoir qu'un seul token primaire. Contactez un administrateur FEDOW - {serialized_wallet}")
+            raise Exception(
+                f"Il ne peut y avoir qu'un seul token primaire. Contactez un administrateur FEDOW - {serialized_wallet}")
         qty_token_primaire = None
         for token in token_primaire_list:
             return token
@@ -1358,7 +1361,7 @@ class Commande:
             primary_card_fisrtTagId=self.primary_card_fisrtTagId,
         )
 
-        if ex_qty_token_primaire and asset_primaire :
+        if ex_qty_token_primaire and asset_primaire:
             ArticleVendu.objects.create(
                 article=article,
                 prix=ex_qty_token_primaire,
@@ -1380,7 +1383,7 @@ class Commande:
         a_rembourser = abs(ex_qty_token_local + ex_qty_token_primaire)
         ArticleVendu.objects.create(
             article=article,
-            prix=-a_rembourser, # en négatif car ce sont des remboursement en espèce
+            prix=-a_rembourser,  # en négatif car ce sont des remboursement en espèce
             qty=1,
             pos=self.point_de_vente,
             carte=self.carte_db,
@@ -1404,7 +1407,6 @@ class Commande:
             # Si l'asset fed stripe existe, on le vide
             if asset.monnaie.categorie == MoyenPaiement.STRIPE_FED:
                 asset.qty = 0
-
 
         self.reponse['route'] = "transaction_vider_carte"
 
