@@ -217,8 +217,11 @@ class Membre(models.Model):
 
     def numero_carte(self):
         # Comprehension list :
-        num_carte = " ".join([f"{cart.number}" for cart in self.CarteCashless_Membre.all()])
+        num_carte = ", ".join([f"{cart.number}" for cart in self.CarteCashless_Membre.all()])
         return num_carte
+
+    numero_carte.short_description = "Cartes liées"
+
 
     def a_jour_cotisation(self):
 
