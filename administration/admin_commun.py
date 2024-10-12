@@ -90,28 +90,33 @@ class CarteMaitresseAdmin(admin.ModelAdmin):
         form.base_fields['points_de_vente'].widget.can_add_related = False
         form.base_fields['carte'].widget.can_add_related = False
         form.base_fields['carte'].widget.can_change_related = False
+
+        # On affiche dans la liste de selection de carte uniquement les cartes lié à un membre
+        if form.base_fields.get('carte'):
+            form.base_fields['carte'].queryset = form.base_fields['carte'].queryset.filter(membre__isnull=False)
+
         return form
 
-    def save_model(self, request, instance, form, change):
-        if instance.carte:
-            # informe the card is primary to Fedow
-            set_primary_card.delay(instance.carte.pk)
-
-        if instance.carte.membre:
-            messages.add_message(
-                request,
-                messages.SUCCESS,
-                _("Carte Primaire OK")
-            )
-
-
-        else:
-            messages.add_message(
-                request,
-                messages.ERROR,
-                _(f"Attention : cette carte n'a pas de membre associé.")
-            )
-        super().save_model(request, instance, form, change)
+    # def save_model(self, request, instance, form, change):
+    #     # if instance.carte:
+    #         # informe the card is primary to Fedow
+    #         # set_primary_card.delay(instance.carte.pk)
+    #
+    #     if instance.carte.membre:
+    #         messages.add_message(
+    #             request,
+    #             messages.SUCCESS,
+    #             _("Carte Primaire OK")
+    #         )
+    #
+    #
+    #     else:
+    #         messages.add_message(
+    #             request,
+    #             messages.ERROR,
+    #             _(f"Attention : cette carte n'a pas de membre associé.")
+    #         )
+    #     super().save_model(request, instance, form, change)
 
 
 def email_minuscule(modeladmin, request, queryset):

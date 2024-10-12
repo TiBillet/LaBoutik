@@ -250,10 +250,22 @@ class NFCCard():
             logger.error(e)
             raise Exception(f"request_badgeuse : {e}")
 
-    def set_primary(self, card):
-        data = {'first_tag_id': card.tag_id}
+    def set_primary(self, card, delete=False):
+        data = {
+            'first_tag_id': card.tag_id,
+            'delete': delete,
+        }
         request_create_cards_list = _post(self.config, 'card/set_primary', data)
-        return request_create_cards_list.status_code
+        if request_create_cards_list.status_code == 200:
+            logger.info("primary card created")
+        elif request_create_cards_list.status_code == 208:
+            logger.info("primary card already created")
+        elif request_create_cards_list.status_code == 205:
+            logger.info("primary card removed")
+        else :
+            raise Exception(f"set_primary error : {request_create_cards_list.status_code} - {request_create_cards_list}")
+
+        return request_create_cards_list
 
     def create(self, cards: list):
         print("batch create NFCCards")

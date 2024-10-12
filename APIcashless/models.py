@@ -1102,6 +1102,7 @@ class CarteMaitresse(models.Model):
 
     carte = models.ForeignKey(CarteCashless,
                               related_name='cartes_maitresses',
+                              help_text=_("Seul les cartes avec membres sont listées ici."),
                               on_delete=models.CASCADE,
                               unique=True)
 

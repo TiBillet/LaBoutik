@@ -258,8 +258,8 @@ class PosInline(admin.TabularInline):
 
 class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
     form = CustomArticleRequiredForm
-    categorie = forms.ModelChoiceField(queryset=Categorie.objects.exclude(cashless=True))
     inlines = [PosInline]
+
 
     list_display = (
         'poid_liste',
