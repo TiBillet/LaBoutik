@@ -136,14 +136,13 @@ def send_existing_members():
 """
 
 @app.task
-def set_primary_card(card_pk):
+def set_primary_card(card_pk, delete=False):
     cache.clear()
     config = Configuration.get_solo()
     if config.can_fedow():
         carte = CarteCashless.objects.get(pk=card_pk)
         fedowAPI = FedowAPI()
-        response = fedowAPI.NFCcard.set_primary(carte)
-        # TODO: A TESTER
+        response = fedowAPI.NFCcard.set_primary(carte, delete=delete)
         logger.info(f"set_primary_card ->{carte.membre} {carte.number} : {response}")
 
 

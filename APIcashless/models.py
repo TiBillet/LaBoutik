@@ -217,8 +217,11 @@ class Membre(models.Model):
 
     def numero_carte(self):
         # Comprehension list :
-        num_carte = " ".join([f"{cart.number}" for cart in self.CarteCashless_Membre.all()])
+        num_carte = ", ".join([f"{cart.number}" for cart in self.CarteCashless_Membre.all()])
         return num_carte
+
+    numero_carte.short_description = "Cartes liées"
+
 
     def a_jour_cotisation(self):
 
@@ -1103,6 +1106,7 @@ class CarteMaitresse(models.Model):
 
     carte = models.ForeignKey(CarteCashless,
                               related_name='cartes_maitresses',
+                              help_text=_("Seul les cartes avec membres sont listées ici."),
                               on_delete=models.CASCADE,
                               unique=True)
 
