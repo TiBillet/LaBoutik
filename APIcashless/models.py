@@ -981,6 +981,7 @@ class CarteCashless(models.Model):
             # au cas ou des complementaires trainent
             MoyenPaiement.CASH,
             MoyenPaiement.CREDIT_CARD_NOFED,
+            MoyenPaiement.CHEQUE,
         ])
 
     def total_monnaie(self, assets=None):

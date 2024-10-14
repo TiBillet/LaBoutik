@@ -948,7 +948,7 @@ class CashlessTest(TiBilletTestCase):
         carte.refresh_from_db()
         return carte
 
-    def paiement_cashless(self):
+    def paiement_cashless_euro_local(self):
 
         boisson: Articles = Articles.objects.create(
             name="Boisson_Test",
@@ -978,8 +978,8 @@ class CashlessTest(TiBilletTestCase):
         self.assertTrue(carte.assets.filter(monnaie__categorie=MoyenPaiement.LOCAL_EURO).exists())
         self.assertTrue(carte.assets.get(monnaie__categorie=MoyenPaiement.LOCAL_EURO).qty > 0)
         token_avant_paiement = carte.assets.get(monnaie__categorie=MoyenPaiement.LOCAL_EURO).qty
-        # Paiement en cashless :
 
+        # Paiement en cashless :
         qty = 1
         total: Decimal = dround((boisson.prix * qty))
         self.assertIsInstance(total, Decimal)
@@ -1015,6 +1015,65 @@ class CashlessTest(TiBilletTestCase):
         # Le paiement a bien été effectué en DB
         self.assertEqual(carte.assets.get(monnaie__categorie=MoyenPaiement.LOCAL_EURO).qty,
                          dround(token_avant_paiement - total))
+
+        return carte
+
+
+    def paiement_cashless(self, carte, qty):
+
+        boisson: Articles = Articles.objects.get_or_create(
+            name="Article 1 euro",
+            prix=1,
+            prix_achat="1",
+            methode_choices=Articles.VENTE,
+        )[0]
+
+        primary_card = CarteMaitresse.objects.filter(
+            carte__membre__isnull=False).first()
+        self.assertIsInstance(primary_card, CarteMaitresse)
+        self.assertIsInstance(primary_card.carte, CarteCashless)
+        responsable: Membre = primary_card.carte.membre
+        self.assertIsInstance(responsable, Membre)
+
+        pdv = PointDeVente.objects.get(name="Boutique")
+        self.assertIsInstance(pdv, PointDeVente)
+
+        token_avant_paiement = carte.total_monnaie()
+
+        # Paiement en cashless :
+        total: Decimal = dround((boisson.prix * qty))
+        self.assertIsInstance(total, Decimal)
+        json_achats = {"articles": [{"pk": f"{boisson.pk}", "qty": qty}],
+                       "pk_responsable": f"{responsable.pk}",
+                       "pk_pdv": f"{pdv.pk}",
+                       "total": total,
+                       "tag_id": carte.tag_id,
+                       "moyen_paiement": 'nfc',
+                       }
+
+        response = self.client.post('/wv/paiement',
+                                    data=json.dumps(json_achats, cls=DjangoJSONEncoder),
+                                    content_type="application/json",
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json().get('route'), f"transaction_nfc")
+        self.assertEqual(response.json().get('somme_totale'), f"{total}")
+        art_v: ArticleVendu = ArticleVendu.objects.first()
+        self.assertEqual(art_v.article, boisson)
+
+        # Ne passe pas en cas d'un paiement avec deux token différents. La qty dépend du moyen de paiement
+        # self.assertEqual(art_v.qty, qty)
+        # self.assertEqual(art_v.total(), total)
+
+        self.assertEqual(art_v.responsable, responsable)
+        self.assertEqual(art_v.pos, pdv)
+        self.assertIsNotNone(art_v.carte)
+        self.assertEqual(art_v.carte, carte)
+
+        # Le paiement a bien été effectué en DB ?
+        carte.refresh_from_db()
+        self.assertEqual(carte.total_monnaie(), dround(token_avant_paiement - total))
 
         return carte
 
@@ -1300,8 +1359,8 @@ class CashlessTest(TiBilletTestCase):
 
     def remboursement_front_after_stripe_fed(self, carte):
         ex_total_monnaie = carte.total_monnaie()
-
-        self.assertTrue(ex_total_monnaie >= 42)
+        import ipdb; ipdb.set_trace()
+        self.assertTrue(ex_total_monnaie >= 30)
         self.check_carte_total(carte=carte, total=ex_total_monnaie)
 
         # On rajoute local euro et local cadeau pour pouvoir les vider ensuite
@@ -1311,7 +1370,7 @@ class CashlessTest(TiBilletTestCase):
         ex_total_asset_euro = carte.assets.get(monnaie__categorie=MoyenPaiement.LOCAL_EURO).qty
         self.assertTrue(ex_total_asset_euro >= 5)
         ex_total_asset_fed = carte.assets.get(monnaie__categorie=MoyenPaiement.STRIPE_FED).qty
-        self.assertTrue(ex_total_asset_fed == 42)
+        self.assertTrue(ex_total_asset_fed == 30)
         ex_total_a_rembourser = ex_total_asset_euro + ex_total_asset_fed
 
         #### PREPARATION DE LA REQUETE
@@ -2082,7 +2141,7 @@ class CashlessTest(TiBilletTestCase):
         self.check_carte_error()
 
         print("achat cashless avec carte NFC")
-        self.paiement_cashless()
+        self.paiement_cashless_euro_local()
 
         print("Test paiement complémentaire avec deux cartes")
         self.paiement_complementaire_transactions()
@@ -2167,6 +2226,11 @@ class CashlessTest(TiBilletTestCase):
         print("Tester le paiement stripe pour le rechargement, et le remboursement sur place.")
         self.checkout_stripe_from_fedow_thru_lespass(carte)
         self.check_carte_total(carte, 66 + 42)
+
+        print("achat cashless avec carte NFC. On vide le token local et on vend a 10€ sur l'asset fédéré")
+        self.paiement_cashless(carte=carte, qty=(66 + 12))
+
+        #TODO: tester une dépense avec asset fédéré
         self.remboursement_front_after_stripe_fed(carte)
 
         #### STRIPE REFUND
@@ -2189,6 +2253,7 @@ class CashlessTest(TiBilletTestCase):
         ### BADGE
         self.badge()
         #TODO: tester badge sur dashboard fedow
+        import ipdb; ipdb.set_trace()
 
         # On rebadge avec un asset exterieur
         # tester refund et void -> toujours membership et badge
