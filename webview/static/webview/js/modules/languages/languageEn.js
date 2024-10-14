@@ -66,6 +66,7 @@ export const en = {
     hasBeenSelected: "has been selected",
     cash: "cash",
     cb: "cb",
+    cheque: "cheque",
     paymentTypes: "payment types",
     offer: "offer",
     impossibleTranslation: "Attention: no translation, error in translation data; see [] or translation index",

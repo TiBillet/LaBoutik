@@ -15,7 +15,7 @@ let csrf_token = null, serviceDirecte, memorise_data_dernier_achat = {}
 // TODO: proposer de mettre en lien les groupes et les méthodes dans la BD
 glob.bt_groupement = {
   'VenteArticle': {
-    moyens_paiement: 'espece|carte_bancaire|nfc',
+    moyens_paiement: 'espece|carte_bancaire|nfc|CH',
     besoin_tag_id: 'nfc',
     groupe: 'groupe1',
     nb_commande_max: nombreMaxSelectionArticle
@@ -27,13 +27,13 @@ glob.bt_groupement = {
     nb_commande_max: nombreMaxSelectionArticle
   },
   'Adhesion': {
-    moyens_paiement: 'espece|carte_bancaire',
+    moyens_paiement: 'espece|carte_bancaire|CH',
     besoin_tag_id: 'tout',
     groupe: 'groupe3',
     nb_commande_max: nombreMaxSelectionArticle
   },
   'AjoutMonnaieVirtuelle': {
-    moyens_paiement: 'espece|carte_bancaire',
+    moyens_paiement: 'espece|carte_bancaire|CH',
     besoin_tag_id: 'tout',
     groupe: 'groupe4',
     nb_commande_max: nombreMaxSelectionArticle
@@ -1111,12 +1111,11 @@ export function obtenirIdentiteClientSiBesoin(moyenPaiement, sommeDonnee) {
 }
 
 function determinerInterfaceValidation(actionAValider) {
-  // console.log('-> fonction determinerInterfaceValidation !')
-  // console.log('actionAValider = ', actionAValider)
-
   let dataPv = glob.data.filter(obj => obj.id === pv_uuid_courant)[0]
   let accepteEspeces = dataPv.accepte_especes
   let accepteCarteBancaire = dataPv.accepte_carte_bancaire
+  let accepteCheque = dataPv.accepte_cheque
+  
   // sys.logValeurs({ accepteEspeces: accepteEspeces, accepteCarteBancaire: accepteCarteBancaire })testPaiementPossible
   let moyens_paiement_tab = [], methodes_tab = [], besoin_tag_id = [], restriction_tab = []
 
@@ -1171,6 +1170,7 @@ function determinerInterfaceValidation(actionAValider) {
   for (let i = 0; i < moyens_paiement_tab.length; i++) {
     if (moyens_paiement_tab[i].toLowerCase() === 'espece' && accepteEspeces === true) restriction_tab[1] = 'espece'
     if (moyens_paiement_tab[i].toLowerCase() === 'carte_bancaire' && accepteCarteBancaire === true) restriction_tab[2] = 'carte_bancaire'
+    if (moyens_paiement_tab[i].toLowerCase() === 'ch' && accepteCheque === true) restriction_tab[3] = 'CH'
     if (moyens_paiement_tab[i].toLowerCase() === 'nfc') restriction_tab[0] = 'nfc'
   }
   return { moyens_paiement: restriction_tab, methodes: methodes_tab, besoin_tag_id: besoin_tag_id }
@@ -1329,8 +1329,6 @@ export function validerEtape1(options) {
   // donnees = moyens_paiement/methodes/besoin_tag_id
   let donnees = determinerInterfaceValidation(options.actionAValider)
 
-  // sys.logJson('donnees = ', donnees)
-
   let moyens_paiement_tab = donnees.moyens_paiement
   let besoin_tag_id = donnees.besoin_tag_id
 
@@ -1346,7 +1344,6 @@ export function validerEtape1(options) {
       }
 
       if (moyens_paiement_tab[i] === 'nfc') {
-
         // attente de traitement,erreur adhésion cashless
         let dataTest = glob.data.filter(obj => obj.id === pv_uuid_courant)[0]
         let obtenirPvCashless = dataTest.comportement
@@ -1367,17 +1364,23 @@ export function validerEtape1(options) {
           boutons += `<bouton-basique class="test-ref-cashless" traiter-texte="1" texte="CASHLESS|2rem|,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-address-card||2.5rem" onclick="fn.popupAnnuler();vue_pv.obtenirIdentiteClientSiBesoin('nfc')" style="margin-top:16px;"></bouton-basique>`
         }
       }
-      if (moyens_paiement_tab[i] === 'espece') {
 
+      if (moyens_paiement_tab[i] === 'espece') {
         if (depositIsPresent(options.achats) === false) {
           boutons += `<bouton-basique class="test-ref-cash" traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-coins||2.5rem" onclick="fn.popupConfirme('espece', 'ESPECE', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
         } else {
           boutons += `<bouton-basique class="test-ref-cash" traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-coins||2.5rem" onclick="fn.popupAnnuler();vue_pv.obtenirIdentiteClientSiBesoin('espece')" style="margin-top:16px;"></bouton-basique>`
         }
       }
+
       if (moyens_paiement_tab[i] === 'carte_bancaire') {
         boutons += `<bouton-basique class="test-ref-cb" traiter-texte="1" texte="CB|2rem||cb-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-credit-card||2.5rem" onclick="fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
       }
+
+      if (moyens_paiement_tab[i] === 'CH') {
+        boutons += `<bouton-basique class="test-ref-ch" traiter-texte="1" texte="CH|2rem||cheque-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-money-check||2.5rem" onclick="fn.popupConfirme('CH', 'CH', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
+      }
+
     }
 
     // bouton "OFFRIR"  en mode gérant uniquement masi pas pour le point de ventes "CASHLESS"
@@ -1605,6 +1608,7 @@ export function retour_visuel_depart() {
 function traitement_donnees_pv() {
   let pv_en_cours = retourne_index_pv(pv_uuid_courant)
   let donnees = glob.data[pv_en_cours]
+
   let retour = {}
   // sys.logJson('--> donnees = ',donnees)
 
