@@ -301,8 +301,8 @@ function aiguillagePagePaiementCommande(retour, status, options) {
  * @param {Object} options = données avant le lancement de la requète
  */
 function infosPaiementRetourTable(retour, status, options) {
-  console.log(`-> fonction infosPaiementRetourTable !`)
-  sys.logValeurs({ retour: retour, status: status, options: options })
+  // console.log(`-> fonction infosPaiementRetourTable !`)
+  // sys.logValeurs({ retour: retour, status: status, options: options })
   let typeMsg = 'succes', msg = '', fonction = ''
   if (status.code === 200) {
     if (retour.message === undefined) {
