@@ -1359,7 +1359,6 @@ class CashlessTest(TiBilletTestCase):
 
     def remboursement_front_after_stripe_fed(self, carte):
         ex_total_monnaie = carte.total_monnaie()
-        import ipdb; ipdb.set_trace()
         self.assertTrue(ex_total_monnaie >= 30)
         self.check_carte_total(carte=carte, total=ex_total_monnaie)
 
