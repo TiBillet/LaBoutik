@@ -3,7 +3,11 @@ from django.conf.urls import url
 from django.urls import path
 
 from webview import views
+from rest_framework import routers
 
+router = routers.DefaultRouter()
+
+router.register(r'sales', views.Sales, basename='sales')
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
@@ -20,8 +24,6 @@ urlpatterns = [
     path('table_solo_et_commande/<str:table>', views.table_solo_et_commande),
     path('preparation/<str:table>', views.preparation),
     url('preparation', views.preparation),
-    # nico all orders
-    url('allOrders', views.allOrders),
 
     url('reprint', views.reprint),
     path('ticket_client/<str:tagid>', views.ticket_client),

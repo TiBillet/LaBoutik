@@ -5,16 +5,17 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core import signing
-from django.http import JsonResponse, HttpResponseNotFound, HttpResponseNotAllowed
+from django.http import JsonResponse, HttpResponseNotFound, HttpResponseNotAllowed, HttpRequest
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import status, serializers
+from rest_framework import status, serializers, viewsets
+from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import api_view
 from rest_framework.exceptions import NotAcceptable
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -367,28 +368,6 @@ def reprint(request):
 
         return Response("reprint ok", status=status.HTTP_200_OK)
 
-
-@login_required
-@api_view(['GET'])
-def allOrders(request, *args, **kwargs):
-    if request.method == 'GET':
-
-        # ex : wv/allOrders?oldest_first=True
-        order = '-datetime'
-        oldest_first = request.GET.get('oldest_first')
-        if oldest_first:
-            order = 'datetime'
-
-        debut_journee, fin_journee = debut_fin_journee()
-        commands_today = CommandeSauvegarde.objects.filter(
-            archive=False,
-            datetime__gte=debut_journee
-        ).order_by(order).distinct()
-
-        all_order = CommandeSerializer(instance=commands_today, many=True)
-        logger.info(f'all_order. = {all_order.data}')
-
-        return Response(all_order.data)
 
 
 @login_required
@@ -1493,3 +1472,29 @@ def paiement(request):
         return Response(validator.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     return HttpResponseNotFound()
+
+
+
+
+class Sales(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+
+    def list(self, request: HttpRequest):
+
+        # ex : wv/allOrders?oldest_first=True
+        order = '-datetime'
+        oldest_first = request.GET.get('oldest_first')
+        if oldest_first:
+            order = 'datetime'
+
+        debut_journee, fin_journee = debut_fin_journee()
+        commands_today = CommandeSauvegarde.objects.filter(
+            archive=False,
+            datetime__gte=debut_journee
+        ).order_by(order).distinct()
+
+        all_order = CommandeSerializer(instance=commands_today, many=True)
+        logger.info(f'all_order. = {all_order.data}')
+
+        return render(request, "htmx/sales/list.html")
