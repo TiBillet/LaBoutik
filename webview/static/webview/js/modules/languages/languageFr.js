@@ -67,6 +67,7 @@ export const fr = {
     hasBeenSelected: "n'a été selectioné",
     cash: "espèce",
     cb: "cb",
+    cheque: "chèque",
     paymentTypes: "types de paiement",
     offer: "offrir",
     impossibleTranslation: "Attention: pas de traduction, erreur dans les données de traduction; voir [] ou index de traduction",
