@@ -222,15 +222,12 @@ def index(request):
             tag_id_cm = request.POST.get('tag-id-cm').upper()
 
             try:
+                # CardValidator. Si la carte n'a jamais été renseignée, elle sera visible dans l'admin :
+                fedowApi = FedowAPI()
+                fedowApi.NFCcard.retrieve(tag_id_cm)
                 carte_m = CarteMaitresse.objects.get(carte__tag_id=tag_id_cm)
-
-            except CarteMaitresse.DoesNotExist:
-                # TODO: Virer "erreur :1", passer en response REST
-                return JsonResponse({"erreur": 1, "msg": "Carte non maitresse"})
-
             except Exception as e:
-                logger.error(f"Erreur login carte primaire : {e}")
-                raise e
+                return JsonResponse({"erreur": 1, "msg": "Carte non primaire"})
 
             else:
                 responsable = carte_m.carte.membre

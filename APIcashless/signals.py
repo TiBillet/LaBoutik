@@ -1,6 +1,6 @@
 import requests
 from django.conf import settings
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save, pre_save, post_delete
 from django.dispatch import receiver
 
 from APIcashless.models import ArticleVendu, Configuration, Appareil, CarteCashless, CarteMaitresse, MoyenPaiement, \
@@ -122,9 +122,12 @@ def send_card_to_fedow(sender, instance: CarteCashless, created, **kwargs):
 
 @receiver(post_save, sender=CarteMaitresse)
 def send_primarycard_to_fedow(sender, instance: CarteMaitresse, created, **kwargs):
-    if created:
-        # On le fait en synchrone, comme ça si ça plante, on le voit dans l'admin
-        set_primary_card(instance.carte.pk)
+    # On le fait en synchrone, comme ça si ça plante, on le voit dans l'admin
+    set_primary_card(instance.carte.pk)
+
+@receiver(post_delete, sender=CarteMaitresse)
+def delete_primarycard_to_fedow(sender, instance: CarteMaitresse, **kwargs):
+    set_primary_card(instance.carte.pk, delete=True)
 
 
 @receiver(post_save, sender=MoyenPaiement)

@@ -21,7 +21,7 @@ urlpatterns = [
     path('preparation/<str:table>', views.preparation),
     url('preparation', views.preparation),
     # nico all orders
-    url('allOrders', views.allOrders),
+    # url('allOrders', views.allOrders),
 
     url('reprint', views.reprint),
     path('ticket_client/<str:tagid>', views.ticket_client),
