@@ -4,6 +4,7 @@ import os, random
 from uuid import uuid4
 from decimal import Decimal
 
+import requests
 from django.core.cache import cache
 from django.utils.html import format_html
 
@@ -636,6 +637,7 @@ class Articles(models.Model):
             if tuple[0] == self.methode_choices:
                 return tuple[1]
         return None
+
 
     def __str__(self):
         if self.methode_choices in [self.RECHARGE_EUROS, self.RECHARGE_EUROS_FEDERE]:

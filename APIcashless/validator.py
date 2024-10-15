@@ -160,7 +160,6 @@ class ProductFromLespassValidator(serializers.Serializer):
     option_generale_checkbox = serializers.ListField()
     option_generale_radio = serializers.ListField()
     publish = serializers.BooleanField(allow_null=True)
-    send_to_cashless = serializers.BooleanField(allow_null=True)
     tag = serializers.ListField()
     terms_and_conditions_document = serializers.URLField(allow_null=True)
     uuid = serializers.UUIDField()
@@ -178,6 +177,7 @@ class ProductFromLespassValidator(serializers.Serializer):
 
         # Si c'est une adhésion ou un article badge :
         # Création de la catégorie d'article
+        #TODO: Fabriquer un serializer !
         if categorie in dict_cat_name:
             cat, created = Categorie.objects.get_or_create(name=dict_cat_name[categorie][0])
             logger.info(f"Categorie {cat.name} - created {created}")
@@ -186,7 +186,7 @@ class ProductFromLespassValidator(serializers.Serializer):
                 # créé ou pas, on met à jour l'article avec les infos de la billetterie
                 article.name=f"{product['name']} {price['name']}"
                 article.methode_choices=dict_cat_name[categorie][1]
-                article.prix=price['prix']
+                article.prix=price['prix'] if not price['free_price'] else 1
                 article.categorie=cat
                 article.subscription_type=price['subscription_type']
                 article.subscription_fedow_asset=self.context['MoyenPaiement']

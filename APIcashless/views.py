@@ -26,7 +26,8 @@ from APIcashless.models import Configuration, CarteCashless, Assets, Membre, Poi
     ArticleVendu, MoyenPaiement, CarteMaitresse
 from APIcashless.serializers import MembreSerializer, CarteCashlessSerializerForQrCode
 from APIcashless.validator import DataOcecoValidator, BilletterieValidator, AdhesionValidator, \
-    EmailMembreValidator, RechargeCardValidator, MembreshipValidator, SaleFromLespassValidator
+    EmailMembreValidator, RechargeCardValidator, MembreshipValidator, SaleFromLespassValidator, \
+    ProductFromLespassValidator
 from Cashless import settings
 from fedow_connect.fedow_api import FedowAPI
 from fedow_connect.utils import sign_message, verify_signature
@@ -458,8 +459,31 @@ class SaleFromLespass(APIView):
             except Articles.DoesNotExist:
                 # Si l'article n'existe pas ? On va refresh les assets qui vont probablement le créer
                 logger.warning(f"Article existe pas, on va le chercher dans Fedow")
+                article_lespass_uuid =  validator.validated_data['pricesold']['price']['product']
                 fedowAPI = FedowAPI()
+                # Le product a été envoyé. get_accepted_asset a créé le moyen de paiement
                 fedowAPI.place.get_accepted_assets()
+                # On va chercher l'article produit
+                # TODO; Factoriser avec signal post save moyen de paiement. Et prévoir pour la billetterie
+                product_uuid =  validator.validated_data['pricesold']['price']['product']
+                adhesion = MoyenPaiement.objects.get(pk=product_uuid)
+                config = Configuration.get_solo()
+                retrieve_product = requests.get(
+                    f"{config.billetterie_url}/api/products/{adhesion.pk}/",
+                    verify=bool(not settings.DEBUG))
+
+                if retrieve_product.status_code == 200:
+                    # Fabrique et mets à jour les articles adhésions ou badges
+                    product = ProductFromLespassValidator(data=retrieve_product.json(),
+                                                          context={
+                                                              'MoyenPaiement': adhesion,
+                                                          })
+                    if not product.is_valid():
+                        for error in product.errors:
+                            logger.error(error)
+                        raise Exception(
+                            f"create_article_membreship_badge : Création d'Asset Adhésion ou Badge {product.errors}")
+
                 article = Articles.objects.get(pk=price_lespass_uuid)
 
             pos, created = PointDeVente.objects.get_or_create(name=_('Billetterie'))
