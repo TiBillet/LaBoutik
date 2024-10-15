@@ -269,8 +269,8 @@ class Membre(models.Model):
 
     class Meta:
         ordering = ('-date_ajout',)
-        verbose_name = _('Membre')
-        verbose_name_plural = _('Membres')
+        verbose_name = _('Membre responsable')
+        verbose_name_plural = _('Membres responsables')
 
     def __str__(self):
         if self.pseudo:
