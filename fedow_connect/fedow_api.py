@@ -227,6 +227,7 @@ class NFCCard():
             }
 
         try :
+            logger.info()
             request_badgeuse = _post(self.config, 'card/badge', data)
             if request_badgeuse.status_code == 201:
 
