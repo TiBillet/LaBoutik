@@ -62,6 +62,7 @@ class PriceFromLespassValidator(serializers.Serializer):
     long_description = serializers.CharField(max_length=2500, allow_null=True, allow_blank=True)
     max_per_user = serializers.IntegerField()
     prix = serializers.DecimalField(max_digits=8, decimal_places=2)
+    free_price = serializers.BooleanField()
     product = serializers.UUIDField()
     recurring_payment = serializers.BooleanField()
     stock = serializers.BooleanField(allow_null=True)
@@ -168,16 +169,15 @@ class ProductFromLespassValidator(serializers.Serializer):
         product = attrs
         categorie = product['categorie_article']
         prices = product['prices']
-
         dict_cat_name = {
             'G': (_('Badge'), Articles.BADGEUSE),
             'A': (_('Adhésions'), Articles.ADHESIONS),
             'B': (_('Billet'), Articles.BILLET),
         }
+        asset_fedow = MoyenPaiement.objects.get(pk=product['uuid']) if categorie in ['G','A'] else None
 
-        # Si c'est une adhésion ou un article badge :
+        # Si c'est un billet, une adhésion ou un article badge :
         # Création de la catégorie d'article
-        #TODO: Fabriquer un serializer !
         if categorie in dict_cat_name:
             cat, created = Categorie.objects.get_or_create(name=dict_cat_name[categorie][0])
             logger.info(f"Categorie {cat.name} - created {created}")
@@ -189,7 +189,7 @@ class ProductFromLespassValidator(serializers.Serializer):
                 article.prix=price['prix'] if not price['free_price'] else 1
                 article.categorie=cat
                 article.subscription_type=price['subscription_type']
-                article.subscription_fedow_asset=self.context['MoyenPaiement']
+                article.subscription_fedow_asset=asset_fedow
                 article.save()
 
         return attrs
