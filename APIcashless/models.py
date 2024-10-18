@@ -367,7 +367,7 @@ def pointDeVente_postsave(sender, instance: PointDeVente, created, **kwargs):
             instance.save()
 
     # Les cashless toujours à la fin
-    PointDeVente.objects.filter(comportement=PointDeVente.CASHLESS).update(poid_liste=2000)
+    # PointDeVente.objects.filter(comportement=PointDeVente.CASHLESS).update(poid_liste=2000)
 
     # Fabrication du moyen de paiement cheque s'il n'exsite pas
     if instance.accepte_cheque:

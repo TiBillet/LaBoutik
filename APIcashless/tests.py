@@ -2234,7 +2234,7 @@ class CashlessTest(TiBilletTestCase):
 
         #### STRIPE REFUND
         # A activer lorsqu'il y aura le remboursement
-        # self.remboursement_online_after_stripe_fed()
+        self.remboursement_online_after_stripe_fed()
 
         # TODO: moteur de lecture du dashboard
         logger.info("TEST OK. Pensez à vérifier : ")
