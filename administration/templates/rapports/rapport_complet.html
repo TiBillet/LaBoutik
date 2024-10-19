@@ -163,6 +163,10 @@
                 <td class="test-item-recharge-total">{{ total | floatformat:2 }}€</td>
             </tr>
         {% endfor %}
+        <tr class="test-item-recharge">
+            <td class="test-item-recharge-nom">{% trans "Retour consigne cashless" %}</td>
+            <td class="test-item-recharge-total">{{ retour_consignes_cashless | floatformat:2 }}€</td>
+        </tr>
         <tr>
             <th colspan="2">{% trans "Remboursement" %}</th>
         </tr>
@@ -214,7 +218,7 @@
         </tr>
         </tbody>
         <tfoot>
-        <tr class="test-item-adhesion-total">
+        <tr class="test-item-adhesion-totaadhesionl">
             <td class="test-item-adhesion-total-qt">{{ total_adhesion }}</td>
             <td class="test-item-adhesion-total-tarif">{{ total_adhesion_euro | floatformat:2 }}€</td>
         </tr>
@@ -252,6 +256,10 @@
         <tr class="test-item-fond-caisse">
             <td class="test-item-fond-caisse-nom">{% trans "Vente directe en espèce" %}</td>
             <td class="test-item-fond-caisse-total">{{ ventes_directe_espece | floatformat:2 }}€</td>
+        </tr>
+        <tr class="test-item-fond-caisse">
+            <td class="test-item-fond-caisse-nom">{% trans "Retour consigne en espèce" %}</td>
+            <td class="test-item-fond-caisse-total">{{ retour_consignes_espece | floatformat:2 }}€</td>
         </tr>
         </tbody>
         <tfoot>
@@ -297,7 +305,7 @@
 
 <div id="recap_toute_entree">
     <h2>{% trans "Total toutes entrées par moyen de paiement" %}</h2>
-    <h3>{% trans "Vente + Recharge + Adhésion" %}</h3>
+    <h3>{% trans "Vente + Recharge + Adhésion + Consigne" %}</h3>
     <table class="content">
         <thead>
         <tr>
