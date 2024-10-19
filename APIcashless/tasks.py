@@ -73,8 +73,7 @@ def badgeuse_to_dokos(article_vendu_pk):
 
     membre = carte.membre
     if not carte:
-        article_vendu.logs = f"badgeuse_to_dokos : pas de carte"
-        article_vendu.save()
+        logger.error(f"badgeuse_to_dokos : pas de carte")
         raise NotAcceptable(detail=f"badgeuse_to_dokos : pas de carte", code=None)
 
     # Si l'origine de la carte est d'ailleurs, on prends l'id du lieu d'origine
@@ -84,13 +83,11 @@ def badgeuse_to_dokos(article_vendu_pk):
             dokos_id_origine = place.dokos_id if place.dokos_id else config.dokos_id
 
     if not membre:
-        article_vendu.logs = f"badgeuse_to_dokos : pas de membre"
-        article_vendu.save()
+        logger.error(f"badgeuse_to_dokos : pas de membre")
         raise NotAcceptable(detail=f"badgeuse_to_dokos : pas de membre", code=None)
 
     if not membre.email:
-        article_vendu.logs = f"badgeuse_to_dokos : pas d'email"
-        article_vendu.save()
+        logger.error(f"badgeuse_to_dokos : pas d'email")
         raise NotAcceptable(detail=f"badgeuse_to_dokos : pas d'email", code=None)
 
     session = requests.Session()
@@ -107,13 +104,10 @@ def badgeuse_to_dokos(article_vendu_pk):
 
     logger.info(f"badgeuse_to_dokos : {reponse_dokos.status_code} {reponse_dokos.content}")
     if reponse_dokos.status_code != 200:
-        logger.error(f"methode_BG : erreur dokos {reponse_dokos}")
-        article_vendu.logs = f"badgeuse_to_dokos erreur {reponse_dokos.status_code} {reponse_dokos.content}"
-        article_vendu.save()
+        logger.error(f"methode_BG : erreur dokos {reponse_dokos} {reponse_dokos.content}")
         raise NotAcceptable(detail=f"{reponse_dokos.status_code}", code=None)
 
-    article_vendu.logs = f"badgeuse_to_dokos : {reponse_dokos.status_code} {reponse_dokos.content}"
-    article_vendu.save()
+    logger.info(f"badgeuse_to_dokos : {reponse_dokos.status_code} {reponse_dokos.content}")
     return reponse_dokos
 
 

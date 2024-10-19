@@ -300,7 +300,7 @@ class TicketZ():
             val['ht'] = ht_from_ttc(val['ttc'], Decimal(tva))
             val['tva'] = tva_from_ttc(val['ttc'], Decimal(tva))
 
-        self.dict_TVA_complet= dict_TVA_complet
+        self.dict_TVA_complet = dict_TVA_complet
 
         self.total_collecte_ttc = sum([v['ttc'] for v in dict_TVA_complet.values()])
         self.total_collecte_ht = sum([v['ht'] for v in dict_TVA_complet.values()])
@@ -340,9 +340,32 @@ class TicketZ():
 
         return total_recharge
 
-    def _remboursement_local(self):
-        # start = datetime.now().timestamp()
+    def _retour_consigne(self):
+        retour_consignes_espece = self.lignes_tableau_vente.filter(
+            article__methode_choices=Articles.RETOUR_CONSIGNE,
+            moyen_paiement__categorie=MoyenPaiement.CASH
+        ).aggregate(total=Sum(F('qty') * F('prix')))['total'] or 0
+        self.retour_consignes_espece = dround(retour_consignes_espece)
 
+        retour_consignes_cashless = self.lignes_tableau_vente.filter(
+            article__methode_choices=Articles.RETOUR_CONSIGNE,
+            moyen_paiement__categorie=MoyenPaiement.LOCAL_EURO
+        ).aggregate(total=Sum(F('qty') * F('prix')))['total'] or 0
+        # En absolu pour que ça soit compté comme des recharges
+        self.retour_consignes_cashless = dround(abs(retour_consignes_cashless))
+
+        retour_consignes_cb = self.lignes_tableau_vente.filter(
+            article__methode_choices=Articles.RETOUR_CONSIGNE,
+            moyen_paiement__categorie=MoyenPaiement.CREDIT_CARD_NOFED
+        ).aggregate(total=Sum(F('qty') * F('prix')))['total'] or 0
+        self.retour_consignes_cb = dround(retour_consignes_cb)
+
+        self.retour_consigne_total = (abs(retour_consignes_espece) +
+                                      abs(retour_consignes_cashless) +
+                                      abs(retour_consignes_cb))
+
+    def _remboursement_local(self):
+        # Les vider et void carte :
         remboursement_local = self.lignes_tableau_vente.filter(
             article__methode_choices__in=[
                 Articles.VIDER_CARTE,
@@ -359,8 +382,9 @@ class TicketZ():
 
         self.dict_moyenPaiement_remboursement = dict_moyenPaiement_remboursement
         self.remboursement_espece = dict_moyenPaiement_remboursement.get(self.espece, 0)
+
         self.total_remboursement = remboursement_local.aggregate(total=Sum(F('qty') * F('prix')))['total'] or 0
-        self.total_cashless = self.total_recharge - abs(self.total_remboursement)
+        self.total_cashless = self.total_recharge - abs(self.total_remboursement) + abs(self.retour_consignes_cashless)
 
         # logger.info(f"Temps de calcul de _remboursement_local : {datetime.now().timestamp() - start}")
         return self.total_remboursement
@@ -528,7 +552,9 @@ class TicketZ():
             self.ventes_directe_espece +
             self.fond_caisse +
             self.adhesion_espece +
-            self.remboursement_espece)
+            self.remboursement_espece +
+            self.retour_consignes_espece
+        )
 
         # logger.info(f"Temps de calcul de _fond_caisse : {datetime.now().timestamp() - start}")
         return self.fond_caisse
@@ -606,9 +632,9 @@ class TicketZ():
             'total_collecte_toute_tva': self.total_collecte_toute_tva,
 
             'dict_TVA_complet': self.dict_TVA_complet,
-            'total_collecte_ttc' : self.total_collecte_ttc ,
-            'total_collecte_ht' : self.total_collecte_ht ,
-            'total_collecte_tva' : self.total_collecte_tva ,
+            'total_collecte_ttc': self.total_collecte_ttc,
+            'total_collecte_ht': self.total_collecte_ht,
+            'total_collecte_tva': self.total_collecte_tva,
 
             'total_HT': (self.total_TTC - self.total_collecte_toute_tva),
 
@@ -625,6 +651,10 @@ class TicketZ():
             "dict_moyenPaiement_remboursement": self.dict_moyenPaiement_remboursement,
             'total_recharge': self.total_recharge,
             'total_recharge_cadeau': self.total_recharge_cadeau,
+
+            'retour_consignes_espece': self.retour_consignes_espece,
+            'retour_consignes_cashless': self.retour_consignes_cashless,
+            'retour_consignes_cb': self.retour_consignes_cb,
 
             "total_remboursement": self.total_remboursement,
             "remboursement_espece": self.remboursement_espece,
@@ -725,6 +755,7 @@ class TicketZ():
         self.articles_vendus = self._classement_lignes_tableau_vente()
         self.quantite_vendus = self._quantite_vendus()
         self.total_collecte_toute_tva = self._tva()
+        self._retour_consigne()
         self.total_recharge = self._recharge_locale()
         self.total_remboursement = self._remboursement_local()
         self.dict_moyenPaiement_euros = self._vente_par_moyen_de_paiement()

@@ -179,11 +179,6 @@ def after_handshake():
 @app.task
 def badgeuse_to_fedow(article_vendu_pk):
     logger.info(f"badgeuse_to_fedow {article_vendu_pk}")
-    config = Configuration.get_solo()
-    if not config.can_fedow():
-        logger.info(f"badgeuse_to_fedow : Pas de config Fedow")
-        return None
-
     article_vendu = ArticleVendu.objects.get(pk=article_vendu_pk)
     fedowAPI = FedowAPI()
     transaction = fedowAPI.NFCcard.badge(article_vendu)

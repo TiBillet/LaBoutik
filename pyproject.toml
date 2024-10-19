@@ -37,6 +37,7 @@ django-stdimage = "^6.0.2"
 psycopg2 = "2.8.6"
 python-memcached = "^1.62"
 numpy = "^1.24"
+pydyf = "0.10.0"
 
 [tool.poetry.group.dev.dependencies]
 ipdb = "^0.13.13"
