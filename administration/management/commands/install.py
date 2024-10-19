@@ -843,6 +843,10 @@ class Command(BaseCommand):
                                                                  prix=-1,
                                                                  methode_choices=Articles.RETOUR_CONSIGNE)[0])
 
+                test.articles.add(Articles.objects.get_or_create(name="Jeux ou acteurs et non-acteurs",
+                                                                 prix=21,
+                                                                 methode=vente_article, categorie=CatMenu)[0])
+
                 for art in articles:
                     bar1.articles.add(art) if art not in bar1.articles.all() else art
 
