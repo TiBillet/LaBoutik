@@ -1829,13 +1829,13 @@ files = [
 
 [[package]]
 name = "pydyf"
-version = "0.11.0"
+version = "0.10.0"
 description = "A low-level PDF generator."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "pydyf-0.11.0-py3-none-any.whl", hash = "sha256:0aaf9e2ebbe786ec7a78ec3fbffa4cdcecde53fd6f563221d53c6bc1328848a3"},
-    {file = "pydyf-0.11.0.tar.gz", hash = "sha256:394dddf619cca9d0c55715e3c55ea121a9bf9cbc780cdc1201a2427917b86b64"},
+    {file = "pydyf-0.10.0-py3-none-any.whl", hash = "sha256:ef76b6c0976a091a9e15827fb5800e5e37e7cd1a3ca4d4bd19d10a14ea8c0ae3"},
+    {file = "pydyf-0.10.0.tar.gz", hash = "sha256:357194593efaf61d7b48ab97c3d59722114934967c3df3d7878ca6dd25b04c30"},
 ]
 
 [package.extras]
@@ -2520,4 +2520,4 @@ test = ["pytest"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "6d26150584bb1e2a79a5db597f65507f0bea014d85549f0dc4ab38adfa8ecaf4"
+content-hash = "175125e126d5a273cc44d019dbd099c82d22b6b74447201b0bb6aff126f9cf85"
