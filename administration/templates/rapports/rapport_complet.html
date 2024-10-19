@@ -86,7 +86,7 @@
             <td class="total-taux-collecte">{{ total_collecte_toute_tva | floatformat:2 }}€</td>
         </tr>
         <tr style="border-bottom: 2px solid #1B1464; ">
-            <th>{% trans "TVA" %}</th>
+            <th>{% trans "TOTAL TTC" %}</th>
             <td class="test-items1-mp-total">{{ total_TTC | floatformat:2 }}€</td>
         </tr>
         {% for nom, total in dict_moyenPaiement_gift.items %}
@@ -327,8 +327,8 @@
             <th>{% trans "Qty offerte" %}</th>
             <th>{% trans "Qty Totale" %}</th>
             <th>{% trans "Cout vendu" %}</th>
-            <th>{% trans "Qty offert" %}</th>
-            <th>{% trans "Qty total" %}</th>
+            <th>{% trans "Cout offert" %}</th>
+            <th>{% trans "Cout total" %}</th>
             <th>{% trans "TVA" %}</th>
             <th>{% trans "Bénéfice" %}</th>
             <th>{% trans "Total TTC" %}</th>

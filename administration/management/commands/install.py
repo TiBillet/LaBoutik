@@ -284,11 +284,12 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
-                # d["+1F"] = \
-                #     Articles.objects.get_or_create(name="+1€ Fed",
-                #                                    prix=1,
-                #                                    methode_choices=Articles.RECHARGE_EUROS_FEDERE,
-                #                                    )[0]
+                d["Consigne"] = \
+                    Articles.objects.get_or_create(name=_("Consigne"),
+                                                   prix=1,
+                                                   categorie=CatConsigne,
+                                                   methode_choices=Articles.VENTE)[0]
+
 
                 d["Retour Consigne"] = \
                     Articles.objects.get_or_create(name=_("Retour Consigne"),
