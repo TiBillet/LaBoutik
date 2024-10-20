@@ -990,10 +990,6 @@ class CarteCashless(models.Model):
         return assets.aggregate(Sum('qty')).get('qty__sum') or 0
 
     def get_wallet(self):
-        # if self.membre:
-        # Si le membre n'a pas d'email, il existe mais n'a pas de wallet
-        # if self.membre.wallet:
-        #     return self.membre.wallet
         return self.wallet
 
     def get_local_euro(self):

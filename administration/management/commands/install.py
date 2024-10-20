@@ -360,6 +360,8 @@ class Command(BaseCommand):
                                                    methode_choices=Articles.VIDER_CARTE,
                                                    methode=self.methode_articles.get('vider_carte'))[0]
 
+
+
                 d["Paiement Fractionné"] = \
                     Articles.objects.get_or_create(name="Paiement Fractionné",
                                                    categorie=None,

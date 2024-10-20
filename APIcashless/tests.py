@@ -1418,9 +1418,10 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(art_v.total(), Decimal(-(ex_total_a_rembourser)))
         self.check_carte_total(carte=carte, total=0)
 
-    def remboursement_et_vidage_direct_api(self):
+    def recharge_et_vider_carte(self):
         fedowAPI = FedowAPI()
-        carte_primaire = CarteMaitresse.objects.first().carte
+        carte_primaire = (CarteMaitresse.objects.filter(carte__membre__isnull=False)
+                          .first().carte)
 
         # On fabrique une carte et on la charge :
         carte = self.create_one_card_db()
@@ -1510,12 +1511,13 @@ class CashlessTest(TiBilletTestCase):
         serialized_transactions = void_data['serialized_transactions']
         self.assertEqual(serialized_transactions, [])
 
-    def refill_and_void(self):
+    def recharge_et_void_cartes(self):
         ###
         # Chargement d'une carte pour la void ensuite
         ###
         fedowAPI = FedowAPI()
-        carte_primaire = CarteMaitresse.objects.first().carte
+        carte_primaire = (CarteMaitresse.objects.filter(carte__membre__isnull=False)
+                          .first().carte)
 
         asset_local_euro = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
         asset_gift = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_GIFT)
@@ -1525,8 +1527,7 @@ class CashlessTest(TiBilletTestCase):
 
         # On la charge de 10 + 10 gift
         self.refill_card_wallet_EURO_CADEAU_CLIENT_BIS(carte=carte, qty=10)
-
-        # TODO: a sortir d'ici -> atomic !
+        # Vérification
         ex_total_euro = carte.total_monnaie(carte.assets.filter(monnaie=MoyenPaiement.get_local_euro()))
         ex_total_gift = carte.total_monnaie(carte.assets.filter(monnaie=MoyenPaiement.get_local_gift()))
         self.assertEqual(ex_total_euro, 10)
@@ -1579,6 +1580,25 @@ class CashlessTest(TiBilletTestCase):
         after_void_token_dict = {token['asset_uuid']: token['value'] for token in wallet_empty['tokens']}
         self.assertEqual(after_void_token_dict[asset_local_euro.pk], 0)
         self.assertEqual(after_void_token_dict[asset_gift.pk], 0)
+
+        # Test avec une carte toute neuve, mais qu'on supprime pour faire comme si elle venait de Fedow
+
+        # Création d'une nouvelle carte tout neuf en une ligne !
+        carte = self.check_carte_total(self.create_one_card_db(), 0)
+        tag_id = carte.tag_id
+        # On la supprime.
+        # Elle existe toujours dans fedow, mais plus dans la base.
+        # C'est comme si elle était toute neuve.
+        carte.delete()
+
+        # on void la carte qui n'a jamais servi :
+        new_void_data = fedowAPI.NFCcard.void(
+            user_card_firstTagId=tag_id,
+            primary_card_fisrtTagId=carte_primaire.tag_id,
+        )
+
+        import ipdb; ipdb.set_trace()
+
 
     def create_2_card_and_charge_it(self):
         config = Configuration.get_solo()
@@ -1898,6 +1918,7 @@ class CashlessTest(TiBilletTestCase):
         if type(checkout_url) != str:
             import ipdb;
             ipdb.set_trace()
+
         self.assertIsInstance(checkout_url, str)
         self.assertIn('https://checkout.stripe.com/c/pay/cs_test', checkout_url)
         print('')
@@ -1929,69 +1950,6 @@ class CashlessTest(TiBilletTestCase):
             logger.warning("Paiement non vérifié")
             print("Paiement non vérifié")
 
-    def add_me_to_test_fed(self):
-        # En setting TEST, Fedow ajoute automatiquement
-        # le nouveau place créé par le handshake dans une fédération de test
-        fedowApi = FedowAPI()
-        accepted_assets = fedowApi.place.get_accepted_assets()
-
-        # TODO: Tester si déja dans monnaies acceptés ?
-        import ipdb;
-        ipdb.set_trace()
-        fiducial_assets = [MoyenPaiement.objects.get(pk=asset.get('uuid')) for asset in accepted_assets if
-                           asset.get('category') == AssetValidator.TOKEN_LOCAL_FIAT]
-        config = Configuration.get_solo()
-        config.monnaies_acceptes.add(*fiducial_assets)
-
-        # Les moyen de paiemenst on bien été créé par self.get_accepted_assets()
-        # Si ça plante, c'est qu'ils n'ont pas été créé après le add_me_to_test_fed
-        fiducial_assets = [MoyenPaiement.objects.get(pk=asset.get('uuid')) for asset in accepted_assets if
-                           asset.get('category') == AssetValidator.TOKEN_LOCAL_FIAT]
-
-    def check_federated_card_from_fedow(self):
-        # On va tester une carte qui n'existe pas en DB,
-        # mais qui existe coté fedow sur un autre lieux
-        fedowAPI = FedowAPI()
-        created = False
-        config = Configuration.get_solo()
-        try:
-            fedow_card = fedowAPI.NFCcard.retrieve(user_card_firstTagId="ABCD1234")
-            card = CarteCashless.objects.get(tag_id=fedow_card['first_tag_id'])
-        except FileNotFoundError:
-            print("Pas de carte avec le tag_id ABCD1234 chez Fedow, on la créé en on l'envoie")
-            card = self.create_card(tag_id="ABCD1234")
-            created = True
-            # On la charge avec 10€ et 10 cadeau
-            self.refill_card_wallet_EURO_CADEAU_CLIENT_BIS(carte=card, qty=10)
-            # on check
-            self.check_carte_total(carte=card, total=20)
-            fedow_card = fedowAPI.NFCcard.retrieve(user_card_firstTagId="ABCD1234")
-        except CarteCashless.DoesNotExist:
-            import ipdb;
-            ipdb.set_trace()
-
-        self_origin = Origin.objects.get(place__name=f"{config.structure}", generation=1)
-        self_place = Place.objects.get(name=f"{config.structure}")
-
-        if not created:
-            # La carte  n'pas été créée, cela veut dire qu'elle est d'une autre origin.
-            self.assertTrue(len(Origin.objects.all()) > 1)
-            self.assertNotEqual(card.origin, self_origin)
-            # Doit être egal a dix car nous avons rechargé 10 € et 10 cadeau.
-            # Seul les euros fédérés sont visible.
-            self.assertEqual(card.total_monnaie(), Decimal(10.00))
-            self.check_carte_total(carte=card, total=10)
-            # Check l'origine extérieure de l'asset
-            self.assertEqual(card.assets.count(), 1)
-            self.assertEqual(card.assets.get(monnaie__categorie=MoyenPaiement.EXTERIEUR_FED).qty, Decimal(10.00))
-        else:
-            # La carte a été créée, c'est le premier passage du test, on vérifie que l'origin existe
-            self.assertTrue(len(Origin.objects.all()) == 1)
-            self.assertEqual(card.origin, self_origin)
-            # 20 car on compte ici les cadeaux et les euros
-            self.check_carte_total(carte=card, total=20)
-
-        return card
 
     def retour_consigne(self):
         # Création d'une nouvelle carte et check carte pour récupérer le wallet
@@ -2189,10 +2147,10 @@ class CashlessTest(TiBilletTestCase):
         self.card_to_place_transaction_with_api_fedow()
 
         print("remboursement et vidage d'une carte")
-        self.remboursement_et_vidage_direct_api()
+        self.recharge_et_vider_carte()
 
-        print("add euro asset and gift asset and void")
-        self.refill_and_void()
+        print("remboursement et void d'une carte. Test aussi avec une carte vierge.")
+        self.recharge_et_void_cartes()
 
         print("Test paiement complémentaire avec deux cartes")
         self.paiement_complementaire_transactions()
