@@ -1606,13 +1606,18 @@ class CashlessTest(TiBilletTestCase):
 
         self.assertEqual(response.status_code, 200)
 
+        # Todo: Vérifier la valeur de la somme sur le front
+        # Todo: Vérifier la dissociation de la carte
+
+        # import ipdb; ipdb.set_trace()
+        # str_total = "0" if total == 0 else f"{(int(total)):.2f}"
+        # self.assertContains(response, f'title="total">{str_total}</span>')
+
         av = ArticleVendu.objects.first()
         self.assertEqual(av.article, article)
         self.assertEqual(av.total(), Decimal(-16))
         self.assertEqual(av.moyen_paiement.categorie, MoyenPaiement.CASH)
 
-        import ipdb; ipdb.set_trace()
-        self.assertInHTML()
 
         return carte
 
