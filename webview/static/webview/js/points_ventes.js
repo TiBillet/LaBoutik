@@ -1110,7 +1110,7 @@ export function obtenirIdentiteClientSiBesoin(moyenPaiement, sommeDonnee) {
   }
 }
 
-function determinerInterfaceValidation(actionAValider) {
+function determinerInterfaceValidation(actionAValider, achats) {
   let dataPv = glob.data.filter(obj => obj.id === pv_uuid_courant)[0]
   let accepteEspeces = dataPv.accepte_especes
   let accepteCarteBancaire = dataPv.accepte_carte_bancaire
@@ -1166,9 +1166,12 @@ function determinerInterfaceValidation(actionAValider) {
     }
   }
 
+  // depositIsPresent(achats)
+
   // restriction des moyens de paiement en fonction de ceux autorisés par points de ventes (accepteEspeces,accepteCarteBancaire, accepte_)
   for (let i = 0; i < moyens_paiement_tab.length; i++) {
-    if (moyens_paiement_tab[i].toLowerCase() === 'espece' && accepteEspeces === true) restriction_tab[1] = 'espece'
+    // le moyen de paiement espèce est ajouté si achats contient un "retour consigne" ou s'il est accepté par le point de ventes 
+    if (moyens_paiement_tab[i].toLowerCase() === 'espece' && (accepteEspeces === true || depositIsPresent(achats) === true)) restriction_tab[1] = 'espece'
     if (moyens_paiement_tab[i].toLowerCase() === 'carte_bancaire' && accepteCarteBancaire === true) restriction_tab[2] = 'carte_bancaire'
     if (moyens_paiement_tab[i].toLowerCase() === 'ch' && accepteCheque === true) restriction_tab[3] = 'CH'
     if (moyens_paiement_tab[i].toLowerCase() === 'nfc') restriction_tab[0] = 'nfc'
@@ -1327,7 +1330,7 @@ export function validerEtape1(options) {
   }
 
   // donnees = moyens_paiement/methodes/besoin_tag_id
-  let donnees = determinerInterfaceValidation(options.actionAValider)
+  let donnees = determinerInterfaceValidation(options.actionAValider, options.achats)
 
   let moyens_paiement_tab = donnees.moyens_paiement
   let besoin_tag_id = donnees.besoin_tag_id
@@ -1367,8 +1370,10 @@ export function validerEtape1(options) {
 
       if (moyens_paiement_tab[i] === 'espece') {
         if (depositIsPresent(options.achats) === false) {
+          // je paye en espèce, ce n'est pas une consigne
           boutons += `<bouton-basique class="test-ref-cash" traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-coins||2.5rem" onclick="fn.popupConfirme('espece', 'ESPECE', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
         } else {
+          // c'est une consigne, espèce; mais espèce à rendre 
           boutons += `<bouton-basique class="test-ref-cash" traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-coins||2.5rem" onclick="fn.popupAnnuler();vue_pv.obtenirIdentiteClientSiBesoin('espece')" style="margin-top:16px;"></bouton-basique>`
         }
       }
