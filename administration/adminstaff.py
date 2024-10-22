@@ -603,8 +603,10 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'carte',
         # 'comptabilise',
     )
+    # list_editable = ('moyen_paiement',)
 
     readonly_fields = list_display + fields
+
     list_per_page = 50
     list_filter = [
         'article',

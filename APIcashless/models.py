@@ -1409,15 +1409,14 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
         # Au cas où un paiement fractionné a été effectué.
         if instance.commande.table:
             if instance.commande.table.reste_a_payer() == 0:
-                configuration = Configuration.get_solo()
                 logger.info(f"Table {instance.commande.table.name} TOUT PAYEE ! {instance}")
-
                 paiements_list = []
                 paiements_fractionnes_meme_service = ArticleCommandeSauvegarde.objects.filter(
-                    article__methode=configuration.methode_paiement_fractionne,
+                    article__methode_choices=Articles.FRACTIONNE,
                     commande__service=instance.commande.service,
                     reste_a_payer__lt=0,
                 )
+
 
                 for paiement_fractionne in paiements_fractionnes_meme_service:
                     # On teste si le paiement fractionné n'a pas été divisé en deux cadeaux / euros
@@ -1436,6 +1435,7 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                 'qty': abs(article_vendu.qty),
                                 'article_vendu': article_vendu
                             })
+                            # import ipdb; ipdb.set_trace()
 
                 articles_a_rentrer_en_db = {}
                 for commande in instance.commande.table.commandes \
