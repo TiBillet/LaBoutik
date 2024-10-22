@@ -25,12 +25,12 @@ from webview import urls as webview_url
 
 from APIcashless import urls as cashless_url
 from administration import urls as administration_url
+from htmxview import urls as htmxview_urls
 
 from fedow_connect import urls as fedow_connect_url
 from administration.adminroot import root_admin_site
 from administration.adminstaff import staff_admin_site
 from administration.adminmembre import membre_admin_site
-
 from APIcashless import views as APIcahsless_views
 from django.conf import settings
 # from django.contrib.auth import views as auth_views
@@ -51,8 +51,8 @@ urlpatterns = [
 
     url('wv/', include(webview_url)),
     url('api/', include(cashless_url)),
-    url('fedow/', include(fedow_connect_url)),
     url('rapport/', include(administration_url)),
+    url('htmx/', include(htmxview_urls)),
     # path('rapport/<uuid:pk_uuid>', TableauJour.as_view()),
 
     #TODO: Utiliser le cache en prod

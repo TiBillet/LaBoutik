@@ -1474,27 +1474,3 @@ def paiement(request):
     return HttpResponseNotFound()
 
 
-
-
-class Sales(viewsets.ViewSet):
-    authentication_classes = [SessionAuthentication, ]
-    permission_classes = [IsAuthenticated, ]
-
-    def list(self, request: HttpRequest):
-
-        # ex : wv/allOrders?oldest_first=True
-        order = '-datetime'
-        oldest_first = request.GET.get('oldest_first')
-        if oldest_first:
-            order = 'datetime'
-
-        debut_journee, fin_journee = debut_fin_journee()
-        commands_today = CommandeSauvegarde.objects.filter(
-            archive=False,
-            datetime__gte=debut_journee
-        ).order_by(order).distinct()
-
-        all_order = CommandeSerializer(instance=commands_today, many=True)
-        logger.info(f'all_order. = {all_order.data}')
-
-        return render(request, "htmx/sales/list.html")
