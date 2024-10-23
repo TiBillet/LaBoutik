@@ -1436,8 +1436,8 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                             })
 
 
-                # import ipdb; ipdb.set_trace()
 
+                # Mise à zero du reste a payer et récupère les articles à rentrer en db
                 articles_a_rentrer_en_db = {}
                 for commande in instance.commande.table.commandes \
                         .exclude(statut=CommandeSauvegarde.PAYEE) \
@@ -1450,6 +1450,7 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                             article_dans_commande.reste_a_payer = 0
                             article_dans_commande.statut = article_dans_commande.PAYES
                             article_dans_commande.save()
+
 
                 # On rentre en dB les articles qui n'ont pas été comptabilisés à cause du paiement fractionné.
                 # Dans le but de pouvoir comptabiliser les articles vendus.
@@ -1499,6 +1500,7 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                         ip_user=article_vendu.ip_user,
                                     )
                                     qty = a_encaisser
+                                    paiement['qty'] = qty
                                     qty_non_comptabilisee = 0
                                     total_non_comptabilisee = 0
 
@@ -1534,6 +1536,8 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
 
                                     # Plus rien à rapprocher, on termine la boucle :
                                     qty = 0
+                                    paiement['qty'] = qty
+
 
                 instance.commande.check_statut()
 
