@@ -1,5 +1,5 @@
 from django import template
-# from django.template.defaultfilters import stringfilter
+from django.template.defaultfilters import stringfilter
 
 register = template.Library()
 
@@ -64,3 +64,8 @@ def boutonForm(context):
 @register.filter
 def dec2(value):
     return f"{(int(value) / 100):.2f}"
+
+@register.filter
+@stringfilter
+def lower2(value):
+    return value.lower()
