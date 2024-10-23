@@ -1417,7 +1417,6 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                     reste_a_payer__lt=0,
                 )
 
-
                 for paiement_fractionne in paiements_fractionnes_meme_service:
                     # On teste si le paiement fractionné n'a pas été divisé en deux cadeaux / euros
                     paiement_fractionne_dans_article_vendu = ArticleVendu.objects.filter(
@@ -1435,7 +1434,9 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                 'qty': abs(article_vendu.qty),
                                 'article_vendu': article_vendu
                             })
-                            # import ipdb; ipdb.set_trace()
+
+
+                # import ipdb; ipdb.set_trace()
 
                 articles_a_rentrer_en_db = {}
                 for commande in instance.commande.table.commandes \
@@ -1454,17 +1455,16 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                 # Dans le but de pouvoir comptabiliser les articles vendus.
 
                 # D'abord, nous cherchons les paiements fractionnés du même service,
-                # pour savoir, entre autre quel ont été les moyens de paiements,
+                # pour savoir, entre autre quels ont été les moyens de paiements,
                 # et on crée un dictionnaire avec la qty en valeur positive.
 
-                # Enfin, nous créeons le rapprochement entre les paiments fractionnés et les articles vendus.
-
+                # Enfin, nous créons le rapprochement entre les paiments fractionnés et les articles vendus.
                 for article in articles_a_rentrer_en_db:
                     article: ArticleCommandeSauvegarde
-                    qty_non_comptabilisee: int = articles_a_rentrer_en_db[article]
+                    qty_non_comptabilisee = articles_a_rentrer_en_db[article]
                     total_non_comptabilisee: Decimal = Decimal(qty_non_comptabilisee) * Decimal(article.article.prix)
 
-                    if article.article.methode == Configuration.get_solo().methode_vente_article:
+                    if article.article.methode_choices == Articles.VENTE:
                         logger.info(
                             f"ON RENTRE EN DB {qty_non_comptabilisee * article.article.prix}€ {article.article.name} ")
 
@@ -1960,12 +1960,12 @@ class Configuration(SingletonModel):
     '''
 
     # Si False, aucun nouvel utilisateur ( donc interface front ) ne peut se logger.
-    appareillement = models.BooleanField(default=False)
-    pin_code_primary_link = models.CharField(max_length=8, null=True, blank=True, editable=False,
-                                             verbose_name=_("Code PIN pour appareillement"))
+    # appareillement = models.BooleanField(default=False)
+    # pin_code_primary_link = models.CharField(max_length=8, null=True, blank=True, editable=False,
+    #                                          verbose_name=_("Code PIN pour appareillement"))
 
     # Si True, les plats commandés sont en état servi.
-    validation_service_ecran = models.BooleanField(default=True,
+    validation_service_ecran = models.BooleanField(default=False,
                                                    verbose_name=_(
                                                        "Validation manuelle de la préparation sur ecran tactile"))
 
