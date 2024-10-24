@@ -180,7 +180,7 @@ class CustomMembreForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # pour évier les doublons dans les mails !
-        # self.fields['email'].widget.attrs['style'] = "text-transform: lowercase;"
+        self.fields['email'].widget.attrs['style'] = "text-transform: lowercase;"
         self.fields['name'].widget.attrs['style'] = "text-transform: uppercase;"
         self.fields['prenom'].widget.attrs['style'] = "text-transform: capitalize;"
 
@@ -240,7 +240,7 @@ class MembresAdmin(admin.ModelAdmin):
             'fields': (
                 ('name', 'prenom'),
                 # 'pseudo',
-                # 'email',
+                'email',
                 'nouvelle_carte_cashless',
                 'commentaire',
                 'numero_carte',
