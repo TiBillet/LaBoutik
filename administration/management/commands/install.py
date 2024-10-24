@@ -96,7 +96,7 @@ class Command(BaseCommand):
 
                 # MODE DEV/DEMO
                 # config.prix_adhesion = os.environ.get('PRIX_ADHESION', 13)
-                config.appareillement = True
+                # config.appareillement = True
                 config.validation_service_ecran = True
                 config.remboursement_auto_annulation = True
 

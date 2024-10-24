@@ -1409,12 +1409,10 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
         # Au cas où un paiement fractionné a été effectué.
         if instance.commande.table:
             if instance.commande.table.reste_a_payer() == 0:
-                configuration = Configuration.get_solo()
                 logger.info(f"Table {instance.commande.table.name} TOUT PAYEE ! {instance}")
-
                 paiements_list = []
                 paiements_fractionnes_meme_service = ArticleCommandeSauvegarde.objects.filter(
-                    article__methode=configuration.methode_paiement_fractionne,
+                    article__methode_choices=Articles.FRACTIONNE,
                     commande__service=instance.commande.service,
                     reste_a_payer__lt=0,
                 )
@@ -1437,6 +1435,9 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                 'article_vendu': article_vendu
                             })
 
+
+
+                # Mise à zero du reste a payer et récupère les articles à rentrer en db
                 articles_a_rentrer_en_db = {}
                 for commande in instance.commande.table.commandes \
                         .exclude(statut=CommandeSauvegarde.PAYEE) \
@@ -1450,21 +1451,21 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                             article_dans_commande.statut = article_dans_commande.PAYES
                             article_dans_commande.save()
 
+
                 # On rentre en dB les articles qui n'ont pas été comptabilisés à cause du paiement fractionné.
                 # Dans le but de pouvoir comptabiliser les articles vendus.
 
                 # D'abord, nous cherchons les paiements fractionnés du même service,
-                # pour savoir, entre autre quel ont été les moyens de paiements,
+                # pour savoir, entre autre quels ont été les moyens de paiements,
                 # et on crée un dictionnaire avec la qty en valeur positive.
 
-                # Enfin, nous créeons le rapprochement entre les paiments fractionnés et les articles vendus.
-
+                # Enfin, nous créons le rapprochement entre les paiments fractionnés et les articles vendus.
                 for article in articles_a_rentrer_en_db:
                     article: ArticleCommandeSauvegarde
-                    qty_non_comptabilisee: int = articles_a_rentrer_en_db[article]
+                    qty_non_comptabilisee = articles_a_rentrer_en_db[article]
                     total_non_comptabilisee: Decimal = Decimal(qty_non_comptabilisee) * Decimal(article.article.prix)
 
-                    if article.article.methode == Configuration.get_solo().methode_vente_article:
+                    if article.article.methode_choices == Articles.VENTE:
                         logger.info(
                             f"ON RENTRE EN DB {qty_non_comptabilisee * article.article.prix}€ {article.article.name} ")
 
@@ -1499,6 +1500,7 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                         ip_user=article_vendu.ip_user,
                                     )
                                     qty = a_encaisser
+                                    paiement['qty'] = qty
                                     qty_non_comptabilisee = 0
                                     total_non_comptabilisee = 0
 
@@ -1534,6 +1536,8 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
 
                                     # Plus rien à rapprocher, on termine la boucle :
                                     qty = 0
+                                    paiement['qty'] = qty
+
 
                 instance.commande.check_statut()
 
@@ -1960,12 +1964,12 @@ class Configuration(SingletonModel):
     '''
 
     # Si False, aucun nouvel utilisateur ( donc interface front ) ne peut se logger.
-    appareillement = models.BooleanField(default=False)
-    pin_code_primary_link = models.CharField(max_length=8, null=True, blank=True, editable=False,
-                                             verbose_name=_("Code PIN pour appareillement"))
+    # appareillement = models.BooleanField(default=False)
+    # pin_code_primary_link = models.CharField(max_length=8, null=True, blank=True, editable=False,
+    #                                          verbose_name=_("Code PIN pour appareillement"))
 
     # Si True, les plats commandés sont en état servi.
-    validation_service_ecran = models.BooleanField(default=True,
+    validation_service_ecran = models.BooleanField(default=False,
                                                    verbose_name=_(
                                                        "Validation manuelle de la préparation sur ecran tactile"))
 

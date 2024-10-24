@@ -603,8 +603,10 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'carte',
         # 'comptabilise',
     )
+    # list_editable = ('moyen_paiement',)
 
     readonly_fields = list_display + fields
+
     list_per_page = 50
     list_filter = [
         'article',
@@ -800,7 +802,7 @@ class ConfigurationAdmin(SingletonModelAdmin):
         # 'moyen_paiement_oceco',
         # 'moyen_paiement_commande',
         # 'moyen_paiement_fractionne',
-        'pin_code_primary_link',
+        # 'pin_code_primary_link',
         # 'monnaies_acceptes',
         'methode_vente_article',
         'methode_ajout_monnaie_virtuelle',
@@ -835,7 +837,7 @@ class ConfigurationAdmin(SingletonModelAdmin):
         }),
         ('Options', {
             'fields': (
-                ('appareillement', 'pin_code_primary_link',),
+                # ('appareillement', 'pin_code_primary_link',),
                 'validation_service_ecran',
                 'remboursement_auto_annulation',
                 # 'domaine_cashless',
