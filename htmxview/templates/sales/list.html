@@ -1,5 +1,3 @@
-{% load webviewTags %}
-
 <h1>All orders2</h1>
 <div>mode_manage: {{ mode_manage}} - oldest_first: {{ oldest_first }}</div>
 <style>
@@ -76,7 +74,7 @@
 <div class="BF-col">
   {% for cmd in orders %}
   <div uuid-cmd="{{ cmd.uuid }}" manager="{{ cmd.responssable_name }}" class="com-grid">
-    <div class="time br-top-left8px BF-ligne-deb">{{ lower2: "HAHAHA" }}</div>
+    <div class="time br-top-left8px BF-ligne-deb">{{ cmd.datetime }}</div>
     <div class="space"></div><div class="space"></div>
     <div class="status br-top-right8px BF-ligne">{{ cmd.statut }}</div>
     <div class="article BF-col-deb">
