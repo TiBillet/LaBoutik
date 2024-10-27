@@ -7,7 +7,8 @@ window.allOrderInterface = function () {
   sys.afficherElements(['#service-commandes,block'])
 
   // <button hx-get="allOrders/null" hx-target="#service-commandes">clique</button>
-  htmx.ajax('GET', 'allOrders/null', '#service-commandes')
+  // htmx.ajax('GET', '/htmx/sales', '#service-commandes')
+  htmx.ajax('GET', `/htmx/sales?oldest_first=false&mode_manage=${glob.modeGerant}`, '#service-commandes')
 }
 
 export const menu = {

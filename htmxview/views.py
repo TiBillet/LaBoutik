@@ -20,7 +20,9 @@ class Sales(viewsets.ViewSet):
 
         # ex : wv/allOrders?oldest_first=True
         order = '-datetime'
-        oldest_first = request.GET.get('oldest_first')
+        oldest_first = True if request.GET.get('oldest_first').lower().capitalize() == 'True' else False
+        mode_manage = True if request.GET.get('mode_manage').lower().capitalize() == 'True' else False
+        
         if oldest_first:
             order = 'datetime'
 
@@ -32,5 +34,10 @@ class Sales(viewsets.ViewSet):
 
         all_order = CommandeSerializer(instance=commands_today, many=True)
         logger.info(f'all_order. = {all_order.data}')
+        context = {
+            'orders': all_order.data,
+            'mode_manage': mode_manage,
+            'oldest_first': oldest_first
+            }
 
-        return render(request, "sales/list.html")
+        return render(request, "sales/list.html", context)
