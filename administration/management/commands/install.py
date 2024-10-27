@@ -69,7 +69,7 @@ class Command(BaseCommand):
 
                 self.couleur = self._couleur()
 
-                self.articles_generiques = self._articles_generiques()
+                self.articles_generiques = self._articles_generiques_cashless()
                 self.pdv_cashless = self._point_de_vente_cashless()
 
                 self.admin = self._create_admin_from_env_email()
@@ -96,7 +96,7 @@ class Command(BaseCommand):
 
                 # MODE DEV/DEMO
                 # config.prix_adhesion = os.environ.get('PRIX_ADHESION', 13)
-                config.appareillement = True
+                # config.appareillement = True
                 config.validation_service_ecran = True
                 config.remboursement_auto_annulation = True
 
@@ -197,9 +197,9 @@ class Command(BaseCommand):
 
                 return configuration
 
-            def _articles_generiques(self):
+            def _articles_generiques_cashless(self):
 
-                d = {}
+                article_generiques = {}
                 CatCashless = Categorie.objects.get_or_create(
                     name="Cashless",
                     icon='fa-euro-sign',
@@ -228,7 +228,7 @@ class Command(BaseCommand):
                     couleur_backgr=Couleur.objects.get(name='Red')
                 )[0]
 
-                d["+0.1"] = \
+                article_generiques["+0.1"] = \
                     Articles.objects.get_or_create(name="+0.1",
                                                    prix=0.1,
                                                    categorie=CatCashless,
@@ -236,7 +236,7 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
-                d["+0.5"] = \
+                article_generiques["+0.5"] = \
                     Articles.objects.get_or_create(name="+0.5",
                                                    prix=0.5,
                                                    categorie=CatCashless,
@@ -244,7 +244,7 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
-                d["+1"] = \
+                article_generiques["+1"] = \
                     Articles.objects.get_or_create(name="+1",
                                                    prix=1,
                                                    categorie=CatCashless,
@@ -252,7 +252,7 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
-                d["+5"] = \
+                article_generiques["+5"] = \
                     Articles.objects.get_or_create(name="+5",
                                                    prix=5,
                                                    categorie=CatCashless,
@@ -260,7 +260,7 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
-                d["+10"] = \
+                article_generiques["+10"] = \
                     Articles.objects.get_or_create(name="+10",
                                                    prix=10,
                                                    categorie=CatCashless,
@@ -268,7 +268,7 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
-                d["+20"] = \
+                article_generiques["+20"] = \
                     Articles.objects.get_or_create(name="+20",
                                                    prix=20,
                                                    categorie=CatCashless,
@@ -276,7 +276,7 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
-                d["+50"] = \
+                article_generiques["+50"] = \
                     Articles.objects.get_or_create(name="+50",
                                                    prix=50,
                                                    categorie=CatCashless,
@@ -284,13 +284,14 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
-                # d["+1F"] = \
-                #     Articles.objects.get_or_create(name="+1€ Fed",
-                #                                    prix=1,
-                #                                    methode_choices=Articles.RECHARGE_EUROS_FEDERE,
-                #                                    )[0]
+                article_generiques["Consigne"] = \
+                    Articles.objects.get_or_create(name=_("Consigne"),
+                                                   prix=1,
+                                                   categorie=CatConsigne,
+                                                   methode_choices=Articles.VENTE)[0]
 
-                d["Retour Consigne"] = \
+
+                article_generiques["Retour Consigne"] = \
                     Articles.objects.get_or_create(name=_("Retour Consigne"),
                                                    prix=-1,
                                                    categorie=CatConsigne,
@@ -298,7 +299,7 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'retour_consigne'))[0]
 
-                d["Cadeau +0.1"] = \
+                article_generiques["Cadeau +0.1"] = \
                     Articles.objects.get_or_create(name=_("Cadeau +0.1"),
                                                    prix=0.1,
                                                    categorie=CatCadeau,
@@ -306,7 +307,7 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
-                d["Cadeau +0.5"] = \
+                article_generiques["Cadeau +0.5"] = \
                     Articles.objects.get_or_create(name=_("Cadeau +0.5"),
                                                    prix=0.5,
                                                    categorie=CatCadeau,
@@ -314,7 +315,7 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
-                d["Cadeau +1"] = \
+                article_generiques["Cadeau +1"] = \
                     Articles.objects.get_or_create(name=_("Cadeau +1"),
                                                    prix=1,
                                                    categorie=CatCadeau,
@@ -322,7 +323,7 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
-                d["Cadeau +5"] = \
+                article_generiques["Cadeau +5"] = \
                     Articles.objects.get_or_create(name=_("Cadeau +5"),
                                                    prix=5,
                                                    categorie=CatCadeau,
@@ -330,7 +331,7 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
-                d["Cadeau +10"] = \
+                article_generiques["Cadeau +10"] = \
                     Articles.objects.get_or_create(name=_("Cadeau +10"),
                                                    prix=10,
                                                    categorie=CatCadeau,
@@ -338,7 +339,7 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
-                d["Cadeau +20"] = \
+                article_generiques["Cadeau +20"] = \
                     Articles.objects.get_or_create(name=_("Cadeau +20"),
                                                    prix=20,
                                                    categorie=CatCadeau,
@@ -353,13 +354,18 @@ class Command(BaseCommand):
                 #                                    methode_choices=Articles.ADHESIONS,
                 #                                    methode=self.methode_articles.get('adhesion'))[0]
 
-                d["VIDER CARTE"] = \
+                article_generiques["VIDER CARTE"] = \
                     Articles.objects.get_or_create(name=_("VIDER CARTE"),
                                                    categorie=CatDanger,
                                                    methode_choices=Articles.VIDER_CARTE,
                                                    methode=self.methode_articles.get('vider_carte'))[0]
 
-                d["Paiement Fractionné"] = \
+                article_generiques["VOID CARTE"] = \
+                    Articles.objects.get_or_create(name=_("VOID CARTE"),
+                                                   categorie=CatDanger,
+                                                   methode_choices=Articles.VOID_CARTE)[0]
+
+                article_generiques["Paiement Fractionné"] = \
                     Articles.objects.get_or_create(name="Paiement Fractionné",
                                                    categorie=None,
                                                    fractionne=True,
@@ -368,7 +374,7 @@ class Command(BaseCommand):
                                                    methode_choices=Articles.FRACTIONNE,
                                                    methode=self.methode_articles.get('paiement_fractionne'))[0]
 
-                return d
+                return article_generiques
 
             def _point_de_vente_cashless(self):
                 cashless_pdv = PointDeVente.objects.create(
@@ -842,6 +848,10 @@ class Command(BaseCommand):
                 test.articles.add(Articles.objects.get_or_create(name="Retour Consigne Rebis",
                                                                  prix=-1,
                                                                  methode_choices=Articles.RETOUR_CONSIGNE)[0])
+
+                test.articles.add(Articles.objects.get_or_create(name="Jeux ou acteurs et non-acteurs",
+                                                                 prix=21,
+                                                                 methode=vente_article, categorie=CatMenu)[0])
 
                 for art in articles:
                     bar1.articles.add(art) if art not in bar1.articles.all() else art

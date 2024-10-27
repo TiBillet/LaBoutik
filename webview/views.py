@@ -1321,8 +1321,9 @@ class Commande:
 
             self.reponse['route'] = "transaction_retour_consigne_nfc"
 
+
     # VIDER_CARTE = 'VC'
-    def methode_VC(self, article, qty):
+    def methode_VC(self, article, qty, void=False):
         asset_principal = self.asset_principal()
         # La monnaie euro locale
         ex_qty_token_local = abs(asset_principal.qty)
@@ -1338,10 +1339,16 @@ class Commande:
         ### FEDOW ###
         # On prévient Fedow qu'on vide la carte :
         fedowApi = FedowAPI()
-        serialized_card_refunded = fedowApi.NFCcard.refund(
-            user_card_firstTagId=f"{self.carte_db.tag_id}",
-            primary_card_fisrtTagId=self.primary_card_fisrtTagId,
-        )
+        if void :
+            serialized_card_refunded = fedowApi.NFCcard.void(
+                user_card_firstTagId=f"{self.carte_db.tag_id}",
+                primary_card_fisrtTagId=self.primary_card_fisrtTagId,
+            )
+        else :
+            serialized_card_refunded = fedowApi.NFCcard.refund(
+                user_card_firstTagId=f"{self.carte_db.tag_id}",
+                primary_card_fisrtTagId=self.primary_card_fisrtTagId,
+            )
 
         if ex_qty_token_primaire and asset_primaire:
             ArticleVendu.objects.create(
@@ -1391,6 +1398,14 @@ class Commande:
                 asset.qty = 0
 
         self.reponse['route'] = "transaction_vider_carte"
+
+    # VOID CARTE
+    # Comme vider carte, mais en plus on détaille le model user du coté de Fedow
+    # Ce qui correspond à une carte perdue.
+    # La carte redeviens vierge
+    def methode_VV(self, article, qty):
+        self.methode_VC(article, qty, void=True)
+
 
 
 @login_required

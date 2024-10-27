@@ -1,7 +1,8 @@
 window.orthoPaiement = {
   espece: 'cash',
   carte_bancaire: 'cb',
-  nfc: 'cashless'
+  nfc: 'cashless',
+  CH: 'cheque'
 }
 
 function gestionTransactionFondsInsuffisants(retour, options) {
@@ -140,8 +141,8 @@ function messageRetourCarte(retour, options) {
  * @param {Object} options = données avant le lancement de la requète
  */
 function afficherRetourEnvoyerPreparation(retour, status, options) {
-  console.log('-> fonc afficherRetourEnvoyerPreparation !')
-  sys.logValeurs({ retour: retour, status: status, options: options })
+  // console.log('-> fonc afficherRetourEnvoyerPreparation !')
+  // sys.logValeurs({ retour: retour, status: status, options: options })
   let msg = '', msgPaye = '', msgDifErreur = '', typeMsg = 'succes', fonction = '', msgAssets = '', msgTotalCarteApresAchats = '',
     msgTotalCartesAvantAchats = '', msgEspece = ''
 
@@ -300,8 +301,8 @@ function aiguillagePagePaiementCommande(retour, status, options) {
  * @param {Object} options = données avant le lancement de la requète
  */
 function infosPaiementRetourTable(retour, status, options) {
-  console.log(`-> fonction infosPaiementRetourTable !`)
-  sys.logValeurs({ retour: retour, status: status, options: options })
+  // console.log(`-> fonction infosPaiementRetourTable !`)
+  // sys.logValeurs({ retour: retour, status: status, options: options })
   let typeMsg = 'succes', msg = '', fonction = ''
   if (status.code === 200) {
     if (retour.message === undefined) {
@@ -636,8 +637,8 @@ function afficherRetourVenteDirecte(retour, status, options) {
  * @param {Object} options = données avant le lancement de la requète
  */
 export function gererRetourPostPaiement(retour, status, options) {
-  console.log('-> fonction gererRetourPostPaiement, options.actionAValider=', options.actionAValider)
-  sys.logValeurs({ retour: retour, status: status, options: options })
+  // console.log('-> fonction gererRetourPostPaiement, options.actionAValider=', options.actionAValider)
+  // sys.logValeurs({ retour: retour, status: status, options: options })
   try {
     // sys.logValeurs({retour: retour, status: status, options: options})
 

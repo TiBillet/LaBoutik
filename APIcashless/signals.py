@@ -70,14 +70,14 @@ class TriggerMethodeArticleVenduPOSTSAVE:
             logger.info(f"    badgeuse_to_fedow : ")
             badgeuse_to_fedow(self.article_vendu.pk)
         except Exception as exc:
-            logger.error(f"trigger_BG badgeuse_to_fedow : {exc}")
+            logger.error(f"ERROR trigger_BG badgeuse_to_fedow : {exc}")
 
         try :
             # TODO: Déplacer dans Fedow
             logger.info(f"    badgeuse_to_fedow : badgeuse_to_dokos")
             badgeuse_to_dokos(self.article_vendu.pk)
         except Exception as exc:
-            logger.error(f"trigger_BG badgeuse_to_dokos : {exc}")
+            logger.error(f"ERROR trigger_BG badgeuse_to_dokos : {exc}")
 
         #
         # task_fedow = badgeuse_to_fedow.delay(self.article_vendu.pk)

@@ -1,6 +1,6 @@
 
 from django.conf.urls import url
-from django.urls import path, include
+from django.urls import path
 
 from webview import views
 
@@ -20,6 +20,8 @@ urlpatterns = [
     path('table_solo_et_commande/<str:table>', views.table_solo_et_commande),
     path('preparation/<str:table>', views.preparation),
     url('preparation', views.preparation),
+    # nico all orders
+    # url('allOrders', views.allOrders),
 
     url('reprint', views.reprint),
     path('ticket_client/<str:tagid>', views.ticket_client),

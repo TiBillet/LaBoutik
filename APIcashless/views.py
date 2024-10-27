@@ -26,7 +26,8 @@ from APIcashless.models import Configuration, CarteCashless, Assets, Membre, Poi
     ArticleVendu, MoyenPaiement, CarteMaitresse
 from APIcashless.serializers import MembreSerializer, CarteCashlessSerializerForQrCode
 from APIcashless.validator import DataOcecoValidator, BilletterieValidator, AdhesionValidator, \
-    EmailMembreValidator, RechargeCardValidator, MembreshipValidator, SaleFromLespassValidator
+    EmailMembreValidator, RechargeCardValidator, MembreshipValidator, SaleFromLespassValidator, \
+    ProductFromLespassValidator
 from Cashless import settings
 from fedow_connect.fedow_api import FedowAPI
 from fedow_connect.utils import sign_message, verify_signature
@@ -447,42 +448,46 @@ class SaleFromLespass(APIView):
             logger.error(f"Sale from lespass not valid : {validator.errors}")
             return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Un seul article par requete
-        try :
-            price_lespass_uuid =  validator.validated_data['pricesold']['price']['uuid']
-            wallet = validator.validated_data['user_uuid_wallet']
-            moyen_paiement_stripe = MoyenPaiement.objects.get(categorie=MoyenPaiement.STRIPE_NOFED)
+        price_uuid =  validator.validated_data['pricesold']['price']['uuid']
+        product_uuid =  validator.validated_data['pricesold']['price']['product']
+        moyen_paiement_stripe = MoyenPaiement.objects.get(categorie=MoyenPaiement.STRIPE_NOFED)
 
-            try :
-                article = Articles.objects.get(pk=price_lespass_uuid)
-            except Articles.DoesNotExist:
-                # Si l'article n'existe pas ? On va refresh les assets qui vont probablement le créer
-                logger.warning(f"Article existe pas, on va le chercher dans Fedow")
-                fedowAPI = FedowAPI()
-                fedowAPI.place.get_accepted_assets()
-                article = Articles.objects.get(pk=price_lespass_uuid)
+        # On va vérifier les produit sur Lespass et créer les articles manquants
+        config = Configuration.get_solo()
+        retrieve_product = requests.get(
+            f"{config.billetterie_url}/api/products/{product_uuid}/",
+            verify=bool(not settings.DEBUG))
+        if retrieve_product.status_code == 200:
+            # On mets à jour les produits assets Fedow
+            fedowAPI = FedowAPI()
+            fedowAPI.place.get_accepted_assets()
+            # Mets à jour tout les articles adhésions ou badges
+            product = ProductFromLespassValidator(data=retrieve_product.json())
+            if not product.is_valid():
+                logger.error(product.errors)
+                raise Exception(
+                    f"create_article_membreship_badge : Création d'Asset Adhésion ou Badge {product.errors}")
 
-            pos, created = PointDeVente.objects.get_or_create(name=_('Billetterie'))
+        article = Articles.objects.get(pk=price_uuid)
+        pos, created = PointDeVente.objects.get_or_create(name=_('Billetterie'))
 
-            vente_depuis_lespass = ArticleVendu.objects.create(
-                uuid=validator.validated_data['uuid'],
-                article=article,
-                prix=validator.validated_data['pricesold']['prix'],
-                date_time=validator.validated_data['datetime'],
-                qty=validator.validated_data['qty'],
-                pos=pos,
-                tva=validator.validated_data['vat'],
-                membre=getattr(wallet,'membre', None),
-                responsable=None,
-                carte=wallet.cards.first(),
-                moyen_paiement=moyen_paiement_stripe,
-                uuid_paiement=validator.validated_data['paiement_stripe_uuid'],
-                commande=validator.validated_data['paiement_stripe_uuid'],
-            )
-            return Response("", status=status.HTTP_200_OK)
+        vente_depuis_lespass = ArticleVendu.objects.create(
+            uuid=validator.validated_data['uuid'],
+            article=article,
+            prix=validator.validated_data['pricesold']['prix'],
+            date_time=validator.validated_data['datetime'],
+            qty=validator.validated_data['qty'],
+            pos=pos,
+            tva=validator.validated_data['vat'],
+            membre=None,
+            responsable=None,
+            carte=None,
+            moyen_paiement=moyen_paiement_stripe,
+            uuid_paiement=validator.validated_data['paiement_stripe_uuid'],
+            commande=validator.validated_data['paiement_stripe_uuid'],
+        )
+        return Response("", status=status.HTTP_200_OK)
 
-        except Articles.DoesNotExist:
-            raise Exception('Pas de correspondance article - price')
 
 # ex api pre fedow
 """
