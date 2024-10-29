@@ -95,11 +95,11 @@ class AssetValidator(serializers.Serializer):
 
         except MoyenPaiement.DoesNotExist:
             # L'objet origin a été créé dans le serializer OriginValidator
-
+            logger.info(f"AssetValidator validate -> Création du MP {attrs['name']}")
             cat = MoyenPaiement.fedow_asset_category_to_moyen_paiement_category(attrs['category'])
             moyen_paiement = MoyenPaiement.objects.create(
                 pk=attrs['uuid'],
-                name=attrs['name'],
+                name=attrs['name'][:100],
                 categorie=cat,
                 place_origin=place,
                 blockchain=True,

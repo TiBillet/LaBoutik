@@ -22,7 +22,7 @@ class Sales(viewsets.ViewSet):
         order = '-datetime'
         oldest_first = True if request.GET.get('oldest_first').lower().capitalize() == 'True' else False
         mode_manage = True if request.GET.get('mode_manage').lower().capitalize() == 'True' else False
-        
+
         if oldest_first:
             order = 'datetime'
 
@@ -41,3 +41,12 @@ class Sales(viewsets.ViewSet):
             }
 
         return render(request, "sales/list.html", context)
+
+
+class Membership(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+
+    def retrieve(self, request: HttpRequest, pk):
+        logger.info(pk)
+        pass
