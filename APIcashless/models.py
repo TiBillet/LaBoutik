@@ -494,7 +494,7 @@ class GroupementCategorie(models.Model):
 class Articles(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
 
-    name = models.CharField(max_length=30, verbose_name=_("Nom"))
+    name = models.CharField(max_length=300, verbose_name=_("Nom"))
     prix = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name=_("Prix de vente"))
     prix_achat = models.DecimalField(max_digits=10, decimal_places=2,
                                      default=0, verbose_name=_("Prix d'achat"))
