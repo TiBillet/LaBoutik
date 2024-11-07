@@ -1,0 +1,66 @@
+{% load i18n %}
+
+<style>
+  .com-header-grid {
+    width: 100%;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    background-color: #45494c;
+    display: grid;
+    grid-template-areas:
+    "time table"
+    "space  status";
+    grid-template-columns: 15% 85%;
+    grid-template-rows: 1fr 1fr;
+    font-size: 1rem;
+    padding: 4px;
+    margin: 0;
+  }
+
+  .com-header-grid-time {
+    grid-area: time;
+  }
+
+  .com-header-grid-table {
+    grid-area: table;
+    display: flex;
+    flex-direction: row;
+    justify-content: end;
+  }
+
+  .com-header-grid-status{
+    grid-area: status;
+    display: flex;
+    flex-direction: row;
+    justify-content: end;
+  } 
+
+/* supérieur à 800px */
+@media screen and (min-width: 800px) {
+  .com-header-grid {
+    display: grid;
+    grid-template-areas: "time table status";
+    grid-template-columns: 10% 70% 20%;
+    grid-template-rows: 1fr;
+  }
+
+  .com-header-grid-table {
+    justify-content: center;
+  }
+}
+</style>
+<div class="com-header-grid BF-ligne-deb">
+  <div class="com-header-grid-time">{{ cmd.datetime|date:"H:i" }}</div>
+  <div class="com-header-grid-table">{{ cmd.table_name }}</div>
+  {% if cmd.statut == "O" %}
+  <div class="com-header-grid-status">{% trans 'Non servie - Non payée' %}</div>
+  {% elif cmd.statut == "S" %}
+  <div class="com-header-grid-status">{% trans 'Servie - Non payée' %}</div>
+  {% elif cmd.statut == "P" %}
+  <div class="com-header-grid-status">{% trans 'Non Servie - Payée' %}</div>
+  {% elif cmd.statut == "SP" %}
+  <div class="com-header-grid-status">{% trans 'Servie et Payée' %}</div>
+  {% elif cmd.statut == "CA" %}
+  <div class="com-header-grid-status">{% trans 'Annulée' %}</div>
+  {% endif %}
+</div>

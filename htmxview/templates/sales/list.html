@@ -1,24 +1,12 @@
-<h1>All orders2</h1>
-<div>mode_manage: {{ mode_manage}} - oldest_first: {{ oldest_first }}</div>
+{% load i18n %}
 <style>
-.mb10px {
-  margin-bottom: 10px;
-}
-.mb6px {
-  margin-bottom: 6px;
-}
-
-.com-grid {
+.com-body {
+  display: flex;
+  flex-direction: column;
   width: 98%;
-  display: grid;
-  grid-template-areas:
-    "time space space status"
-    "article  article article validate-article";
-  grid-template-columns: 1fr 1fr 1fr 80px;
-  grid-template-rows: 48px 1fr;
   font-size: 1rem;
-  margin: 2px auto 60px auto;
-  padding: 4px;
+  margin-top: 16px;
+  padding: 0;
   border-radius: 8px;
   background-color: #4f504f;
   box-sizing: border-box;
@@ -26,72 +14,105 @@
   --bg-com-title: #45494c;
 }
 
-.time {
-  grid-area: time;
-  background-color: var(--bg-com-title);
+.com-body button {
+  border: none;
+  color: #FFFFFF;
 }
 
-.space {
-  grid-area: space;
-  background-color: var(--bg-com-title);
+/* header */
+.nav-com-htmx {
+  display: flex;
+  flex-direction: row;
+  width: calc(100% - 120px);
+  height: 100%;
 }
 
-.status{
-  grid-area: status;
-  background-color: var(--bg-com-title);
-} 
-
-.article {
-  grid-area: article;
-  padding-top: 4px;
+.nav-com-htmx-titre {
+  width: 15%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 2vw;
 }
 
-.validate-article {
-  grid-area: validate-article;
-  padding-top: 4px;
+.nav-com-htmx-menu {
+  width: 85%;
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  align-items: center;
+  padding-right: 8px;
 }
 
-.br-top-left8px {
-  border-top-left-radius: 8px;
+.com-part-articles {
+  width: 80%;
+  padding: 4px;
 }
 
-.br-top-right8px{
-  border-top-right-radius: 8px;
+.com-part-validate {
+  width: 20%;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: end;
 }
 
-.bg-com {
-  background-color: #45494c;
+.com-part-articles-qty {
+  width: 10%;
 }
-
+.com-part-articles-name {
+  width: 90%;
+}
 /* supérieur à 600px */
 @media screen and (min-width: 600px) {
   .com-grid {
     font-size: 2rem;
+    background-color: aqua;
   }
 }
 </style>
 
+
 <div class="BF-col">
-  {% for cmd in orders %}
-  <div uuid-cmd="{{ cmd.uuid }}" manager="{{ cmd.responssable_name }}" class="com-grid">
-    <div class="time br-top-left8px BF-ligne-deb">{{ cmd.datetime }}</div>
-    <div class="space"></div><div class="space"></div>
-    <div class="status br-top-right8px BF-ligne">{{ cmd.statut }}</div>
-    <div class="article BF-col-deb">
-      {% for article in cmd.articles %}
-      <div class="BF-ligne-deb">
-        <div>{{ article.article.qty }}</div>
-        <div>{{ article.article.name }}</div>
+ 
+  <header class="fond-header l100vw">
+    <nav class="navbar-horizontal">
+      <div class="navbar-img BF-col curseur-action" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');vue_pv.reloadData();">
+        <img alt="TiBillet" src="../static/webview/images/icon-complet-blanc.svg"/>
       </div>
-      <!-- <p style="margin-bottom: 10px">{{ article.article }}</p> -->
-      {% endfor %}
-    </div>
-    <!-- bt valider -->
-    <div class="validate-article BF-col" uuid-cmd="{{ cmd.uuid }}">
-      <div class="BF-col com-bt-valider-normal fond-ok test-action-validate-prepa" title="Validate preparation" onclick="restau.actionSurCommande('valider', 'normal', '{{  cmd.uuid }}', 1)">
-        <i class="fas fa-check"></i>
+      <div class="nav-com-htmx">
+        <span class="nav-com-htmx-titre">{% trans 'Commandes' %}</span>
+        <span class="nav-com-htmx-menu">
+          <i class="fa fa-home fs2rem cp" aria-hidden="true" onclick="allOrderReturnOriginalInterface()"></i>
+        </span>
       </div>
+    </nav>
+  </header>
+
+  {% for cmd in commands_today %}
+  <form class="com-body">
+    {% include "sales/list-header_order.html" %}
+    <div class="BF-ligne-deb">
+      <div class="com-part-articles BF-col-deb">
+        {% for article in cmd.articles.all %}
+          <!-- visuel -->
+          <div class="BF-ligne-deb">
+            <div class="com-part-articles-qty">{{ article.qty|floatformat:0 }}</div>
+            <div class="com-part-articles-name">{{ article.article.name }}</div>
+          </div>
+          <!-- inpubuttont -->
+           <input type="hidden" name="article-{{ article.id }}" value="{{ article.qty }}"/>
+        {% endfor %}
+      </div>
+      <div type="submit" class="com-part-validate">
+        <button hx-post="/htmx/sales"  hx-vals='js:{"tag_id_cm":glob.tagIdCm,"uuid_commande":"{{ cmd.pk }}","pk_responsable":"{{ cmd.responsable_id }}" }' 
+          class="BF-col com-bt-valider-normal fond-ok test-action-validate-prepa" title="Validate preparation">
+          <i class="fas fa-check"></i>
+        </button>
+      </>
     </div>
-  </div>
+  </form>
   {% endfor %}
 </div>

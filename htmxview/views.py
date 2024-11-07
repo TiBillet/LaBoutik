@@ -32,14 +32,15 @@ class Sales(viewsets.ViewSet):
             datetime__gte=debut_journee
         ).order_by(order).distinct()
 
-        all_order = CommandeSerializer(instance=commands_today, many=True)
-        logger.info(f'all_order. = {all_order.data}')
+        # all_order = CommandeSerializer(instance=commands_today, many=True)
+        #logger.info(f'data = { cmd.items() }')
         context = {
-            'orders': all_order.data,
+            'commands_today': commands_today,
             'mode_manage': mode_manage,
             'oldest_first': oldest_first
             }
 
+        # import ipdb; ipdb.set_trace()
         return render(request, "sales/list.html", context)
 
 
