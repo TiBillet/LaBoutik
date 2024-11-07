@@ -44,6 +44,15 @@ class Sales(viewsets.ViewSet):
         return render(request, "sales/list.html", context)
 
 
+    def create(self, request: HttpRequest):
+        data = request.data
+        print(f"Creating new MyModel with data: {data}")
+        context = { 'title': 'salut'}
+        # TODO: back à valider
+        # retour partiel htmx
+        return render(request, "sales/test.html", context)
+
+
 class Membership(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]

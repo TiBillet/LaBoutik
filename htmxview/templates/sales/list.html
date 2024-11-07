@@ -92,7 +92,7 @@
   </header>
 
   {% for cmd in commands_today %}
-  <form class="com-body">
+  <form id="com-target{{ cmd.pk}}" class="com-body">
     {% include "sales/list-header_order.html" %}
     <div class="BF-ligne-deb">
       <div class="com-part-articles BF-col-deb">
@@ -107,7 +107,9 @@
         {% endfor %}
       </div>
       <div type="submit" class="com-part-validate">
-        <button hx-post="/htmx/sales"  hx-vals='js:{"tag_id_cm":glob.tagIdCm,"uuid_commande":"{{ cmd.pk }}","pk_responsable":"{{ cmd.responsable_id }}" }' 
+        <button hx-post="/htmx/sales/" 
+          hx-vals='js:{"tag_id_cm":glob.tagIdCm,"uuid_commande":"{{ cmd.pk }}","pk_responsable":"{{ cmd.responsable_id }}" }' 
+          hx-target="#com-target{{ cmd.pk}}" hx-swap="innerHTML" 
           class="BF-col com-bt-valider-normal fond-ok test-action-validate-prepa" title="Validate preparation">
           <i class="fas fa-check"></i>
         </button>
