@@ -14,6 +14,9 @@ window.allOrderInterface = function () {
   // enregistrer l'info "idCurrentVue" dans le header
   document.querySelector('header').setAttribute('current-vue', idCurrentVue)
 
+  // enregistrer l'info "modeGerant" dans le header
+  document.querySelector('header').setAttribute('modeGerant', glob.modeGerant)
+
   // indexer le header et le faire disparaitre
   document.querySelector('header').id = "header-laboutik"
   document.querySelector('#header-laboutik').style.display = 'none'

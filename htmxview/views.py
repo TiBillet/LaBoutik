@@ -6,7 +6,7 @@ from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from APIcashless.models import CommandeSauvegarde
+from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse
 from webview.serializers import debut_fin_journee, CommandeSerializer
 
 logger = logging.getLogger(__name__)
@@ -46,9 +46,24 @@ class Sales(viewsets.ViewSet):
 
     def create(self, request: HttpRequest):
         data = request.data
-        print(f"Creating new MyModel with data: {data}")
+        print(f"data: {data}")
+        tag_id_cm = data['tag_id_cm']
+        print(f'tag_id_cm = {tag_id_cm}')
+
+        # ---- test ----
+        # récupère carte
+        resultCarte = CarteCashless.objects.filter(tag_id=tag_id_cm).values()
+        # __dict__ / .values()
+        print(f'resultCarte = {type(resultCarte)}')
+
+        # import ipdb; ipdb.set_trace()
+        # test = CarteMaitresse.objects.get(carte=resultCarte)
+        # print(f'test = {test}')
+        # ---- fin de test ----
+
         context = { 'title': 'salut'}
-        # TODO: back à valider
+        # ---- TODO: back => valider la commande ---
+
         # retour partiel htmx
         return render(request, "sales/test.html", context)
 
