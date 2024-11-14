@@ -20,8 +20,18 @@ class Sales(viewsets.ViewSet):
 
         # ex : wv/allOrders?oldest_first=True
         order = '-datetime'
-        oldest_first = True if request.GET.get('oldest_first').lower().capitalize() == 'True' else False
-        mode_manage = True if request.GET.get('mode_manage').lower().capitalize() == 'True' else False
+        oldest_first = False
+        manager_mode_enabled = False
+
+        if request.GET.get('oldest_first') is not None:
+            oldest_first = request.GET.get('oldest_first').lower().capitalize()
+
+        if request.GET.get('manager_mode_enabled') is not None:
+            manager_mode_enabled = request.GET.get('manager_mode_enabled').lower().capitalize()
+
+        print(f'oldest_first = {oldest_first}')
+        print(f'manager_mode_enabled = {manager_mode_enabled}')
+
 
         if oldest_first:
             order = 'datetime'
@@ -34,7 +44,7 @@ class Sales(viewsets.ViewSet):
 
         context = {
             'commands_today': commands_today,
-            'mode_manage': mode_manage,
+            'manager_mode_enabled': manager_mode_enabled,
             'oldest_first': oldest_first,
             }
 
