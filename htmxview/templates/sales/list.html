@@ -1,6 +1,7 @@
 {% load i18n %}
 <style>
 .com-body {
+  position: relative;
   display: flex;
   flex-direction: column;
   width: 98%;
@@ -74,9 +75,13 @@
 }
 </style>
 
-
+<!--
+- ajouter bouton mode gérant
+- mode gérant
+- font-size icons bar
+- filtre descendant/montant(date), nom de salle, plage de temps
+-->
 <div class="BF-col">
- 
   <header class="fond-header l100vw">
     <nav class="navbar-horizontal">
       <div class="navbar-img BF-col curseur-action" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');vue_pv.reloadData();">
@@ -93,28 +98,7 @@
 
   {% for cmd in commands_today %}
   <form id="com-target{{ cmd.pk}}" class="com-body">
-    {% include "sales/list-header_order.html" %}
-    <div class="BF-ligne-deb">
-      <div class="com-part-articles BF-col-deb">
-        {% for article in cmd.articles.all %}
-          <!-- visuel -->
-          <div class="BF-ligne-deb">
-            <div class="com-part-articles-qty">{{ article.qty|floatformat:0 }}</div>
-            <div class="com-part-articles-name">{{ article.article.name }}</div>
-          </div>
-          <!-- inpubuttont -->
-           <input type="hidden" name="article-{{ article.id }}" value="{{ article.qty }}"/>
-        {% endfor %}
-      </div>
-      <div type="submit" class="com-part-validate">
-        <button hx-post="/htmx/sales/" 
-          hx-vals='js:{"tag_id_cm":glob.tagIdCm,"uuid_commande":"{{ cmd.pk }}","pk_responsable":"{{ cmd.responsable_id }}" }' 
-          hx-target="#com-target{{ cmd.pk}}" hx-swap="innerHTML" 
-          class="BF-col com-bt-valider-normal fond-ok test-action-validate-prepa" title="Validate preparation">
-          <i class="fas fa-check"></i>
-        </button>
-      </>
-    </div>
+    {% include "sales/components/order.html" %}
   </form>
   {% endfor %}
 </div>

@@ -1,6 +1,7 @@
 {% load i18n %}
 
 <style>
+  /* style header */
   .com-header-grid {
     width: 100%;
     border-top-left-radius: 8px;
@@ -48,7 +49,20 @@
     justify-content: center;
   }
 }
+/* fin style header */
+
+.order-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #212122;
+  opacity: 0.5;
+}
 </style>
+
+<!-- header commande -->
 <div class="com-header-grid BF-ligne-deb">
   <div class="com-header-grid-time">{{ cmd.datetime|date:"H:i" }}</div>
   <div class="com-header-grid-table">{{ cmd.table_name }}</div>
@@ -64,3 +78,33 @@
   <div class="com-header-grid-status">{% trans 'Annulée' %}</div>
   {% endif %}
 </div>
+
+<!--  articles -->
+<div class="BF-ligne-deb">
+  <div class="com-part-articles BF-col-deb">
+    {% for article in cmd.articles.all %}
+      <!-- visuel -->
+      <div class="BF-ligne-deb">
+        <div class="com-part-articles-qty">{{ article.qty|floatformat:0 }}</div>
+        <div class="com-part-articles-name">{{ article.article.name }}</div>
+      </div>
+      <!-- inpubuttont -->
+       <input type="hidden" name="article-{{ article.id }}" value="{{ article.qty }}"/>
+    {% endfor %}
+  </div>
+  {% if validateOrder != True %}
+  <div type="submit" class="com-part-validate">
+    <button hx-post="/htmx/sales/" 
+      hx-vals='js:{"tag_id_cm":glob.tagIdCm,"uuid_commande":"{{ cmd.pk }}","pk_responsable":"{{ cmd.responsable_id }}" }' 
+      hx-target="#com-target{{ cmd.pk}}" hx-swap="innerHTML" 
+      class="BF-col com-bt-valider-normal fond-ok test-action-validate-prepa" title="Validate preparation">
+      <i class="fas fa-check"></i>
+    </button>
+  </div>
+  {% endif %}
+</div>
+
+<!-- opacifier la commande-->
+{% if validateOrder == True %}
+<div class="order-overlay"></div>
+{% endif %}

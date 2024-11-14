@@ -32,40 +32,43 @@ class Sales(viewsets.ViewSet):
             datetime__gte=debut_journee
         ).order_by(order).distinct()
 
-        # all_order = CommandeSerializer(instance=commands_today, many=True)
-        #logger.info(f'data = { cmd.items() }')
         context = {
             'commands_today': commands_today,
             'mode_manage': mode_manage,
-            'oldest_first': oldest_first
+            'oldest_first': oldest_first,
             }
 
-        # import ipdb; ipdb.set_trace()
         return render(request, "sales/list.html", context)
 
-
+    #logger.info(f'data = { cmd.items() }')
+    #import ipdb; ipdb.set_trace()
     def create(self, request: HttpRequest):
+        # TODO: sécuriser la méthode, try catch ?
+
         data = request.data
         print(f"data: {data}")
         tag_id_cm = data['tag_id_cm']
-        print(f'tag_id_cm = {tag_id_cm}')
 
-        # ---- test ----
         # récupère carte
-        resultCarte = CarteCashless.objects.filter(tag_id=tag_id_cm).values()
-        # __dict__ / .values()
-        print(f'resultCarte = {type(resultCarte)}')
+        carte = CarteCashless.objects.filter(tag_id=tag_id_cm)[0]
+        managementMode = CarteMaitresse.objects.get(carte_id=carte.id).edit_mode
 
-        # import ipdb; ipdb.set_trace()
-        # test = CarteMaitresse.objects.get(carte=resultCarte)
-        # print(f'test = {test}')
-        # ---- fin de test ----
+        # TODO: back => valider la commande
+        # dev mock, à remplacer par la validatio de la commande
+        validateOrder = True
 
-        context = { 'title': 'salut'}
-        # ---- TODO: back => valider la commande ---
+        # commande validée
+        order = CommandeSauvegarde.objects.filter(uuid=data['uuid_commande'])
+        print(f"order: {order.values()}")
+
+        context = { 
+            'managementMode': managementMode,
+            'validateOrder': validateOrder,
+            'cmd': order[0]
+        }
 
         # retour partiel htmx
-        return render(request, "sales/test.html", context)
+        return render(request, "sales/components/order.html", context)
 
 
 class Membership(viewsets.ViewSet):
