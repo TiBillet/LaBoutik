@@ -41,10 +41,9 @@ def nb_spacex(spacex) :
     return nb_space
 
 def centrer(input_centre):
+    if not input_centre:
+        return " "
     if len(input_centre) < NB_TIRETS:
-        #nb_car = round(len(input_centre) / 2)
-        #nb_space = round(NB_TIRETS/2 - nb_car)
-        #input_centre = " " * nb_space + input_centre
         input_centre = " " * nb_spacex(input_centre) + input_centre
     else:
         ligne_32_caracteres = input_centre[:NB_TIRETS-1]# la ligne de 32 caracteres sans le "\n"
