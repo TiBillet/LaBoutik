@@ -418,7 +418,7 @@ class Transaction():
             self.config = Configuration.get_solo()
 
     def get_from_hash(self, hash_fedow: str = None):
-        response_hash = _get(self.config, [f'transaction/{hash_fedow}'])
+        response_hash = _get(self.config, [f'transaction/{hash_fedow}/get_from_hash'])
         if response_hash.status_code == 200:
             serialized_transaction = TransactionValidator(data=response_hash.json())
             if serialized_transaction.is_valid():

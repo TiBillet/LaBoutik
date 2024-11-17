@@ -375,7 +375,7 @@ LABOUTIK_URL = f"https://{os.environ['DOMAIN']}/"
 try:
     url_validator(LABOUTIK_URL)
 except Exception as e:
-    logger.warning("Error validating LABOUTIK_URL")
+    logger.warning("Error validating LaBoutik url, please check DOMAIN in .env (must be without / . ex : laboutik.tibillet.localhost )")
     raise e
 
 
