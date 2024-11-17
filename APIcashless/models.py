@@ -487,8 +487,8 @@ class GroupementCategorie(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = _('Préparation & impréssion')
-        verbose_name_plural = _('Préparations & impréssions')
+        verbose_name = _('Préparation & impression')
+        verbose_name_plural = _('Préparations & impressions')
 
 
 class Articles(models.Model):

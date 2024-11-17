@@ -255,11 +255,11 @@ msgid "Nombre de copie à imprimer"
 msgstr "Number of copies to print"
 
 #: APIcashless/models.py:490
-msgid "Préparation & impréssion"
+msgid "Préparation & impression"
 msgstr "Preparations & printing"
 
 #: APIcashless/models.py:491
-msgid "Préparations & impréssions"
+msgid "Préparations & impressions"
 msgstr "Preparations & printing"
 
 #: APIcashless/models.py:498
