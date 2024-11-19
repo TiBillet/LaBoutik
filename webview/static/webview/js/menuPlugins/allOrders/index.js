@@ -15,7 +15,7 @@ window.allOrderInterface = function () {
   document.querySelector('header').setAttribute('current-vue', idCurrentVue)
 
   // enregistrer l'info "modeGerant" dans le header
-  document.querySelector('header').setAttribute('modeGerant', glob.modeGerant)
+  document.querySelector('header').setAttribute('authorizedManagementMode', glob.modeGerant)
 
   // indexer le header et le faire disparaitre
   document.querySelector('header').id = "header-laboutik"
@@ -30,7 +30,7 @@ window.allOrderInterface = function () {
 
   // <button hx-get="allOrders/null" hx-target="#service-commandes">clique</button>
   // htmx.ajax('GET', '/htmx/sales', '#service-commandes')
-  htmx.ajax('GET', `/htmx/sales?oldest_first=false&manager_mode_enabled=${glob.modeGerant}`, '#service-commandes')
+  htmx.ajax('GET', `/htmx/sales?oldest_first=false&authorized_management_mode=${glob.modeGerant}`, '#service-commandes')
 }
 
 window.allOrderReturnOriginalInterface = function () {
