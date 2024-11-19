@@ -21,16 +21,18 @@ class Sales(viewsets.ViewSet):
         # ex : wv/allOrders?oldest_first=True
         order = '-datetime'
         oldest_first = False
-        manager_mode_enabled = False
+        authorized_management_mode = False
 
         if request.GET.get('oldest_first') is not None:
-            oldest_first = request.GET.get('oldest_first').lower().capitalize()
+            if request.GET.get('oldest_first').lower().capitalize() == 'True':
+                oldest_first = True
 
-        if request.GET.get('manager_mode_enabled') is not None:
-            manager_mode_enabled = request.GET.get('manager_mode_enabled').lower().capitalize()
+        if request.GET.get('authorized_management_mode') is not None:
+            if request.GET.get('authorized_management_mode').lower().capitalize() == 'True':
+                authorized_management_mode = True 
 
         print(f'oldest_first = {oldest_first}')
-        print(f'manager_mode_enabled = {manager_mode_enabled}')
+        print(f'authorized_management_mode = {authorized_management_mode}')
 
 
         if oldest_first:
@@ -44,7 +46,7 @@ class Sales(viewsets.ViewSet):
 
         context = {
             'commands_today': commands_today,
-            'manager_mode_enabled': manager_mode_enabled,
+            'authorized_management_mode': authorized_management_mode,
             'oldest_first': oldest_first,
             }
 
@@ -61,7 +63,7 @@ class Sales(viewsets.ViewSet):
 
         # récupère carte
         carte = CarteCashless.objects.filter(tag_id=tag_id_cm)[0]
-        managementMode = CarteMaitresse.objects.get(carte_id=carte.id).edit_mode
+        authorized_management_mode = CarteMaitresse.objects.get(carte_id=carte.id).edit_mode
 
         # TODO: back => valider la commande
         # dev mock, à remplacer par la validatio de la commande
@@ -72,7 +74,7 @@ class Sales(viewsets.ViewSet):
         print(f"order: {order.values()}")
 
         context = { 
-            'managementMode': managementMode,
+            'authorized_management_mode': authorized_management_mode,
             'validateOrder': validateOrder,
             'cmd': order[0]
         }
