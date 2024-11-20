@@ -1360,7 +1360,8 @@ class Commande:
         ### FEDOW ###
         # On prévient Fedow qu'on vide la carte :
         fedowApi = FedowAPI()
-        if void :
+        config = Configuration.get_solo()
+        if void or config.void_card :
             serialized_card_refunded = fedowApi.NFCcard.void(
                 user_card_firstTagId=f"{self.carte_db.tag_id}",
                 primary_card_fisrtTagId=self.primary_card_fisrtTagId,
