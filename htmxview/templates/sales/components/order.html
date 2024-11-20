@@ -1,110 +1,112 @@
 {% load i18n %}
 
 <style>
-  /* style header */
-  .com-header-grid {
-    width: 100%;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-    background-color: #45494c;
-    display: grid;
-    grid-template-areas:
+    /* style header */
+    .com-header-grid {
+        width: 100%;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        background-color: #45494c;
+        display: grid;
+        grid-template-areas:
     "time table"
     "space  status";
-    grid-template-columns: 15% 85%;
-    grid-template-rows: 1fr 1fr;
-    font-size: 1rem;
-    padding: 4px;
-    margin: 0;
-  }
+        grid-template-columns: 15% 85%;
+        grid-template-rows: 1fr 1fr;
+        font-size: 1rem;
+        padding: 4px;
+        margin: 0;
+    }
 
-  .com-header-grid-time {
-    grid-area: time;
-  }
+    .com-header-grid-time {
+        grid-area: time;
+    }
 
-  .com-header-grid-table {
-    grid-area: table;
-    display: flex;
-    flex-direction: row;
-    justify-content: end;
-  }
+    .com-header-grid-table {
+        grid-area: table;
+        display: flex;
+        flex-direction: row;
+        justify-content: end;
+    }
 
-  .com-header-grid-status{
-    grid-area: status;
-    display: flex;
-    flex-direction: row;
-    justify-content: end;
-  } 
+    .com-header-grid-status {
+        grid-area: status;
+        display: flex;
+        flex-direction: row;
+        justify-content: end;
+    }
 
-/* supérieur à 800px */
-@media screen and (min-width: 800px) {
-  .com-header-grid {
-    display: grid;
-    grid-template-areas: "time table status";
-    grid-template-columns: 10% 70% 20%;
-    grid-template-rows: 1fr;
-  }
+    /* supérieur à 800px */
+    @media screen and (min-width: 800px) {
+        .com-header-grid {
+            display: grid;
+            grid-template-areas: "time table status";
+            grid-template-columns: 10% 70% 20%;
+            grid-template-rows: 1fr;
+        }
 
-  .com-header-grid-table {
-    justify-content: center;
-  }
-}
-/* fin style header */
+        .com-header-grid-table {
+            justify-content: center;
+        }
+    }
 
-.order-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #212122;
-  opacity: 0.5;
-}
+    /* fin style header */
+
+    .order-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #212122;
+        opacity: 0.5;
+    }
 </style>
 
 <!-- header commande -->
 <div class="com-header-grid BF-ligne-deb">
-  <div class="com-header-grid-time">{{ cmd.datetime|date:"H:i" }}</div>
-  <div class="com-header-grid-table">{{ cmd.table_name }}</div>
-  {% if cmd.statut == "O" %}
-  <div class="com-header-grid-status">{% trans 'Non servie - Non payée' %}</div>
-  {% elif cmd.statut == "S" %}
-  <div class="com-header-grid-status">{% trans 'Servie - Non payée' %}</div>
-  {% elif cmd.statut == "P" %}
-  <div class="com-header-grid-status">{% trans 'Non Servie - Payée' %}</div>
-  {% elif cmd.statut == "SP" %}
-  <div class="com-header-grid-status">{% trans 'Servie et Payée' %}</div>
-  {% elif cmd.statut == "CA" %}
-  <div class="com-header-grid-status">{% trans 'Annulée' %}</div>
-  {% endif %}
+    <div class="com-header-grid-time">{{ cmd.datetime|date:"H:i" }}</div>
+    <div class="com-header-grid-table">{{ cmd.table_name }}</div>
+    {% if cmd.statut == "O" %}
+        <div class="com-header-grid-status">{% trans 'Non servie - Non payée' %}</div>
+    {% elif cmd.statut == "S" %}
+        <div class="com-header-grid-status">{% trans 'Servie - Non payée' %}</div>
+    {% elif cmd.statut == "P" %}
+        <div class="com-header-grid-status">{% trans 'Non Servie - Payée' %}</div>
+    {% elif cmd.statut == "SP" %}
+        <div class="com-header-grid-status">{% trans 'Servie et Payée' %}</div>
+    {% elif cmd.statut == "CA" %}
+        <div class="com-header-grid-status">{% trans 'Annulée' %}</div>
+    {% endif %}
 </div>
 
 <!--  articles -->
 <div class="BF-ligne-deb">
-  <div class="com-part-articles BF-col-deb">
-    {% for article in cmd.articles.all %}
-      <!-- visuel -->
-      <div class="BF-ligne-deb">
-        <div class="com-part-articles-qty">{{ article.qty|floatformat:0 }}</div>
-        <div class="com-part-articles-name">{{ article.article.name }}</div>
-      </div>
-      <!-- inpubuttont -->
-       <input type="hidden" name="article-{{ article.id }}" value="{{ article.qty }}"/>
-    {% endfor %}
-  </div>
-  {% if validateOrder != True %}
-  <div type="submit" class="com-part-validate">
-    <button hx-post="/htmx/sales/" 
-      hx-vals='js:{"tag_id_cm":glob.tagIdCm,"uuid_commande":"{{ cmd.pk }}","pk_responsable":"{{ cmd.responsable_id }}" }' 
-      hx-target="#com-target{{ cmd.pk}}" hx-swap="innerHTML" 
-      class="BF-col com-bt-valider-normal fond-ok test-action-validate-prepa" title="Validate preparation">
-      <i class="fas fa-check"></i>
-    </button>
-  </div>
-  {% endif %}
+    <div class="com-part-articles BF-col-deb">
+        {% for article in cmd.articles.all %}
+            <!-- visuel -->
+            <div class="BF-ligne-deb">
+                <div class="com-part-articles-qty">{{ article.qty|floatformat:0 }}</div>
+                <div class="com-part-articles-name">{{ article.article.name }}</div>
+            </div>
+            <!-- inpubuttont -->
+            <input type="hidden" name="article-{{ article.id }}" value="{{ article.qty }}"/>
+        {% endfor %}
+    </div>
+    {% if validateOrder != True %}
+        <div type="submit" class="com-part-validate">
+            <button hx-post="/htmx/sales/"
+                    hx-vals='js:{"tag_id_cm":glob.tagIdCm,"uuid_commande":"{{ cmd.pk }}","pk_responsable":"{{ cmd.responsable_id }}" }'
+                    hx-target="#com-target{{ cmd.pk }}" hx-swap="innerHTML"
+                    class="BF-col com-bt-valider-normal fond-ok test-action-validate-prepa"
+                    title="Validate preparation">
+                <i class="fas fa-check"></i>
+            </button>
+        </div>
+    {% endif %}
 </div>
 
 <!-- opacifier la commande-->
 {% if validateOrder == True %}
-<div class="order-overlay"></div>
+    <div class="order-overlay"></div>
 {% endif %}
