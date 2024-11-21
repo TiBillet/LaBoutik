@@ -80,11 +80,11 @@ let Nfc = class {
         </div>
         <div class="BF-ligne-deb">
           <input type="radio" id="nfc-client2" name="simu-tag-id" value="${DEMO.demoTagIdClient2}">
-          <label for="nfc-client2" class="simu-carte">Client2</label>
+          <label for="nfc-client2" class="simu-carte">Client 2</label>
         </div>
         <div class="BF-ligne-deb">
           <input type="radio" id="nfc-client3" name="simu-tag-id" value="${DEMO.demoTagIdClient3}">
-          <label for="nfc-client3" class="simu-carte">Client3</label>
+          <label for="nfc-client3" class="simu-carte">Client 3</label>
         </div>
         <div class="BF-ligne-deb">
           <input type="radio" id="nfc-unknown" name="simu-tag-id" value="${DEMO.demoTagIdUnknown}">
