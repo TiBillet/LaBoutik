@@ -133,7 +133,7 @@ class TicketZ():
         #     return False
 
         self.articles_vendus = self.lignes_tableau_vente.filter(
-            article__methode_choices=Articles.VENTE,
+            article__methode_choices__in=[Articles.VENTE, Articles.CASHBACK]
         )
 
         self.articles_vendus_euro = self.articles_vendus.filter(
