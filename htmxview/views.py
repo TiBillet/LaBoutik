@@ -5,8 +5,10 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
 
-from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse
+from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse, ArticleVendu
+from administration.adminroot import ArticlesAdmin
 from webview.serializers import debut_fin_journee, CommandeSerializer
 
 logger = logging.getLogger(__name__)
@@ -16,24 +18,23 @@ class Sales(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
 
-    def list(self, request: HttpRequest):
+    def list(self, request: Request):
 
         # ex : wv/allOrders?oldest_first=True
         order = '-datetime'
-        oldest_first = False
         authorized_management_mode = False
 
-        if request.GET.get('oldest_first') is not None:
+        oldest_first = False
+        if request.GET.get('oldest_first'):
             if request.GET.get('oldest_first').lower().capitalize() == 'True':
                 oldest_first = True
 
         if request.GET.get('authorized_management_mode') is not None:
             if request.GET.get('authorized_management_mode').lower().capitalize() == 'True':
-                authorized_management_mode = True 
+                authorized_management_mode = True
 
         print(f'oldest_first = {oldest_first}')
         print(f'authorized_management_mode = {authorized_management_mode}')
-
 
         if oldest_first:
             order = 'datetime'
@@ -43,6 +44,16 @@ class Sales(viewsets.ViewSet):
             archive=False,
             datetime__gte=debut_journee
         ).order_by(order).distinct()
+
+        commands_today = {}
+        articles_vendus = ArticleVendu.objects.filter(
+            date_time__gte=debut_journee
+        )
+        for article in articles_vendus:
+            if commands_today.get(article.commande) :
+                commands_today[article.commande] += article
+            else:
+                commands_today[article.commande] = article
 
         context = {
             'commands_today': commands_today,
