@@ -265,6 +265,7 @@ def index(request):
         'demoTagIdCm': os.getenv("DEMO_TAGID_CM"),
         'demoTagIdClient1': os.getenv("DEMO_TAGID_CLIENT1"),
         'demoTagIdClient2': os.getenv("DEMO_TAGID_CLIENT2"),
+        'demoTagIdClient3': os.getenv("DEMO_TAGID_CLIENT3"),
         'demoTagIdTempsReponse': 1
     }
 
