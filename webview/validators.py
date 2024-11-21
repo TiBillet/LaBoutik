@@ -319,6 +319,7 @@ class DataAchatDepuisClientValidator(serializers.Serializer):
             if article.methode_choices not in [
                 Articles.VENTE,
                 Articles.RETOUR_CONSIGNE,
+                Articles.CASHBACK,
                 Articles.FRACTIONNE,
             ]:
                 if not attrs.get('tag_id'):

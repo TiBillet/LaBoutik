@@ -317,6 +317,7 @@ class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
             | Q(methode_choices=Articles.RETOUR_CONSIGNE)
             | Q(methode_choices=Articles.BADGEUSE)
             | Q(methode_choices=Articles.ADHESIONS)
+            | Q(methode_choices=Articles.CASHBACK)
         ).filter(archive=False)
 
     # On retire les categories cashless dans les categories
