@@ -40,10 +40,11 @@ class Sales(viewsets.ViewSet):
             order = 'datetime'
 
         debut_journee, fin_journee = debut_fin_journee()
-        commands_today = CommandeSauvegarde.objects.filter(
-            archive=False,
-            datetime__gte=debut_journee
-        ).order_by(order).distinct()
+        # Ex objet :
+        # commands_today = CommandeSauvegarde.objects.filter(
+        #     archive=False,
+        #     datetime__gte=debut_journee
+        # ).order_by(order).distinct()
 
         commands_today = {}
         articles_vendus = ArticleVendu.objects.filter(
