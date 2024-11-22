@@ -2220,6 +2220,8 @@ class CashlessTest(TiBilletTestCase):
 
         # TODO: tester la carte perdue : si on en associe une autre, vérifier que les token existent toujours
 
+        # TODO: Tester le cashback
+
         ### FEDERATION TEST
         # self.add_me_to_test_fed()
 

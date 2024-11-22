@@ -266,6 +266,7 @@ def index(request):
         'demoTagIdCm': os.getenv("DEMO_TAGID_CM"),
         'demoTagIdClient1': os.getenv("DEMO_TAGID_CLIENT1"),
         'demoTagIdClient2': os.getenv("DEMO_TAGID_CLIENT2"),
+        'demoTagIdClient3': os.getenv("DEMO_TAGID_CLIENT3"),
         'demoTagIdTempsReponse': 1
     }
 
@@ -780,7 +781,7 @@ class Commande:
         total_vente_article = 0
         for item in data['articles']:
             article: Articles = item['pk']
-            if article.methode_choices in [Articles.VENTE, Articles.FRACTIONNE]:
+            if article.methode_choices in [Articles.VENTE, Articles.FRACTIONNE, Articles.CASHBACK]:
                 # la quantitée peut être en virgule flotante ( 1€ x qty )
                 qty = dround(item['qty'])
                 prix = article.prix
@@ -1321,6 +1322,43 @@ class Commande:
 
             self.reponse['route'] = "transaction_retour_consigne_nfc"
 
+    # Methode cashback
+    # Le cashback est l'action de donner de l'argent liquide contre un paiement en CB.
+    # Le Paiement en CB peut être suppérieur a l'espèce rendu a cause des frais perçus
+    def methode_HB(self, article, qty):
+        # D'abord on comptabilise le paiement en CB
+        if self.moyen_paiement.categorie != MoyenPaiement.CREDIT_CARD_NOFED:
+            raise NotAcceptable("CREDIT CARD ONLY")
+
+        ArticleVendu.objects.create(
+            article=article,
+            prix=article.prix,
+            qty=qty,
+            pos=self.point_de_vente,
+            moyen_paiement=self.moyen_paiement,
+            responsable=self.responsable,
+            commande=self.uuid_commande,
+            uuid_paiement=self.uuid_paiement,
+            table=self.table,
+            ip_user=self.ip_user,
+        )
+
+        ## Ensuite on comptabilise la sortie en espèce, en prenant en compte le article.prix_achat
+        espece = MoyenPaiement.objects.get(categorie=MoyenPaiement.CASH)
+        ArticleVendu.objects.create(
+            article=article,
+            prix=-article.prix_achat,
+            qty=qty,
+            pos=self.point_de_vente,
+            moyen_paiement=espece,
+            responsable=self.responsable,
+            commande=self.uuid_commande,
+            uuid_paiement=self.uuid_paiement,
+            table=self.table,
+            ip_user=self.ip_user,
+        )
+
+        self.reponse['route'] = f'transaction_{self.moyen_paiement.name.lower().replace(" ", "_")}'
 
     # VIDER_CARTE = 'VC'
     def methode_VC(self, article, qty, void=False):

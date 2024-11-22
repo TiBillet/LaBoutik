@@ -540,6 +540,7 @@ class Articles(models.Model):
     BILLET = 'BI'
     BADGEUSE = 'BG'
     FIDELITY = 'FD'
+    CASHBACK = 'HB'
 
     METHODES_CHOICES = [
         (VENTE, _('Vente')),
@@ -554,6 +555,7 @@ class Articles(models.Model):
         (BILLET, _('Billet de concert')),
         (BADGEUSE, _('Badgeuse')),
         (FIDELITY, _('Fidélité')),
+        (CASHBACK, _('Cashback')),
     ]
 
     methode_choices = models.CharField(

@@ -299,6 +299,14 @@ class Command(BaseCommand):
                                                    methode=self.methode_articles.get(
                                                        'retour_consigne'))[0]
 
+                article_generiques["Cashback"] = \
+                    Articles.objects.get_or_create(name=_("Cashback"),
+                                                   prix=10.50,
+                                                   prix_achat=10,
+                                                   categorie=CatConsigne,
+                                                   methode_choices=Articles.CASHBACK)[0]
+
+
                 article_generiques["Cadeau +0.1"] = \
                     Articles.objects.get_or_create(name=_("Cadeau +0.1"),
                                                    prix=0.1,

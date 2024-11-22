@@ -10,6 +10,7 @@ let Nfc = class {
     demoTagIdCm: window.DEMO.demoTagIdCm,
     demoTagIdClient1: window.DEMO.demoTagIdClient1,
     demoTagIdClient2: window.DEMO.demoTagIdClient2,
+    demoTagIdClient3: window.DEMO.demoTagIdClient3,
     tagIdIdentite: '',
     demoTagIdTempsReponse: window.DEMO.demoTagIdTempsReponse, // secondes
     demoTempsActionTimeoutID: 0
@@ -79,7 +80,11 @@ let Nfc = class {
         </div>
         <div class="BF-ligne-deb">
           <input type="radio" id="nfc-client2" name="simu-tag-id" value="${DEMO.demoTagIdClient2}">
-          <label for="nfc-client2" class="simu-carte">Client2</label>
+          <label for="nfc-client2" class="simu-carte">Client 2</label>
+        </div>
+        <div class="BF-ligne-deb">
+          <input type="radio" id="nfc-client3" name="simu-tag-id" value="${DEMO.demoTagIdClient3}">
+          <label for="nfc-client3" class="simu-carte">Client 3</label>
         </div>
         <div class="BF-ligne-deb">
           <input type="radio" id="nfc-unknown" name="simu-tag-id" value="${DEMO.demoTagIdUnknown}">
@@ -114,7 +119,7 @@ let Nfc = class {
     this.muteEtat('uuidConnexion', uuidConnexion)
 
     // affectation fonction
-    const ids = ['#nfc-primaire', '#nfc-client1', '#nfc-client2', '#nfc-unknown']
+    const ids = ['#nfc-primaire', '#nfc-client1', '#nfc-client2', '#nfc-client3', '#nfc-unknown']
     ids.forEach((id) => {
       document.querySelector(id).addEventListener('click', (event) => {
         this.verificationTagId(event.target.value, this.etatLecteurNfc.uuidConnexion)
