@@ -1,15 +1,18 @@
 import logging
+from lib2to3.fixes.fix_input import context
 
 from django.http import HttpRequest
 from django.shortcuts import render
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
-from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse, ArticleVendu
+from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse, ArticleVendu, MoyenPaiement
 from administration.adminroot import ArticlesAdmin
 from webview.serializers import debut_fin_journee, CommandeSerializer
+from django.core.paginator import Paginator
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +53,9 @@ class Sales(viewsets.ViewSet):
         articles_vendus = ArticleVendu.objects.filter(
             date_time__gte=debut_journee
         )
+        paginator = Paginator(articles_vendus, 20)
+        page_number = request.GET.get('page')
+
         for article in articles_vendus:
             if commands_today.get(article.commande) :
                 commands_today[article.commande].append(article)
@@ -62,7 +68,21 @@ class Sales(viewsets.ViewSet):
             'oldest_first': oldest_first,
             }
 
+
         return render(request, "sales/list.html", context)
+
+    @action(detail=False, methods=['POST'])
+    def change_payment_method(self, request):
+
+        mp = MoyenPaiement.objects.get(pk=request.data['PaymentMethod_pk'])
+        ArticleVendu.objects.filter(pk=request.data['Article_pk']).update(
+            moyen_paiement=mp
+        )
+
+        context = {}
+        # Todo : Retourner le template de la ligne article
+        return render(request, "sales/list.html", context)
+
 
     #logger.info(f'data = { cmd.items() }')
     #import ipdb; ipdb.set_trace()
