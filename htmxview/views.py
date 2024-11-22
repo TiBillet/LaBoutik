@@ -52,9 +52,9 @@ class Sales(viewsets.ViewSet):
         )
         for article in articles_vendus:
             if commands_today.get(article.commande) :
-                commands_today[article.commande] += article
+                commands_today[article.commande] = [article,]
             else:
-                commands_today[article.commande] = article
+                commands_today[article.commande].append(article)
 
         context = {
             'commands_today': commands_today,
