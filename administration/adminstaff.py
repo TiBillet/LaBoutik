@@ -1386,8 +1386,9 @@ class ClotureCaisseAdmin(admin.ModelAdmin):
                f'<a class="button" href="/rapport/ClotureToMail/{obj.pk}?next={self.uri}">-> Mail</a>&nbsp;'
 
         # Si on est root ou si le rapport a été généré il y a moins de 24h
-        if self.root or obj.end > (timezone.localtime() - timezone.timedelta(days=1)):
-            html += f'<a class="button" href="/rapport/RecalculerCloture/{obj.pk}?next={self.uri}">-> Reload</a>&nbsp;'
+        # if self.root or obj.end > (timezone.localtime() - timezone.timedelta(days=1)):
+        html += f'<a class="button" href="/rapport/RecalculerCloture/{obj.pk}?next={self.uri}">-> Reload</a>&nbsp;'
+
         return format_html(html)
 
     def has_delete_permission(self, request, obj=None):
