@@ -65,7 +65,6 @@ class TempsReel(DashboardModule):
                     }
                 )
 
-
                 # Création du tupple avec la virgule
                 self.children = children,
 
