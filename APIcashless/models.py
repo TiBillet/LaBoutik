@@ -562,6 +562,7 @@ class Articles(models.Model):
         max_length=2,
         choices=METHODES_CHOICES,
         default=VENTE,
+        verbose_name=_("methode"),
     )
 
     direct_to_printer = models.ForeignKey(Printer,
@@ -1805,11 +1806,6 @@ class ClotureCaisse(models.Model):
 
     def chiffre_affaire(self):
         return json.loads(self.ticketZ).get('total_TTC')
-
-    # def recalculer(self):
-    #     ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
-    #     if ticketZ.calcul_valeurs():
-    #         return render(request, self.template_name, context=ticketZ.to_dict)
 
     class Meta:
         ordering = ('-datetime',)

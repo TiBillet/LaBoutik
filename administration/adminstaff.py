@@ -466,6 +466,10 @@ class CommandeAdmin(admin.ModelAdmin):
 staff_admin_site.register(CommandeSauvegarde, CommandeAdmin)
 
 
+'''
+# ANCIENNE METHODE QU'ON GARDE POUR L'EXEMPLE
+# Permet de créer un filter perso
+
 class CategorieFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
     # right admin sidebar just above the filter options.
@@ -514,7 +518,7 @@ class CategorieFilter(admin.SimpleListFilter):
             return queryset.filter(article__methode_choices__in=[Articles.RECHARGE_EUROS, Articles.RECHARGE_CADEAU])
         elif self.value() == "VENTE":
             return queryset.filter(article__methode_choices=Articles.VENTE)
-
+'''
 
 class CarteCashlessAdmin(admin.ModelAdmin):
     list_display = (
@@ -578,8 +582,26 @@ def send_to_odoo(modeladmin, request, queryset):
             messages.add_message(request, messages.ERROR, f"ODOO ERROR : {e}")
 
 
+# Définition d'un formulaire personnalisé
+class ArticlesVendusAdminForm(forms.ModelForm):
+    class Meta:
+        model = ArticleVendu
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            if self.instance.moyen_paiement.categorie not in [MoyenPaiement.CASH, MoyenPaiement.CREDIT_CARD_NOFED, MoyenPaiement.CHEQUE]:
+                self.fields['moyen_paiement'].disabled = True
+
+            else :
+                # Filtre pour ne montrer que "Carte bancaire" et "Espèce"
+                self.fields['moyen_paiement'].queryset = self.fields['moyen_paiement'].queryset.filter(
+                    categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CREDIT_CARD_NOFED, MoyenPaiement.CHEQUE])
+
 class ArticlesVendusAdmin(admin.ModelAdmin):
     # change_list_template = 'admin_totals_v2/change_list_totals.html'
+    form = ArticlesVendusAdminForm
 
     list_display = (
         '_article',
@@ -604,14 +626,23 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'carte',
         # 'comptabilise',
     )
+
+    readonly_fields = (
+        'article',
+        'prix',
+        'qty',
+        'carte',
+    )
+
     # list_editable = ('moyen_paiement',)
 
-    readonly_fields = list_display + fields
 
     list_per_page = 50
     list_filter = [
         'article',
-        CategorieFilter,
+        'article__methode_choices',
+        'article__categorie',
+        # CategorieFilter,
         'membre',
         'carte',
         ('date_time', DateRangeFilter),
@@ -1348,13 +1379,14 @@ class ClotureCaisseAdmin(admin.ModelAdmin):
         self.root = request.user.is_superuser
         return ClotureCaisseChangeList
 
-    def buttons_actions(self, obj):
+    def buttons_actions(self, obj: ClotureCaisse):
         html = f'<a class="button" href="/rapport/RapportFromCloture/{obj.pk}">Rapport</a>&nbsp;' \
                f'<a class="button" href="/rapport/TicketZsimpleFromCloture/{obj.pk}">Ticket Z</a>&nbsp;' \
                f'<a class="button" href="/rapport/ClotureToPrinter/{obj.pk}?next={self.uri}">-> Thermal Print</a>&nbsp;' \
                f'<a class="button" href="/rapport/ClotureToMail/{obj.pk}?next={self.uri}">-> Mail</a>&nbsp;'
 
-        if self.root:
+        # Si on est root ou si le rapport a été généré il y a moins de 24h
+        if self.root or obj.end > (timezone.localtime() - timezone.timedelta(days=1)):
             html += f'<a class="button" href="/rapport/RecalculerCloture/{obj.pk}?next={self.uri}">-> Reload</a>&nbsp;'
         return format_html(html)
 
