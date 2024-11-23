@@ -52,18 +52,19 @@ class TempsReel(DashboardModule):
         ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
         if ticketZ.calcul_valeurs():
             dict_toute_entrees_par_moyen_paiement = ticketZ.dict_toute_entrees_par_moyen_paiement
-
             try:
                 children = [{
-                        'title': f"{name}",
-                        'value': f"{dround(value)} €",
-                    } for name, value in dict_toute_entrees_par_moyen_paiement.items() ]
+                    'title': f"{name}",
+                    'value': f"{dround(value)} €",
+                } for name, value in dict_toute_entrees_par_moyen_paiement.items()]
+
                 children.append(
                     {
                         'title': _('C.A. TTC'),
                         'value': f"{dround(ticketZ.total_TTC)} €",
-                    },
+                    }
                 )
+
 
                 # Création du tupple avec la virgule
                 self.children = children,
@@ -75,6 +76,7 @@ class TempsReel(DashboardModule):
         self.context['badge_assets'] = MoyenPaiement.objects.filter(
             categorie__in=[MoyenPaiement.BADGE, MoyenPaiement.EXTERNAL_BADGE])
         self.context['fedow_url'] = f"https://{config.fedow_domain}/"
+
 
 class Informations(DashboardModule):
     title = _('Monnaie Disponible')
@@ -90,29 +92,25 @@ class Informations(DashboardModule):
 
         try:
             total_monnaie = Assets.objects.filter(monnaie__categorie=MoyenPaiement.LOCAL_EURO).aggregate(Sum('qty'))[
-                'qty__sum']
+                                'qty__sum'] or 0
             total_monnaie_cadeau = \
-                Assets.objects.filter(monnaie__categorie=MoyenPaiement.LOCAL_GIFT).aggregate(Sum('qty'))['qty__sum']
+            Assets.objects.filter(monnaie__categorie=MoyenPaiement.LOCAL_GIFT).aggregate(Sum('qty'))[
+                'qty__sum'] or 0
 
             self.children = [
-                {
-                    'title': _('Membres'),
-                    'value': Membre.objects.count(),
-                },
                 {
                     'title': _('Cartes'),
                     'value': CarteCashless.objects.filter(assets__isnull=False).distinct().count(),
                 },
                 {
                     'title': f"{configuration.monnaie_principale}",
-                    'value': format(round(total_monnaie, 2), '.2f')
+                    'value': f"{dround(total_monnaie)}"
                 },
                 {
                     'title': f"{configuration.monnaie_principale_cadeau}",
-                    'value': format(round(total_monnaie_cadeau, 2), '.2f'),
+                    'value': f"{dround(total_monnaie_cadeau)}"
                 },
             ],
 
         except Exception as e:
             logger.warning(f"DASHBOARD : Erreur lors du calcul de la monnaie disponible. Db toute neuve ? : {e}")
-
