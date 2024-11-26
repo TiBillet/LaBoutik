@@ -1,25 +1,5 @@
 {% load i18n %}
 <style>
-.com-body {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  width: 98%;
-  font-size: 1rem;
-  margin-top: 16px;
-  padding: 0;
-  border-radius: 8px;
-  background-color: #4f504f;
-  box-sizing: border-box;
-  font-family: "Luciole-regular";
-  --bg-com-title: #45494c;
-}
-
-.com-body button {
-  border: none;
-  color: #FFFFFF;
-}
-
 /* header */
 .nav-com-htmx {
   display: flex;
@@ -46,67 +26,51 @@
   padding-right: 8px;
 }
 
-.com-part-articles {
-  width: 80%;
+.com-legende, .com-content {
+  width: 98%;
+  margin: 0;
   padding: 4px;
+  background-color: #171817;
 }
 
-.com-part-validate {
-  width: 20%;
-  padding: 4px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: end;
+.com-content {
+  margin: 4px 0;
+  background-color: #303130;
 }
 
-.com-part-articles-qty {
+.com-legende-time-w {
   width: 10%;
 }
-.com-part-articles-name {
-  width: 90%;
+
+.com-legende-articles-w {
+  width: 30%;
 }
-/* supérieur à 600px */
-@media screen and (min-width: 600px) {
-  .com-grid {
-    font-size: 2rem;
-    background-color: aqua;
-  }
+
+.com-legende-prix-w {
+  width: 10%;
 }
+
+.com-legende-mpaiement-w {
+  width: 20%;
+}
+
+.com-legende-update-mpaiement-w {
+  width: 30%;
+}
+
 </style>
-
-<!--
-- ajouter bouton mode gérant
-- mode gérant
-- font-size icons bar
-- filtre descendant/montant(date), nom de salle, plage de temps
--->
 <div class="BF-col">
-  <header class="fond-header l100vw">
-    <nav class="navbar-horizontal">
-      <div class="navbar-img BF-col curseur-action" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');vue_pv.reloadData();">
-        <img alt="TiBillet" src="../static/webview/images/icon-complet-blanc.svg"/>
-      </div>
-      <div class="nav-com-htmx">
-        <span class="nav-com-htmx-titre">{% trans 'Commandes' %}</span>
-        <!-- menu -->
-        <span class="nav-com-htmx-menu">
-          {% if manager_mode_enabled == True %}
-          <i class="fa fa-unlock" aria-hidden="true"></i>
-          {% else %}
-          <i class="fa fa-lock" aria-hidden="true"></i>
-          {% endif %}
-        </span>
-        <span class="nav-com-htmx-menu">
-          <i class="fa fa-home fs2rem cp" aria-hidden="true" onclick="allOrderReturnOriginalInterface()"></i>
-        </span>
+  <!-- légende -->
+  <div class="com-legende BF-ligne-deb mb4px">
+    <div class="com-legende-time-w BF-ligne">&#8986; hh:mm</div>
+    <div class="com-legende-articles-w BF-ligne">articles</div>
+    <div class="com-legende-prix-w BF-ligne">{% trans 'prix' %}</div>
+    <div class="com-legende-mpaiement-w BF-ligne">{% trans 'moyen de paiement' %}</div>
+    <div class="com-legende-update-mpaiement-w BF-ligne">{% trans 'modifier moyen de paiement' %}</div>
+  </div>
 
-      </div>
-    </nav>
-  </header>
-
-  {% for cmd in commands_today %}
-  <form id="com-target{{ cmd.pk}}" class="com-body">
+  {% for uuid_command, cmd in commands_today.items %}
+  <form id="com-target-{{ uuid_command }}" class="com-content BF-ligne-deb mb4px">
     {% include "sales/components/order.html" %}
   </form>
   {% endfor %}

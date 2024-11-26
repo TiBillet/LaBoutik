@@ -57,17 +57,21 @@ class Sales(viewsets.ViewSet):
         page_number = request.GET.get('page')
 
         for article in articles_vendus:
-            if commands_today.get(article.commande) :
-                commands_today[article.commande].append(article)
-            else:
-                commands_today[article.commande] = [article,]
+            obj = {
+                'articles': [article],
+                'total': article.qty * article.prix
+            }
+            if commands_today.get(article.commande) != None:
+                obj['articles'].append(article)
+                obj['total'] = obj['total'] + (article.qty * article.prix)
+            commands_today[article.commande] = obj
 
+        print(f"commands_today = {commands_today}")
         context = {
             'commands_today': commands_today,
             'authorized_management_mode': authorized_management_mode,
             'oldest_first': oldest_first,
             }
-
 
         return render(request, "sales/list.html", context)
 
