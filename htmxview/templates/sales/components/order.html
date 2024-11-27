@@ -12,21 +12,27 @@
   border: none;
 }
 
-.custom-symbol {
-  content: "\9662"; /* The actual character you might be thinking of */
+.com-article-no-display {
+  display: none;
 }
+.com-show-article {
+  display: flex;
+}
+
 
 </style>
 {% with first_article=cmd.articles.0 %}
     <div class="com-legende-time-w BF-ligne">{{ first_article.date_time|time:"H:i" }}</div>
     <!-- articles -->
     <div class="com-legende-articles-w BF-col">
-        {% for article in cmd.articles %}
-            <div {% if forloop.counter > 1 %} style="display: none;" {% endif %}>
-              <span></span>{{ article.qty|floatformat:0 }} x {{ article.article.name }}</span>
-              <span>&#9662;  &#9728;</span>
-            </div>
-        {% endfor %}
+      {% for article in cmd.articles %}
+        <div {% if cmd.articles|length > 1 and forloop.counter > 1 %} class="com-article-no-display com-article-display-{{ forloop.parentloop.counter }}" {% endif %}>
+          <span>{{ article.qty|floatformat:0 }} x {{ article.article.name }}</span>
+          {% if cmd.articles|length > 1 and forloop.counter == 1 %}
+          <span onclick="commandShowArticles('com-article-display-{{ forloop.parentloop.counter }}')">....</span>
+          {% endif %}
+        </div>
+      {% endfor %}
     </div>
     <div class="com-legende-prix-w BF-ligne">{{ cmd.total|floatformat:2 }}</div>
     <div class="com-legende-mpaiement-w BF-ligne">{{ first_article.moyen_paiement|translate }}</div>
@@ -46,7 +52,15 @@
       <!-- cashless -->
       <div>cashless</div>
       <!-- bt valider -->
-       <button class="com-validate com-bt fond-ok">Valider</button>
+       <button class="com-validate com-bt fond-ok coulBlanc">Valider</button>
 
     </div>
 {% endwith %}
+
+<script>
+function commandShowArticles(cibles) {
+  document.querySelectorAll('.' + cibles).forEach(ele => {
+    ele.classList.toggle("com-show-article")
+  })
+}
+</script>
