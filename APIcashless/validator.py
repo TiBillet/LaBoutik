@@ -189,7 +189,7 @@ class ProductFromLespassValidator(serializers.Serializer):
                 article.prix=price['prix'] if not price['free_price'] else 1
                 article.categorie=cat
                 article.subscription_type=price['subscription_type']
-                article.subscription_fedow_asset=asset_fedow
+                article.fedow_asset=asset_fedow
                 article.save()
 
         return attrs

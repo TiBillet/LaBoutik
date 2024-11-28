@@ -530,8 +530,9 @@ class Articles(models.Model):
 
     VENTE = 'VT'
     RECHARGE_EUROS = 'RE'
-    RECHARGE_EUROS_FEDERE = 'RF'
+    # RECHARGE_EUROS_FEDERE = 'RF'
     RECHARGE_CADEAU = 'RC'
+    RECHARGE_TIME = 'TM'
     ADHESIONS = 'AD'
     RETOUR_CONSIGNE = 'CR'
     VIDER_CARTE = 'VC'
@@ -545,8 +546,9 @@ class Articles(models.Model):
     METHODES_CHOICES = [
         (VENTE, _('Vente')),
         (RECHARGE_EUROS, _('Recharge €')),
-        (RECHARGE_EUROS_FEDERE, _('Recharge fédérée €')),
+        # (RECHARGE_EUROS_FEDERE, _('Recharge fédérée €')),
         (RECHARGE_CADEAU, _('Recharge Cadeau')),
+        (RECHARGE_TIME, _('Recharge Temps')),
         (ADHESIONS, _('Adhésions')),
         (RETOUR_CONSIGNE, _('Retour de consigne')),
         (VIDER_CARTE, _('Vider Carte')),
@@ -568,18 +570,20 @@ class Articles(models.Model):
     direct_to_printer = models.ForeignKey(Printer,
                                           null=True, blank=True,
                                           on_delete=models.SET_NULL,
+                                          help_text=_("Activez pour une impression directe après chaque vente. Utile pour vendre des billets."),
                                           )
 
     decompte_ticket = models.BooleanField(default=False,
                                           help_text=_(
                                               "Incrémente le décompte des billets vendu à la journée et imprimé sur le ticket."))
 
-    subscription_fedow_asset = models.ForeignKey("MoyenPaiement",
-                                                 null=True, blank=True,
-                                                 on_delete=models.SET_NULL,
-                                                 related_name="subscription_articles",
-                                                 help_text=_(
-                                                     "Asset Fedow utilisé pour un abonnement, adhésion ou une badgeuse"))
+    fedow_asset = models.ForeignKey("MoyenPaiement",
+                                    null=True, blank=True,
+                                    on_delete=models.SET_NULL,
+                                    related_name="subscription_articles",
+                                    help_text=_("Asset Fédéré. Obligatoire pour cashless, adhésion ou badgeuse."),
+                                    verbose_name=_("Asset Fédéré. Obligatoire pour cashless, adhésion ou badgeuse."),
+                                    )
 
     NA, YEAR, MONTH, DAY, HOUR, CIVIL = 'N', 'Y', 'M', 'D', 'H', 'C'
     SUB_CHOICES = [
@@ -617,7 +621,7 @@ class Articles(models.Model):
         MAP_EX_METHODES_CHOICES = {
             self.VENTE: "VenteArticle",
             self.RECHARGE_EUROS: "AjoutMonnaieVirtuelle",
-            self.RECHARGE_EUROS_FEDERE: "AjoutMonnaieVirtuelle",
+            # self.RECHARGE_EUROS_FEDERE: "AjoutMonnaieVirtuelle",
             self.RECHARGE_CADEAU: "AjoutMonnaieVirtuelleCadeau",
             self.ADHESIONS: "Adhesion",
             self.RETOUR_CONSIGNE: "RetourConsigne",
@@ -643,7 +647,7 @@ class Articles(models.Model):
 
 
     def __str__(self):
-        if self.methode_choices in [self.RECHARGE_EUROS, self.RECHARGE_EUROS_FEDERE]:
+        if self.methode_choices == self.RECHARGE_EUROS:
             pre_name = "Refill"
             if settings.LANGUAGE_CODE == 'fr':
                 pre_name = "Recharge"

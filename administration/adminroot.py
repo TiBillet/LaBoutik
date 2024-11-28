@@ -161,7 +161,7 @@ class ArticlesAdmin(admin.ModelAdmin):
         'image',
         'couleur_texte',
         ('fractionne', 'archive'),
-        'subscription_fedow_asset',
+        'fedow_asset',
 
     )
     # readonly_fields = ('methode',)

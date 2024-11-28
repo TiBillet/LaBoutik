@@ -157,14 +157,14 @@ class Subscription():
             raise ValueError('Article must be an Membership product')
         if article.methode_choices != Articles.ADHESIONS:
             raise ValueError('Article must be an Membership product')
-        if not article.subscription_fedow_asset:
+        if not article.fedow_asset:
             raise ValueError('Fedow subscription_fedow_asset must be set')
 
         subscription = {
             "amount": int(amount),
             "sender": f"{self.config.fedow_place_wallet_uuid}",
             "receiver": f"{UUID(wallet)}",
-            "asset": f"{article.subscription_fedow_asset.pk}",
+            "asset": f"{article.fedow_asset.pk}",
             "subscription_start_datetime": date.isoformat(),
         }
 
@@ -213,8 +213,8 @@ class NFCCard():
 
             # On va chercher l'uuid de l'asset
             article = article_vendu.article
-            if article.subscription_fedow_asset:
-                asset_uuid = article.subscription_fedow_asset.pk
+            if article.fedow_asset:
+                asset_uuid = article.fedow_asset.pk
             else:
                 asset_uuid = MoyenPaiement.objects.get(categorie=MoyenPaiement.BADGE).pk
 

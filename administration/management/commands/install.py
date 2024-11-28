@@ -228,11 +228,14 @@ class Command(BaseCommand):
                     couleur_backgr=Couleur.objects.get(name='Red')
                 )[0]
 
+                asset_euro = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_EURO)
+                asset_cadeau = MoyenPaiement.objects.get(categorie=MoyenPaiement.LOCAL_GIFT)
                 article_generiques["+0.1"] = \
                     Articles.objects.get_or_create(name="+0.1",
                                                    prix=0.1,
                                                    categorie=CatCashless,
                                                    methode_choices=Articles.RECHARGE_EUROS,
+                                                   fedow_asset=asset_euro,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
@@ -241,6 +244,7 @@ class Command(BaseCommand):
                                                    prix=0.5,
                                                    categorie=CatCashless,
                                                    methode_choices=Articles.RECHARGE_EUROS,
+                                                   fedow_asset=asset_euro,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
@@ -249,6 +253,7 @@ class Command(BaseCommand):
                                                    prix=1,
                                                    categorie=CatCashless,
                                                    methode_choices=Articles.RECHARGE_EUROS,
+                                                   fedow_asset=asset_euro,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
@@ -257,6 +262,7 @@ class Command(BaseCommand):
                                                    prix=5,
                                                    categorie=CatCashless,
                                                    methode_choices=Articles.RECHARGE_EUROS,
+                                                   fedow_asset=asset_euro,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
@@ -265,6 +271,7 @@ class Command(BaseCommand):
                                                    prix=10,
                                                    categorie=CatCashless,
                                                    methode_choices=Articles.RECHARGE_EUROS,
+                                                   fedow_asset=asset_euro,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
@@ -273,6 +280,7 @@ class Command(BaseCommand):
                                                    prix=20,
                                                    categorie=CatCashless,
                                                    methode_choices=Articles.RECHARGE_EUROS,
+                                                   fedow_asset=asset_euro,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
@@ -281,6 +289,7 @@ class Command(BaseCommand):
                                                    prix=50,
                                                    categorie=CatCashless,
                                                    methode_choices=Articles.RECHARGE_EUROS,
+                                                   fedow_asset=asset_euro,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle'))[0]
 
@@ -312,6 +321,7 @@ class Command(BaseCommand):
                                                    prix=0.1,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
+                                                   fedow_asset=asset_cadeau,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
@@ -320,6 +330,7 @@ class Command(BaseCommand):
                                                    prix=0.5,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
+                                                   fedow_asset=asset_cadeau,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
@@ -328,6 +339,7 @@ class Command(BaseCommand):
                                                    prix=1,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
+                                                   fedow_asset=asset_cadeau,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
@@ -336,6 +348,7 @@ class Command(BaseCommand):
                                                    prix=5,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
+                                                   fedow_asset=asset_cadeau,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
@@ -344,6 +357,7 @@ class Command(BaseCommand):
                                                    prix=10,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
+                                                   fedow_asset=asset_cadeau,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
@@ -352,6 +366,7 @@ class Command(BaseCommand):
                                                    prix=20,
                                                    categorie=CatCadeau,
                                                    methode_choices=Articles.RECHARGE_CADEAU,
+                                                   fedow_asset=asset_cadeau,
                                                    methode=self.methode_articles.get(
                                                        'ajout_monnaie_virtuelle_cadeau'))[0]
 
