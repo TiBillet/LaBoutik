@@ -272,34 +272,36 @@ class CustomArticleRequiredForm(forms.ModelForm):
                 raise ValidationError(_("Choisissez un asset de type adhésion"))
 
         elif methode == Articles.BADGEUSE:
-            if asset.categorie != [
+            if asset.categorie not in [
                 MoyenPaiement.EXTERNAL_BADGE,
                 MoyenPaiement.BADGE]:
                 raise ValidationError(_("Choisissez un asset de type badge"))
 
         elif methode == Articles.RECHARGE_EUROS:
-            if asset.categorie != [
+            if asset.categorie not in [
                 MoyenPaiement.LOCAL_EURO,
                 MoyenPaiement.EXTERIEUR_FED]:
                 raise ValidationError(_("Choisissez un asset de type Euro"))
 
         elif methode == Articles.RECHARGE_CADEAU:
-            if asset.categorie != [
+            if asset.categorie not in [
                 MoyenPaiement.LOCAL_GIFT,
                 MoyenPaiement.EXTERIEUR_GIFT]:
                 raise ValidationError(_("Choisissez un asset de type Cadeau"))
 
         elif methode == Articles.FIDELITY:
-            if asset.categorie != [
+            if asset.categorie not in [
                 MoyenPaiement.FIDELITY,
                 MoyenPaiement.EXTERNAL_FIDELITY]:
                 raise ValidationError(_("Choisissez un asset de type point de fidélité"))
 
         elif methode == Articles.RECHARGE_TIME:
-            if asset.categorie != [
+            if asset.categorie not in [
                 MoyenPaiement.TIME,
                 MoyenPaiement.EXTERNAL_TIME]:
                 raise ValidationError(_("Choisissez un asset de type Monnaie Temps"))
+
+        return asset
 
     # def clean(self):
     #     import ipdb; ipdb.set_trace()
