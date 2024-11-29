@@ -1826,7 +1826,7 @@ class Configuration(SingletonModel):
                                  )
     url_image = models.URLField(null=True, blank=True)
 
-    siret = models.CharField(max_length=15,
+    siret = models.CharField(max_length=20,
                              null=True, blank=True)
 
     adresse = models.CharField(max_length=500,
