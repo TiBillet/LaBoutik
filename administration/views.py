@@ -20,7 +20,9 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode
 from django_weasyprint import WeasyTemplateView
-from rest_framework import status
+from rest_framework import status, viewsets
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
@@ -57,6 +59,33 @@ class DecimalEncoder(json.JSONEncoder):
 #     fin_event = tzlocal.localize(datetime.combine(date, datetime.min.time()), is_dst=None) + timedelta(
 #         days=1, hours=heure_pivot)
 #     return debut_event, fin_event
+
+
+### Factorisation dans un viewset
+
+class ReportV2(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, ]
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['GET'])
+    def fullreport_today(self, request):
+        config = Configuration.get_solo()
+        heure_cloture = config.cloture_de_caisse_auto
+
+        start = timezone.localtime()
+        if start.time() < heure_cloture:
+            # Alors on est au petit matin, on prend la date de la veille
+            start = start - timedelta(days=1)
+        matin = timezone.make_aware(datetime.combine(start, heure_cloture))
+
+        ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
+
+        if ticketZ.calcul_valeurs():
+            return render(request, 'rapports/v2/fullreport.html', context=ticketZ.to_dict)
+
+        return HttpResponse('No sales today')
+
+
 
 
 ### NEW METHOD CLOTURE CAISSE
