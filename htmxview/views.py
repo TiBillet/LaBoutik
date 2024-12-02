@@ -71,6 +71,7 @@ class Sales(viewsets.ViewSet):
             'commands_today': commands_today,
             'authorized_management_mode': authorized_management_mode,
             'oldest_first': oldest_first,
+            'moyen_paiements': MoyenPaiement.objects.filter(categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CHEQUE, MoyenPaiement.CREDIT_CARD_NOFED]),
             }
 
         return render(request, "sales/list.html", context)
@@ -80,7 +81,7 @@ class Sales(viewsets.ViewSet):
         print('-> url = change_payment_method !')
 
         mp = MoyenPaiement.objects.get(pk=request.data['PaymentMethod_pk'])
-        ArticleVendu.objects.filter(pk=request.data['Article_pk']).update(
+        ArticleVendu.objects.filter(commande=request.data['commande_pk']).update(
             moyen_paiement=mp
         )
 
