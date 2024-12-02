@@ -1,14 +1,14 @@
 {% load i18n %}
 <style>
 /* header */
-.nav-com-htmx {
+.nav-order-htmx {
   display: flex;
   flex-direction: row;
   width: calc(100% - 120px);
   height: 100%;
 }
 
-.nav-com-htmx-titre {
+.nav-order-htmx-titre {
   width: 15%;
   display: flex;
   flex-direction: column;
@@ -17,7 +17,7 @@
   font-size: 2vw;
 }
 
-.nav-com-htmx-menu {
+.nav-order-htmx-menu {
   width: 85%;
   display: flex;
   flex-direction: row;
@@ -26,51 +26,52 @@
   padding-right: 8px;
 }
 
-.com-legende, .com-content {
+.order-legende, .order-content {
   width: 98%;
   margin: 0;
   padding: 4px;
   background-color: #171817;
 }
 
-.com-content {
+.order-content {
   margin: 4px 0;
   background-color: #303130;
 }
 
-.com-legende-time-w {
+.order-legende-time-w {
   width: 10%;
 }
 
-.com-legende-articles-w {
+.order-legende-articles-w {
   width: 30%;
 }
 
-.com-legende-prix-w {
+.order-legende-prix-w {
   width: 10%;
 }
 
-.com-legende-mpaiement-w {
+.order-legende-mpayment-w {
   width: 20%;
 }
 
-.com-legende-update-mpaiement-w {
+.order-legende-update-mpayment-w {
   width: 30%;
+  justify-content: end;
 }
 </style>
 
 <div class="BF-col">
   <!-- légende -->
-  <div class="com-legende BF-ligne-deb mb4px">
-    <div class="com-legende-time-w BF-ligne">&#8986; hh:mm</div>
-    <div class="com-legende-articles-w BF-ligne">articles</div>
-    <div class="com-legende-prix-w BF-ligne">{% trans 'prix' %}</div>
-    <div class="com-legende-mpaiement-w BF-ligne">{% trans 'moyen de paiement' %}</div>
-    <div class="com-legende-update-mpaiement-w BF-ligne">{% trans 'modifier moyen de paiement' %}</div>
+  <div class="order-legende BF-ligne-deb mb4px">
+    <div class="order-legende-time-w BF-ligne">&#8986; hh:mm</div>
+    <div class="order-legende-articles-w BF-ligne">articles</div>
+    <div class="order-legende-prix-w BF-ligne">{% trans 'prix' %}</div>
+    <div class="order-legende-mpayment-w BF-ligne">{% trans 'moyen de payment' %}</div>
+    <div class="order-legende-update-mpayment-w BF-ligne">{% trans 'modifier moyen de paiement' %}</div>
   </div>
 
   {% for uuid_command, cmd in commands_today.items %}
-  <form id="com-target-{{ uuid_command }}" class="com-content BF-ligne-deb mb4px">
+  <form id="order-target-{{ uuid_command }}" class="order-content BF-ligne-deb mb4px">
     {% include "sales/components/order.html" %}
   </form>
   {% endfor %}

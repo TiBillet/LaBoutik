@@ -77,6 +77,7 @@ class Sales(viewsets.ViewSet):
 
     @action(detail=False, methods=['POST'])
     def change_payment_method(self, request):
+        print('-> url = change_payment_method !')
 
         mp = MoyenPaiement.objects.get(pk=request.data['PaymentMethod_pk'])
         ArticleVendu.objects.filter(pk=request.data['Article_pk']).update(
@@ -87,7 +88,7 @@ class Sales(viewsets.ViewSet):
         # Todo : Retourner le template de la ligne article
         return render(request, "sales/list.html", context)
 
-
+    '''
     #logger.info(f'data = { cmd.items() }')
     #import ipdb; ipdb.set_trace()
     def create(self, request: HttpRequest):
@@ -117,7 +118,7 @@ class Sales(viewsets.ViewSet):
 
         # retour partiel htmx
         return render(request, "sales/components/order.html", context)
-
+    '''
 
 class Membership(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
