@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'channels',
     'rest_framework',
     'rest_framework_api_key',
     'APIcashless',
@@ -184,15 +185,15 @@ TEMPLATES = [
 WSGI_APPLICATION = 'Cashless.wsgi.application'
 
 # Pour WebSocket :
-# ASGI_APPLICATION = 'Cashless.routing.application'
-# CHANNEL_LAYERS = {
-#     'default': {
-#         'BACKEND': 'channels_redis.core.RedisChannelLayer',
-#         'CONFIG': {
-#             "hosts": [('cashless_redis', 6379)],
-#         },
-#     },
-# }
+ASGI_APPLICATION = 'Cashless.asgi.application'
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('redis', 6379)],
+        },
+    },
+}
 
 
 # Database

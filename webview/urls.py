@@ -28,7 +28,11 @@ urlpatterns = [
     url('close_all_pos', views.close_all_pos),
 
     # url('nfc_reader', views.nfc_reader),
-    path('nfc_reader', views.NfcReader.as_view(), name="nfc_reader"),
+    # path('nfc_reader', views.NfcReader.as_view(), name="nfc_reader"),
+
+    ## TUTO WEBSOCKET
+    path('chat/', views.chat, name='chat'),
+    path('chat/<str:room_name>/', views.room, name='room'),
 
     # La vue de l'application :
     url('', views.index),

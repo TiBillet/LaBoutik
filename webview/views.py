@@ -166,6 +166,7 @@ def login_hardware(request):
     return render(request, 'login_hardware.html', {'language': settings.LANGUAGE_CODE})
 
 
+"""
 # @csrf_exempt
 # @api_view(['POST'])
 class NfcReader(APIView):
@@ -197,6 +198,7 @@ class NfcReader(APIView):
                 return Response('Appareil non actif', status=status.HTTP_401_UNAUTHORIZED)
 
         return Response('Heing ?', status=status.HTTP_404_NOT_FOUND)
+"""
 
 
 @login_required(login_url='/wv/login_hardware')
@@ -1518,3 +1520,15 @@ def paiement(request):
         return Response(validator.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     return HttpResponseNotFound()
+
+
+
+### TUTORIEL WEBSOCKET
+
+def chat(request):
+    return render(request, 'websocket/tuto/chat.html')
+
+def room(request, room_name):
+    return render(request, 'websocket/tuto/room.html', {
+        'room_name': room_name
+    })
