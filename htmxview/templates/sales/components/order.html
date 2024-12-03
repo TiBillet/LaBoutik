@@ -1,5 +1,6 @@
 {% load webviewTags %}
 {% load i18n %}
+{% load static %}
 
 <style>
 .order-validate {
@@ -47,7 +48,6 @@
   border: 1px solid #ffffff;
 }
 </style>
-
 <input type="hidden" name="uuid_command" value="{{ uuid_command }}" />
 {% with first_article=cmd.articles.0 %}
     <div class="order-legende-time-w BF-ligne">{{ first_article.date_time|time:"H:i" }}</div>
@@ -63,26 +63,28 @@
       {% endfor %}
     </div>
     <div class="order-legende-prix-w BF-ligne">{{ cmd.total|floatformat:2 }}</div>
-    <div class="order-legende-mpayment-w BF-ligne">{{ first_article.moyen_payment }}</div>
+    <div class="order-legende-mpayment-w BF-ligne">{{ first_article.moyen_paiement }}</div>
     <div class="order-legende-update-mpayment-w BF-ligne">
       <!-- moyens de paiement -->
       {% for paiement in moyens_paiement %}
       <div class="order-sel-mpayment">
         {% with uuid=paiement.id|stringformat:"s" %}
-        <input type="radio" id="order-payment-radio-{{ uuid }}-{{ uuid_command }}" name="method_payment" value="{{ uuid }}" onclick="deselectPayment(event)" />
+        <input type="radio" id="order-payment-radio-{{ uuid }}-{{ uuid_command }}" name="method_payment_{{ uuid_command }}" value="{{ uuid }}" 
+          {% if forloop.counter == 1 %} required {% endif %} />
         <label for="order-payment-radio-{{ uuid }}-{{ uuid_command }}">{{ paiement.name }}</label>  
         {% endwith %}
       </div>
       {% endfor %}
       <!-- bt valider -->
-      <button hx-post="/htmx/sales/change_payment_method/" hx-target="#order-target-{{ uuid_command }}" hx-swap="innerHTML"
-        class="order-validate order-bt fond-ok coulBlanc">
-        Valider
+      <button class="order-validate order-bt fond-ok coulBlanc" hx-indicator="#ind-{{ forloop.counter }}" on>
+        <div>Valider</div>
+        <img id="ind-{{ forloop.counter }}" src="{% static 'htmxview/bars.svg' %}" class="htmx-indicator"/>
       </button>
     </div>
 {% endwith %}
 
 <script>
+// click on 3 dots show command's articles 
 function commandShowArticles(cibles) {
   document.querySelectorAll('.' + cibles).forEach(ele => {
     ele.classList.toggle("order-show-article")

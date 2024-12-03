@@ -71,7 +71,7 @@
   </div>
 
   {% for uuid_command, cmd in commands_today.items %}
-  <form id="order-target-{{ uuid_command }}" class="order-content BF-ligne-deb mb4px">
+  <form id="order-target-{{ uuid_command }}" class="order-content BF-ligne-deb mb4px" hx-post="/htmx/sales/change_payment_method/" hx-target="#order-target-{{ uuid_command }}" hx-swap="innerHTML">
     {% include "sales/components/order.html" %}
   </form>
   {% endfor %}

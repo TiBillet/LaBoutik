@@ -13,6 +13,8 @@ from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse
 from administration.adminroot import ArticlesAdmin
 from webview.serializers import debut_fin_journee, CommandeSerializer
 from django.core.paginator import Paginator
+# nico
+from uuid import UUID
 
 logger = logging.getLogger(__name__)
 
@@ -65,8 +67,6 @@ class Sales(viewsets.ViewSet):
 
         context = {
             'commands_today': commands_today,
-            'authorized_management_mode': authorized_management_mode,
-            'oldest_first': oldest_first,
             'moyens_paiement': MoyenPaiement.objects.filter(categorie__in=[MoyenPaiement.CASH,MoyenPaiement.CHEQUE,MoyenPaiement.CREDIT_CARD_NOFED]),
             }
 
@@ -76,14 +76,36 @@ class Sales(viewsets.ViewSet):
     def change_payment_method(self, request):
         print('-> url = change_payment_method !')
 
-        mp = MoyenPaiement.objects.get(pk=request.data['PaymentMethod_pk'])
-        ArticleVendu.objects.filter(commande=request.data['commande_pk']).update(
-            moyen_paiement=mp
-        )
+        uuid_command = request.data['uuid_command']
+        moyen_paiement = request.data['method_payment_' + uuid_command]
+        mp = MoyenPaiement.objects.get(pk=moyen_paiement)
 
-        context = {}
-        # Todo : Retourner le template de la ligne article
-        return render(request, "sales/list.html", context)
+        # change le mode de paiement
+        ArticleVendu.objects.filter(commande=uuid_command).update(moyen_paiement=mp)
+
+        commands_today = {}
+        # get articles from uuid command
+        articles_vendus = ArticleVendu.objects.filter(commande=uuid_command)
+        print(f"articles_vendus = {articles_vendus}")
+
+        for article in articles_vendus:
+            if commands_today.get(article.commande) == None:
+                commands_today[article.commande] = {
+                    'articles': [article],
+                    'total': article.qty * article.prix
+                }
+            else:
+                commands_today[article.commande]['articles'].append(article)
+                commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (article.qty * article.prix)
+
+        # import ipdb; ipdb.set_trace()
+        context = {
+            'cmd': commands_today[UUID(uuid_command)],
+            'uuid_command': uuid_command,
+            'moyens_paiement': MoyenPaiement.objects.filter(categorie__in=[MoyenPaiement.CASH,MoyenPaiement.CHEQUE,MoyenPaiement.CREDIT_CARD_NOFED]),
+        }
+
+        return render(request, "sales/components/order.html", context)
 
 class Membership(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
