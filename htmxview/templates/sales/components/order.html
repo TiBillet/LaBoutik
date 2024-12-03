@@ -49,7 +49,6 @@
 </style>
 
 <input type="hidden" name="uuid_command" value="{{ uuid_command }}" />
-
 {% with first_article=cmd.articles.0 %}
     <div class="order-legende-time-w BF-ligne">{{ first_article.date_time|time:"H:i" }}</div>
     <!-- articles -->
@@ -64,34 +63,17 @@
       {% endfor %}
     </div>
     <div class="order-legende-prix-w BF-ligne">{{ cmd.total|floatformat:2 }}</div>
-    <div class="order-legende-mpayment-w BF-ligne">{{ first_article.moyen_payment|translate }}</div>
+    <div class="order-legende-mpayment-w BF-ligne">{{ first_article.moyen_payment }}</div>
     <div class="order-legende-update-mpayment-w BF-ligne">
-      <!-- espèces -->
-      {% if first_article.pos.accepte_especes %}
+      <!-- moyens de paiement -->
+      {% for paiement in moyens_paiement %}
       <div class="order-sel-mpayment">
-        <input type="radio" id="order-payment-radio-espece-{{ uuid_command }}" name="method_payment_{{ uuid_command }}" value="espece" onclick="deselectPayment(event)" />
-        <label for="order-payment-radio-espece-{{ uuid_command }}">{% trans 'Espèces' %}</label>
+        {% with uuid=paiement.id|stringformat:"s" %}
+        <input type="radio" id="order-payment-radio-{{ uuid }}-{{ uuid_command }}" name="method_payment" value="{{ uuid }}" onclick="deselectPayment(event)" />
+        <label for="order-payment-radio-{{ uuid }}-{{ uuid_command }}">{{ paiement.name }}</label>  
+        {% endwith %}
       </div>
-      {% endif %}
-      <!-- cb -->
-      {% if first_article.pos.accepte_carte_bancaire %}
-      <div class="order-sel-mpayment">
-        <input type="radio" id="order-payment-radio-cb-{{ uuid_command }}" name="method_payment_{{ uuid_command }}" value="cb" onclick="deselectPayment(event)"/>
-        <label for="order-payment-radio-cb-{{ uuid_command }}">{% trans 'CB' %}</label>
-      </div>
-      {% endif %}
-      <!-- chèque -->
-      {% if first_article.pos.accepte_cheque %}
-      <div class="order-sel-mpayment">
-        <input type="radio" id="order-payment-radio-cheque-{{ uuid_command }}" name="method_payment_{{ uuid_command }}" value="cheque" onclick="deselectPayment(event)"/>
-        <label for="order-payment-radio-cheque-{{ uuid_command }}">{% trans 'Chèque' %}</label>
-      </div>
-      {% endif %}
-      <!-- cashless -->
-      <div class="order-sel-mpayment">
-        <input type="radio" id="order-payment-radio-cashless-{{ uuid_command }}" name="method_payment_{{ uuid_command }}" value="cashless" onclick="deselectPayment(event)"/>
-        <label for="order-payment-radio-cashless-{{ uuid_command }}">cashless</label>
-      </div>
+      {% endfor %}
       <!-- bt valider -->
       <button hx-post="/htmx/sales/change_payment_method/" hx-target="#order-target-{{ uuid_command }}" hx-swap="innerHTML"
         class="order-validate order-bt fond-ok coulBlanc">

@@ -36,9 +36,6 @@ class Sales(viewsets.ViewSet):
             if request.GET.get('authorized_management_mode').lower().capitalize() == 'True':
                 authorized_management_mode = True
 
-        print(f'oldest_first = {oldest_first}')
-        print(f'authorized_management_mode = {authorized_management_mode}')
-
         if oldest_first:
             order = 'datetime'
 
@@ -57,7 +54,6 @@ class Sales(viewsets.ViewSet):
         page_number = request.GET.get('page')
 
         for article in articles_vendus:
-            print(f"-> article = { article }  --  test = {commands_today.get(article.commande)}")
             if commands_today.get(article.commande) == None:
                 commands_today[article.commande] = {
                     'articles': [article],
@@ -71,7 +67,7 @@ class Sales(viewsets.ViewSet):
             'commands_today': commands_today,
             'authorized_management_mode': authorized_management_mode,
             'oldest_first': oldest_first,
-            'moyen_paiements': MoyenPaiement.objects.filter(categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CHEQUE, MoyenPaiement.CREDIT_CARD_NOFED]),
+            'moyens_paiement': MoyenPaiement.objects.filter(categorie__in=[MoyenPaiement.CASH,MoyenPaiement.CHEQUE,MoyenPaiement.CREDIT_CARD_NOFED]),
             }
 
         return render(request, "sales/list.html", context)
@@ -88,38 +84,6 @@ class Sales(viewsets.ViewSet):
         context = {}
         # Todo : Retourner le template de la ligne article
         return render(request, "sales/list.html", context)
-
-    '''
-    #logger.info(f'data = { cmd.items() }')
-    #import ipdb; ipdb.set_trace()
-    def create(self, request: HttpRequest):
-        # TODO: sécuriser la méthode, try catch ?
-
-        data = request.data
-        print(f"data: {data}")
-        tag_id_cm = data['tag_id_cm']
-
-        # récupère carte
-        carte = CarteCashless.objects.filter(tag_id=tag_id_cm)[0]
-        authorized_management_mode = CarteMaitresse.objects.get(carte_id=carte.id).edit_mode
-
-        # TODO: back => valider la commande
-        # dev mock, à remplacer par la validatio de la commande
-        validateOrder = True
-
-        # commande validée
-        order = CommandeSauvegarde.objects.filter(uuid=data['uuid_commande'])
-        print(f"order: {order.values()}")
-
-        context = { 
-            'authorized_management_mode': authorized_management_mode,
-            'validateOrder': validateOrder,
-            'cmd': order[0]
-        }
-
-        # retour partiel htmx
-        return render(request, "sales/components/order.html", context)
-    '''
 
 class Membership(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
