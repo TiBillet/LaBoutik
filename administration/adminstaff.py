@@ -365,7 +365,12 @@ class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
 
     # Ne pas afficher les articles archivés
     def get_queryset(self, request):
-        qs = super(ArticlesAdmin, self).get_queryset(request).filter(archive=False)
+        qs = (super(ArticlesAdmin, self).get_queryset(request)
+              .filter(archive=False)
+              .exclude(methode_choices=Articles.FRACTIONNE))
+        # affiche par defaul les ventes :
+        if not request.GET.get('methode_choices__exact'):
+            qs = qs.filter(methode_choices=Articles.VENTE)
         return qs
 
 
@@ -712,8 +717,9 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
     # default_filters = ('pos__id__exact=48',)
 
     def has_delete_permission(self, request, obj=None):
-        group_compta, created = Group.objects.get_or_create(name="comptabilite")
-        return group_compta in request.user.groups.all()
+        return False
+        # group_compta, created = Group.objects.get_or_create(name="comptabilite")
+        # return group_compta in request.user.groups.all()
 
     def has_add_permission(self, request):
         return False
