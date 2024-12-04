@@ -101,6 +101,13 @@ services:
       - traefik.docker.network=frontend
       - traefik.http.routers.laboutik_nginx.tls.certresolver=myresolver
       - traefik.http.routers.laboutik_nginx.rule=Host(`${DOMAIN}`)
+
+      # Headers optionnel de sécurité et pour le ws
+      - "traefik.http.routers.laboutik_nginx.middlewares=laboutik_nginx_custom_header"
+      - "traefik.http.middlewares.laboutik_nginx_custom_header.headers.customResponseHeaders.Strict-Transport-Security=max-age=15552000; includeSubDomains; preload;"
+      - "traefik.http.middlewares.laboutik_nginx_custom_header.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.laboutik_nginx_custom_header.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.laboutik_nginx_custom_header.headers.customRequestHeaders.X-Forwarded-Proto=https"
     networks:
       - frontend
       - laboutik_backend

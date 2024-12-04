@@ -15,11 +15,12 @@ django.setup()
 
 application = ProtocolTypeRouter({
     "http": AsgiHandler(),
+    # AllowedHost vérifie le ALLOWED_HOST de settings
     "websocket": AllowedHostsOriginValidator(
         AuthMiddlewareStack(
             URLRouter(
                 webview.routing.websocket_urlpatterns
             )
-        )
+        ),
     ),
 })
