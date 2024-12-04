@@ -1529,6 +1529,14 @@ def paiement(request):
 def chat(request):
     return render(request, 'websocket/tuto/chat.html')
 
+def stripe_tpe(request, pos_uuid):
+    pos = get_object_or_404(PointDeVente, pk=pos_uuid)
+    context = {
+        pos:pos,
+    }
+    return render(request, 'websocket/stripe_terminal.html', context)
+
+
 def room(request, room_name):
     return render(request, 'websocket/tuto/room.html', {
         'room_name': room_name
