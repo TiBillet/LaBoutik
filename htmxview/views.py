@@ -1,16 +1,20 @@
 import logging
+from datetime import timedelta, datetime
 from lib2to3.fixes.fix_input import context
 
 from django.http import HttpRequest
 from django.shortcuts import render
+from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
-from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse, ArticleVendu, MoyenPaiement
+from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse, ArticleVendu, MoyenPaiement, \
+    Configuration
 from administration.adminroot import ArticlesAdmin
+from administration.ticketZ import TicketZ
 from webview.serializers import debut_fin_journee, CommandeSerializer
 from django.core.paginator import Paginator
 # nico
@@ -52,6 +56,7 @@ class Sales(viewsets.ViewSet):
         articles_vendus = ArticleVendu.objects.filter(
             date_time__gte=debut_journee
         )
+
         paginator = Paginator(articles_vendus, 20)
         page_number = request.GET.get('page')
 
@@ -65,7 +70,21 @@ class Sales(viewsets.ViewSet):
                 commands_today[article.commande]['articles'].append(article)
                 commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (article.qty * article.prix)
 
+        # Ticket Z temporaire :
+        config = Configuration.get_solo()
+        heure_cloture = config.cloture_de_caisse_auto
+
+        start = timezone.localtime()
+        if start.time() < heure_cloture:
+            # Alors on est au petit matin, on prend la date de la veille
+            start = start - timedelta(days=1)
+        matin = timezone.make_aware(datetime.combine(start, heure_cloture))
+
+        ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
+        ticket_today = ticketZ.to_dict if ticketZ.calcul_valeurs() else {}
+
         context = {
+            'ticket_today': ticket_today,
             'commands_today': commands_today,
             'moyens_paiement': MoyenPaiement.objects.filter(categorie__in=[MoyenPaiement.CASH,MoyenPaiement.CHEQUE,MoyenPaiement.CREDIT_CARD_NOFED]),
             }
