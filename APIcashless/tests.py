@@ -2063,8 +2063,8 @@ class CashlessTest(TiBilletTestCase):
                                                             carte__membre__isnull=False).first().carte.membre
         pdv = PointDeVente.objects.get(name="Adhésions")
         article: Articles = Articles.objects.get(methode_choices=Articles.BADGEUSE)
-        self.assertTrue(article.subscription_fedow_asset)
-        self.assertIsInstance(article.subscription_fedow_asset, MoyenPaiement)
+        self.assertTrue(article.fedow_asset)
+        self.assertIsInstance(article.fedow_asset, MoyenPaiement)
 
         # Solde insuffisant
         json_achats = {"articles": [{"pk": f"{article.pk}", "qty": 1}],
@@ -2084,7 +2084,7 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(av.article, article)
         self.assertEqual(av.carte, carte)
         # Le moyen de paiement est l'asset badgeuse
-        self.assertEqual(av.moyen_paiement, article.subscription_fedow_asset)
+        self.assertEqual(av.moyen_paiement, article.fedow_asset)
 
     @tag('fedow')
     def test_fedow(self):

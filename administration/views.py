@@ -158,9 +158,6 @@ class RecalculerCloture(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request, pk_uuid):
-        if not request.user.is_superuser:
-            messages.add_message(request, messages.ERROR, f"Tu tu tut")
-
         cloture_caisse = get_object_or_404(ClotureCaisse, pk=pk_uuid)
         start = cloture_caisse.start
         end = cloture_caisse.end

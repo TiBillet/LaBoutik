@@ -10,6 +10,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 
 from django.core.cache import cache
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils import translation
 from django.utils.translation import gettext as _
@@ -245,22 +246,76 @@ class CustomArticleRequiredForm(forms.ModelForm):
 
             self.fields['categorie'].help_text = help_text
 
-        help_text_direct_to_printer = _("Activez pour une impression directe après chaque vente.")
+    # def clean(self):
+    #     raise ValidationError("Dates are incorrect")
 
-        self.fields['direct_to_printer'].help_text = help_text_direct_to_printer
+    def clean_fedow_asset(self):
+        # Vérification des assets en fonction de la methode de l'article
+        data = self.cleaned_data
+        asset = data.get('fedow_asset')
+        methode = data.get('methode_choices')
+        if methode not in [
+            Articles.RETOUR_CONSIGNE,
+            Articles.VIDER_CARTE,
+            Articles.VOID_CARTE,
+            Articles.FRACTIONNE,
+            Articles.CASHBACK,
+            Articles.VENTE]:
+            if not asset:
+                raise ValidationError(_("Choisissez un asset fedow correspondant."))
 
+        if methode == Articles.ADHESIONS:
+            if asset.categorie not in [
+                MoyenPaiement.ADHESION,
+                MoyenPaiement.EXTERNAL_MEMBERSHIP,
+                MoyenPaiement.MEMBERSHIP]:
+                raise ValidationError(_("Choisissez un asset de type adhésion"))
+
+        elif methode == Articles.BADGEUSE:
+            if asset.categorie not in [
+                MoyenPaiement.EXTERNAL_BADGE,
+                MoyenPaiement.BADGE]:
+                raise ValidationError(_("Choisissez un asset de type badge"))
+
+        elif methode == Articles.RECHARGE_EUROS:
+            if asset.categorie not in [
+                MoyenPaiement.LOCAL_EURO,
+                MoyenPaiement.EXTERIEUR_FED]:
+                raise ValidationError(_("Choisissez un asset de type Euro"))
+
+        elif methode == Articles.RECHARGE_CADEAU:
+            if asset.categorie not in [
+                MoyenPaiement.LOCAL_GIFT,
+                MoyenPaiement.EXTERIEUR_GIFT]:
+                raise ValidationError(_("Choisissez un asset de type Cadeau"))
+
+        elif methode == Articles.FIDELITY:
+            if asset.categorie not in [
+                MoyenPaiement.FIDELITY,
+                MoyenPaiement.EXTERNAL_FIDELITY]:
+                raise ValidationError(_("Choisissez un asset de type point de fidélité"))
+
+        elif methode == Articles.RECHARGE_TIME:
+            if asset.categorie not in [
+                MoyenPaiement.TIME,
+                MoyenPaiement.EXTERNAL_TIME]:
+                raise ValidationError(_("Choisissez un asset de type Monnaie Temps"))
+
+        return asset
+
+    # def clean(self):
+    #     import ipdb; ipdb.set_trace()
 
 class PosInline(admin.TabularInline):
     model = Articles.points_de_ventes.through
     extra = 1
-    verbose_name = u"Point de vente"
-    verbose_name_plural = u"Points de vente"
+    verbose_name = _("Point de vente")
+    verbose_name_plural = _("Points de vente")
 
 
 class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
     form = CustomArticleRequiredForm
     inlines = [PosInline]
-
 
     list_display = (
         'poid_liste',
@@ -283,7 +338,7 @@ class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
     )
 
     search_fields = ['name', ]
-    list_filter = ('categorie',)
+    list_filter = ('categorie', 'methode_choices')
 
     fieldsets = (
         (None, {
@@ -299,40 +354,45 @@ class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
         }),
         ('Special', {
             'fields': (
-                'direct_to_printer',
-                'decompte_ticket',
-                'subscription_fedow_asset',
-                'subscription_type',
                 'methode_choices',
+                'fedow_asset',
+                # 'subscription_type',
+                'decompte_ticket',
+                'direct_to_printer',
             ),
         }),
     )
 
-    # Pour ne voir que les articles sans Cashless :
+    # Ne pas afficher les articles archivés
     def get_queryset(self, request):
-        qs = super(ArticlesAdmin, self).get_queryset(request)
+        qs = (super(ArticlesAdmin, self).get_queryset(request)
+              .filter(archive=False)
+              .exclude(methode_choices=Articles.FRACTIONNE))
+        # affiche par defaul les ventes :
+        if not request.GET.get('methode_choices__exact'):
+            qs = qs.filter(methode_choices=Articles.VENTE)
+        return qs
 
-        return qs.filter(
-            Q(methode_choices=Articles.VENTE)
-            | Q(methode_choices=Articles.RETOUR_CONSIGNE)
-            | Q(methode_choices=Articles.BADGEUSE)
-            | Q(methode_choices=Articles.ADHESIONS)
-            | Q(methode_choices=Articles.CASHBACK)
-        ).filter(archive=False)
 
-    # On retire les categories cashless dans les categories
+    # On retire les non utile dans les champs foreign key
     def get_form(self, request, obj=None, **kwargs):  # Just added this override
         form = super(ArticlesAdmin, self).get_form(request, obj, **kwargs)
-        if form.base_fields.get('categorie'):
-            form.base_fields['categorie'].queryset = form.base_fields['categorie'].queryset.exclude(cashless=True)
+        # if form.base_fields.get('categorie'):
+        #     form.base_fields['categorie'].queryset = form.base_fields['categorie'].queryset.exclude(cashless=True)
 
-        if form.base_fields.get('subscription_fedow_asset'):
-            form.base_fields['subscription_fedow_asset'].queryset = (
-                form.base_fields['subscription_fedow_asset'].queryset.filter(categorie__in=[
-                    MoyenPaiement.EXTERNAL_MEMBERSHIP,
-                    MoyenPaiement.MEMBERSHIP,
-                    MoyenPaiement.EXTERNAL_BADGE,
-                    MoyenPaiement.BADGE,
+        if form.base_fields.get('fedow_asset'):
+            form.base_fields['fedow_asset'].queryset = (
+                form.base_fields['fedow_asset'].queryset.exclude(categorie__in=[
+                    MoyenPaiement.CASH,
+                    MoyenPaiement.CREDIT_CARD_NOFED,
+                    MoyenPaiement.CHEQUE,
+                    MoyenPaiement.FRACTIONNE,
+                    MoyenPaiement.FEDOW,
+                    MoyenPaiement.STRIPE_NOFED,
+                    MoyenPaiement.ARDOISE,
+                    MoyenPaiement.COMMANDE,
+                    MoyenPaiement.OCECO,
+                    MoyenPaiement.STRIPE_FED,
                 ]))
 
         return form
@@ -465,6 +525,9 @@ class CommandeAdmin(admin.ModelAdmin):
 
 staff_admin_site.register(CommandeSauvegarde, CommandeAdmin)
 
+'''
+# ANCIENNE METHODE QU'ON GARDE POUR L'EXEMPLE
+# Permet de créer un filter perso
 
 class CategorieFilter(admin.SimpleListFilter):
     # Human-readable title which will be displayed in the
@@ -514,6 +577,7 @@ class CategorieFilter(admin.SimpleListFilter):
             return queryset.filter(article__methode_choices__in=[Articles.RECHARGE_EUROS, Articles.RECHARGE_CADEAU])
         elif self.value() == "VENTE":
             return queryset.filter(article__methode_choices=Articles.VENTE)
+'''
 
 
 class CarteCashlessAdmin(admin.ModelAdmin):
@@ -578,8 +642,28 @@ def send_to_odoo(modeladmin, request, queryset):
             messages.add_message(request, messages.ERROR, f"ODOO ERROR : {e}")
 
 
+# Définition d'un formulaire personnalisé
+class ArticlesVendusAdminForm(forms.ModelForm):
+    class Meta:
+        model = ArticleVendu
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            if self.instance.moyen_paiement.categorie not in [MoyenPaiement.CASH, MoyenPaiement.CREDIT_CARD_NOFED,
+                                                              MoyenPaiement.CHEQUE]:
+                self.fields['moyen_paiement'].disabled = True
+
+            else:
+                # Filtre pour ne montrer que "Carte bancaire" et "Espèce"
+                self.fields['moyen_paiement'].queryset = self.fields['moyen_paiement'].queryset.filter(
+                    categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CREDIT_CARD_NOFED, MoyenPaiement.CHEQUE])
+
+
 class ArticlesVendusAdmin(admin.ModelAdmin):
     # change_list_template = 'admin_totals_v2/change_list_totals.html'
+    form = ArticlesVendusAdminForm
 
     list_display = (
         '_article',
@@ -604,14 +688,22 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'carte',
         # 'comptabilise',
     )
-    # list_editable = ('moyen_paiement',)
 
-    readonly_fields = list_display + fields
+    readonly_fields = (
+        'article',
+        'prix',
+        'qty',
+        'carte',
+    )
+
+    # list_editable = ('moyen_paiement',)
 
     list_per_page = 50
     list_filter = [
         'article',
-        CategorieFilter,
+        'article__methode_choices',
+        'article__categorie',
+        # CategorieFilter,
         'membre',
         'carte',
         ('date_time', DateRangeFilter),
@@ -625,8 +717,9 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
     # default_filters = ('pos__id__exact=48',)
 
     def has_delete_permission(self, request, obj=None):
-        group_compta, created = Group.objects.get_or_create(name="comptabilite")
-        return group_compta in request.user.groups.all()
+        return False
+        # group_compta, created = Group.objects.get_or_create(name="comptabilite")
+        # return group_compta in request.user.groups.all()
 
     def has_add_permission(self, request):
         return False
@@ -1349,14 +1442,16 @@ class ClotureCaisseAdmin(admin.ModelAdmin):
         self.root = request.user.is_superuser
         return ClotureCaisseChangeList
 
-    def buttons_actions(self, obj):
+    def buttons_actions(self, obj: ClotureCaisse):
         html = f'<a class="button" href="/rapport/RapportFromCloture/{obj.pk}">Rapport</a>&nbsp;' \
                f'<a class="button" href="/rapport/TicketZsimpleFromCloture/{obj.pk}">Ticket Z</a>&nbsp;' \
                f'<a class="button" href="/rapport/ClotureToPrinter/{obj.pk}?next={self.uri}">-> Thermal Print</a>&nbsp;' \
                f'<a class="button" href="/rapport/ClotureToMail/{obj.pk}?next={self.uri}">-> Mail</a>&nbsp;'
 
-        if self.root:
-            html += f'<a class="button" href="/rapport/RecalculerCloture/{obj.pk}?next={self.uri}">-> Reload</a>&nbsp;'
+        # Si on est root ou si le rapport a été généré il y a moins de 24h
+        # if self.root or obj.end > (timezone.localtime() - timezone.timedelta(days=1)):
+        html += f'<a class="button" href="/rapport/RecalculerCloture/{obj.pk}?next={self.uri}">-> Reload</a>&nbsp;'
+
         return format_html(html)
 
     def has_delete_permission(self, request, obj=None):

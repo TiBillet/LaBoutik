@@ -559,7 +559,7 @@ class Commande:
 
         # FEDOW : Liste des assets utilisés ou rechargés
         self.used_assets = {}
-        self.refill_assets = {}
+        self.refill_token = {}
 
         self.reponse = {}
         self.total_vente_article = self._total_vente_article(data)
@@ -739,8 +739,8 @@ class Commande:
                 logger.info(f"    Carte : {asset.carte.number} - {asset}")
 
             # Une fois tout les paiments passés, on met à jour les assets coté Fedow
-            self._send_to_fedow_used_assets()
-            self._send_to_fedow_refill_assets()
+            self._send_to_fedow_used_token()
+            self._send_to_fedow_refill_token()
 
             self.reponse['carte'] = CarteCashlessSerializer(self.carte_db).data
             self.reponse['total_sur_carte_avant_achats'] = f"{dround(self.total_in_payments_assets)}" \
@@ -829,7 +829,7 @@ class Commande:
         else:
             self.used_assets[asset] = qty
 
-    def _send_to_fedow_used_assets(self):
+    def _send_to_fedow_used_token(self):
 
         # Mise à jour des tokens vers fedow :
         # import ipdb; ipdb.set_trace()
@@ -884,14 +884,15 @@ class Commande:
                     if str(self.data) != signing.loads(data_signed):
                         raise NotAcceptable(detail=f"Erreur de signature", code=None)
 
-    def _refill_assets(self, asset, qty):
-        if self.refill_assets.get(asset):
-            self.refill_assets[asset] += qty
+    # Fonction qui ajoute dans un dictionnaire les tokens à envoyer à Fedow
+    def _refill_token(self, token, qty):
+        if self.refill_token.get(token):
+            self.refill_token[token] += qty
         else:
-            self.refill_assets[asset] = qty
+            self.refill_token[token] = qty
 
-    def _send_to_fedow_refill_assets(self):
-        for asset, amount in self.refill_assets.items():
+    def _send_to_fedow_refill_token(self):
+        for asset, amount in self.refill_token.items():
             carte = asset.carte
             wallet = carte.get_wallet()
 
@@ -957,7 +958,7 @@ class Commande:
         #     logger.warning(f"methode_BG : pas de mail")
         #     raise NotAcceptable(detail=f"Pas de mail sur la carte", code=None)
 
-        asset = article.subscription_fedow_asset
+        asset = article.fedow_asset
 
         if article.prix > 0:
             logger.warning(f"Article badge payant, en cours de dev.")
@@ -1066,49 +1067,18 @@ class Commande:
 
     # RECHARGE_EUROS = 'RE'
     def methode_RE(self, article, qty):
-        total = dround(article.prix * qty)
-        reste = total
-        self.total_vente_article += total
-
-        # On va chercher l'asset principal de la carte.
-        # S'il n'existe pas, cette fonction le créera.
-        local_euro = self.asset_principal()
-        local_euro.qty += reste
-
-        self._refill_assets(local_euro, reste)
-
-        ArticleVendu.objects.create(
-            article=article,
-            prix=article.prix,
-            qty=qty,
-            pos=self.point_de_vente,
-            carte=self.carte_db,
-            membre=self.carte_db.membre,
-            responsable=self.responsable,
-            moyen_paiement=self.moyen_paiement,
-            commande=self.uuid_commande,
-            uuid_paiement=self.uuid_paiement,
-            table=self.table,
-            ip_user=self.ip_user,
-        )
-
-        self.reponse['route'] = "transaction_ajout_monnaie_virtuelle"
-
-    # RECHARGE CASHLESS MONNAIE EXTERIEUR FIDUCIAIRE NON CADEAU
-    def methode_RF(self, article, qty):
-        total = dround(article.prix * qty)
-        reste = total
-        self.total_vente_article += total
-
-        # On va chercher l'asset correspondant à l'article de recharge
-        asset_fedow: MoyenPaiement = article.subscription_fedow_asset
-        if not asset_fedow:
+        # On check qu'il existe bien un token lié à l'article de recharge
+        if not article.fedow_asset:
             raise NotAcceptable("No fedow asset connected.")
-        # Fabrication du token de la carte avec cet asset
-        token_card, created = self.carte_db.assets.get_or_create(monnaie=asset_fedow)
-        token_card.qty += reste
 
-        self._refill_assets(token_card, reste)
+        total = dround(article.prix * qty)
+        reste = total
+        self.total_vente_article += total
+
+        token, created = self.carte_db.assets.get_or_create(monnaie=article.fedow_asset)
+        self.payments_assets.append(token)
+        token.qty += reste
+        self._refill_token(token, reste)
 
         ArticleVendu.objects.create(
             article=article,
@@ -1126,16 +1096,17 @@ class Commande:
         )
 
         self.reponse['route'] = "transaction_ajout_monnaie_virtuelle"
+
 
     # RECHARGE_CADEAU = 'RC'
-    def methode_RC(self, article, qty):
+    def methode_RC(self, article: Articles, qty):
         total = dround(article.prix * qty)
         # On va chercher l'asset gift.
         # S'il n'existe pas, cette fonction le créera.
-        asset_principal_cadeau = self.asset_principal_cadeau()
-        asset_principal_cadeau.qty += total
-
-        self._refill_assets(asset_principal_cadeau, total)
+        token, created = self.carte_db.assets.get_or_create(monnaie=article.fedow_asset)
+        self.payments_assets.append(token)
+        token.qty += total
+        self._refill_token(token, total)
 
         # sinon recharge prises en compte par rapport comptable
         moyen_paiement = self.moyen_paiement if self.moyen_paiement.categorie == MoyenPaiement.OCECO else None
@@ -1164,7 +1135,7 @@ class Commande:
         asset_carte.qty += qty
 
         # On informe fedow :
-        self._refill_assets(asset_carte, qty)
+        self._refill_token(asset_carte, qty)
 
         # Enregsitrement en DB
         art = ArticleVendu.objects.create(
