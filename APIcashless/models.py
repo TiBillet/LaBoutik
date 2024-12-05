@@ -3,7 +3,7 @@ import json
 import os, random
 from uuid import uuid4
 from decimal import Decimal
-
+import stripe
 import requests
 from django.core.cache import cache
 from django.utils.html import format_html
@@ -222,7 +222,6 @@ class Membre(models.Model):
         return num_carte
 
     numero_carte.short_description = "Cartes liées"
-
 
     def a_jour_cotisation(self):
 
@@ -575,7 +574,8 @@ class Articles(models.Model):
     direct_to_printer = models.ForeignKey(Printer,
                                           null=True, blank=True,
                                           on_delete=models.SET_NULL,
-                                          help_text=_("Activez pour une impression directe après chaque vente. Utile pour vendre des billets."),
+                                          help_text=_(
+                                              "Activez pour une impression directe après chaque vente. Utile pour vendre des billets."),
                                           )
 
     decompte_ticket = models.BooleanField(default=False,
@@ -649,7 +649,6 @@ class Articles(models.Model):
             if tuple[0] == self.methode_choices:
                 return tuple[1]
         return None
-
 
     def __str__(self):
         if self.methode_choices == self.RECHARGE_EUROS:
@@ -1449,8 +1448,6 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                 'article_vendu': article_vendu
                             })
 
-
-
                 # Mise à zero du reste a payer et récupère les articles à rentrer en db
                 articles_a_rentrer_en_db = {}
                 for commande in instance.commande.table.commandes \
@@ -1464,7 +1461,6 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                             article_dans_commande.reste_a_payer = 0
                             article_dans_commande.statut = article_dans_commande.PAYES
                             article_dans_commande.save()
-
 
                 # On rentre en dB les articles qui n'ont pas été comptabilisés à cause du paiement fractionné.
                 # Dans le but de pouvoir comptabiliser les articles vendus.
@@ -1551,7 +1547,6 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                     # Plus rien à rapprocher, on termine la boucle :
                                     qty = 0
                                     paiement['qty'] = qty
-
 
                 instance.commande.check_statut()
 
@@ -1993,7 +1988,8 @@ class Configuration(SingletonModel):
                                              help_text="Adhésion possible sur carte sans membre. Au prix par default dès que la fiche membre est renseignée.")
 
     void_card = models.BooleanField(default=False, verbose_name=_("Séparer l'utilisateur lors du vider carte"),
-                                    help_text=_("Si coché, la carte vidée redeviendra neuve. Sinon, la carte garde toujours le portefeuille de l'utilisateur pour par exemple ses adhésions."))
+                                    help_text=_(
+                                        "Si coché, la carte vidée redeviendra neuve. Sinon, la carte garde toujours le portefeuille de l'utilisateur pour par exemple ses adhésions."))
 
     '''
     OCECO API KEY
@@ -2213,7 +2209,6 @@ class Configuration(SingletonModel):
 
     self_fed_apikey = models.OneToOneField(APIKey, on_delete=models.SET_NULL, blank=True, null=True, editable=False)
 
-    stripe_connect_account = models.CharField(max_length=21, blank=True, null=True, editable=False)
     stripe_connect_valid = models.BooleanField(default=False)
 
     fedow_synced = models.BooleanField(default=False, editable=False)
@@ -2228,6 +2223,37 @@ class Configuration(SingletonModel):
     badgeuse_active = models.BooleanField(default=False,
                                           verbose_name=_("Badgeuse active"),
                                           help_text=_("Création de l'article et du points de vente Badge si activé."))
+
+    '''
+    STRIPE for tpe
+    '''
+    stripe_api_key = models.CharField(max_length=110, blank=True, null=True, editable=False)
+    stripe_connect_account = models.CharField(max_length=21, blank=True, null=True)
+    stripe_payouts_enabled = models.BooleanField(default=False)
+    stripe_location = models.CharField(max_length=21, blank=True, null=True)
+
+    def set_stripe_api(self, string):
+        self.stripe_api_key = fernet_encrypt(string)
+        cache.clear()
+        self.save()
+        return True
+
+    def get_stripe_api(self):
+        if not self.stripe_api_key:
+            raise Exception(
+                "The stripe api key is not set : You have to set it mannualy with config.set_stripe_api(api_key)")
+        return fernet_decrypt(self.stripe_api_key)
+
+    # Vérifie que le compte stripe connect soit valide et accepte les paiements.
+    def check_stripe_payouts(self):
+        id_acc_connect = self.stripe_connect_account
+        if id_acc_connect:
+            stripe.api_key = self.get_stripe_api()
+            info_stripe = stripe.Account.retrieve(id_acc_connect)
+            if info_stripe and info_stripe.get('payouts_enabled'):
+                self.stripe_payouts_enabled = info_stripe.get('payouts_enabled')
+                self.save()
+        return self.stripe_payouts_enabled
 
     def can_fedow(self):
         # Peut poser des questions à fedow ?
@@ -2376,3 +2402,49 @@ class RapportTableauComptable(models.Model):
         ordering = ('-date',)
         verbose_name = _('EX Tableau comptable')
         verbose_name_plural = _('EX Tableaux comptable')
+
+
+class TPE(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    name = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Nom"))
+    stripe_id = models.CharField(max_length=21, blank=True, null=True, verbose_name=_("Stripe ID"))
+
+    STRIPE_WISEPOS = 'W'
+    TYPE_CHOICES = [
+        (STRIPE_WISEPOS, _('bbpos_wisepos_e')),
+    ]
+    type = models.CharField(
+        max_length=2,
+        choices=TYPE_CHOICES,
+        default=STRIPE_WISEPOS,
+        verbose_name=_("Type"),
+    )
+
+    def status(self):
+        reader = stripe.terminal.Reader.retrieve(self.stripe_id)
+        return reader.status
+
+
+class TPESales(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    amount = models.PositiveSmallIntegerField()
+    payment_intent_stripe_id = models.CharField(max_length=30, blank=True, null=True, verbose_name=_("Paiement intent stripe id"))
+    terminal = models.ForeignKey(TPE, on_delete=models.PROTECT, verbose_name=_("TPE"))
+    pos = models.ForeignKey(PointDeVente, on_delete=models.PROTECT, verbose_name=_("Point de vente"))
+    datetime = models.DateTimeField(auto_now_add=True)
+
+    REQUIRES_PAYMENT_METHOD = 'R'
+    IN_PROGRESS = 'P'
+    REQUIRES_CAPTURE = 'A'
+
+    STATUS_CHOICES = [
+        REQUIRES_PAYMENT_METHOD, _('requires_payment_method'),
+        IN_PROGRESS, _('in_progress'),
+        REQUIRES_CAPTURE, _('Paiement autorisé, mais pas encore capturé'),
+    ]
+    status = models.CharField(
+        max_length=2,
+        choices=STATUS_CHOICES,
+        default=REQUIRES_PAYMENT_METHOD,
+        verbose_name=_("Status"),
+    )
