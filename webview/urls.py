@@ -2,8 +2,10 @@
 from django.conf.urls import url
 from django.urls import path
 
+from APIcashless.urls import router
 from webview import views
 
+router.register(r'tpe_stripe', views.TpeStripe, basename='tpe_stripe')
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
@@ -31,6 +33,7 @@ urlpatterns = [
     # path('nfc_reader', views.NfcReader.as_view(), name="nfc_reader"),
 
     # path('printer/<uuid:pos_uuid>/', views.tuto_htmx, name='printer'),
+    path('tpe_stripe/', views.tuto_htmx, name='stripe_tpe'),
 
     ## WEBSOCKET
     ## TUTO WEBSOCKET
@@ -41,3 +44,6 @@ urlpatterns = [
     # La vue de l'application :
     url('', views.index),
 ]
+
+# urlpatterns += router.urls
+

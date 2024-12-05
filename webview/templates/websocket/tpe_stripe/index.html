@@ -2,15 +2,18 @@
 <script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
 <script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
 Point de vente : {{ pos.name }}
+Nom du tpe : 
 
-<div hx-ext="ws" ws-connect="/ws/tuto_htmx/{{ pos.channel }}/">
+<div hx-ext="ws" ws-connect="/ws/stripe_terminal/{{ pos.channel }}/">
     <div id="notification">
     </div>
 
     <div id="message">
     </div>
 
+    
     <form id="form" ws-send>
-        <input name="message">
+        <input name="amount" type="number">
+        <button type="submit">Envoyer</button>
     </form>
 </div>

@@ -1,4 +1,5 @@
 import threading
+from lib2to3.fixes.fix_input import context
 from typing import List
 import logging
 from uuid import UUID
@@ -12,8 +13,9 @@ from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import status, serializers
-from rest_framework.decorators import api_view
+from rest_framework import status, serializers, viewsets, permissions
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import api_view, action
 from rest_framework.exceptions import NotAcceptable
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny
@@ -1122,7 +1124,6 @@ class Commande:
 
         self.reponse['route'] = "transaction_ajout_monnaie_virtuelle"
 
-
     # RECHARGE_CADEAU = 'RC'
     def methode_RC(self, article: Articles, qty):
         total = dround(article.prix * qty)
@@ -1374,12 +1375,12 @@ class Commande:
         # On prévient Fedow qu'on vide la carte :
         fedowApi = FedowAPI()
         config = Configuration.get_solo()
-        if void or config.void_card :
+        if void or config.void_card:
             serialized_card_refunded = fedowApi.NFCcard.void(
                 user_card_firstTagId=f"{self.carte_db.tag_id}",
                 primary_card_fisrtTagId=self.primary_card_fisrtTagId,
             )
-        else :
+        else:
             serialized_card_refunded = fedowApi.NFCcard.refund(
                 user_card_firstTagId=f"{self.carte_db.tag_id}",
                 primary_card_fisrtTagId=self.primary_card_fisrtTagId,
@@ -1440,7 +1441,6 @@ class Commande:
     # La carte redeviens vierge
     def methode_VV(self, article, qty):
         self.methode_VC(article, qty, void=True)
-
 
 
 @login_required
@@ -1524,27 +1524,30 @@ def paiement(request):
     return HttpResponseNotFound()
 
 
+class TpeStripe(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, ]
+    permission_classes = [permissions.IsAuthenticated, ]
+
+    @action(detail=False, methods=['GET'])
+    def index(self, request, *args, **kwargs):
+        user = request.user
+        context={'user':user}
+        return render(request, 'websocket/tpe_stripe/index.html', context)
+
+
 
 ### TUTORIEL WEBSOCKET
-
-def chat(request):
-    return render(request, 'websocket/tuto_js/chat.html')
-
 
 def tuto_htmx(request, pos_uuid):
     # if settings.DEBUG:
     #     pos = PointDeVente.objects.all().order_by('poid_liste').first()
     # else :
-    pos_uuid : UUID(pos_uuid)
+    pos_uuid: UUID(pos_uuid)
     pos = get_object_or_404(PointDeVente, pk=pos_uuid)
 
-    context = {
-        'pos':pos,
-    }
+    context = {'pos': pos}
     return render(request, 'websocket/tuto_htmx/index.html', context)
 
 
 def tuto_js(request, room_name):
-    return render(request, 'websocket/tuto_js/room.html', {
-        'room_name': room_name
-    })
+    return render(request, 'websocket/tuto_js/room.html', {'room_name': room_name})
