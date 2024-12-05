@@ -15,7 +15,7 @@
     <!-- <script src="https://js.sentry-cdn.com/677e4405e6f765888fdec02d174000d6.min.js" crossorigin="anonymous"></script> -->
     {% endif %}
   </head>
-  <body id="contenu">
+  <body id="contenu" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     {% block content %} {% endblock content %}
     <script>window.version = '{{ version }}'; window.language = '{{ language }}';</script>
     <script src="http://localhost/cordova.js"></script>

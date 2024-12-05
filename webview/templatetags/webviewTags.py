@@ -1,5 +1,6 @@
 from django import template
-# from django.template.defaultfilters import stringfilter
+from django.template.defaultfilters import stringfilter
+from django.utils.translation import ugettext
 
 register = template.Library()
 
@@ -64,3 +65,10 @@ def boutonForm(context):
 @register.filter
 def dec2(value):
     return f"{(int(value) / 100):.2f}"
+
+@register.filter(name='translate')
+def translate(text):
+    try:
+        return ugettext(text)
+    except Exception as e:
+        return text

@@ -1,5 +1,4 @@
 import threading
-from lib2to3.fixes.fix_input import context
 from typing import List
 import logging
 from uuid import UUID
@@ -8,17 +7,20 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core import signing
-from django.http import JsonResponse, HttpResponseNotFound, HttpResponseNotAllowed
+from django.http import JsonResponse, HttpResponseNotFound, HttpResponseNotAllowed, HttpRequest
 from django.shortcuts import render, redirect
 from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework import status, serializers, viewsets
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import api_view
 from rest_framework import status, serializers, viewsets, permissions
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import api_view, action
 from rest_framework.exceptions import NotAcceptable
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -1123,6 +1125,7 @@ class Commande:
         )
 
         self.reponse['route'] = "transaction_ajout_monnaie_virtuelle"
+
 
     # RECHARGE_CADEAU = 'RC'
     def methode_RC(self, article: Articles, qty):

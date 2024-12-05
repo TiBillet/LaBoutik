@@ -932,10 +932,11 @@ class ConfigurationAdmin(SingletonModelAdmin):
         ('Options', {
             'fields': (
                 # ('appareillement', 'pin_code_primary_link',),
+                'void_card',
                 'validation_service_ecran',
                 'remboursement_auto_annulation',
                 # 'domaine_cashless',
-                'ip_cashless',
+                # 'ip_cashless',
             ),
         }),
         ('Adhésion', {

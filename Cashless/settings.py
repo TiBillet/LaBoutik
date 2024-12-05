@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     'stdimage',
     'more_admin_filters',
     'fedow_connect',
+    'htmxview',
     # 'debug_toolbar',
 ]
 
