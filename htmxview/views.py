@@ -3,16 +3,16 @@ from datetime import timedelta, datetime
 from lib2to3.fixes.fix_input import context
 
 from django.http import HttpRequest
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
 from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse, ArticleVendu, MoyenPaiement, \
-    Configuration
+    Configuration, PointDeVente
 from administration.adminroot import ArticlesAdmin
 from administration.ticketZ import TicketZ
 from webview.serializers import debut_fin_journee, CommandeSerializer
@@ -133,3 +133,32 @@ class Membership(viewsets.ViewSet):
     def retrieve(self, request: HttpRequest, pk):
         logger.info(pk)
         pass
+
+
+class TpeStripe(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+
+    @action(detail=False, methods=['GET'])
+    def index(self, request, *args, **kwargs):
+        user = request.user
+        context={'user':user}
+        return render(request, 'websocket/tpe_stripe/index.html', context)
+
+
+
+
+### TUTORIEL WEBSOCKET
+
+def tuto_htmx(request):
+    # if settings.DEBUG:
+    #     pos = PointDeVente.objects.all().order_by('poid_liste').first()
+    # else :
+    pos = PointDeVente.objects.first()
+
+    context = {'pos': pos}
+    return render(request, 'websocket/tuto_htmx/index.html', context)
+
+
+def tuto_js(request, room_name):
+    return render(request, 'websocket/tuto_js/room.html', {'room_name': room_name})

@@ -1,28 +1,20 @@
 import threading
 from typing import List
-import logging
 from uuid import UUID
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core import signing
-from django.http import JsonResponse, HttpResponseNotFound, HttpResponseNotAllowed, HttpRequest
+from django.http import JsonResponse, HttpResponseNotFound, HttpResponseNotAllowed
 from django.shortcuts import render, redirect
-from django.utils.decorators import method_decorator
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import status, serializers, viewsets
-from rest_framework.authentication import SessionAuthentication
+from rest_framework import status, serializers
 from rest_framework.decorators import api_view
-from rest_framework import status, serializers, viewsets, permissions
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import api_view, action
 from rest_framework.exceptions import NotAcceptable
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from APIcashless.models import *
 # from APIcashless.views import get_client_ip
@@ -1527,30 +1519,4 @@ def paiement(request):
     return HttpResponseNotFound()
 
 
-class TpeStripe(viewsets.ViewSet):
-    authentication_classes = [SessionAuthentication, ]
-    permission_classes = [permissions.IsAuthenticated, ]
 
-    @action(detail=False, methods=['GET'])
-    def index(self, request, *args, **kwargs):
-        user = request.user
-        context={'user':user}
-        return render(request, 'websocket/tpe_stripe/index.html', context)
-
-
-
-### TUTORIEL WEBSOCKET
-
-def tuto_htmx(request, pos_uuid):
-    # if settings.DEBUG:
-    #     pos = PointDeVente.objects.all().order_by('poid_liste').first()
-    # else :
-    pos_uuid: UUID(pos_uuid)
-    pos = get_object_or_404(PointDeVente, pk=pos_uuid)
-
-    context = {'pos': pos}
-    return render(request, 'websocket/tuto_htmx/index.html', context)
-
-
-def tuto_js(request, room_name):
-    return render(request, 'websocket/tuto_js/room.html', {'room_name': room_name})

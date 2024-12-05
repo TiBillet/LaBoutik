@@ -1,7 +1,7 @@
 # Cashless/asgi.py
 import django
 import os
-import webview.routing
+import htmxview.routing
 from channels.http import AsgiHandler
 
 from channels.auth import AuthMiddlewareStack
@@ -19,7 +19,7 @@ application = ProtocolTypeRouter({
     "websocket": AllowedHostsOriginValidator(
         AuthMiddlewareStack(
             URLRouter(
-                webview.routing.websocket_urlpatterns
+                htmxview.routing.websocket_urlpatterns
             )
         ),
     ),
