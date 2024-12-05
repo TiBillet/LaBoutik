@@ -1528,10 +1528,10 @@ def paiement(request):
 ### TUTORIEL WEBSOCKET
 
 def chat(request):
-    return render(request, 'websocket/tuto/chat.html')
+    return render(request, 'websocket/tuto_js/chat.html')
 
 
-def stripe_tpe(request, pos_uuid):
+def tuto_htmx(request, pos_uuid):
     # if settings.DEBUG:
     #     pos = PointDeVente.objects.all().order_by('poid_liste').first()
     # else :
@@ -1541,10 +1541,10 @@ def stripe_tpe(request, pos_uuid):
     context = {
         'pos':pos,
     }
-    return render(request, 'websocket/stripe/index.html', context)
+    return render(request, 'websocket/tuto_htmx/index.html', context)
 
 
-def room(request, room_name):
-    return render(request, 'websocket/tuto/room.html', {
+def tuto_js(request, room_name):
+    return render(request, 'websocket/tuto_js/room.html', {
         'room_name': room_name
     })

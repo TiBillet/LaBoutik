@@ -30,13 +30,12 @@ urlpatterns = [
     # url('nfc_reader', views.nfc_reader),
     # path('nfc_reader', views.NfcReader.as_view(), name="nfc_reader"),
 
+    # path('printer/<uuid:pos_uuid>/', views.tuto_htmx, name='printer'),
 
     ## WEBSOCKET
-    path('stripe_tpe/<str:pos_uuid>/', views.stripe_tpe, name='stripe_tpe'),
-    path('printer/<uuid:pos_uuid>/', views.stripe_tpe, name='printer'),
     ## TUTO WEBSOCKET
-    path('chat/', views.chat, name='chat'),
-    path('chat/<str:room_name>/', views.room, name='room'),
+    path('tuto_htmx/<str:pos_uuid>/', views.tuto_htmx, name='stripe_tpe'),
+    path('tuto_js/<str:room_name>/', views.tuto_js, name='room'),
 
 
     # La vue de l'application :

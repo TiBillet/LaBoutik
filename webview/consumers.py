@@ -10,6 +10,7 @@ from nose.tools import raises
 
 logger = logging.getLogger(__name__)
 
+# Pour TUTO JS
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
@@ -63,7 +64,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
 
-class StripeTPEConsumer(AsyncWebsocketConsumer):
+# Pour TUTO HTMX
+class HtmxConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.user = self.scope['user']
@@ -126,7 +128,7 @@ class StripeTPEConsumer(AsyncWebsocketConsumer):
     # Doit avoir le même nom que le type du message de la methode receive
     async def notification(self, event):
         logger.info(f"notification event: {event}")
-        html = get_template("websocket/stripe/notification.html").render(context={'event': event})
+        html = get_template("websocket/tuto_htmx/notification.html").render(context={'event': event})
         # Send message to WebSocket htmx
         await self.send(text_data=html)
 
@@ -135,7 +137,7 @@ class StripeTPEConsumer(AsyncWebsocketConsumer):
     # Doit avoir le même nom que le type du message de la methode receive
     async def message(self, event):
         logger.info(f"message event: {event}")
-        html = get_template("websocket/stripe/message.html").render(context={'event': event})
+        html = get_template("websocket/tuto_htmx/message.html").render(context={'event': event})
         # Send message to WebSocket htmx
         await self.send(text_data=html)
 
