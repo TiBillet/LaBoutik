@@ -32,8 +32,8 @@ urlpatterns = [
 
 
     ## WEBSOCKET
-    path('stripe_tpe/<uuid:pos_uuid>/', views.stripe_tpe, name='stripe_tpe'),
-    path('printer/<uuid:pos_uuid>/', views.stripe_tpe, name='stripe_tpe'),
+    path('stripe_tpe/<str:pos_uuid>/', views.stripe_tpe, name='stripe_tpe'),
+    path('printer/<uuid:pos_uuid>/', views.stripe_tpe, name='printer'),
     ## TUTO WEBSOCKET
     path('chat/', views.chat, name='chat'),
     path('chat/<str:room_name>/', views.room, name='room'),

@@ -3,6 +3,7 @@ import json
 import logging
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.conf import settings
+from django.template.loader import get_template
 from nose.tools import raises
 
 logger = logging.getLogger(__name__)
@@ -63,20 +64,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
 class StripeTPEConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
         self.user = self.scope['user']
 
         # Si l'user n'est pas un terminal préalablement appairé :
         if not settings.DEBUG:
             if not self.user.is_authenticated or not hasattr(self.user, 'appareil'):
-                logger.error(f"{self.room_name} {self.room_group_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
-                raise Exception(f"{self.room_name} {self.room_group_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
+                logger.error(f"{self.room_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
+                raise Exception(f"{self.room_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
 
-        logger.info(f"{self.room_name} {self.room_group_name} {self.user} connected")
+        logger.info(f"{self.room_name} {self.user} connected")
 
         # Join room group
         await self.channel_layer.group_add(
-            self.room_group_name,
+            self.room_name,
             self.channel_name
         )
 
@@ -85,31 +85,37 @@ class StripeTPEConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         # Leave room group
         await self.channel_layer.group_discard(
-            self.room_group_name,
+            self.room_name,
             self.channel_name
         )
 
     # Receive message from WebSocket
     async def receive(self, text_data):
+        logger.info(f"receive : {text_data}")
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
 
+
         # Send message to room group
+        # La fonction correspondant à type s'occupe de créer le html
         await self.channel_layer.group_send(
-            self.room_group_name,
+            self.room_name,
             {
-                'type': 'chat_message',
+                'type': 'notification',
                 'message': f"{self.user} : {message}"
             }
         )
 
+
+
     # Receive message from room group
-    async def chat_message(self, event):
+    # Doit avoir le même nom que le type du message de la methode receive
+    async def notification(self, event):
+        logger.info(f"notification event: {event}")
         message = event['message']
 
-        # Send message to WebSocket
-        await self.send(text_data=json.dumps({
-            'message': message
-        }))
+        html = get_template("websocket/stripe/notification.html").render(context={'message': message})
+        # Send message to WebSocket htmx
+        await self.send(text_data=html)
 
 

@@ -354,6 +354,11 @@ class PointDeVente(models.Model):
     def __str__(self):
         return self.name
 
+    def channel(self):
+        # L'adresse utilisé pour les canaux websocket. Ne doit pas comporter de caractère spéciaux
+        # Pour retrouver l'uuid original : UUID(hex)
+        return self.id.hex
+
     class Meta:
         ordering = ('poid_liste', 'name')
         verbose_name = _('Point de vente')

@@ -1,0 +1,16 @@
+{% load static %}
+<script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
+<script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
+Point de vente : {{ pos.name }}
+
+<div hx-ext="ws" ws-connect="/ws/stripe_terminal/{{ pos.channel }}/">
+    <div id="notifications">
+    </div>
+
+    <div id="chat_room">
+    </div>
+
+    <form id="form" ws-send>
+        <input name="message">
+    </form>
+</div>

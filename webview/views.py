@@ -1,6 +1,7 @@
 import threading
 from typing import List
 import logging
+from uuid import UUID
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
@@ -1529,12 +1530,18 @@ def paiement(request):
 def chat(request):
     return render(request, 'websocket/tuto/chat.html')
 
+
 def stripe_tpe(request, pos_uuid):
+    # if settings.DEBUG:
+    #     pos = PointDeVente.objects.all().order_by('poid_liste').first()
+    # else :
+    pos_uuid : UUID(pos_uuid)
     pos = get_object_or_404(PointDeVente, pk=pos_uuid)
+
     context = {
-        pos:pos,
+        'pos':pos,
     }
-    return render(request, 'websocket/stripe_terminal.html', context)
+    return render(request, 'websocket/stripe/index.html', context)
 
 
 def room(request, room_name):
