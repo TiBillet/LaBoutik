@@ -1,9 +1,11 @@
 # chat/consumers.py
 import json
 import logging
+
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.conf import settings
 from django.template.loader import get_template
+from django.utils import timezone
 from nose.tools import raises
 
 logger = logging.getLogger(__name__)
@@ -100,22 +102,40 @@ class StripeTPEConsumer(AsyncWebsocketConsumer):
         # La fonction correspondant à type s'occupe de créer le html
         await self.channel_layer.group_send(
             self.room_name,
+            # ce dictionnaire est event
             {
                 'type': 'notification',
-                'message': f"{self.user} : {message}"
+                'user': f"{self.user}",
+                'notification': f"Nouveau message"
             }
         )
 
+        # Send another message for exemple
+        await self.channel_layer.group_send(
+            self.room_name,
+            # ce dictionnaire est event
+            {
+                'type': 'message',
+                'user': f"{self.user}",
+                'message': f"{message}"
+            }
+        )
 
 
     # Receive message from room group
     # Doit avoir le même nom que le type du message de la methode receive
     async def notification(self, event):
         logger.info(f"notification event: {event}")
-        message = event['message']
-
-        html = get_template("websocket/stripe/notification.html").render(context={'message': message})
+        html = get_template("websocket/stripe/notification.html").render(context={'event': event})
         # Send message to WebSocket htmx
         await self.send(text_data=html)
 
+
+    # Receive message from room group
+    # Doit avoir le même nom que le type du message de la methode receive
+    async def message(self, event):
+        logger.info(f"message event: {event}")
+        html = get_template("websocket/stripe/message.html").render(context={'event': event})
+        # Send message to WebSocket htmx
+        await self.send(text_data=html)
 

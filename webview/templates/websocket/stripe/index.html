@@ -4,10 +4,10 @@
 Point de vente : {{ pos.name }}
 
 <div hx-ext="ws" ws-connect="/ws/stripe_terminal/{{ pos.channel }}/">
-    <div id="notifications">
+    <div id="notification">
     </div>
 
-    <div id="chat_room">
+    <div id="message">
     </div>
 
     <form id="form" ws-send>

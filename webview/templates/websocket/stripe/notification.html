@@ -1,3 +1,5 @@
-<div id="notifications"  hx-swap-oob="true">
-    {{ message }}
+{% load humanize %}
+
+<div id="notification"  hx-swap-oob="true">
+    {% now "H:i" %} : {{ event.notification }} from {{ event.user }}
 </div>
