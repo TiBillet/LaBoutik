@@ -1,19 +1,25 @@
 {% load static %}
 <script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
 <script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
-Point de vente : {{ pos.name }}
-Nom du tpe : 
 
-<div hx-ext="ws" ws-connect="/ws/stripe_terminal/{{ pos.channel }}/">
-    <div id="notification">
+<div class="container">
+    <div id="pos">
+        Point de vente : {{ pos.name }}
+    </div>
+    <div id="tpe">
+        Appareil : {{ request.user.uuid.hex }}
     </div>
 
-    <div id="message">
-    </div>
+    <div hx-ext="ws" ws-connect="/ws/tpe_stripe/{{ request.user.uuid.hex }}/">
+        <div id="notification">
+        </div>
 
-    
-    <form id="form" ws-send>
-        <input name="amount" type="number">
-        <button type="submit">Envoyer</button>
-    </form>
+        <div id="message">
+        </div>
+
+        <form id="form" ws-send>
+            <input name="amount" type="number" step="0.01">
+            <button type="submit">Envoyer</button>
+        </form>
+    </div>
 </div>

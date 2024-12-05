@@ -2,6 +2,7 @@ import logging
 from datetime import timedelta, datetime
 from lib2to3.fixes.fix_input import context
 
+from django.conf import settings
 from django.http import HttpRequest
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
@@ -68,7 +69,8 @@ class Sales(viewsets.ViewSet):
                 }
             else:
                 commands_today[article.commande]['articles'].append(article)
-                commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (article.qty * article.prix)
+                commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (
+                            article.qty * article.prix)
 
         # Ticket Z temporaire :
         config = Configuration.get_solo()
@@ -86,8 +88,9 @@ class Sales(viewsets.ViewSet):
         context = {
             'ticket_today': ticket_today,
             'commands_today': commands_today,
-            'moyens_paiement': MoyenPaiement.objects.filter(categorie__in=[MoyenPaiement.CASH,MoyenPaiement.CHEQUE,MoyenPaiement.CREDIT_CARD_NOFED]),
-            }
+            'moyens_paiement': MoyenPaiement.objects.filter(
+                categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CHEQUE, MoyenPaiement.CREDIT_CARD_NOFED]),
+        }
 
         return render(request, "sales/list.html", context)
 
@@ -115,16 +118,19 @@ class Sales(viewsets.ViewSet):
                 }
             else:
                 commands_today[article.commande]['articles'].append(article)
-                commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (article.qty * article.prix)
+                commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (
+                            article.qty * article.prix)
 
         # import ipdb; ipdb.set_trace()
         context = {
             'cmd': commands_today[UUID(uuid_command)],
             'uuid_command': uuid_command,
-            'moyens_paiement': MoyenPaiement.objects.filter(categorie__in=[MoyenPaiement.CASH,MoyenPaiement.CHEQUE,MoyenPaiement.CREDIT_CARD_NOFED]),
+            'moyens_paiement': MoyenPaiement.objects.filter(
+                categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CHEQUE, MoyenPaiement.CREDIT_CARD_NOFED]),
         }
 
         return render(request, "sales/components/order.html", context)
+
 
 class Membership(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
@@ -142,10 +148,17 @@ class TpeStripe(viewsets.ViewSet):
     @action(detail=False, methods=['GET'])
     def index(self, request, *args, **kwargs):
         user = request.user
-        context={'user':user}
-        return render(request, 'websocket/tpe_stripe/index.html', context)
+        pos = PointDeVente.objects.first()
 
+        if not settings.DEBUG:
+            if not request.user.is_authenticated or not hasattr(request.user, 'appareil'):
+                logger.error(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
+                raise Exception(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
 
+        return render(request, 'websocket/tpe_stripe/index.html', context={
+            'user': user,
+            'pos': pos,
+        })
 
 
 ### TUTORIEL WEBSOCKET
