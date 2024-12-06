@@ -2442,11 +2442,11 @@ class PaymentsIntent(models.Model):
     CANCELED = 'C'
 
     STATUS_CHOICES = [
-        REQUIRES_PAYMENT_METHOD, _('requires_payment_method'), #requires_payment_method
-        IN_PROGRESS, _('in_progress'), # in_progress
-        REQUIRES_CAPTURE, _('Paiement autorisé, mais pas encore capturé'), # requires_capture
-        SUCCEEDED, _('Succes'), # requires_capture
-        CANCELED, _('Canceled'), # Canceled
+        (REQUIRES_PAYMENT_METHOD, _('requires_payment_method')),
+        (IN_PROGRESS, _('in_progress')),
+        (REQUIRES_CAPTURE, _('Paiement autorisé, mais pas encore capturé')),
+        (SUCCEEDED, _('Succes')),
+        (CANCELED, _('Canceled')),
     ]
 
     status = models.CharField(
