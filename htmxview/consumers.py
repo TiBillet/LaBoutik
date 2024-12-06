@@ -11,7 +11,7 @@ from nose.tools import raises
 logger = logging.getLogger(__name__)
 
 
-class TpeStripeConsumer(AsyncWebsocketConsumer):
+class TerminalConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.user = self.scope['user']

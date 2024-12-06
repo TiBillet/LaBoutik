@@ -1582,6 +1582,8 @@ class ArticleVendu(models.Model):
     qty = models.DecimalField(max_digits=12, decimal_places=6, default=0, null=True)
     pos = models.ForeignKey(PointDeVente, null=True, on_delete=models.PROTECT)
 
+    payment_intent = models.ForeignKey('PaymentsIntent', on_delete=models.PROTECT, null=True, blank=True, verbose_name=_("Paiement stripe"))
+
     ip_user = models.ForeignKey(IpUser, on_delete=models.PROTECT,
                                 null=True, blank=True)
 
@@ -2404,7 +2406,7 @@ class RapportTableauComptable(models.Model):
         verbose_name_plural = _('EX Tableaux comptable')
 
 
-class TPE(models.Model):
+class Terminal(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Nom"))
     stripe_id = models.CharField(max_length=21, blank=True, null=True, verbose_name=_("Stripe ID"))
@@ -2425,26 +2427,34 @@ class TPE(models.Model):
         return reader.status
 
 
-class TPESales(models.Model):
+class PaymentsIntent(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     amount = models.PositiveSmallIntegerField()
     payment_intent_stripe_id = models.CharField(max_length=30, blank=True, null=True, verbose_name=_("Paiement intent stripe id"))
-    terminal = models.ForeignKey(TPE, on_delete=models.PROTECT, verbose_name=_("TPE"))
+    terminal = models.ForeignKey(Terminal, on_delete=models.PROTECT, verbose_name=_("TPE"))
     pos = models.ForeignKey(PointDeVente, on_delete=models.PROTECT, verbose_name=_("Point de vente"))
     datetime = models.DateTimeField(auto_now_add=True)
 
     REQUIRES_PAYMENT_METHOD = 'R'
     IN_PROGRESS = 'P'
     REQUIRES_CAPTURE = 'A'
+    SUCCEEDED = 'S'
+    CANCELED = 'C'
 
     STATUS_CHOICES = [
-        REQUIRES_PAYMENT_METHOD, _('requires_payment_method'),
-        IN_PROGRESS, _('in_progress'),
-        REQUIRES_CAPTURE, _('Paiement autorisé, mais pas encore capturé'),
+        REQUIRES_PAYMENT_METHOD, _('requires_payment_method'), #requires_payment_method
+        IN_PROGRESS, _('in_progress'), # in_progress
+        REQUIRES_CAPTURE, _('Paiement autorisé, mais pas encore capturé'), # requires_capture
+        SUCCEEDED, _('Succes'), # requires_capture
+        CANCELED, _('Canceled'), # Canceled
     ]
+
     status = models.CharField(
         max_length=2,
         choices=STATUS_CHOICES,
         default=REQUIRES_PAYMENT_METHOD,
         verbose_name=_("Status"),
     )
+
+    def send_to_terminal(self, terminal):
+        pass

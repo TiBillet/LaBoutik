@@ -3,15 +3,14 @@
 <script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
 
 <div class="container">
-    <div id="pos">
-        Point de vente : {{ pos.name }}
-    </div>
     <div id="tpe">
-        Appareil : {{ request.user.uuid.hex }}
+        Appareil : {{ tpe.name }} {{ tpe.id.hex }}
     </div>
 
-    <div hx-ext="ws" ws-connect="/ws/tpe_stripe/{{ request.user.uuid.hex }}/">
+    <div hx-ext="ws" ws-connect="/ws/terminal/{{ tpe.id.hex }}/">
         <div id="notification">
+            Status Tpe : {{ tpe.status }}
+            Status Paiement : {{ payment_intent.status }}
         </div>
 
         <div id="message">

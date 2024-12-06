@@ -2,8 +2,9 @@ import logging
 from datetime import timedelta, datetime
 from lib2to3.fixes.fix_input import context
 
+import stripe
 from django.conf import settings
-from django.http import HttpRequest
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 from rest_framework import viewsets, permissions
@@ -13,7 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
 from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse, ArticleVendu, MoyenPaiement, \
-    Configuration, PointDeVente
+    Configuration, PointDeVente, Terminal, PaymentsIntent
 from administration.adminroot import ArticlesAdmin
 from administration.ticketZ import TicketZ
 from webview.serializers import debut_fin_journee, CommandeSerializer
@@ -141,25 +142,57 @@ class Membership(viewsets.ViewSet):
         pass
 
 
-class TpeStripe(viewsets.ViewSet):
+class PaymentIntentTpeViewset(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
 
-    @action(detail=False, methods=['GET'])
-    def index(self, request, *args, **kwargs):
+    def check_reader_state(self, reader):
+        pass
+
+    def create(self, request, *args, **kwargs):
         user = request.user
-        pos = PointDeVente.objects.first()
+        amount = request.data['amount']
 
         if not settings.DEBUG:
             if not request.user.is_authenticated or not hasattr(request.user, 'appareil'):
                 logger.error(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
                 raise Exception(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
 
-        return render(request, 'websocket/tpe_stripe/index.html', context={
+        # Lier le tpe a l'appareil/user
+        terminal = Terminal.objects.first()
+
+        payment_intent = PaymentsIntent.objects.create(
+            terminal=terminal,
+            amount=amount,
+        )
+        payment_intent.send_to_terminal(terminal)
+
+        return render(request, 'tpe/create.html', context={
             'user': user,
-            'pos': pos,
+            'terminal': terminal,
+            'payment_intent': payment_intent,
         })
 
+    @action(detail=True, methods=['GET'])
+    def retry(self, request, pk):
+        payment_intent = get_object_or_404(PaymentsIntent, pk=pk)
+        terminal = payment_intent.terminal
+        stripe.terminal.Reader.cancel_action(terminal.stripe_id)
+        payment_intent.send_to_terminal(terminal)
+
+        return render(request, 'tpe/create.html', context={
+            'user': request.user,
+            'terminal': terminal,
+            'payment_intent': payment_intent,
+        })
+
+    @action(detail=True, methods=['GET'])
+    def cancel(self, request, pk):
+        config = Configuration.get_solo()
+        stripe.api_key = config.get_stripe_api()
+        terminal = get_object_or_404(Terminal, pk=pk)
+        stripe.terminal.Reader.cancel_action(terminal.stripe_id)
+        return HttpResponse(status=205)
 
 ### TUTORIEL WEBSOCKET
 

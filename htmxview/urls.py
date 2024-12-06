@@ -6,7 +6,7 @@ router = routers.DefaultRouter()
 
 router.register(r'sales', views.Sales, basename='sales')
 router.register(r'membership', views.Membership, basename='membership')
-router.register(r'tpe_stripe', views.TpeStripe, basename='tpe_stripe')
+router.register(r'payment_intent_tpe', views.PaymentIntentTpeViewset, basename='payment_intent_tpe')
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
