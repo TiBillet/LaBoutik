@@ -1,11 +1,15 @@
 import uuid
 
 from django.db import models
+from django.utils.translation import gettext_lazy as _
+
 
 
 class Printer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50, unique=True)
+    host = models.ForeignKey("APIcashless.Appareil", on_delete=models.SET_NULL, null=True, related_name='printers',
+                             verbose_name=_("Appareil hôte"))
 
     thermal_printer_adress = models.CharField(
         max_length=100,
@@ -40,7 +44,5 @@ class Printer(models.Model):
         else:
             return None
 
-
     def __str__(self):
         return self.name
-

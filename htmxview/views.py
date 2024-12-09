@@ -142,6 +142,17 @@ class Membership(viewsets.ViewSet):
         pass
 
 
+class Print(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+
+    @action(detail=False, methods=['GET'])
+    def test(self, request, *args, **kwargs):
+        user = request.user
+        return render(request, 'print/test.html', context={
+            'user': user,
+        })
+
 class PaymentIntentTpeViewset(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]

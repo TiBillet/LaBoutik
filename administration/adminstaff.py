@@ -826,6 +826,7 @@ class PrinterAdmin(admin.ModelAdmin):
         'thermal_printer_adress',
         'serveur_impression',
         'revoquer_odoo_api_serveur_impression',
+        'host',
     )
 
     readonly_fields = (
@@ -836,6 +837,7 @@ class PrinterAdmin(admin.ModelAdmin):
         (None, {
             'fields': (
                 'name',
+                'host',
                 'thermal_printer_adress',
                 'serveur_impression',
                 'api_serveur_impression',

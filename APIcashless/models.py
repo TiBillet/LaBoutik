@@ -1,42 +1,36 @@
 import json
-
-import os, random
-from uuid import uuid4
-from decimal import Decimal
-import stripe
-import requests
-from django.core.cache import cache
-from django.utils.html import format_html
-
-from epsonprinter.models import Printer
-from .fontawesomeicons import FONT_ICONS_CHOICES
-
-from django.db import models
+import os
 from datetime import datetime, timedelta, time
-from django.utils import timezone
-from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_save
-from solo.models import SingletonModel
-from django.db.models import Q, Sum
+from decimal import Decimal
+from uuid import uuid4
+
+import stripe
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from dateutil import tz
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
-
-from stdimage import StdImageField, JPEGField
-from stdimage.validators import MaxSizeValidator, MinSizeValidator
+from django.core.cache import cache
+from django.db import models
+from django.db.models import Q, Sum
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
+from django.utils import timezone
+from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from rest_framework_api_key.models import AbstractAPIKey, APIKey
-from cryptography.hazmat.primitives import serialization
-from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt
+from solo.models import SingletonModel
+from stdimage import StdImageField, JPEGField
+from stdimage.validators import MaxSizeValidator, MinSizeValidator
 
-from cryptography.hazmat.backends import default_backend
+from epsonprinter.models import Printer
+from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt
+from .fontawesomeicons import FONT_ICONS_CHOICES
 
 # import requests, json
 # from requests.auth import HTTPBasicAuth
-
 # pour appareillement
 # from django.contrib.auth import get_user_model
-
-from dateutil import tz
 
 runZone = tz.gettz(os.getenv('TZ'))
 import logging
@@ -56,7 +50,7 @@ class Appareil(models.Model):
                                            blank=True, null=True)
 
     user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True)
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True, related_name='appareil')
 
     ip_lan = models.GenericIPAddressField(null=True, blank=True)
     ip_wan = models.GenericIPAddressField(null=True, blank=True)
@@ -483,16 +477,22 @@ class GroupementCategorie(models.Model):
                                 blank=True,
                                 verbose_name=_("Imprimante"))
 
-    compteur_ticket_journee = models.PositiveSmallIntegerField(default=0, verbose_name=_("Compteur de ticket"))
+    pos = models.ManyToManyField(
+        "PointDeVente",
+        blank=True,
+        verbose_name=_("Points de vente"),
+        help_text=_("Si vide : tous les points de ventes. Si non, uniquement les selectionnés")
+    )
 
+    compteur_ticket_journee = models.PositiveSmallIntegerField(default=0, verbose_name=_("Compteur de ticket"))
     qty_ticket = models.PositiveSmallIntegerField(default=1, verbose_name=_("Nombre de copie à imprimer"))
 
     def __str__(self):
         return self.name
 
     class Meta:
-        verbose_name = _('Préparation & impression')
-        verbose_name_plural = _('Préparations & impressions')
+        verbose_name = _("Groupe d'impression")
+        verbose_name_plural = _("Groupes d'impression")
 
 
 class Articles(models.Model):
@@ -1582,7 +1582,8 @@ class ArticleVendu(models.Model):
     qty = models.DecimalField(max_digits=12, decimal_places=6, default=0, null=True)
     pos = models.ForeignKey(PointDeVente, null=True, on_delete=models.PROTECT)
 
-    payment_intent = models.ForeignKey('PaymentsIntent', on_delete=models.PROTECT, null=True, blank=True, verbose_name=_("Paiement stripe"))
+    payment_intent = models.ForeignKey('PaymentsIntent', on_delete=models.PROTECT, null=True, blank=True,
+                                       verbose_name=_("Paiement stripe"))
 
     ip_user = models.ForeignKey(IpUser, on_delete=models.PROTECT,
                                 null=True, blank=True)
@@ -2430,7 +2431,8 @@ class Terminal(models.Model):
 class PaymentsIntent(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     amount = models.PositiveSmallIntegerField()
-    payment_intent_stripe_id = models.CharField(max_length=30, blank=True, null=True, verbose_name=_("Paiement intent stripe id"))
+    payment_intent_stripe_id = models.CharField(max_length=30, blank=True, null=True,
+                                                verbose_name=_("Paiement intent stripe id"))
     terminal = models.ForeignKey(Terminal, on_delete=models.PROTECT, verbose_name=_("TPE"))
     pos = models.ForeignKey(PointDeVente, on_delete=models.PROTECT, verbose_name=_("Point de vente"))
     datetime = models.DateTimeField(auto_now_add=True)

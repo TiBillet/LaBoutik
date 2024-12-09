@@ -11,6 +11,63 @@ from nose.tools import raises
 logger = logging.getLogger(__name__)
 
 
+
+
+class PrintConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.user = self.scope['user']
+
+        # Si l'user n'est pas un terminal préalablement appairé :
+        if not settings.DEBUG:
+            if not self.user.is_authenticated or not hasattr(self.user, 'appareil'):
+                logger.error(f"{self.room_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
+                raise Exception(f"{self.room_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
+
+        logger.info(f"{self.room_name} {self.user} connected")
+
+        # Join room group
+        await self.channel_layer.group_add(
+            self.room_name,
+            self.channel_name
+        )
+
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        # Leave room group
+        await self.channel_layer.group_discard(
+            self.room_name,
+            self.channel_name
+        )
+
+    # Receive message from WebSocket
+    async def receive(self, text_data):
+        logger.info(f"receive : {text_data}")
+        text_data_json = json.loads(text_data)
+
+        # Send message to room group
+        # La fonction correspondant à type s'occupe de créer le html
+        await self.channel_layer.group_send(
+            self.room_name,
+            # ce dictionnaire est event
+            {
+                'type': 'notification',
+                'user': f"{self.user}",
+                'notification': f"Nouveau message"
+            }
+        )
+
+    # Receive message from room group
+    # Doit avoir le même nom que le type du message de la methode receive
+    async def notification(self, event):
+        logger.info(f"notification event: {event}")
+        html = get_template("print/notification.html").render(context={'event': event})
+        # Send message to WebSocket htmx
+        await self.send(text_data=html)
+
+
+
 class TerminalConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
@@ -64,7 +121,7 @@ class TerminalConsumer(AsyncWebsocketConsumer):
     # Doit avoir le même nom que le type du message de la methode receive
     async def notification(self, event):
         logger.info(f"notification event: {event}")
-        html = get_template("websocket/tuto_htmx/notification.html").render(context={'event': event})
+        html = get_template("tpe/notification.html").render(context={'event': event})
         # Send message to WebSocket htmx
         await self.send(text_data=html)
 
@@ -73,7 +130,7 @@ class TerminalConsumer(AsyncWebsocketConsumer):
     # Doit avoir le même nom que le type du message de la methode receive
     async def message(self, event):
         logger.info(f"message event: {event}")
-        html = get_template("websocket/tuto_htmx/message.html").render(context={'event': event})
+        html = get_template("tpe/message.html").render(context={'event': event})
         # Send message to WebSocket htmx
         await self.send(text_data=html)
 
