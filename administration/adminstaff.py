@@ -369,7 +369,7 @@ class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
               .filter(archive=False)
               .exclude(methode_choices=Articles.FRACTIONNE))
         # affiche par defaul les ventes :
-        if not request.GET.get('methode_choices__exact'):
+        if not request.GET.get('methode_choices__exact') and not request.GET.get('_changelist_filters') :
             qs = qs.filter(methode_choices=Articles.VENTE)
         return qs
 
