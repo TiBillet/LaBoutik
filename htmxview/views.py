@@ -1,9 +1,9 @@
 import logging
 from datetime import timedelta, datetime
-from lib2to3.fixes.fix_input import context
-
+from channels.layers import get_channel_layer
 import stripe
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
@@ -14,13 +14,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
 from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse, ArticleVendu, MoyenPaiement, \
-    Configuration, PointDeVente, Terminal, PaymentsIntent
+    Configuration, PointDeVente, Terminal, PaymentsIntent, GroupementCategorie
 from administration.adminroot import ArticlesAdmin
 from administration.ticketZ import TicketZ
 from webview.serializers import debut_fin_journee, CommandeSerializer
 from django.core.paginator import Paginator
 # nico
 from uuid import UUID
+from asgiref.sync import async_to_sync
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,7 @@ class Sales(viewsets.ViewSet):
             else:
                 commands_today[article.commande]['articles'].append(article)
                 commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (
-                            article.qty * article.prix)
+                        article.qty * article.prix)
 
         # Ticket Z temporaire :
         config = Configuration.get_solo()
@@ -120,7 +121,7 @@ class Sales(viewsets.ViewSet):
             else:
                 commands_today[article.commande]['articles'].append(article)
                 commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (
-                            article.qty * article.prix)
+                        article.qty * article.prix)
 
         # import ipdb; ipdb.set_trace()
         context = {
@@ -148,10 +149,45 @@ class Print(viewsets.ViewSet):
 
     @action(detail=False, methods=['GET'])
     def test(self, request, *args, **kwargs):
-        user = request.user
+        # On se log sur le premier appareil pour entrer dans le websocket
+        User = get_user_model()
+        user = User.objects.filter(appareil__isnull=False).first()
+
         return render(request, 'print/test.html', context={
             'user': user,
+            'room_name': user.uuid.hex,
+            'grps': GroupementCategorie.objects.all(),
         })
+
+    @action(detail=True, methods=['GET'])
+    def test_groupe(self, request, pk, *args, **kwargs):
+        groupe = GroupementCategorie.objects.get(pk=pk)
+        user = request.user
+
+        try :
+            destination = groupe.printer.host.user.uuid.hex
+
+            # On envoi sur le canal que seul l'appareil reçoit l'ordre d'impression depuis le WS
+            logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {destination}")
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                destination,
+                {
+                    'type': f'from_ws_to_printer',
+                    'text': 'Print me !'
+                }
+            )
+
+        except Exception as e:
+            logger.error(f"Pas d'appareil pour ce groupe ? -> {e}")
+            pass
+
+        return render(request, 'print/notification.html', context={
+            'user': user,
+            'room_name': request.user.uuid.hex,
+            'groupe': groupe,
+        })
+
 
 class PaymentIntentTpeViewset(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
@@ -204,6 +240,7 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
         terminal = get_object_or_404(Terminal, pk=pk)
         stripe.terminal.Reader.cancel_action(terminal.stripe_id)
         return HttpResponse(status=205)
+
 
 ### TUTORIEL WEBSOCKET
 

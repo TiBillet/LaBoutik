@@ -60,10 +60,11 @@ class Appareil(models.Model):
     version = models.CharField(max_length=50, null=True, blank=True)
     user_agent = models.CharField(max_length=500, null=True, blank=True)
 
-    DESKTOP, SMARTPHONE, RASPBERRY, NFC_SANS_FRONT, FRONT_SANS_NFC = 'FOR', 'FMO', 'FPI', 'SSF', 'FSN'
+    DESKTOP, SMARTPHONE, SUNMI, RASPBERRY, NFC_SANS_FRONT, FRONT_SANS_NFC = 'FOR', 'FMO','SUN', 'FPI', 'SSF', 'FSN'
     PERIPH_CHOICES = [
         (DESKTOP, _('Front ordinateur')),
         (SMARTPHONE, _('Front smartphone')),
+        (SUNMI, _('Sunmi avec imprimante')),
         (RASPBERRY, _('Front Raspberry')),
         (NFC_SANS_FRONT, _('Serveur NFC sans front')),
         (FRONT_SANS_NFC, _('Front sans lecteur NFC')),

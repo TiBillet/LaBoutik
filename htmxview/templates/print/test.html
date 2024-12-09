@@ -1,3 +1,17 @@
+{% load static %}
+{% load humanize %}
+<script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
+
+{% for groupes in grps %}
+    <button hx-get="/htmx/print/{{ groupes.pk }}/test_groupe/" hx-target="#notification">
+        {{ groupes.name }}
+    </button>
+{% endfor %}
+
+
+<div id="notification"  hx-swap-oob="true"></div>
+
+
 {{ room_name|json_script:"room-name" }}
 <script>
     const roomName = JSON.parse(document.getElementById('room-name').textContent);
@@ -10,8 +24,13 @@
         + '/'
     );
 
+    chatSocket.onopen = function (e) {
+        console.info('Chat socket opened on : ', roomName);
+    };
+
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
+        console.log("Message à imprimer reçu !");
         console.log(data);
     };
 

@@ -913,40 +913,45 @@ class Command(BaseCommand):
                 prepa_cuisine.categories.add(CatDessert)
 
             def printer_test(self):
+                User = get_user_model()
+                user_terminal, created = User.objects.get_or_create(username='Terminal Test')
+
+                appareil, created = Appareil.objects.get_or_create(
+                    name="Terminal Test",
+                    user=user_terminal,
+                    periph=Appareil.SMARTPHONE,
+                )
 
                 PRINT_SERVEUR = os.environ.get('PRINT_SERVEUR')
                 PRINT_SERVEUR_APIKEY = os.environ.get('PRINT_SERVEUR_APIKEY')
-                if PRINT_SERVEUR and PRINT_SERVEUR_APIKEY:
-                    PRINTER_1_NAME = os.environ.get('PRINTER_1_NAME')
-                    PRINTER_1_IP = os.environ.get('PRINTER_1_IP')
-                    PRINTER_2_NAME = os.environ.get('PRINTER_2_NAME')
-                    PRINTER_2_IP = os.environ.get('PRINTER_2_IP')
+                PRINTER_1_NAME = os.environ.get('PRINTER_1_NAME', 'Printer 1')
+                PRINTER_1_IP = os.environ.get('PRINTER_1_IP', '192.168.0.101')
+                PRINTER_2_NAME = os.environ.get('PRINTER_2_NAME', 'Printer 2')
+                PRINTER_2_IP = os.environ.get('PRINTER_2_IP', '192.168.0.102')
 
-                    if PRINTER_1_NAME and PRINTER_1_IP:
-                        tm20, created = Printer.objects.get_or_create(
-                            name=PRINTER_1_NAME,
-                            thermal_printer_adress=PRINTER_1_IP,
-                            serveur_impression=PRINT_SERVEUR,
-                            api_serveur_impression=PRINT_SERVEUR_APIKEY
-                        )
-                        prepa_cuisine = GroupementCategorie.objects.get(name="CUISINE")
-                        prepa_cuisine.printer = tm20
-                        prepa_cuisine.save()
+                tm20, created = Printer.objects.get_or_create(
+                    name=PRINTER_1_NAME,
+                    thermal_printer_adress=PRINTER_1_IP,
+                    serveur_impression=PRINT_SERVEUR,
+                    api_serveur_impression=PRINT_SERVEUR_APIKEY,
+                    host=appareil,
+                )
+                prepa_cuisine = GroupementCategorie.objects.get(name="CUISINE")
+                prepa_cuisine.printer = tm20
+                prepa_cuisine.save()
 
-                    if PRINTER_2_NAME and PRINTER_2_IP:
-                        tm30, created = Printer.objects.get_or_create(
-                            name=PRINTER_2_NAME,
-                            thermal_printer_adress=PRINTER_2_IP,
-                            serveur_impression=PRINT_SERVEUR,
-                            api_serveur_impression=PRINT_SERVEUR_APIKEY
-                        )
+                tm30, created = Printer.objects.get_or_create(
+                    name=PRINTER_2_NAME,
+                    thermal_printer_adress=PRINTER_2_IP,
+                    serveur_impression=PRINT_SERVEUR,
+                    api_serveur_impression=PRINT_SERVEUR_APIKEY
+                )
 
-                        prepa_tireuse = GroupementCategorie.objects.get(name="TIREUSE")
-                        prepa_tireuse.printer = tm30
-                        prepa_tireuse.save()
+                prepa_tireuse = GroupementCategorie.objects.get(name="TIREUSE")
+                prepa_tireuse.printer = tm30
+                prepa_tireuse.save()
 
-                    return True
-                return False
+                return True
 
             def add_membership_and_badge_articles(self):
                 # On est dans un environnement de test/dev/debug,

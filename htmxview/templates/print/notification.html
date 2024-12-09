@@ -1,5 +1,5 @@
 {% load humanize %}
 
 <div id="notification"  hx-swap-oob="true">
-    {% now "H:i" %} : {{ event.notification }} from {{ event.user }}
+    {% now "H:i" %} : {{ user }} -> {{ event.message }}
 </div>

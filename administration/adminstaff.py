@@ -112,7 +112,7 @@ class CustomUserAdmin(UserAdmin):
 
     def get_queryset(self, request):
         qs = super(CustomUserAdmin, self).get_queryset(request)
-        return qs.filter(appareil__isnull=True, is_superuser=False)
+        return qs.exclude(appareil__isnull=False).exclude(is_superuser=True)
 
 
 User = get_user_model()

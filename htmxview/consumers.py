@@ -24,7 +24,6 @@ class PrintConsumer(AsyncWebsocketConsumer):
                 logger.error(f"{self.room_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
                 raise Exception(f"{self.room_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
 
-        logger.info(f"{self.room_name} {self.user} connected")
 
         # Join room group
         await self.channel_layer.group_add(
@@ -32,6 +31,7 @@ class PrintConsumer(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+        logger.info(f"channel_name : {self.channel_name} - room : {self.room_name} - user : {self.user} connected")
         await self.accept()
 
     async def disconnect(self, close_code):
@@ -54,9 +54,19 @@ class PrintConsumer(AsyncWebsocketConsumer):
             {
                 'type': 'notification',
                 'user': f"{self.user}",
-                'notification': f"Nouveau message"
+                'message': f"Nouveau message"
             }
         )
+
+    # Receive message from room group to a printer
+    async def printer(self, event):
+        logger.info(f"printer event: {event}")
+        data = {
+            'type' : f'printer',
+            'message' : f'{event.get("message")}'
+        }
+        # Envoie sur le canal room_name le json
+        await self.send(text_data=json.dumps(data))
 
     # Receive message from room group
     # Doit avoir le même nom que le type du message de la methode receive
