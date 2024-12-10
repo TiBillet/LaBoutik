@@ -26,15 +26,38 @@
   padding-right: 8px;
 }
 
-.order-legende, .order-content {
+.order-sup-overflow-y{
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow-y: hidden;
+}
+
+.order-add-overflow-y{
+  width: 100%;
+  height: calc(100% - 30px);
+  overflow-y: auto;
+  padding-bottom: 16px;
+}
+
+.order-legende {
   width: 98%;
   margin: 0;
   padding: 4px;
+}
+
+.order-legende {
+  align-self: flex-start;
   background-color: #171817;
 }
 
-.order-content {
-  margin: 4px 0;
+.order-legende-height {
+  height: 30px;
+}
+
+.order-form {
+  width: 98%;
+  margin-left: 4px auto;
   background-color: #303130;
 }
 
@@ -60,19 +83,23 @@
 }
 </style>
 
-<div class="BF-col">
+<div class="order-sup-overflow-y">
   <!-- légende -->
-  <div class="order-legende BF-ligne-deb mb4px">
-    <div class="order-legende-time-w BF-ligne">&#8986; hh:mm</div>
-    <div class="order-legende-articles-w BF-ligne">articles</div>
-    <div class="order-legende-prix-w BF-ligne">{% trans 'prix' %}</div>
-    <div class="order-legende-mpayment-w BF-ligne">{% trans 'moyen de payment' %}</div>
-    <div class="order-legende-update-mpayment-w BF-ligne">{% trans 'modifier moyen de paiement' %}</div>
+  <div class="BF-ligne l100p order-legende-height">
+    <div class="order-legende BF-ligne-deb mb4px">
+      <div class="order-legende-time-w BF-ligne">&#8986; hh:mm</div>
+      <div class="order-legende-articles-w BF-ligne">articles</div>
+      <div class="order-legende-prix-w BF-ligne">{% trans 'prix' %}</div>
+      <div class="order-legende-mpayment-w BF-ligne">{% trans 'moyen de payment' %}</div>
+      <div class="order-legende-update-mpayment-w BF-ligne">{% trans 'modifier moyen de paiement' %}</div>
+    </div>
   </div>
-
-  {% for uuid_command, cmd in commands_today.items %}
-  <form id="order-target-{{ uuid_command }}" class="order-content BF-ligne-deb mb4px" hx-post="/htmx/sales/change_payment_method/" hx-target="#order-target-{{ uuid_command }}" hx-swap="innerHTML">
+  <!-- ventes -->
+  <div class="order-add-overflow-y">
+    {% for uuid_command, cmd in commands_today.items %}
+    <form id="order-target-{{ uuid_command }}" class="order-form BF-ligne-deb mb4px" hx-post="/htmx/sales/change_payment_method/" hx-target="#order-target-{{ uuid_command }}" hx-swap="innerHTML">
     {% include "sales/components/order.html" %}
-  </form>
-  {% endfor %}
+    </form>
+    {% endfor %}
+  </div>
 </div>

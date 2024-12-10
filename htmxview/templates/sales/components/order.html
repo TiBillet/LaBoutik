@@ -23,10 +23,11 @@
 }
 
 .order-sel-mpayment {
-  width: 18%;
   height: 60px;
   margin: 0 2px;
   padding: 0;
+  font-size: 1rem;
+  overflow: hidden;
 }
 
 .order-sel-mpayment input {
@@ -40,7 +41,7 @@
 .order-sel-mpayment label {
   width: 100%;
   height: 100%;
-  padding: 4px 10px;
+  padding: 4px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -71,7 +72,7 @@
         {% with uuid=paiement.id|stringformat:"s" %}
         <input type="radio" id="order-payment-radio-{{ uuid }}-{{ uuid_command }}" name="method_payment_{{ uuid_command }}" value="{{ uuid }}" 
           {% if forloop.counter == 1 %} required {% endif %} />
-        <label for="order-payment-radio-{{ uuid }}-{{ uuid_command }}">{{ paiement.name }}</label>  
+        <label for="order-payment-radio-{{ uuid }}-{{ uuid_command }}" onclick="deselectPayment(event)">{{ paiement.name }}</label>
         {% endwith %}
       </div>
       {% endfor %}
@@ -93,7 +94,7 @@ function commandShowArticles(cibles) {
 
 // deselectPayment = unchecked
 function deselectPayment(event) {
-  <!-- console.log('-> ', event.target) -->
+  // console.log('-> ', event.target)
   document.querySelectorAll('.order-legende-update-mpayment-w input[type="radio"]').forEach(ele => {
     if (event.target !== ele) {
       ele.checked = false
