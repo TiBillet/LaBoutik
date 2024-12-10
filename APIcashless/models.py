@@ -1625,7 +1625,7 @@ class ArticleVendu(models.Model):
     hash_fedow = models.CharField(max_length=64, blank=True, null=True)
 
     # Commentaires
-    # comment = models.TextField(blank=True, null=True)
+    comment = models.TextField(blank=True, null=True, verbose_name=_("Commentaire"))
 
     class Meta:
         ordering = ('-date_time',)

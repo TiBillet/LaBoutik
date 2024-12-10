@@ -677,7 +677,7 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'carte',
         'pos',
         'table',
-        'id_commande',
+        'comment',
     )
 
     fields = (
@@ -686,7 +686,7 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'qty',
         'moyen_paiement',
         'carte',
-        # 'comment',
+        'comment',
         # 'comptabilise',
     )
 
