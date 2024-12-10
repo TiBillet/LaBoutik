@@ -686,6 +686,7 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'qty',
         'moyen_paiement',
         'carte',
+        # 'comment',
         # 'comptabilise',
     )
 

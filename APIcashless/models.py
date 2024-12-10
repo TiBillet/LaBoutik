@@ -1624,6 +1624,9 @@ class ArticleVendu(models.Model):
     sync_fedow = models.BooleanField(default=False, verbose_name="Fedow")
     hash_fedow = models.CharField(max_length=64, blank=True, null=True)
 
+    # Commentaires
+    # comment = models.TextField(blank=True, null=True)
+
     class Meta:
         ordering = ('-date_time',)
         verbose_name = _('Vente')
