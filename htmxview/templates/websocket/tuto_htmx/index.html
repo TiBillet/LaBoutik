@@ -11,6 +11,8 @@ Point de vente : {{ pos.name }}
     </div>
 
     <form id="form" ws-send>
-        <input name="message">
+        <input id="message2" name="message">
+        <input id="valider" type="submit" value="valider" style="display:none;">
     </form>
 </div>
+<button onclick="document.querySelector('#message2').value='hahahhaah';document.querySelector('#valider').click();">test</button>

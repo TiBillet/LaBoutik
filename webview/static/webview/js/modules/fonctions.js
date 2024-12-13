@@ -260,15 +260,29 @@ export function popupConfirme(moyenPaiement, nom, fonction) {
   }
 
   frag += `</div>
-    <div class="BF-ligne-entre" style="margin-top: 2rem;">
-      <bouton-basique id="popup-confirme-retour" traiter-texte="1" i8n="return" texte="RETOUR|2rem|" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="300px" height="120px"  onclick="keyboard.hide();fn.popupConfirmeAnnuler();" style="margin: 8px"></bouton-basique>
-      <bouton-basique id="popup-confirme-valider" traiter-texte="1" i8n="validate" texte="VALIDER|2rem|" couleur-fond="#339448" icon="fa-check-circle||2.5rem" width="300px" height="120px"  onclick="${fonctionValider};" style="margin: 8px;"></bouton-basique>
-    </div>
-  </div>
-  `
+    <div id="confirm-action-container" class="BF-ligne-entre" style="margin-top: 2rem;">
+      <bouton-basique id="popup-confirme-retour" traiter-texte="1" i8n="return" texte="RETOUR|2rem|" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="300px" height="120px"  onclick="keyboard.hide();fn.popupConfirmeAnnuler();" style="margin: 8px"></bouton-basique>`
 
+  if (moyenPaiement !== 'carte_bancaire') {
+    frag += `<bouton-basique id="popup-confirme-valider" traiter-texte="1" i8n="validate" texte="VALIDER|2rem|" couleur-fond="#339448" icon="fa-check-circle||2.5rem" width="300px" height="120px"  onclick="${fonctionValider};" style="margin: 8px;"></bouton-basique>`
+  }
+
+  frag += '</div></div>'
+
+  // TODO: ajouter un spinner dans l'attente du message websocket de confirmation stripe
 
 
   document.querySelector('#contenu').insertAdjacentHTML('beforeend', frag)
   translate('#contenu')
+
+  // websocket listen
+  if (moyenPaiement === 'carte_bancaire') {
+    console.log('-> websocket terminal listen !')
+
+    wsTerminal.socket.addEventListener("message", (event) => {
+      console.log('- event =', event)
+      console.log('------------------------------------------------')
+      console.log('- message =', event.data)
+    })
+  }
 }

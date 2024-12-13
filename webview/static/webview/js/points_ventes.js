@@ -1,5 +1,18 @@
 import "./menuPlugins/addAllMenuPlugin.js"
 
+// websocket route terminal
+window.wsTerminal = {
+  socket: new WebSocket(`wss://${window.location.host}/ws/terminal/coucou/`),
+  on: false
+}
+
+// Connection ws
+wsTerminal.socket.addEventListener("open", (event) => {
+  console.log("connection ws terminal ok !")
+  wsTerminal.on = true
+})
+
+
 window.nomModulePrive = null
 window.pv_uuid_courant = ''
 window.pv_uuid_ancien = ''
@@ -100,8 +113,8 @@ function showNetworkOff() {
   // 5 secondes
   setTimeout(() => {
     if (window.navigator.onLine === false) {
-			document.dispatchEvent(new CustomEvent('netWorkOffLine', {}))
-		} else {
+      document.dispatchEvent(new CustomEvent('netWorkOffLine', {}))
+    } else {
       document.querySelector('#network-offline').remove()
       reloadData()
     }
@@ -1115,7 +1128,7 @@ function determinerInterfaceValidation(actionAValider, achats) {
   let accepteEspeces = dataPv.accepte_especes
   let accepteCarteBancaire = dataPv.accepte_carte_bancaire
   let accepteCheque = dataPv.accepte_cheque
-  
+
   // sys.logValeurs({ accepteEspeces: accepteEspeces, accepteCarteBancaire: accepteCarteBancaire })testPaiementPossible
   let moyens_paiement_tab = [], methodes_tab = [], besoin_tag_id = [], restriction_tab = []
 
@@ -1307,6 +1320,24 @@ function depositIsPresent(achats) {
   return retour
 }
 
+export function wsSendTotalCb() {
+  const achats = glob.dataObtenirIdentiteClientSiBesoin.options.achats
+  console.log('-> wsSendTotalCb')
+
+  if (wsTerminal.on === true) {
+    const data = {
+      amount: achats.total,
+      pk_pdv: achats.pk_pdv,
+      pk_responsable: achats.pk_responsable
+    }
+    console.log('data =', data)
+    wsTerminal.socket.send(JSON.stringify(data))
+  } else {
+    console.log('ws terminal déconnecté !');
+  }
+
+}
+
 export function validerEtape1(options) {
   // console.log('-> fonction validerEtape1 !')
   // sys.logJson('options = ', options)
@@ -1335,7 +1366,7 @@ export function validerEtape1(options) {
   let moyens_paiement_tab = donnees.moyens_paiement
   let besoin_tag_id = donnees.besoin_tag_id
 
-  // ajout des boutons moyens de paiement
+  // ajout des boutons moyens de paiement + form htmx
   let boutons = ''
 
   if (moyens_paiement_tab.length >= 1) {
@@ -1379,7 +1410,8 @@ export function validerEtape1(options) {
       }
 
       if (moyens_paiement_tab[i] === 'carte_bancaire') {
-        boutons += `<bouton-basique class="test-ref-cb" traiter-texte="1" texte="CB|2rem||cb-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-credit-card||2.5rem" onclick="fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
+
+        boutons += `<bouton-basique class="test-ref-cb" traiter-texte="1" texte="CB|2rem||cb-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-credit-card||2.5rem" onclick="vue_pv.wsSendTotalCb();fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
       }
 
       if (moyens_paiement_tab[i] === 'CH') {
@@ -1395,6 +1427,7 @@ export function validerEtape1(options) {
     }
 
     boutons += `<bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="fn.popupAnnuler();" style="margin-top:16px;"></bouton-basique>`
+
     let optionsPopup = {
       boutons: boutons,
       titre: `<div class="selection-type-paiement" data-i8n="paymentTypes,capitalize">Types de paiement</div>`,
