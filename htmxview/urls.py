@@ -13,7 +13,7 @@ router.register(r'print', views.Print, basename='print')
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
                   # path('printer/<uuid:pos_uuid>/', views.tuto_htmx, name='printer'),
-                  path('tpe_stripe/', views.tuto_htmx, name='stripe_tpe'),
+                  # path('tpe_stripe/', views.tuto_htmx, name='stripe_tpe'),
 
                   ## WEBSOCKET
                   ## TUTO WEBSOCKET

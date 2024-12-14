@@ -59,8 +59,8 @@ class PrintConsumer(AsyncWebsocketConsumer):
         )
 
     # Receive message from room group to a printer
-    async def printer(self, event):
-        logger.info(f"printer event: {event}")
+    async def from_ws_to_printer(self, event):
+        logger.info(f"from_ws_to_printer event: {event}")
         data = {
             'type' : f'printer',
             'message' : f'{event.get("message")}'

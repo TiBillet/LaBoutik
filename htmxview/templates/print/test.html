@@ -1,7 +1,9 @@
 {% load static %}
 {% load humanize %}
-<script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
 
+<script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
+<script src="{% static 'webview/js/epson/epos-2.27.0.js' %}"></script>
 {% for groupes in grps %}
     <button hx-get="/htmx/print/{{ groupes.pk }}/test_groupe/" hx-target="#notification">
         {{ groupes.name }}
@@ -9,10 +11,64 @@
 {% endfor %}
 
 
-<div id="notification"  hx-swap-oob="true"></div>
-
-
+<div id="notification" hx-swap-oob="true"></div>
 {{ room_name|json_script:"room-name" }}
+
+<script>
+    var ePosDev = new epson.ePOSDevice();
+    var printer = null;
+
+    function connect() {
+        //Connect to device
+        ePosDev.connect('192.168.0.68', '8008', callback_connect);
+        console.log(ePosDev);
+    }
+
+    function callback_connect(resultConnect) {
+        if ((resultConnect == 'OK') || (resultConnect == 'SSL_CONNECT_OK')) {
+            //Get the Printer object
+            ePosDev.createDevice('local_printer', ePosDev.DEVICE_TYPE_PRINTER, {
+                'crypto':
+                    false, 'buffer': false
+            }, callback_createDevice);
+        } else {
+            logger.info('Connection failed');
+            //Display the error message
+        }
+    }
+
+    function callback_createDevice(deviceObj, retcode) {
+        if (retcode == 'OK') {
+            printer = deviceobj;
+            printer.timeout = 60000;
+            //Register the printing complete event
+            printer.onreceive = function (res) {
+                alert(res.success);
+            };
+            print();
+        } else {
+            alert(retcode);
+        }
+    }
+
+    function print() {
+        //Create the printing data
+        printer.addText('Hello\n');
+        //Send the printing data
+        printer.send();
+    }
+
+    function disconnect() {
+        //Discard the Printer object
+        ePosDev.deleteDevice(printer, callback_deleteDevice);
+    }
+
+    function callback_deleteDevice(errorCode) {
+        //Disconnect to device
+        ePosDev.disconnect();
+    }
+</script>
+
 <script>
     const roomName = JSON.parse(document.getElementById('room-name').textContent);
 
