@@ -935,17 +935,18 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 # ('appareillement', 'pin_code_primary_link',),
                 'validation_service_ecran',
                 'remboursement_auto_annulation',
+                'void_card',
                 # 'domaine_cashless',
                 'ip_cashless',
             ),
         }),
-        ('Adhésion', {
-            'fields': (
-                'prix_adhesion',
-                'calcul_adhesion',
+        # ('Adhésion', {
+        #     'fields': (
+        #         'prix_adhesion',
+        #         'calcul_adhesion',
                 # 'adhesion_suspendue',
-            ),
-        }),
+            # ),
+        # }),
         ('Ticket Z', {
             'fields': (
                 'compta_email',
