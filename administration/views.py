@@ -80,7 +80,7 @@ class TicketZToday(APIView):
         return HttpResponse('No sales today')
 
 class RapportToday(APIView):
-    template_name = "rapports/rapport_complet.html"
+    template_name = "rapports/rapportV4.html"
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
