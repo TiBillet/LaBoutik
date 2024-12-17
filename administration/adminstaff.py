@@ -112,7 +112,7 @@ class CustomUserAdmin(UserAdmin):
 
     def get_queryset(self, request):
         qs = super(CustomUserAdmin, self).get_queryset(request)
-        return qs.filter(appareil__isnull=True, is_superuser=False)
+        return qs.exclude(appareil__isnull=False).exclude(is_superuser=True)
 
 
 User = get_user_model()
@@ -365,7 +365,12 @@ class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
 
     # Ne pas afficher les articles archivés
     def get_queryset(self, request):
-        qs = super(ArticlesAdmin, self).get_queryset(request).filter(archive=False)
+        qs = (super(ArticlesAdmin, self).get_queryset(request)
+              .filter(archive=False)
+              .exclude(methode_choices=Articles.FRACTIONNE))
+        # affiche par defaul les ventes :
+        if not request.GET.get('methode_choices__exact') and not request.GET.get('_changelist_filters') :
+            qs = qs.filter(methode_choices=Articles.VENTE)
         return qs
 
 
@@ -672,7 +677,7 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'carte',
         'pos',
         'table',
-        'id_commande',
+        'comment',
     )
 
     fields = (
@@ -681,6 +686,7 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'qty',
         'moyen_paiement',
         'carte',
+        'comment',
         # 'comptabilise',
     )
 
@@ -712,8 +718,9 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
     # default_filters = ('pos__id__exact=48',)
 
     def has_delete_permission(self, request, obj=None):
-        group_compta, created = Group.objects.get_or_create(name="comptabilite")
-        return group_compta in request.user.groups.all()
+        return False
+        # group_compta, created = Group.objects.get_or_create(name="comptabilite")
+        # return group_compta in request.user.groups.all()
 
     def has_add_permission(self, request):
         return False
@@ -928,17 +935,18 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 # ('appareillement', 'pin_code_primary_link',),
                 'validation_service_ecran',
                 'remboursement_auto_annulation',
+                'void_card',
                 # 'domaine_cashless',
                 'ip_cashless',
             ),
         }),
-        ('Adhésion', {
-            'fields': (
-                'prix_adhesion',
-                'calcul_adhesion',
+        # ('Adhésion', {
+        #     'fields': (
+        #         'prix_adhesion',
+        #         'calcul_adhesion',
                 # 'adhesion_suspendue',
-            ),
-        }),
+            # ),
+        # }),
         ('Ticket Z', {
             'fields': (
                 'compta_email',

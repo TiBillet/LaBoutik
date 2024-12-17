@@ -1624,6 +1624,9 @@ class ArticleVendu(models.Model):
     sync_fedow = models.BooleanField(default=False, verbose_name="Fedow")
     hash_fedow = models.CharField(max_length=64, blank=True, null=True)
 
+    # Commentaires
+    comment = models.TextField(blank=True, null=True, verbose_name=_("Commentaire"))
+
     class Meta:
         ordering = ('-date_time',)
         verbose_name = _('Vente')
@@ -1987,7 +1990,7 @@ class Configuration(SingletonModel):
     adhesion_suspendue = models.BooleanField(default=False,
                                              help_text="Adhésion possible sur carte sans membre. Au prix par default dès que la fiche membre est renseignée.")
 
-    void_card = models.BooleanField(default=False, verbose_name=_("Séparer l'utilisateur lors du vider carte"),
+    void_card = models.BooleanField(default=True, verbose_name=_("Séparer l'utilisateur lors du vider carte"),
                                     help_text=_("Si coché, la carte vidée redeviendra neuve. Sinon, la carte garde toujours le portefeuille de l'utilisateur pour par exemple ses adhésions."))
 
     '''
