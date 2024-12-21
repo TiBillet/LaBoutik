@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from random import choices
 
 from IPython.utils.coloransi import value
 from django.utils import timezone
@@ -96,13 +97,15 @@ class PriceSoldFromLespassValidator(serializers.Serializer):
 
 
 class SaleFromLespassValidator(serializers.Serializer):
-    paiement_stripe_uuid = serializers.UUIDField()
+    # paiement_stripe_uuid = serializers.UUIDField()
+    payment_method = serializers.ChoiceField(choices=MoyenPaiement.CATEGORIES)
+    amount = serializers.IntegerField()
     uuid = serializers.UUIDField()
     datetime = serializers.DateTimeField()
     pricesold = PriceSoldFromLespassValidator()
     qty = serializers.DecimalField(max_digits=8, decimal_places=2)
     vat = serializers.DecimalField(max_digits=4, decimal_places=2)
-    user_uuid_wallet = serializers.UUIDField()
+    # user_uuid_wallet = serializers.UUIDField()
 
     def validate_uuid(self, value):
         # uuid_paiement = uuid LigneArticle sur Lespass
@@ -110,14 +113,11 @@ class SaleFromLespassValidator(serializers.Serializer):
             raise serializers.ValidationError("Sale already recorded : uuid")
         return value
 
-
-    def validate_paiement_stripe_uuid(self, value):
-        # uuid_paiement = uuid LigneArticle sur Lespass
-        if ArticleVendu.objects.filter(uuid_paiement=value).exists():
-            raise serializers.ValidationError("Sale already recorded : uuid_paiement")
-        return value
-
-
+    # def validate_paiement_stripe_uuid(self, value):
+    #     # uuid_paiement = uuid LigneArticle sur Lespass
+    #     if ArticleVendu.objects.filter(uuid_paiement=value).exists():
+    #         raise serializers.ValidationError("Sale already recorded : uuid_paiement")
+    #     return value
 
     def validate_user_uuid_wallet(self, value):
         try :

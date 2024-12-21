@@ -724,6 +724,8 @@ class Origin(models.Model):
         return f"?? {self.generation}"
 
 
+
+
 class MoyenPaiement(models.Model):
     """
     Devrait s'appeller ASSET (monnaie)
@@ -740,20 +742,29 @@ class MoyenPaiement(models.Model):
     place_origin = models.ForeignKey(Place, on_delete=models.SET_NULL, related_name='moyen_paiements', null=True,
                                      blank=True)
 
+    # Cashless
     LOCAL_EURO = 'LE'
     LOCAL_GIFT = 'LG'
-    FRACTIONNE = 'FR'
-    STRIPE_FED = 'SF'
-    EXTERIEUR_FED = 'XE'
-    EXTERIEUR_GIFT = 'XG'
-    FEDOW = 'FD'
-    STRIPE_NOFED = 'SN'
+    OCECO = 'OC'
+
+    # Classics
     CASH = 'CA'
     CREDIT_CARD_NOFED = 'CC'
     CHEQUE = 'CH'
-    OCECO = 'OC'
-    ARDOISE = 'AR'
+
+    # Methode special
+    FRACTIONNE = 'FR'
     COMMANDE = "CM"
+    ARDOISE = 'AR'
+
+    # Online
+    STRIPE_FED = 'SF' # Paimeent vers le compte stripe principal
+    STRIPE_NOFED = 'SN' # Paiement direct vers le compte stripe connect
+    EXTERIEUR_FED = 'XE'
+    EXTERIEUR_GIFT = 'XG'
+    FEDOW = 'FD'
+
+    # Assets with special method
     BADGE = 'BG'
     EXTERNAL_BADGE = 'XB'
     TIME = 'TP'
@@ -1567,8 +1578,8 @@ class IpUser(models.Model):
 
 class ArticleVendu(models.Model):
     uuid_paiement = models.UUIDField(editable=False, default=uuid4)
-
     uuid = models.UUIDField(default=uuid4)
+
 
     article = models.ForeignKey(Articles, on_delete=models.PROTECT)
     categorie = models.ForeignKey(Categorie, on_delete=models.PROTECT, null=True, blank=True)

@@ -450,13 +450,17 @@ class SaleFromLespass(APIView):
 
         price_uuid =  validator.validated_data['pricesold']['price']['uuid']
         product_uuid =  validator.validated_data['pricesold']['price']['product']
-        moyen_paiement_stripe = MoyenPaiement.objects.get(categorie=MoyenPaiement.STRIPE_NOFED)
+        moyen_paiement = MoyenPaiement.objects.get(categorie=validator.validated_data['payment_method'])
+
+        # Amount est un entier.
+        amount = validator.validated_data['amount'] / 100
 
         # On va vérifier les produit sur Lespass et créer les articles manquants
         config = Configuration.get_solo()
         retrieve_product = requests.get(
             f"{config.billetterie_url}/api/products/{product_uuid}/",
             verify=bool(not settings.DEBUG))
+
         if retrieve_product.status_code == 200:
             # On mets à jour les produits assets Fedow
             fedowAPI = FedowAPI()
@@ -474,7 +478,7 @@ class SaleFromLespass(APIView):
         vente_depuis_lespass = ArticleVendu.objects.create(
             uuid=validator.validated_data['uuid'],
             article=article,
-            prix=validator.validated_data['pricesold']['prix'],
+            prix=amount,
             date_time=validator.validated_data['datetime'],
             qty=validator.validated_data['qty'],
             pos=pos,
@@ -482,9 +486,9 @@ class SaleFromLespass(APIView):
             membre=None,
             responsable=None,
             carte=None,
-            moyen_paiement=moyen_paiement_stripe,
-            uuid_paiement=validator.validated_data['paiement_stripe_uuid'],
-            commande=validator.validated_data['paiement_stripe_uuid'],
+            moyen_paiement=moyen_paiement,
+            uuid_paiement=validator.validated_data['uuid'],
+            commande=validator.validated_data['uuid'],
         )
         return Response("", status=status.HTTP_200_OK)
 
