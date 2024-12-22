@@ -745,12 +745,14 @@ class MoyenPaiement(models.Model):
     # Cashless
     LOCAL_EURO = 'LE'
     LOCAL_GIFT = 'LG'
-    OCECO = 'OC'
+    EXTERIEUR_FED = 'XE'
+    EXTERIEUR_GIFT = 'XG'
 
     # Classics
     CASH = 'CA'
     CREDIT_CARD_NOFED = 'CC'
     CHEQUE = 'CH'
+    FREE = 'NA'
 
     # Methode special
     FRACTIONNE = 'FR'
@@ -760,11 +762,10 @@ class MoyenPaiement(models.Model):
     # Online
     STRIPE_FED = 'SF' # Paimeent vers le compte stripe principal
     STRIPE_NOFED = 'SN' # Paiement direct vers le compte stripe connect
-    EXTERIEUR_FED = 'XE'
-    EXTERIEUR_GIFT = 'XG'
     FEDOW = 'FD'
 
     # Assets with special method
+    OCECO = 'OC'
     BADGE = 'BG'
     EXTERNAL_BADGE = 'XB'
     TIME = 'TP'
@@ -776,20 +777,26 @@ class MoyenPaiement(models.Model):
     EXTERNAL_FIDELITY = 'XF'
 
     CATEGORIES = [
+        # Cashless
         (LOCAL_EURO, _('Token local €')),
         (LOCAL_GIFT, _('Token local cadeau')),
-        (FRACTIONNE, _('Fractionné')),
-        (STRIPE_FED, _('Stripe')),
         (EXTERIEUR_FED, _('Token fédéré exterieur €')),
         (EXTERIEUR_GIFT, _('Token fédéré cadeau')),
         (FEDOW, _('Fedow')),
-        (STRIPE_NOFED, _('Web (Stripe)')),
+
         (CASH, _('Espèces')),
         (CREDIT_CARD_NOFED, _('Carte bancaire')),
         (CHEQUE, _('Cheque')),
-        (OCECO, _('Oceco')),
-        (ARDOISE, _('Ardoise')),
+        (FREE, _('Offert')),
+
+        (FRACTIONNE, _('Fractionné')),
         (COMMANDE, _('Commande')),
+        (ARDOISE, _('Ardoise')),
+
+        (STRIPE_NOFED, _('Stripe')),
+        (STRIPE_FED, _('Stripe (fedéré)')),
+
+        (OCECO, _('Oceco')),
         (BADGE, _('Badgeuse')),
         (EXTERNAL_BADGE, _('Badgeuse fédérée')),
         (TIME, _('Temps')),
@@ -903,6 +910,7 @@ class MoyenPaiement(models.Model):
         elif self.name:
             return self.name
         return self.get_categorie_display()
+
 
 
 class CarteCashless(models.Model):
@@ -1694,18 +1702,18 @@ class ArticleVendu(models.Model):
                 self.categorie, created = Categorie.objects.get_or_create(name="Autre")
 
         # On applique la TVA de la catégorie de l'article en cas de changement futur de la catégorie parent :
-        if self.tva == 0:
+        if self.tva is None:
             if self.article.categorie:
                 if self.article.categorie.tva:
                     self.tva = self.article.categorie.tva.taux
 
         # On applique le prix de l'article en cas de changement futur de l'article parent :
-        if self.prix == 0:
+        if self.prix is None:
             if self.article:
                 self.prix = self.article.prix
 
         # On applique le prix d'achat de l'article en cas de changement futur de l'article parent :
-        if self.prix_achat == 0:
+        if self.prix_achat is None:
             if self.article:
                 self.prix_achat = self.article.prix_achat
 
