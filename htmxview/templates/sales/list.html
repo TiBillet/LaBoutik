@@ -1,6 +1,6 @@
 {% load i18n %}
 <style>
-/* header */
+/* header 
 .nav-order-htmx {
   display: flex;
   flex-direction: row;
@@ -25,7 +25,7 @@
   align-items: center;
   padding-right: 8px;
 }
-
+/**
 .order-sup-overflow-y{
   display: block;
   width: 100%;
@@ -80,24 +80,30 @@
 .order-legende-update-mpayment-w {
   width: 30%;
   justify-content: end;
+} **/
+.order__line:nth-child(odd) {
+  background-color: #ffffff22;
+}
+
+.order__table-head {
+  display: flex;
+	justify-content: space-between;
+  padding: .5rem 1rem;
 }
 </style>
 
 <div class="order-sup-overflow-y">
   <!-- légende -->
-  <div class="BF-ligne l100p order-legende-height">
-    <div class="order-legende BF-ligne-deb mb4px">
-      <div class="order-legende-time-w BF-ligne">&#8986; hh:mm</div>
-      <div class="order-legende-articles-w BF-ligne">articles</div>
-      <div class="order-legende-prix-w BF-ligne">{% trans 'prix' %}</div>
-      <div class="order-legende-mpayment-w BF-ligne">{% trans 'moyen de payment' %}</div>
-      <div class="order-legende-update-mpayment-w BF-ligne">{% trans 'modifier moyen de paiement' %}</div>
-    </div>
-  </div>
+    <header class="order__table-head">
+      <div>heure</div>
+      <div>nb articles</div>
+      <div>{% trans 'prix' %}</div>
+      <div>détails</div>
+    </header>
   <!-- ventes -->
   <div class="order-add-overflow-y">
     {% for uuid_command, cmd in commands_today.items %}
-    <form id="order-target-{{ uuid_command }}" class="order-form BF-ligne-deb mb4px" hx-post="/htmx/sales/change_payment_method/" hx-target="#order-target-{{ uuid_command }}" hx-swap="innerHTML">
+    <form id="order-target-{{ uuid_command }}" class="order__line" hx-post="/htmx/sales/change_payment_method/" hx-target="#order-target-{{ uuid_command }}" hx-swap="innerHTML">
     {% include "sales/components/order.html" %}
     </form>
     {% endfor %}

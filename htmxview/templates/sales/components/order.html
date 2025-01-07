@@ -2,7 +2,7 @@
 {% load i18n %}
 {% load static %}
 
-<style>
+<style>/*
 .order-validate {
   height: 60px;
   padding: 4px 10px;
@@ -47,25 +47,73 @@
   justify-content: center;
   align-items: center;
   border: 1px solid #ffffff;
+}*/
+.order {
+  padding: .5rem 1rem;
+}
+
+.order__summary {
+  cursor: pointer;
+	display: flex;
+	justify-content: space-between;
+}
+
+.order__articles {
+  list-style: none;
+  padding: .2rem 0;
+  margin: 0;
+}
+.order__article, .order__method, .order__update {
+  padding-block: .2rem;
+}
+
+.order__update-form {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+	justify-content: space-between;
+  padding-block: .5rem;
+
+  & > * {
+    margin-block-end: .5rem;
+  }
+}
+
+.order__update-btn {
+	border: none;
+	line-height: 2rem;
+	height: 2rem;
+	padding-inline: .8rem;
+	cursor: pointer;
 }
 </style>
 <input type="hidden" name="uuid_command" value="{{ uuid_command }}" />
+
 {% with first_article=cmd.articles.0 %}
-    <div class="order-legende-time-w BF-ligne">{{ first_article.date_time|time:"H:i" }}</div>
-    <!-- articles -->
-    <div class="order-legende-articles-w BF-col">
-      {% for article in cmd.articles %}
-        <div {% if cmd.articles|length > 1 and forloop.counter > 1 %} class="order-article-no-display order-article-display-{{ forloop.parentloop.counter }}" {% endif %}>
-          <span>{{ article.qty|floatformat:0 }} x {{ article.article.name }}</span>
-          {% if cmd.articles|length > 1 and forloop.counter == 1 %}
-          <span onclick="commandShowArticles('order-article-display-{{ forloop.parentloop.counter }}')">....</span>
-          {% endif %}
-        </div>
-      {% endfor %}
-    </div>
-    <div class="order-legende-prix-w BF-ligne">{{ cmd.total|floatformat:2 }}</div>
-    <div class="order-legende-mpayment-w BF-ligne">{{ first_article.moyen_paiement }}</div>
-    <div class="order-legende-update-mpayment-w BF-ligne">
+<details class="order">
+  <summary class="order__summary">
+    <div class="order__datetime">{{ first_article.date_time|time:"H:i" }}</div>
+    <div class="order__article-count">{{ cmd.articles|length }} article{% if cmd.articles|length > 1 %}s{% endif %}</div>
+    <div class="order__price">{{ cmd.total|floatformat:2 }} &euro;</div>
+    <i class="fas fa-plus"></i>
+  </summary>
+
+  <!-- articles -->
+  <ul class="order__articles">
+    {% for article in cmd.articles %}
+      <li class="order__article">
+        <span>{{ article.qty|floatformat:0 }} x {{ article.article.name }}</span>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <hr />
+
+  <div class="order__method">Réglé par {{ first_article.moyen_paiement|lower }}</div>
+  <div class="order__update">
+    Modifier le moyen de paiement&nbsp;:
+
+    <div class="order__update-form">
       <!-- moyens de paiement -->
       {% for paiement in moyens_paiement %}
       <div class="order-sel-mpayment">
@@ -77,11 +125,14 @@
       </div>
       {% endfor %}
       <!-- bt valider -->
-      <button class="order-validate order-bt fond-ok coulBlanc" hx-indicator="#ind-{{ forloop.counter }}" on>
+      <button class="order__update-btn fond-ok coulBlanc" hx-indicator="#ind-{{ forloop.counter }}" on>
         <div>Valider</div>
         <img id="ind-{{ forloop.counter }}" src="{% static 'htmxview/bars.svg' %}" class="htmx-indicator"/>
       </button>
     </div>
+  </div>
+</details>
+  
 {% endwith %}
 
 <script>
