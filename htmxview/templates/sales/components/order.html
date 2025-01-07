@@ -61,7 +61,7 @@
 .order__articles {
   list-style: none;
   padding: .2rem 0;
-  margin: 0;
+  margin: 1rem 0 0;
 }
 .order__article, .order__method, .order__update {
   padding-block: .2rem;
@@ -95,7 +95,7 @@
     <div class="order__datetime">{{ first_article.date_time|time:"H:i" }}</div>
     <div class="order__article-count">{{ cmd.articles|length }} article{% if cmd.articles|length > 1 %}s{% endif %}</div>
     <div class="order__price">{{ cmd.total|floatformat:2 }} &euro;</div>
-    <i class="fas fa-plus"></i>
+    <i class="js__order-icon fas fa-plus"></i>
   </summary>
 
   <!-- articles -->
@@ -109,7 +109,7 @@
 
   <hr />
 
-  <div class="order__method">Réglé par {{ first_article.moyen_paiement|lower }}</div>
+  <div class="order__method">Réglé en {{ first_article.moyen_paiement|lower }}</div>
   <div class="order__update">
     Modifier le moyen de paiement&nbsp;:
 
@@ -152,4 +152,20 @@ function deselectPayment(event) {
     }
   })
 }
+
+function toggleOrderIcon({target: clicked}) {
+  const order = clicked.closest('.order')
+  const icon = order.querySelector('.js__order-icon')
+
+  console.log('order icon toggling', order, icon)
+
+  if (order.open)
+    icon.classList.replace('fa-minus', 'fa-plus')
+  else
+    icon.classList.replace('fa-plus', 'fa-minus')
+}
+
+document.querySelectorAll('.order').forEach(order => {
+  order.addEventListener('click', toggleOrderIcon)
+})
 </script>
