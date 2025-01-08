@@ -89,16 +89,51 @@
   display: flex;
 	justify-content: space-between;
   padding: .5rem 1rem;
+
+  .order__method {
+    display: none;
+  }
+}
+
+.order__tabs {
+  display: flex;
+  justify-content: space-around;
+  margin: 1rem;
+}
+
+.order__btn {
+  background: #ccc;
+  border: none;
+  border-radius: .5rem;
+  cursor: pointer;
+  font-size: larger;
+  padding: .5rem .8rem;
+}
+
+@media screen and (min-width: 960px) {
+  .order__table-head .order__method {
+    display: unset;
+  }
+
+  .order__tabs {
+    justify-content: space-evenly;
+  }
 }
 </style>
+
+<nav class="order__tabs">
+  <button class="order__btn" type="menu">Commandes</button>
+  <button class="order__btn" type="menu">Z-Ticket</button>
+</nav>
 
 <div class="order-sup-overflow-y">
   <!-- légende -->
     <header class="order__table-head">
-      <div>heure</div>
-      <div>nb articles</div>
-      <div>{% trans 'prix' %}</div>
-      <div>détails</div>
+      <div>Heure</div>
+      <div>Quantité</div>
+      <div>{% trans 'Prix' %}</div>
+      <div class="order__method">{% trans 'Règlement' %}</div>
+      <div>Détails</div>
     </header>
   <!-- ventes -->
   <div class="order-add-overflow-y">

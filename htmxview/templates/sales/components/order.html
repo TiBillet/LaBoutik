@@ -56,6 +56,15 @@
   cursor: pointer;
 	display: flex;
 	justify-content: space-between;
+  line-height: 2rem;
+
+  i {
+    line-height: 2rem;
+  }
+
+  .order__method {
+    display: none;
+  }
 }
 
 .order__articles {
@@ -86,6 +95,17 @@
 	padding-inline: .8rem;
 	cursor: pointer;
 }
+
+@media screen and (min-width: 960px) {
+  .order__summary .order__method {
+    display: unset;
+    width: 20%;
+  }
+  
+  .order__summary  ~ .order__method {
+    display: none;
+  }
+}
 </style>
 <input type="hidden" name="uuid_command" value="{{ uuid_command }}" />
 
@@ -95,6 +115,7 @@
     <div class="order__datetime">{{ first_article.date_time|time:"H:i" }}</div>
     <div class="order__article-count">{{ cmd.articles|length }} article{% if cmd.articles|length > 1 %}s{% endif %}</div>
     <div class="order__price">{{ cmd.total|floatformat:2 }} &euro;</div>
+    <div class="order__method">{{ first_article.moyen_paiement }}</div>
     <i class="js__order-icon fas fa-plus"></i>
   </summary>
 
