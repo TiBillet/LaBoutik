@@ -302,7 +302,7 @@ function cacherAfficherClassElementHtml(nomClasse, action, typeEle) {
 
 /**
  * Renseigne la div titre
- * @param {String} titre - titre de la vue
+ * @param {String} titre - titre de la vue (peut contenir un élément html + attribut 'data-i8n')
  */
 export function asignerTitreVue(titre) {
   document.querySelector('#header-part-left-titre').innerHTML = `

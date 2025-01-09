@@ -156,6 +156,7 @@ export const en = {
     noContribution: 'no contribution',
     allOrders: 'all orders',
     noNetwork : 'Server connection lost.\nPlease check your network.',
-    anonymousCard: 'Anonymous card'
+    anonymousCard: 'Anonymous card',
+    sales: 'Sales'
   }
 }

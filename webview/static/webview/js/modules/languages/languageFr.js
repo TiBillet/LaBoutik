@@ -157,6 +157,7 @@ export const fr = {
     noContribution: 'Aucune cotisation',
     allOrders: 'toutes commandes',
     noNetwork: 'Connexion au serveur perdue.\nVeuillez vérifier votre réseau.',
-    anonymousCard: 'Carte anonyme'
+    anonymousCard: 'Carte anonyme',
+    sales: 'Ventes'
   }
 }

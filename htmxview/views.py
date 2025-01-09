@@ -126,6 +126,14 @@ class Sales(viewsets.ViewSet):
 
         return render(request, "sales/components/order.html", context)
 
+    @action(detail=False, methods=['GET'])
+    def z_ticket(self, request):
+        print('-> url = z_ticket !')
+        context = {
+            'test': 'hahaha'
+        }
+        return render(request, "sales/z_ticket.html", context)
+
 class Membership(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
