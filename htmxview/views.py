@@ -70,6 +70,16 @@ class Sales(viewsets.ViewSet):
                 commands_today[article.commande]['articles'].append(article)
                 commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (article.qty * article.prix)
 
+        context = {
+            'commands_today': commands_today,
+            'moyens_paiement': MoyenPaiement.objects.filter(categorie__in=[MoyenPaiement.CASH,MoyenPaiement.CHEQUE,MoyenPaiement.CREDIT_CARD_NOFED]),
+            }
+
+        return render(request, "sales/list.html", context)
+
+
+    @action(detail=False, methods=['GET'])
+    def z_ticket(self, request):
         # Ticket Z temporaire :
         config = Configuration.get_solo()
         heure_cloture = config.cloture_de_caisse_auto
@@ -79,17 +89,15 @@ class Sales(viewsets.ViewSet):
             # Alors on est au petit matin, on prend la date de la veille
             start = start - timedelta(days=1)
         matin = timezone.make_aware(datetime.combine(start, heure_cloture))
+        print('-> url = z_ticket !')
 
         ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
         ticket_today = ticketZ.to_dict if ticketZ.calcul_valeurs() else {}
-
         context = {
             'ticket_today': ticket_today,
-            'commands_today': commands_today,
-            'moyens_paiement': MoyenPaiement.objects.filter(categorie__in=[MoyenPaiement.CASH,MoyenPaiement.CHEQUE,MoyenPaiement.CREDIT_CARD_NOFED]),
-            }
+        }
+        return render(request, "sales/z_ticket.html", context)
 
-        return render(request, "sales/list.html", context)
 
     @action(detail=False, methods=['POST'])
     def change_payment_method(self, request):
@@ -126,13 +134,7 @@ class Sales(viewsets.ViewSet):
 
         return render(request, "sales/components/order.html", context)
 
-    @action(detail=False, methods=['GET'])
-    def z_ticket(self, request):
-        print('-> url = z_ticket !')
-        context = {
-            'test': 'hahaha'
-        }
-        return render(request, "sales/z_ticket.html", context)
+
 
 class Membership(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
