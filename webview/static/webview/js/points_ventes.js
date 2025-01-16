@@ -1,4 +1,5 @@
 import "./menuPlugins/addAllMenuPlugin.js"
+import { EscPos } from './xml-escpos-helper@0.3.1.js'
 
 // websocket route terminal
 window.wsTerminal = {
@@ -12,6 +13,9 @@ wsTerminal.socket.addEventListener("open", (event) => {
   wsTerminal.on = true
 })
 
+wsTerminal.socket.addEventListener("message", function (event) {
+  console.log('-> ws, message =', event.data)
+})
 
 window.nomModulePrive = null
 window.pv_uuid_courant = ''
