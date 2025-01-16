@@ -1,100 +1,5 @@
 {% load i18n humanize %}
 <style>
-    /* header 
-		.nav-order-htmx {
-			display: flex;
-			flex-direction: row;
-			width: calc(100% - 120px);
-			height: 100%;
-		}
-		
-		.nav-order-htmx-titre {
-			width: 15%;
-			display: flex;
-			flex-direction: column;
-			justify-content: center;
-			align-items: center;
-			font-size: 2vw;
-		}
-		
-		.nav-order-htmx-menu {
-			width: 85%;
-			display: flex;
-			flex-direction: row;
-			justify-content: end;
-			align-items: center;
-			padding-right: 8px;
-		}
-		/**
-		.order-sup-overflow-y{
-			display: block;
-			width: 100%;
-			height: 100%;
-			overflow-y: hidden;
-		}
-		
-		.order-add-overflow-y{
-			width: 100%;
-			height: calc(100% - 30px);
-			overflow-y: auto;
-			padding-bottom: 16px;
-		}
-		
-		.order-legende {
-			width: 98%;
-			margin: 0;
-			padding: 4px;
-		}
-		
-		.order-legende {
-			align-self: flex-start;
-			background-color: #171817;
-		}
-		
-		.order-legende-height {
-			height: 30px;
-		}
-		
-		.order-form {
-			width: 98%;
-			margin-left: 4px auto;
-			background-color: #303130;
-		}
-		
-		.order-legende-time-w {
-			width: 10%;
-		}
-		
-		.order-legende-articles-w {
-			width: 30%;
-		}
-		
-		.order-legende-prix-w {
-			width: 10%;
-		}
-		
-		.order-legende-mpayment-w {
-			width: 20%;
-		}
-		
-		.order-legende-update-mpayment-w {
-			width: 30%;
-			justify-content: end;
-		} **/
-    .order__line:nth-child(odd) {
-        background-color: #ffffff22;
-    }
-
-    .order__table-head {
-        display: flex;
-        justify-content: space-between;
-        padding: .5rem 1rem;
-
-        .order__method {
-            display: none;
-        }
-    }
-
     .order__tabs {
         display: flex;
         justify-content: space-around;
@@ -107,14 +12,58 @@
         border-radius: .5rem;
         cursor: pointer;
         font-size: larger;
-        padding: .5rem .8rem;
+        padding: 1rem;
     }
 
-    @media screen and (min-width: 960px) {
-        .order__table-head .order__method {
-            display: unset;
-        }
+	.ticket {
+		border-collapse: collapse;
+		margin: 1rem auto;
+		max-width: 800px;
+		width: 90%;
 
+		tr + tr {
+			border: none;
+			border-top: 1px solid;
+		}
+
+		th, td {
+			padding-block: 1.5rem;
+		}
+
+		th {
+			text-align: left;
+		}
+
+		td {
+			text-align: right;
+		}
+	}
+
+	.ticket__field {
+		display: flex;
+		margin: 2rem auto 0;
+		max-width: 800px;
+		width: 90%;
+	}
+
+	.ticket__input {
+        padding: .5rem .8rem;
+		margin-inline-end: 1rem;
+	}
+
+    .ticket__btn {
+        background: #ccc;
+        border: none;
+        border-radius: .5rem;
+        cursor: pointer;
+        padding: 1rem;
+    }
+	.ticket__btn--danger {
+		background-color: darkred;
+		color: white;
+	}
+
+    @media screen and (min-width: 960px) {
         .order__tabs {
             justify-content: space-evenly;
         }
@@ -129,22 +78,45 @@
 </nav>
 
 <div class="order-sup-overflow-y">
-    <div>{% trans 'Début' %}</div>
-    <div>{{ ticket_today.start_date | naturaltime }} : {{ ticket_today.start_date }} </div>
-    </br>
-    <div>{% trans 'Fin' %}</div>
-    <div>{{ ticket_today.end_date | naturaltime }} : {{ ticket_today.end_date }} </div>
-    </br>
+	<table class="ticket">
+		<tr>
+			<th>{% trans 'Début' %}</th>
+			<td>
+				{{ ticket_today.start_date | naturaltime }}<br />
+				<small>{{ ticket_today.start_date }}</small>
+			</td>
+		</tr>
+		<tr>
+			<th>{% trans 'Fin' %}</th>
+			<td>
+				{{ ticket_today.end_date | naturaltime }}<br />
+				<small>{{ ticket_today.end_date }}</small>
+			</td>
+		</tr>
 
+		{% for moyen_de_paiement, value in ticket_today.dict_toute_entrees_par_moyen_paiement.items %}
+		<tr>
+			<th>{{ moyen_de_paiement }}</th>
+			<td>{{ value | floatformat:2 }}&nbsp;€</td>
+		</tr>
+		{% endfor %}
 
-    {% for moyen_de_paiement, value in ticket_today.dict_toute_entrees_par_moyen_paiement.items %}
-        <div>{{ moyen_de_paiement }} : {{ value | floatformat:2 }} €</div>
-    {% endfor %}
-    </br>
+		<tr>
+			<th>{% trans 'Total' %}</th>
+			<td>{{ ticket_today.total_TTC | floatformat:2 }}&nbsp;€</td>
+		</tr>
+		<tr>
+			<th>{% trans 'Fond de caisse' %}</th>
+			<td>{{ ticket_today.fond_caisse }}</td>
+		</tr>
+	</table>
 
-    <div>{% trans 'Total' %} : {{ ticket_today.total_TTC | floatformat:2 }}€</div>
-    </br>
+	<form class="ticket__field">
+		<input class="ticket__input" type="number" size="6" value="{{ ticket_today.fond_caisse }}" />
+		<button class="ticket__btn" type="submit" >{% trans 'Modifier le fond de caisse' %}</button>
+	</form>
 
-    <div>fond_caisse : {{ ticket_today.fond_caisse }}</div>
-    </br>
+	<div class="ticket__field">
+		<button class="ticket__btn ticket__btn--danger" type="button" >{% trans 'Cloturer la caisse' %}</button>
+	</div>
 </div>
