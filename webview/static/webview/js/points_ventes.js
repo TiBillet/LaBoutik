@@ -1,5 +1,6 @@
 import "./menuPlugins/addAllMenuPlugin.js"
-import { EscPos } from './xml-escpos-helper@0.3.1.js'
+// https://github.com/NielsLeenheer/EscPosEncoder
+import EscPosEncoder from './esc-pos-encoder.esm.js'
 
 // websocket route terminal
 window.wsTerminal = {
