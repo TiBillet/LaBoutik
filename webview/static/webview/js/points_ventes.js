@@ -20,8 +20,24 @@ wsTerminal.socket.addEventListener("message", function (event) {
 })
 
 
-// bluetooth cordova
+// cordova
 window.mobile = isCordovaApp()
+// cordova bluetooth
+window.enableBluetooth = async function () {
+  return await new Promise((resolve, reject) => {
+    bluetoothSerial.enable(
+      function () {
+        console.log("Bluetooth is enabled");
+        resolve(true)
+      },
+      function () {
+        console.log("The user did *not* enable Bluetooth");
+        reject(false)
+      }
+    );
+  })
+
+}
 
 
 window.nomModulePrive = null

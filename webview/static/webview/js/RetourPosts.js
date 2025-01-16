@@ -382,7 +382,7 @@ function infosPaiementRetourTable(retour, status, options) {
   }
 }
 
-function afficherRetourVenteDirecte(retour, status, options) {
+async function afficherRetourVenteDirecte(retour, status, options) {
   // console.log(`-> fonction afficherRetourVenteDirecte !`)
   // sys.logValeurs({ retour: retour, status: status, options: options })
   let typeMsg = 'succes', msgDefaut = '', msg = '', fonction = ''
@@ -590,9 +590,8 @@ function afficherRetourVenteDirecte(retour, status, options) {
           </div>`
       // TODO: afficher bouton imprimer si bluetooth "InnerPrinter"
       if (mobile === true) {
-        const fonctionPrint = `onclick="console.log('print !')"`
-        msg += `<bouton-basique id="inner-printer" traiter-texte="1" texte="PRINT|2rem||print-uppercase" couleur-fond="#3b567f" icon="fa-print||2.5rem" width="400px" height="120px" ${fonctionPrint}></bouton-basique>
-        </div>`
+        const fonctionPrint = `onclick="vue_pv.printTicket()"`
+        msg += `<bouton-basique id="inner-printer" traiter-texte="1" texte="PRINT|2rem||print-uppercase" couleur-fond="#3b567f" icon="fa-print||2.5rem" width="400px" height="120px" ${fonctionPrint}></bouton-basique>`
       }
 
       msg += `<bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
