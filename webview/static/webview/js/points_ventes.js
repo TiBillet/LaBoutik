@@ -20,7 +20,7 @@ wsTerminal.socket.addEventListener("message", function (event) {
 
 
 // bluetooth cordova
-windo.mobile = isCordovaApp()
+window.mobile = isCordovaApp()
 
 
 window.nomModulePrive = null
