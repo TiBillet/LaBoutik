@@ -18,6 +18,11 @@ wsTerminal.socket.addEventListener("message", function (event) {
   console.log('-> ws, message =', event.data)
 })
 
+
+// bluetooth cordova
+windo.mobile = isCordovaApp()
+
+
 window.nomModulePrive = null
 window.pv_uuid_courant = ''
 window.pv_uuid_ancien = ''

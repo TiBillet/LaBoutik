@@ -587,10 +587,16 @@ function afficherRetourVenteDirecte(retour, status, options) {
         <div class="BF-col-uniforme l100p h100p">
           <div class="BF-col">
             ${msgDefaut}
-          </div>
-          <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
-        </div>
-      `
+          </div>`
+      // TODO: afficher bouton imprimer si bluetooth "InnerPrinter"
+      if (mobile === true) {
+        const fonctionPrint = `onclick="console.log('print !')"`
+        msg += `<bouton-basique id="inner-printer" traiter-texte="1" texte="PRINT|2rem||print-uppercase" couleur-fond="#3b567f" icon="fa-print||2.5rem" width="400px" height="120px" ${fonctionPrint}></bouton-basique>
+        </div>`
+      }
+
+      msg += `<bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
+        </div>`
       // affichage du popup
       fn.popup({ message: msg, type: typeMsg })
     } else {
