@@ -1,4 +1,5 @@
 import "./menuPlugins/addAllMenuPlugin.js"
+import { isCordovaApp } from './modules/mobileDevice.js'
 // https://github.com/NielsLeenheer/EscPosEncoder
 import EscPosEncoder from './esc-pos-encoder.esm.js'
 
