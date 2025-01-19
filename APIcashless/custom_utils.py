@@ -113,17 +113,19 @@ def declaration_to_discovery_server():
     config = Configuration.get_solo()
     url = settings.LABOUTIK_URL
     if not url:
-        raise Exception(_("URL serveur cashless non renseignée"))
+        raise Exception("Cashless server URL not specified")
 
     # Création s'il n'existe pas
     public_pem = config.get_public_pem()
     # serveur primaire si non renseigné dans les variables d'environnement
     discovery_serveur = settings.DISCOVERY_URL + 'new_server/'
+    logger.info(f"Launch discovery request to {discovery_serveur}")
+
     discovery_request = requests.post(f'{discovery_serveur}', data={
         'url': url,
         'public_pem': public_pem,
         'locale': settings.LANGUAGE_CODE,
-    }, verify=bool(not settings.DEBUG))
+    }, verify=bool(not settings.DEBUG), timeout=2)
 
     if discovery_request.status_code != 201:
         logger.error(f"Erreur de connexion au serveur discovery pour appareillage : {discovery_request.json()}")
