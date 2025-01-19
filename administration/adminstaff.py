@@ -760,6 +760,7 @@ class AppareilAdmin(admin.ModelAdmin):
     list_editable = ('actif',)
 
     def save_model(self, request, instance, form, change, *args, **kwargs):
+        import ipdb; ipdb.set_trace()
         if not instance.name:
             messages.add_message(request, messages.ERROR,
                                  _(f"Le nom du modèle est obligatoire. Merci de le renseigner."))
@@ -777,7 +778,7 @@ class AppareilAdmin(admin.ModelAdmin):
                 messages.add_message(request, messages.ERROR, _(f"declaration_to_discovery_server erreur : {e}"))
                 return None
 
-        # Scenario : Atif était coché et on le décoche. On desactive tout.
+        # Scenario : Actif était coché et on le décoche. On desactive tout.
         # On supprime la liaison avec l'utilisateur et on le rend inactif
         if not instance.actif and form.initial.get('actif'):
             if instance.user:
