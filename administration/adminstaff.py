@@ -760,7 +760,7 @@ class AppareilAdmin(admin.ModelAdmin):
     list_editable = ('actif',)
 
     def save_model(self, request, instance, form, change, *args, **kwargs):
-        import ipdb; ipdb.set_trace()
+        # import ipdb; ipdb.set_trace()
         if not instance.name:
             messages.add_message(request, messages.ERROR,
                                  _(f"Le nom du modèle est obligatoire. Merci de le renseigner."))

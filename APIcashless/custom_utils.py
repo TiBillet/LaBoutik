@@ -127,9 +127,13 @@ def declaration_to_discovery_server():
         'locale': settings.LANGUAGE_CODE,
     }, verify=bool(not settings.DEBUG), timeout=2)
 
+    if not discovery_request.ok:
+        logger.error(f"Faulty connection to discovery server : {discovery_request.content}")
+        raise Exception(f"Faulty connection to discovery server : {discovery_request.content}")
+
     if discovery_request.status_code != 201:
-        logger.error(f"Erreur de connexion au serveur discovery pour appareillage : {discovery_request.json()}")
-        raise Exception(_(f"Erreur de connexion au serveur discovery pour appareillage : {discovery_request.json()}"))
+        logger.error(f"Faulty connection to discovery server : {discovery_request.json()}")
+        raise Exception(f"Faulty connection to discovery server : {discovery_request.json()}")
 
     discovery_response = discovery_request.json()
     discovery_key = discovery_response.get('key')
