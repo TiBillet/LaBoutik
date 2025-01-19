@@ -771,6 +771,7 @@ class AppareilAdmin(admin.ModelAdmin):
             # C'est le premier appairage, serveur tout neuf et non déclaré :
             # Génération de la clé discovery
             try:
+                logger.info(f"no discovery_key, fetch to {settings.DISCOVERY_URL}")
                 declaration_to_discovery_server()
                 # La clé API du serveur discovery a été généré
                 config.refresh_from_db()
