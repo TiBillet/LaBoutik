@@ -11,7 +11,7 @@ alias cel="poetry run celery -A Cashless worker -l INFO"
 alias test="poetry run python /DjangoFiles/manage.py test"
 
 alias rcel="poetry run celery -A Cashless worker -l INFO"
-alias guni="poetry run gunicorn primary_server.wsgi --capture-output --reload -w 3 -b 0.0.0.0:8000"
+alias guni="poetry run gunicorn Cashless.wsgi --capture-output --reload -w 3 -b 0.0.0.0:8000"
 
 alias mmes="poetry run django-admin makemessages -l en && django-admin makemessages -l fr"
 alias cmes="poetry run django-admin compilemessages"
