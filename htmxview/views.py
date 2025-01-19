@@ -1,7 +1,9 @@
 import logging
 from datetime import timedelta, datetime
-from lib2to3.fixes.fix_input import context
+from uuid import UUID
 
+from django.contrib import messages
+from django.core.paginator import Paginator
 from django.http import HttpRequest
 from django.shortcuts import render
 from django.utils import timezone
@@ -11,14 +13,10 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
-from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse, ArticleVendu, MoyenPaiement, \
-    Configuration
-from administration.adminroot import ArticlesAdmin
-from administration.ticketZ import TicketZ
-from webview.serializers import debut_fin_journee, CommandeSerializer
-from django.core.paginator import Paginator
-# nico
-from uuid import UUID
+from APIcashless.models import ArticleVendu, MoyenPaiement, Configuration
+from administration.ticketZ import TicketZ, dround
+from htmxview.validators import CashfloatChangeValidator
+from webview.serializers import debut_fin_journee
 
 logger = logging.getLogger(__name__)
 
@@ -68,15 +66,16 @@ class Sales(viewsets.ViewSet):
                 }
             else:
                 commands_today[article.commande]['articles'].append(article)
-                commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (article.qty * article.prix)
+                commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (
+                            article.qty * article.prix)
 
         context = {
             'commands_today': commands_today,
-            'moyens_paiement': MoyenPaiement.objects.filter(categorie__in=[MoyenPaiement.CASH,MoyenPaiement.CHEQUE,MoyenPaiement.CREDIT_CARD_NOFED]),
-            }
+            'moyens_paiement': MoyenPaiement.objects.filter(
+                categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CHEQUE, MoyenPaiement.CREDIT_CARD_NOFED]),
+        }
 
         return render(request, "sales/list.html", context)
-
 
     @action(detail=False, methods=['GET'])
     def z_ticket(self, request):
@@ -97,7 +96,6 @@ class Sales(viewsets.ViewSet):
             'ticket_today': ticket_today,
         }
         return render(request, "sales/z_ticket.html", context)
-
 
     @action(detail=False, methods=['POST'])
     def change_payment_method(self, request):
@@ -123,17 +121,31 @@ class Sales(viewsets.ViewSet):
                 }
             else:
                 commands_today[article.commande]['articles'].append(article)
-                commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (article.qty * article.prix)
+                commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (
+                            article.qty * article.prix)
 
         # import ipdb; ipdb.set_trace()
         context = {
             'cmd': commands_today[UUID(uuid_command)],
             'uuid_command': uuid_command,
-            'moyens_paiement': MoyenPaiement.objects.filter(categorie__in=[MoyenPaiement.CASH,MoyenPaiement.CHEQUE,MoyenPaiement.CREDIT_CARD_NOFED]),
+            'moyens_paiement': MoyenPaiement.objects.filter(
+                categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CHEQUE, MoyenPaiement.CREDIT_CARD_NOFED]),
         }
 
         return render(request, "sales/components/order.html", context)
 
+    @action(detail=False, methods=['POST'])
+    def change_cash_float(self, request):
+        logger.info(request.data)
+        validator = CashfloatChangeValidator(data=request.data)
+        if not validator.is_valid():
+            messages.error(request, validator.errors)
+            return self.z_ticket(request)
+        config = Configuration.get_solo()
+        config.cash_float = dround(validator.validated_data['cashfloat'])
+        config.save()
+
+        return self.z_ticket(request)
 
 
 class Membership(viewsets.ViewSet):

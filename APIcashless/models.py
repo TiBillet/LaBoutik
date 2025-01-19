@@ -2148,7 +2148,7 @@ class Configuration(SingletonModel):
     TicketZ
     '''
 
-    cash_float = models.IntegerField(default=0, verbose_name=_("Fond de caisse par défaut"))
+    cash_float = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name=_("Fond de caisse par défaut"))
     ticketZ_printer = models.ForeignKey(Printer, on_delete=models.SET_NULL, blank=True, null=True)
     compta_email = models.EmailField(blank=True, null=True, verbose_name=_("Email de la compta."),
                                      help_text=_(
