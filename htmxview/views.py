@@ -30,7 +30,7 @@ class Sales(viewsets.ViewSet):
     def list(self, request: Request):
 
         # ex : wv/allOrders?oldest_first=True
-        order = '-datetime'
+        order = '-date_time'
         authorized_management_mode = False
 
         oldest_first = False
@@ -43,7 +43,7 @@ class Sales(viewsets.ViewSet):
                 authorized_management_mode = True
 
         if oldest_first:
-            order = 'datetime'
+            order = 'date_time,'
 
         debut_journee, fin_journee = debut_fin_journee()
         # Ex objet :
@@ -55,7 +55,7 @@ class Sales(viewsets.ViewSet):
         commands_today = {}
         articles_vendus = ArticleVendu.objects.filter(
             date_time__gte=debut_journee
-        )
+        ).order_by(order).distinct()
 
         paginator = Paginator(articles_vendus, 20)
         page_number = request.GET.get('page')
