@@ -120,18 +120,16 @@
         <tr>
             <th>{% trans 'Cash float on opening' %}</th>
             <td>
-
                 <form id="change_cash_float" class="order__line"
                       hx-post="/htmx/sales/change_cash_float/"
-{#                      la requete renvoie le tableau z-ticket#}
-                      hx-target="#service-commandes" hx-swap="innerHTML">
+                      hx-target="#service-commandes" hx-swap="innerHTML"> {# the query returns the table z-ticket#}
 
                     <input name="cashfloat" class="ticket__input" type="number" step="0.01" size="6"
                            value="{{ ticket_today.fond_caisse }}"/>
                     <button class="ticket__btn" hx-indicator="#indicator-cash-float" type="submit">
-                        {% trans 'Modifier le fond de caisse' %}
+                        {% trans 'Change the cash float' %}
                         <img id="indicator-cash-float" src="{% static 'htmxview/bars.svg' %}"
-                             class="htmx-indicator"/>
+                             class="htmx-indicator" alt=""/>
                     </button>
 
                 </form>
@@ -144,7 +142,32 @@
 
     </table>
 
+    <script src="{% static 'js/sweetalert.js' %}"></script>
     <div class="ticket__field">
-        <button class="ticket__btn ticket__btn--danger" type="button">{% trans 'Cloturer la caisse' %}</button>
+        <button class="ticket__btn ticket__btn--danger" type="button"
+                hx-get="/htmx/sales/close_all_pos"
+                hx-trigger='confirmed'
+                hx-target="#service-commandes" hx-swap="innerHTML" {# the query returns the table z-ticket#}
+                onClick="Swal.fire({title: '{% trans 'Confirm the closing of cash registers' %}', text:'{% trans 'Do or do not, there is no try.' %}'}).then((result)=>{
+                        if(result.isConfirmed){
+                        htmx.trigger(this, 'confirmed');
+                        }
+                        })">
+            {% trans 'Close all cash registers' %}
+        </button>
     </div>
+
+    {% for message in messages %}
+        <script>
+            console.log(`{{message}}`);
+            Swal.fire({
+                icon: '{{ message.tags }}', // Utilise les tags définis dans settings.py (success, error, warning, info)
+                title: '{{ message }}',    // Affiche le contenu du message
+                {#timer: 5000,              // Message disparaît après 5 secondes#}
+                showConfirmButton: true  // Pas de bouton "OK"
+            });
+        </script>
+    {% endfor %}
 </div>
+
+

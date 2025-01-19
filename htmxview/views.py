@@ -12,11 +12,13 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
+from epsonprinter.tasks import ticketZ_tasks_printer
 
-from APIcashless.models import ArticleVendu, MoyenPaiement, Configuration
+from APIcashless.models import ArticleVendu, MoyenPaiement, Configuration, ClotureCaisse
 from administration.ticketZ import TicketZ, dround
 from htmxview.validators import CashfloatChangeValidator
 from webview.serializers import debut_fin_journee
+from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
@@ -134,17 +136,80 @@ class Sales(viewsets.ViewSet):
 
         return render(request, "sales/components/order.html", context)
 
+
     @action(detail=False, methods=['POST'])
     def change_cash_float(self, request):
         logger.info(request.data)
         validator = CashfloatChangeValidator(data=request.data)
         if not validator.is_valid():
-            messages.error(request, validator.errors)
+            for error in validator.errors:
+                messages.error(request, error)
             return self.z_ticket(request)
         config = Configuration.get_solo()
         config.cash_float = dround(validator.validated_data['cashfloat'])
         config.save()
 
+        return self.z_ticket(request)
+
+    @action(detail=False, methods=['GET'])
+    def test_messages(self, request):
+        messages.error(request, _("No sales since last closing."))
+        messages.success(request, _("success."))
+        messages.warning(request, _("warning."))
+        return self.z_ticket(request)
+
+    @action(detail=False, methods=['GET'])
+    def close_all_pos(self, request):
+
+        now = timezone.localtime()
+        derniere_fermeture = ClotureCaisse.objects.all().order_by('-end').first()
+        if not derniere_fermeture:
+            # Aucune cloture de caisse.
+            # On charge la datetime du matin :
+            config = Configuration.get_solo()
+            date_derniere_fermeture = datetime.combine(timezone.localdate(), config.cloture_de_caisse_auto,
+                                                       tzinfo=timezone.get_current_timezone())
+        else:
+            date_derniere_fermeture = derniere_fermeture.end
+
+        # On classe par ordre décroissant de temps ( le plus jeune en premier )
+        # On prend le dernier, aka le plus vieux
+        premiere_vente_apres_derniere_fermeture = ArticleVendu.objects.filter(
+            date_time__gte=date_derniere_fermeture).order_by('-date_time').last()
+
+        # import ipdb; ipdb.set_trace()
+
+        # Aucune vente depuis la dernière fermeture,
+        # on envoie la fermeture précédente
+        if not premiere_vente_apres_derniere_fermeture:
+            messages.error(request, _("No sales since last closing."))
+            return self.z_ticket(request)
+
+        start_date = premiere_vente_apres_derniere_fermeture.date_time
+        end_date = now
+
+        # Génération du ticket Z
+        ticketz_validator = TicketZ(start_date=start_date, end_date=end_date)
+        if ticketz_validator.calcul_valeurs():
+            ticketz_json = ticketz_validator.to_json
+
+            ClotureCaisse.objects.create(
+                ticketZ=ticketz_json,
+                start=start_date,
+                end=end_date,
+                categorie=ClotureCaisse.CLOTURE,
+            )
+
+            config = Configuration.get_solo()
+            to_printer = ticketZ_tasks_printer.delay(ticketz_json)
+            if not config.ticketZ_printer:
+                messages.success(request, _("Cash registers closed but no printer configured. You can reprint the ticket from the administration interface."))
+                return self.z_ticket(request)
+
+            messages.success(request, _("Cash registers closed."))
+            return self.z_ticket(request)
+
+        messages.error(request, _("Error when closing cash register. Contact the potato who coded this."))
         return self.z_ticket(request)
 
 
