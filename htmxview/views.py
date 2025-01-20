@@ -153,9 +153,9 @@ class Sales(viewsets.ViewSet):
 
     @action(detail=False, methods=['GET'])
     def test_messages(self, request):
-        messages.error(request, _("No sales since last closing."))
-        messages.success(request, _("success."))
-        messages.warning(request, _("warning."))
+        messages.error(request, _("error"))
+        # messages.success(request, _("success"))
+        # messages.warning(request, _("warning"))
         return self.z_ticket(request)
 
     @action(detail=False, methods=['GET'])
