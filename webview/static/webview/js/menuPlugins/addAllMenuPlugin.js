@@ -1,5 +1,6 @@
 // add the folder name of your new menu plugin, the array index gives the display order
-const listMenuToAdd = ['pettyCash', 'closeAccounts', 'changeLanguage', 'allOrders']
+// const listMenuToAdd = ['pettyCash', 'closeAccounts', 'changeLanguage', 'allOrders']
+const listMenuToAdd = ['changeLanguage', 'allOrders']
 window.menuAddHtmlFragment = ''
 
 window.addPluginFunctionsToMenu = function () {

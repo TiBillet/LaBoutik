@@ -77,7 +77,7 @@ class Sales(viewsets.ViewSet):
                 categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CHEQUE, MoyenPaiement.CREDIT_CARD_NOFED]),
         }
 
-        return render(request, "sales/command_list.html", context)
+        return render(request, "sales/sales_list.html", context)
 
     @action(detail=False, methods=['GET'])
     def z_ticket(self, request):
