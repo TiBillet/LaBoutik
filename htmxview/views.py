@@ -60,16 +60,21 @@ class Sales(viewsets.ViewSet):
         paginator = Paginator(articles_vendus, 20)
         page_number = request.GET.get('page')
 
+        # Création du dict à envoyer au template
         for article in articles_vendus:
             if commands_today.get(article.commande) == None:
                 commands_today[article.commande] = {
                     'articles': [article],
-                    'total': article.qty * article.prix
+                    'total': article.qty * article.prix,
+                    'qty': article.qty,
                 }
             else:
                 commands_today[article.commande]['articles'].append(article)
-                commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (
-                            article.qty * article.prix)
+                commands_today[article.commande]['total'] += (article.qty * article.prix)
+                commands_today[article.commande]['qty'] += article.qty
+
+
+        # import ipdb; ipdb.set_trace()
 
         context = {
             'commands_today': commands_today,
@@ -107,8 +112,11 @@ class Sales(viewsets.ViewSet):
         moyen_paiement = request.data['method_payment_' + uuid_command]
         mp = MoyenPaiement.objects.get(pk=moyen_paiement)
 
-        # change le mode de paiement
-        ArticleVendu.objects.filter(commande=uuid_command).update(moyen_paiement=mp)
+        # change le mode de paiement, si c'est espèce, cheque ou cb
+        ArticleVendu.objects.filter(
+            commande=uuid_command,
+            moyen_paiement__categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CHEQUE, MoyenPaiement.CREDIT_CARD_NOFED]
+        ).update(moyen_paiement=mp)
 
         commands_today = {}
         # get articles from uuid command
@@ -126,7 +134,6 @@ class Sales(viewsets.ViewSet):
                 commands_today[article.commande]['total'] = commands_today[article.commande]['total'] + (
                             article.qty * article.prix)
 
-        # import ipdb; ipdb.set_trace()
         context = {
             'cmd': commands_today[UUID(uuid_command)],
             'uuid_command': uuid_command,
@@ -134,7 +141,7 @@ class Sales(viewsets.ViewSet):
                 categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CHEQUE, MoyenPaiement.CREDIT_CARD_NOFED]),
         }
 
-        return render(request, "sales/command_line.html", context)
+        return render(request, "sales/sales_detail.html", context)
 
 
     @action(detail=False, methods=['POST'])
