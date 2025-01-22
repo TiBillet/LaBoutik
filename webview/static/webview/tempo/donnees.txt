@@ -24,3 +24,5 @@ style="white-space: pre-line; text-align: center;"
 ------------
 "route": "transcation_nfc_fonds_insuffisants",
 "route": "transcation_nfc2_fonds_insuffisants"
+------------
+poetry run gunicorn Cashless.wsgi --capture-output --reload -w 2 -b 0.0.0.0:8000

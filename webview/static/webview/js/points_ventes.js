@@ -1,11 +1,59 @@
 import "./menuPlugins/addAllMenuPlugin.js"
-import { isCordovaApp } from './modules/mobileDevice.js'
-// https://github.com/NielsLeenheer/EscPosEncoder
-import EscPosEncoder from './esc-pos-encoder.esm.js'
+import { isCordovaApp, enableBluetooth, bluetoothGetMacAddress, bluetoothWriteText, bluetoothWrite } from './modules/mobileDevice.js'
 
-// websocket route terminal
+
+// ---- cordova ---
+window.mobile = isCordovaApp()
+// cordova bluetooth
+// TODO: export conditionnel ==> si cordova app
+export async function printTicket(event) {
+  bluetoothSerial.enable(() => {
+    console.log('-> bluetoothSerial.enable, success !')
+
+  }, (error) => {
+    console.log('-> bluetoothSerial.enable, error :', error)
+
+  });
+  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
+  console.log('macAddress =', macAddress);
+
+  bluetoothSerial.connect(macAddress, (result) => {
+    console.log('connxion:', result);
+    bluetoothWriteText('bonjour')
+  }, (error) => {
+    console.log('-> bluetoothSerial.connect, error =', error)
+  })
+}
+
+// ---- websocket route tuto_js ----
+
+async function wsHandlerMessag(dataString) {
+  console.log('-> ws, dataString =', dataString)
+  try {
+    const data = JSON.parse(dataString)
+    console.log('-> ws, data =', data)
+
+    // printRaw
+    if (data.message === 'printRaw') {
+      const macAddress = await bluetoothGetMacAddress("InnerPrinter")
+      console.log('macAddress =', macAddress);
+    
+      bluetoothSerial.connect(macAddress, (result) => {
+        console.log('connxion:', result);
+        bluetoothWrite(data.data)
+      }, (error) => {
+        console.log('-> bluetoothSerial.connect, error =', error)
+      })
+    }
+
+  } catch (error) {
+    console.log("-> ws, erreur : ce n'est pas un json !")
+  }
+}
+
+// TODO: changer la route si besoin
 window.wsTerminal = {
-  socket: new WebSocket(`wss://${window.location.host}/ws/terminal/coucou/`),
+  socket: new WebSocket(`wss://${window.location.host}/ws/tuto_js/print/`),
   on: false
 }
 
@@ -15,30 +63,11 @@ wsTerminal.socket.addEventListener("open", (event) => {
   wsTerminal.on = true
 })
 
+// écoute data ws
 wsTerminal.socket.addEventListener("message", function (event) {
-  console.log('-> ws, message =', event.data)
+  // aiguillage en fonction du message
+  wsHandlerMessag(event.data)
 })
-
-
-// cordova
-window.mobile = isCordovaApp()
-// cordova bluetooth
-window.enableBluetooth = async function () {
-  return await new Promise((resolve, reject) => {
-    bluetoothSerial.enable(
-      function () {
-        console.log("Bluetooth is enabled");
-        resolve(true)
-      },
-      function () {
-        console.log("The user did *not* enable Bluetooth");
-        reject(false)
-      }
-    );
-  })
-
-}
-
 
 window.nomModulePrive = null
 window.pv_uuid_courant = ''
