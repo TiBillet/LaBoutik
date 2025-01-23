@@ -936,7 +936,6 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 'void_card',
                 'validation_service_ecran',
                 'remboursement_auto_annulation',
-                'void_card',
                 # 'domaine_cashless',
                 # 'ip_cashless',
             ),
@@ -992,26 +991,26 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 'fidelity_factor',
             ),
         }),
-        ('Odoo', {
-            'fields': (
-                'odoo_url',
-                'odoo_database',
-                'odoo_login',
-                'odoo_api_key',
-                'journal_out_invoice',
-                'journal_odoo_espece',
-                'journal_odoo_cb',
-                'journal_odoo_stripe',
-                (
-                    'odoo_send_membership',
-                    'odoo_create_invoice_membership',
-                    'odoo_set_payment_auto',
-                ),
-                'last_log_odoo',
-                'revoquer_odoo_api_key',
-
-            ),
-        }),
+        # ('Odoo', {
+        #     'fields': (
+        #         'odoo_url',
+        #         'odoo_database',
+        #         'odoo_login',
+        #         'odoo_api_key',
+        #         'journal_out_invoice',
+        #         'journal_odoo_espece',
+        #         'journal_odoo_cb',
+        #         'journal_odoo_stripe',
+        #         (
+        #             'odoo_send_membership',
+        #             'odoo_create_invoice_membership',
+        #             'odoo_set_payment_auto',
+        #         ),
+        #         'last_log_odoo',
+        #         'revoquer_odoo_api_key',
+        #
+        #     ),
+        # }),
         ('Dokos', {
             'fields': (
                 'dokos_url',
