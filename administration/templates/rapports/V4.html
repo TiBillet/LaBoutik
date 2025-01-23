@@ -1,3 +1,8 @@
+{% load i18n %}
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}">
+
+
 <style type="text/css">.tg {
 	border-collapse:collapse;
 	border-spacing:0;white-space:nowrap;
@@ -101,16 +106,16 @@ tr:hover td {
 </style>
 <table class="tg"><thead><tbody>
   <tr>
-    <td class="tg-texte">{% trans LIEUX :" %}</td>
-    <td class="tg-texte">{ structure }</td>
-    <td class="tg-texte">{% trans DATE :" %}</td>
+    <td class="tg-texte">{% trans "LIEUX :" %}</td>
+    <td class="tg-texte">{{ structure }}</td>
+    <td class="tg-texte">{% trans "DATE :" %}</td>
     <td class="tg-texte"></td>
   </tr></tbody></thead></table>
 <table class="tg"><thead>
 	<tbody>
     <br>
   <tr>
-    <td class="tg-texte">{% trans SORTIE DE CAISSE N°" %}</td>
+    <td class="tg-texte">{% trans "SORTIE DE CAISSE N°" %}</td>
     <td class="tg-texte"></td>
   </tr>
     </tbody></thead></table>
@@ -144,11 +149,11 @@ tr:hover td {
     <td class="tg-texte" colspan="4"></td>
   </tr><tr>
     <td class="tg-texte" colspan="2">{% trans "Ouverte le :" %}</td>
-    <td class="tg-texte" colspan="4">{ start_date }</td>
+    <td class="tg-texte" colspan="4">{{ start_date }}</td>
   </tr>
   <tr>
     <td class="tg-texte" colspan="2">{% trans "Fermée le : " %}</td>
-    <td class="tg-texte" colspan="4">{ end_date }</td>
+    <td class="tg-texte" colspan="4">{{ end_date }}</td>
   </tr>
     </thead></table>
 
@@ -166,12 +171,12 @@ tr:hover td {
   </tr>
   <tr>
     <td class="tg-titre" colspan="5">{% trans "Ventes" %}</td>
-    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_euros.CREDIT_CARD_NOFED | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_euros }} €</td>
     <td class="tg-data" colspan="2">{{ dict_moyenPaiement_euros.LOCAL_EURO | floatformat:2 }} €</td>
     <td class="tg-data" colspan="2">{{ dict_moyenPaiement_euros.CASH | floatformat:2 }} €</td>
     <td class="tg-data" colspan="2">{{ dict_moyenPaiement_euros.STRIPE_FED | floatformat:2 }} €</td>
     <td class="tg-data" colspan="2">{{ dict_moyenPaiement_euros.CHEQUE | floatformat:2 }} €</td>
-    <td class="tg-data tg-positif" colspan="2">{{ total_vente | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif" colspan="2">{{ total_TTC | floatformat:2 }} €</td>
   </tr>
   <tr>
     <td class="tg-titre" colspan="5">{% trans "Recharges" %}</td>
@@ -207,7 +212,7 @@ tr:hover td {
     <td class="tg-data" colspan="2">{{ dict_moyenPaiement_retours_consigne.CASH | floatformat:2 }} €</td>
     <td class="tg-data" colspan="2">{{ dict_moyenPaiement_retours_consigne.STRIPE_FED | floatformat:2 }} €</td>
     <td class="tg-data" colspan="2">{{ dict_moyenPaiement_retours_consigne.CHEQUE | floatformat:2 }} €</td>
-    <td class="tg-data tg-positif" colspan="2">{{ total_retours_consigne | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif" colspan="2">{{ retour_consigne_total | floatformat:2 }} €</td>
   </tr>
   <tr>
     <td class="tg-titre" colspan="5">{% trans "Remboursements" %}</td>
@@ -220,12 +225,12 @@ tr:hover td {
   </tr>
   <tr>
     <td class="tg-titre tg-gras" colspan="5">{% trans "TOTAL" %}</td>
-    <td class="tg-data tg-positif tg-gras" colspan="2">{{ dict_moyenPaiement_euros.CREDIT_CARD_NOFED + dict_moyenPaiement_recharge.CREDIT_CARD_NOFED + dict_moyenPaiement_adhesion.CREDIT_CARD_NOFED + dict_moyenPaiement_consigne.CREDIT_CARD_NOFED + dict_moyenPaiement_retours_consigne.CREDIT_CARD_NOFED + dict_moyenPaiement_remboursement.CREDIT_CARD_NOFED | floatformat:2 }} €</td>
-    <td class="tg-data tg-positif tg-gras" colspan="2">{{ dict_moyenPaiement_euros.LOCAL_EURO + dict_moyenPaiement_recharge.LOCAL_EURO + dict_moyenPaiement_adhesion.LOCAL_EURO + dict_moyenPaiement_consigne.LOCAL_EURO + dict_moyenPaiement_retours_consigne.LOCAL_EURO + dict_moyenPaiement_remboursement.LOCAL_EURO | floatformat:2 }} €</td>
-    <td class="tg-data tg-positif tg-gras" colspan="2">{{ dict_moyenPaiement_euros.CASH + dict_moyenPaiement_recharge.CASH + dict_moyenPaiement_adhesion.CASH + dict_moyenPaiement_consigne.CASH + dict_moyenPaiement_retours_consigne.CASH + dict_moyenPaiement_remboursement.CASH | floatformat:2 }} €</td>
-    <td class="tg-data tg-positif tg-gras" colspan="2">{{ dict_moyenPaiement_euros.STRIPE_FED + dict_moyenPaiement_recharge.STRIPE_FED + dict_moyenPaiement_adhesion.STRIPE_FED + dict_moyenPaiement_consigne.STRIPE_FED + dict_moyenPaiement_retours_consigne.STRIPE_FED + dict_moyenPaiement_remboursement.STRIPE_FED | floatformat:2 }} €</td>
-    <td class="tg-data tg-positif tg-gras" colspan="2">{{ dict_moyenPaiement_euros.CHEQUE + dict_moyenPaiement_recharge.CHEQUE + dict_moyenPaiement_adhesion.CHEQUE + dict_moyenPaiement_consigne.CHEQUE + dict_moyenPaiement_retours_consigne.CHEQUE + dict_moyenPaiement_remboursement.CHEQUE | floatformat:2 }} €</td>
-    <td class="tg-data tg-positif tg-gras" colspan="2">{{ total_vente + total_recharges + total_adhesion + total_consigne + total_retours_consigne + total_remboursement | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif tg-gras" colspan="2"> "total des colonnes credit card no fed"</td>
+    <td class="tg-data tg-positif tg-gras" colspan="2"> "total des colonnes local euros"</td>
+    <td class="tg-data tg-positif tg-gras" colspan="2"> "total des colonnes cash"</td>
+    <td class="tg-data tg-positif tg-gras" colspan="2"> "total des colonnes stripe fed"</td>
+    <td class="tg-data tg-positif tg-gras" colspan="2"> "total des colonnes cheque"</td>
+    <td class="tg-data tg-positif tg-gras" colspan="2"> "grand total de tout les moyens de paiements"</td>
   </tr>
     </tbody></thead></table>
 
@@ -258,7 +263,7 @@ tr:hover td {
   </tr>
   <tr>
     <td class="tg-titre tg-gras" colspan="6">{% trans "TOTAL" %}</td>
-    <td class="tg-data tg-positif tg-gras" colspan="5">{{ total_vente | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif tg-gras" colspan="5">{{ total_TTC | floatformat:2 }} €</td>
   </tr>
     </tbody></thead></table>
 
@@ -317,7 +322,7 @@ tr:hover td {
   </tr>
   <tr>
     <td class="tg-titre tg-gras" colspan="6">{% trans "TOTAL" %}</td>
-    <td class="tg-data tg-positif tg-gras" colspan="5">{{ total_adhésion | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif tg-gras" colspan="5">{{ total_adhesion | floatformat:2 }} €</td>
   </tr>
     </tbody></thead></table>
 
@@ -357,7 +362,7 @@ tr:hover td {
   </tr>
   <tr>
     <td class="tg-titre tg-gras" colspan="6">{% trans "TOTAL" %}</td>
-    <td class="tg-data tg-negatif tg-gras" colspan="5">{{ total_retours_consigne | floatformat:2 }} €</td>
+    <td class="tg-data tg-negatif tg-gras" colspan="5">{{ retour_consigne_total | floatformat:2 }} €</td>
   </tr>
     </tbody></thead></table>
   <tr>
@@ -378,7 +383,7 @@ tr:hover td {
   </tr>
   <tr>
     <td class="tg-titre tg-gras" colspan="6">{% trans "TOTAL" %}</td>
-    <td class="tg-data tg-negatif tg-gras" colspan="5">{{ total_remnboursement | floatformat:2 }} €</td>
+    <td class="tg-data tg-negatif tg-gras" colspan="5">{{ total_remboursement | floatformat:2 }} €</td>
   </tr>
   </thead></table>
     <table class="tg"><tbody>
@@ -633,3 +638,4 @@ tr:hover td {
   </tr>
     </thead>
 </tbody></table>
+</html>

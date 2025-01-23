@@ -355,7 +355,7 @@
                         {% if article == "total" %}
                             <th>{% trans "sous total : " %}</th>
                         {% else %}
-                            <td class="qty-cout-article">{{ article }}</td>
+                            <td class="qty-cout-article">{{article }}</td>
                         {% endif %}
                         {% for value in col_valeur %}
                             <td class="item-benef">{{ value  | floatformat:2 }}</td>
