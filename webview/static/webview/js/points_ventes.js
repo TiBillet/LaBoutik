@@ -26,15 +26,14 @@ export async function printTicket(event) {
 }
 
 // ---- websocket route tuto_js ----
-
 async function wsHandlerMessag(dataString) {
-  console.log('-> ws, dataString =', dataString)
+  // console.log('-> ws, dataString =', dataString)
   try {
     const data = JSON.parse(dataString)
     console.log('-> ws, data =', data)
 
     // printRaw
-    if (data.message === 'printRaw') {
+    if (data.message === 'print') {
       const macAddress = await bluetoothGetMacAddress("InnerPrinter")
       console.log('macAddress =', macAddress);
     
@@ -45,7 +44,6 @@ async function wsHandlerMessag(dataString) {
         console.log('-> bluetoothSerial.connect, error =', error)
       })
     }
-
   } catch (error) {
     console.log("-> ws, erreur : ce n'est pas un json !")
   }

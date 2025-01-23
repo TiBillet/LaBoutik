@@ -1,6 +1,4 @@
-// source : https://github.com/NielsLeenheer/EscPosEncoder
-// https://github.com/NielsLeenheer/EscPosEncoder/blob/v2.1.0/README.md
-//import EscPosEncoder from './esc-pos-encoder.esm.js'
+// source : https://github.com/NielsLeenheer/ReceiptPrinterEncoder/blob/main/documentation/usage.md
 import ReceiptPrinterEncoder from './receipt-printer-encoder.esm.js'
 
 /**
@@ -125,8 +123,8 @@ export async function bluetoothGetMacAddress(name) {
 
 
 export function bluetoothWriteText(msg) {
+  console.log('imprimantes :', ReceiptPrinterEncoder.printerModels)
   let encoder = new ReceiptPrinterEncoder({
-    language: 'esc-pos',
     columns: 48,
     feedBeforeCut: 4
   })
@@ -134,7 +132,7 @@ export function bluetoothWriteText(msg) {
   let result = encoder
     .initialize()
     .text('------ test 3 -----')
-    .box({ width: 30, align: 'left', style: 'double', marginLeft: 0 },'The quick brown fox jumps over the lazy dog')
+    .box({ width: 30, align: 'left', style: 'double', marginLeft: 0 }, 'The quick brown fox jumps over the lazy dog')
     .newline()
     .qrcode('https://tibillet.org/')
     .newline()
@@ -143,6 +141,21 @@ export function bluetoothWriteText(msg) {
       text: true
     })
     .newline()
+    .table(
+      [
+        { width: 36, align: 'left' },
+        { width: 10, align: 'right' }
+      ],
+      [
+        ['Item 1', '€ 10,00'],
+        ['Item 2', '15,00'],
+        ['Item 3', '9,95'],
+        ['Item 4', '4,75'],
+        ['Item 5', '211,05'],
+        ['', '='.repeat(10)],
+        ['Total', (encoder) => encoder.bold().text('€ 250,75').bold()],
+      ]
+    )
     .newline()
     .raw([0x1d, 0x56, 0x42])
     .encode()
@@ -156,6 +169,25 @@ export function bluetoothWriteText(msg) {
   });
 }
 
+async function loadImage(url) {
+  const load = await new Promise((resolve, reject) => {
+    try {
+      let img = new Image()
+      img.src = url
+      img.onload = function () {
+        resolve(img)
+      }
+    } catch (error) {
+      reject(null)
+    }
+  })
+  return load
+}
+
+/**
+ * Print command
+ * @param {Array} content 
+ */
 export function bluetoothWrite(content) {
   let encoder = new ReceiptPrinterEncoder({
     language: 'esc-pos',
@@ -163,20 +195,34 @@ export function bluetoothWrite(content) {
     feedBeforeCut: 4
   })
 
-    let result = encoder
-    .initialize()
-    .text(content)
-    .newline()
-    .encode()
+  // init encode
+  let result = encoder.initialize()
+
+  // process data
+  content.forEach(line => {
+    console.log('-> line =', line)
+    // encode image
+    if (line.type === 'image') {
+      const img = loadImage(line.url)
+      encoder.image(img, 64, 64, 'atkinson')
+    }
+ 
+  })
+
+// end encode
+encoder.encode()
 
 
-  console.log('-> bluetoothWrite, impression =', content);
+
+  // write result
+  /*
   bluetoothSerial.write(result, (status) => {
     console.log('-> bluetoothWriteText, success:', status)
     bluetoothDisconnect()
   }, (error) => {
     console.log('-> bluetoothWriteText,error :', error)
-  });
+  })
+  */
 }
 
 
