@@ -1,0 +1,148 @@
+{% load webviewTags %}
+{% load i18n %}
+{% load static %}
+
+<style>
+.order {
+  padding: .5rem 1rem;
+}
+
+.order__summary {
+  cursor: pointer;
+	display: flex;
+	justify-content: space-between;
+  line-height: 2rem;
+
+  i {
+    line-height: 2rem;
+  }
+
+  .order__method {
+    display: none;
+  }
+}
+
+.order__articles {
+  list-style: none;
+  padding: .2rem 0;
+  margin: 1rem 0 0;
+}
+.order__article, .order__method, .order__update {
+  padding-block: .2rem;
+}
+
+.order__update-form {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+	justify-content: space-between;
+  padding-block: .5rem;
+
+  & > * {
+    margin-block-end: .5rem;
+  }
+}
+
+.order__update-btn {
+	border: none;
+	line-height: 2rem;
+	height: 2rem;
+	padding-inline: .8rem;
+	cursor: pointer;
+}
+
+@media screen and (min-width: 960px) {
+  .order__summary .order__method {
+    display: unset;
+    width: 20%;
+  }
+
+  .order__summary  ~ .order__method {
+    display: none;
+  }
+}
+</style>
+<input type="hidden" name="uuid_command" value="{{ uuid_command }}" />
+
+{% with first_article=cmd.articles.0 %}
+<details class="order">
+  <summary class="order__summary">
+    <div class="order__datetime">{{ first_article.date_time|time:"H:i" }}</div>
+    <div class="order__article-count">{{ cmd.qty|floatformat:0  }} article{% if cmd.qty > 1 %}s{% endif %}</div>
+    <div class="order__price">{{ cmd.total|floatformat:2 }} &euro;</div>
+    <div class="order__method">{{ first_article.moyen_paiement }}</div>
+    <i class="js__order-icon fas fa-plus"></i>
+  </summary>
+
+  <!-- articles -->
+  <ul class="order__articles">
+    {% for article in cmd.articles %}
+      <li class="order__summary">
+        <div>{{ article.qty|floatformat:2 }} x {{ article.article.name }}</div>
+        <div>{{ article.moyen_paiement }}</div>
+      </li>
+    {% endfor %}
+  </ul>
+
+  <hr />
+
+  <div class="order__method">Réglé en {{ first_article.moyen_paiement|lower }}</div>
+  <div class="order__update">
+    Modifier le moyen de paiement&nbsp;:
+
+    <div class="order__update-form">
+      <!-- moyens de paiement -->
+      {% for paiement in moyens_paiement %}
+      <div class="order-sel-mpayment">
+        {% with uuid=paiement.id|stringformat:"s" %}
+        <input type="radio" id="order-payment-radio-{{ uuid }}-{{ uuid_command }}" name="method_payment_{{ uuid_command }}" value="{{ uuid }}"
+          {% if forloop.counter == 1 %} required {% endif %} />
+        <label for="order-payment-radio-{{ uuid }}-{{ uuid_command }}" onclick="deselectPayment(event)">{{ paiement.name }}</label>
+        {% endwith %}
+      </div>
+      {% endfor %}
+      <!-- bt valider -->
+      <button class="order__update-btn fond-ok coulBlanc" hx-indicator="#ind-{{ forloop.counter }}" on>
+        <div>Valider</div>
+        <img id="ind-{{ forloop.counter }}" src="{% static 'htmxview/bars.svg' %}" class="htmx-indicator"/>
+      </button>
+    </div>
+  </div>
+</details>
+
+{% endwith %}
+
+<script>
+// click on 3 dots show command's articles
+function commandShowArticles(cibles) {
+  document.querySelectorAll('.' + cibles).forEach(ele => {
+    ele.classList.toggle("order-show-article")
+  })
+}
+
+// deselectPayment = unchecked
+function deselectPayment(event) {
+  // console.log('-> ', event.target)
+  document.querySelectorAll('.order-legende-update-mpayment-w input[type="radio"]').forEach(ele => {
+    if (event.target !== ele) {
+      ele.checked = false
+    }
+  })
+}
+
+function toggleOrderIcon({target: clicked}) {
+  const order = clicked.closest('.order')
+  const icon = order.querySelector('.js__order-icon')
+
+  console.log('order icon toggling', order, icon)
+
+  if (order.open)
+    icon.classList.replace('fa-minus', 'fa-plus')
+  else
+    icon.classList.replace('fa-plus', 'fa-minus')
+}
+
+document.querySelectorAll('.order').forEach(order => {
+  order.addEventListener('click', toggleOrderIcon)
+})
+</script>
