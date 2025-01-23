@@ -1,0 +1,635 @@
+<style type="text/css">.tg {
+	border-collapse:collapse;
+	border-spacing:0;white-space:nowrap;
+    
+tr:hover td {
+          background-color: #ffff99;        }
+}
+.tg .tg-gras{
+    font-weight:bold;
+}
+.tg .tg-positif{
+	color:#00B050;
+}
+.tg .tg-negatif{
+	color:#F00;    
+}
+.tg .tg-fondgris{
+	background-color:#F2F2F2;
+}
+.tg .tg-titre{
+	text-align:left;
+	vertical-align:middle;
+	min-width:340px;   
+    max-width:340px;
+}
+.tg .tg-noborder{
+	border: none
+}
+.tg .tg-centre{
+	text-align:center;
+}
+.tg .tg-droite{
+	text-align:right;
+}
+.tg .tg-fondgrisfonce{
+	background-color:#E7E6E6;
+}
+.tg .tg-titrelarge{
+	min-width:1800px;    
+}
+.tg td{
+	border-color:black;
+	border-style:solid;
+	border-width:1px;
+	font-family:Arial, sans-serif;
+	font-size:14px;
+	overflow:hidden;
+	padding:10px 20px;
+	word-break:normal;
+    table-layout: fixed;
+}
+.tg th{
+	border-color:black;
+	border-style:solid;
+	border-width:1px;
+	font-family:Arial, sans-serif;
+	font-size:14px;
+	font-weight:normal;
+	overflow:hidden;
+	padding:10px 20px;
+	word-break:normal;
+    table-layout: fixed;
+}
+.tg .tg-texte{
+	text-align:center;
+	vertical-align:middle;
+	min-width:150px;  
+}
+.tg .tg-titrespecial{
+	text-align:left;
+	vertical-align:middle;
+    font-weight:bold;
+	min-width:440px;    
+    max-width:440px;    
+}
+.tg .tg-data{
+	text-align:center;
+	vertical-align:middle
+}
+.tg .tg-orange{
+	background-color:#FCE4D6;
+}
+.tg .tg-bleu{
+	background-color:#D9E1F2;
+}
+.tg .tg-violet{
+	background-color:#EDE0FC;
+}
+.tg .tg-vert{
+	background-color:#E1FFE1;
+}
+.tg .tg-jaune{
+	background-color:#FFFFC1;
+}
+.tg .tg-cyan{
+	background-color:#D8F0F8;
+}
+.tg .tg-rose{
+	background-color:#FFCDEB;
+}
+</style>
+<table class="tg"><thead><tbody>
+  <tr>
+    <td class="tg-texte">{% trans LIEUX :" %}</td>
+    <td class="tg-texte">{ structure }</td>
+    <td class="tg-texte">{% trans DATE :" %}</td>
+    <td class="tg-texte"></td>
+  </tr></tbody></thead></table>
+<table class="tg"><thead>
+	<tbody>
+    <br>
+  <tr>
+    <td class="tg-texte">{% trans SORTIE DE CAISSE N°" %}</td>
+    <td class="tg-texte"></td>
+  </tr>
+    </tbody></thead></table>
+
+<table class="tg"><thead><tbody>
+    <br>
+    <br>
+  <tr>
+    <td class="tg-titre tg-gras tg-centre tg-noborder" colspan="4">{% trans "POINT DE VENTE" %}</td> 
+    <td class="tg-texte tg-gras" colspan="2" rowspan="2">{% trans "SOLDE DE CAISSE" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-texte"colspan="2">{% trans "Responsable :" %}</td>
+    <td class="tg-texte" colspan="2"></td>
+  </tr>
+  <tr>
+    <td class="tg-texte" colspan="2">{% trans "Point de vente :" %}</td>
+    <td class="tg-texte" colspan="2"></td>
+    <td class="tg-texte tg-positif tg-gras" colspan="2">{{ fond_caisse | floatformat:2 }}€</td>
+  </tr>
+    </tbody></thead></table>
+
+      <table class="tg"><thead>
+    <br>
+    <br>
+  <tr>
+    <td class="tg-titre tg-gras tg-centre tg-noborder"colspan="6">{% trans "SESSION" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-texte"colspan="2">{% trans "Session n° : " %}</td>
+    <td class="tg-texte" colspan="4"></td>
+  </tr><tr>
+    <td class="tg-texte" colspan="2">{% trans "Ouverte le :" %}</td>
+    <td class="tg-texte" colspan="4">{ start_date }</td>
+  </tr>
+  <tr>
+    <td class="tg-texte" colspan="2">{% trans "Fermée le : " %}</td>
+    <td class="tg-texte" colspan="4">{ end_date }</td>
+  </tr>
+    </thead></table>
+
+      <table class="tg"><thead><tbody>
+    <br>
+    <br>
+  <tr>
+    <td class="tg-titre tg-gras tg-noborder" colspan="5">{% trans "SYNTHÈSE DES OPÉRATIONS" %}</td>
+    <td class="tg-data tg-fondgris" colspan="2">{% trans "Carte Bancaire" %}</td>
+    <td class="tg-data tg-fondgris" colspan="2">{% trans "Cashless" %}</td>
+    <td class="tg-data tg-fondgris" colspan="2">{% trans "Espèces" %}</td>
+    <td class="tg-data tg-fondgris" colspan="2">{% trans "En ligne" %}</td>
+    <td class="tg-data tg-fondgris" colspan="2">{% trans "Chèque" %}</td>
+    <td class="tg-data tg-fondgris" colspan="2">{% trans "MONTANT" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="5">{% trans "Ventes" %}</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_euros.CREDIT_CARD_NOFED | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_euros.LOCAL_EURO | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_euros.CASH | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_euros.STRIPE_FED | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_euros.CHEQUE | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif" colspan="2">{{ total_vente | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="5">{% trans "Recharges" %}</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_recharge.CREDIT_CARD_NOFED | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_recharge.LOCAL_EURO | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_recharge.CASH | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_recharge.STRIPE_FED | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_recharge.CHEQUE | floatformat:2 }} €</td>
+    <td class="tg-data tg-negatif" colspan="2">{{ total_recharge | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="5">{% trans "Adhésions" %}</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_adhesion.CREDIT_CARD_NOFED | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_adhesion.LOCAL_EURO | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_adhesion.CASH | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_adhesion.STRIPE_FED | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_adhesion.CHEQUE | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif" colspan="2">{{ total_adhesion | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="5">{% trans "Consignes" %}</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_consigne.CREDIT_CARD_NOFED | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_consigne.LOCAL_EURO | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_consigne.CASH | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_consigne.STRIPE_FED | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_consigne.CHEQUE | floatformat:2 }} €</td>
+    <td class="tg-data tg-negatif" colspan="2">{{ total_consigne | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="5">{% trans "Retours consignes" %}</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_retours_consigne.CREDIT_CARD_NOFED | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_retours_consigne.LOCAL_EURO | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_retours_consigne.CASH | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_retours_consigne.STRIPE_FED | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_retours_consigne.CHEQUE | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif" colspan="2">{{ total_retours_consigne | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="5">{% trans "Remboursements" %}</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_remboursement.CREDIT_CARD_NOFED | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_remboursement.LOCAL_EURO | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_remboursement.CASH | floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_remboursement.STRIPE_FED| floatformat:2 }} €</td>
+    <td class="tg-data" colspan="2">{{ dict_moyenPaiement_remboursement.CHEQUE | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif" colspan="2">{{ total_remboursement | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-gras" colspan="5">{% trans "TOTAL" %}</td>
+    <td class="tg-data tg-positif tg-gras" colspan="2">{{ dict_moyenPaiement_euros.CREDIT_CARD_NOFED + dict_moyenPaiement_recharge.CREDIT_CARD_NOFED + dict_moyenPaiement_adhesion.CREDIT_CARD_NOFED + dict_moyenPaiement_consigne.CREDIT_CARD_NOFED + dict_moyenPaiement_retours_consigne.CREDIT_CARD_NOFED + dict_moyenPaiement_remboursement.CREDIT_CARD_NOFED | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif tg-gras" colspan="2">{{ dict_moyenPaiement_euros.LOCAL_EURO + dict_moyenPaiement_recharge.LOCAL_EURO + dict_moyenPaiement_adhesion.LOCAL_EURO + dict_moyenPaiement_consigne.LOCAL_EURO + dict_moyenPaiement_retours_consigne.LOCAL_EURO + dict_moyenPaiement_remboursement.LOCAL_EURO | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif tg-gras" colspan="2">{{ dict_moyenPaiement_euros.CASH + dict_moyenPaiement_recharge.CASH + dict_moyenPaiement_adhesion.CASH + dict_moyenPaiement_consigne.CASH + dict_moyenPaiement_retours_consigne.CASH + dict_moyenPaiement_remboursement.CASH | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif tg-gras" colspan="2">{{ dict_moyenPaiement_euros.STRIPE_FED + dict_moyenPaiement_recharge.STRIPE_FED + dict_moyenPaiement_adhesion.STRIPE_FED + dict_moyenPaiement_consigne.STRIPE_FED + dict_moyenPaiement_retours_consigne.STRIPE_FED + dict_moyenPaiement_remboursement.STRIPE_FED | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif tg-gras" colspan="2">{{ dict_moyenPaiement_euros.CHEQUE + dict_moyenPaiement_recharge.CHEQUE + dict_moyenPaiement_adhesion.CHEQUE + dict_moyenPaiement_consigne.CHEQUE + dict_moyenPaiement_retours_consigne.CHEQUE + dict_moyenPaiement_remboursement.CHEQUE | floatformat:2 }} €</td>
+    <td class="tg-data tg-positif tg-gras" colspan="2">{{ total_vente + total_recharges + total_adhesion + total_consigne + total_retours_consigne + total_remboursement | floatformat:2 }} €</td>
+  </tr>
+    </tbody></thead></table>
+
+      <table class="tg"><thead><tbody>
+    <br>
+    <br>
+  <tr>
+    <td class="tg-titre tg-gras tg-noborder" colspan="6">{% trans "VENTES" %}</td>
+    <td class="tg-titre tg-fondgris tg-centre" colspan="5">{% trans "MONTANT" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Carte bancaire" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_euros.CREDIT_CARD_NOFED | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Cashless" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_euros.LOCAL_EURO | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Espèces" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_euros.CASH | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "En ligne" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_euros.STRIPE_FED | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Chèque" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_euros.CHEQUE | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-gras" colspan="6">{% trans "TOTAL" %}</td>
+    <td class="tg-data tg-positif tg-gras" colspan="5">{{ total_vente | floatformat:2 }} €</td>
+  </tr>
+    </tbody></thead></table>
+
+
+      <table class="tg"><thead><tbody>
+    <br>
+  <tr>
+    <td class="tg-titre tg-gras tg-noborder" colspan="6">{% trans "RECHARGES" %}</td>
+    <td class="tg-titre tg-fondgris tg-centre" colspan="5">{% trans "MONTANT" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Carte bancaire" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_recharge.CREDIT_CARD_NOFED | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Espèces" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_recharge.CASH | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "En ligne" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_recharge.STRIPE_FED | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-gras" colspan="6">{% trans "TOTAL" %}</td>
+    <td class="tg-data tg-positif tg-gras" colspan="5">{{ total_recharge | floatformat:2 }} €</td>
+  </tr>
+    </tbody></thead></table>
+
+
+      <table class="tg"><thead><tbody>
+    <br>
+  
+  <tr>
+    <td class="tg-titre tg-gras tg-noborder" colspan="6">{% trans "ADHÉSIONS" %}</td>
+    <td class="tg-titre tg-fondgris tg-centre" colspan="5">{% trans "MONTANT" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Carte bancaire" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_adhesion.CREDIT_CARD_NOFED | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Cashless" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_adhesion.LOCAL_EURO | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Espèces" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_adhesion.CASH | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "En ligne" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_adhesion.STRIPE_FED | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Chèque" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_adhesion.CHEQUE | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-gras" colspan="6">{% trans "TOTAL" %}</td>
+    <td class="tg-data tg-positif tg-gras" colspan="5">{{ total_adhésion | floatformat:2 }} €</td>
+  </tr>
+    </tbody></thead></table>
+
+      <table class="tg"><thead><tbody>
+    <br>
+  <tr>
+    <td class="tg-titre tg-gras tg-noborder" colspan="6">{% trans "CONSIGNES" %}</td>
+    <td class="tg-titre tg-fondgris tg-centre" colspan="5">{% trans "MONTANT" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Cashless" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_consigne.LOCAL_EURO | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Espèces" %}</td>
+    <td class="tg-data tg-positif" colspan="5">{{ dict_moyenPaiement_consigne.CASH | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-gras" colspan="6">{% trans "TOTAL" %}</td>
+    <td class="tg-data tg-positif tg-gras" colspan="5">{{ total_consigne | floatformat:2 }} €</td>
+  </tr>
+    </tbody></thead></table>
+
+      <table class="tg"><thead><tbody>
+    <br>
+  <tr>
+    <td class="tg-titre tg-gras tg-noborder" colspan="6">{% trans "RETOURS CONSIGNES" %}</td>
+    <td class="tg-titre tg-fondgris tg-centre" colspan="5">{% trans "MONTANT" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Cashless" %}</td>
+    <td class="tg-data tg-negatif" colspan="5">{{ dict_moyenPaiement_retours_consigne.LOCAL_EURO | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Espèces" %}</td>
+    <td class="tg-data tg-negatif" colspan="5">{{ dict_moyenPaiement_retours_consigne.CASH | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-gras" colspan="6">{% trans "TOTAL" %}</td>
+    <td class="tg-data tg-negatif tg-gras" colspan="5">{{ total_retours_consigne | floatformat:2 }} €</td>
+  </tr>
+    </tbody></thead></table>
+  <tr>
+  </tr>
+      <table class="tg"><thead>
+    <br>
+  <tr>
+    <td class="tg-titre tg-gras tg-noborder" colspan="6">{% trans "REMBOURSEMENTS" %}</td>
+    <td class="tg-titre tg-fondgris tg-centre" colspan="5">{% trans "MONTANT" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "Espèces" %}</td>
+    <td class="tg-data tg-negatif" colspan="5">{{ dict_moyenPaiement_remboursement.CASH | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "En ligne" %}</td>
+    <td class="tg-data tg-negatif" colspan="5">{{ dict_moyenPaiement_remboursement.STRIPE_FED | floatformat:2 }} €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-gras" colspan="6">{% trans "TOTAL" %}</td>
+    <td class="tg-data tg-negatif tg-gras" colspan="5">{{ total_remnboursement | floatformat:2 }} €</td>
+  </tr>
+  </thead></table>
+    <table class="tg"><tbody>
+    <br>
+  <tr>
+    <td class="tg-titre tg-gras tg-noborder" colspan="6">{% trans "SOLDE DE CAISSE" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "TOTAL ENCAISSEMENTS" %}</td>
+    <td class="tg-titre tg-centre tg-positif" colspan="5">{{ fond_caisse|add:recharge_cash|add:adhesion_espece|add:ventes_directe_espece | floatformat:2 }}€</td>
+  </tr>
+  <tr>
+    <td class="tg-titre" colspan="6">{% trans "TOTAL REMBOURSEMENTS" %}</td>
+    <td class="tg-titre tg-centre tg-negatif" colspan="5">{{ remboursement_espece|add:retour_consignes_espece | floatformat:2 }}€</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-gras" colspan="6">{% trans "TOTAL" %}</td>
+    <td class="tg-titre tg-centre tg-positif tg-gras" colspan="5">{{ total_cash | floatformat:2 }}€</td>
+  </tr>
+  </tbody></table>
+  <tr>
+  <table class="tg"><thead><tbody>
+  <br>
+  <br>
+    <td class="tg-titre tg-noborder" colspan="1">{% trans "DÉTAILS VENTES" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-noborder"></td>
+    <td class="tg-texte tg-orange" colspan="6">{% trans "QUANTITÉ" %}</td>
+    <td class="tg-texte tg-bleu" colspan="8">{% trans "ACHAT" %}</td>
+    <td class="tg-texte tg-violet" colspan="4">{% trans "VENTE" %}</td>
+    <td class="tg-data tg-vert" colspan="2">{% trans "TVA" %}</td>
+    <td class="tg-texte tg-jaune" colspan="4">{% trans "CHIFFRE D'AFFAIRE" %}</td>
+    <td class="tg-data tg-cyan" colspan="2">{% trans "BÉNÉFICE" %}</td>
+    <td class="tg-texte tg-rose" colspan="4">{% trans "CHIFFRE D'AFFAIRE CADEAUX" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-gras tg-fondgrisfonce">{% trans "ARTICLES" %}</td>
+    <td class="tg-data tg-orange tg-gras" colspan="2">{% trans "VENDUE" %}</td>
+    <td class="tg-data tg-orange tg-gras" colspan="2">{% trans "OFFERTE" %}</td>
+    <td class="tg-data tg-orange tg-gras" colspan="2">{% trans "TOTALE" %}</td>
+    <td class="tg-data tg-bleu tg-gras" colspan="2">{% trans "PRIX HT" %}</td>
+    <td class="tg-data tg-bleu tg-gras" colspan="2">{% trans "COÛT VENDUE" %}</td>
+    <td class="tg-data tg-bleu tg-gras" colspan="2">{% trans "COÛT OFFERT" %}</td>
+    <td class="tg-data tg-bleu tg-gras" colspan="2">{% trans "COÛT TOTAL" %}</td>
+    <td class="tg-data tg-violet tg-gras" colspan="2">{% trans "PRIX HT" %}</td>
+    <td class="tg-data tg-violet tg-gras" colspan="2">{% trans "PRIX TTC" %}</td>
+    <td class="tg-data tg-vert tg-gras">{% trans "TAUX" %}</td>
+    <td class="tg-data tg-vert tg-gras">{% trans "TOTAL" %}</td>
+    <td class="tg-data tg-jaune tg-gras" colspan="2">{% trans "TOTAL HT" %}</td>
+    <td class="tg-data tg-jaune tg-gras" colspan="2">{% trans "TOTAL TTC" %}</td>
+    <td class="tg-data tg-cyan tg-gras" colspan="2">{% trans "BRUT" %}</td>
+    <td class="tg-data tg-rose tg-gras" colspan="2">{% trans "TOTAL HT" %}</td>
+    <td class="tg-data tg-rose tg-gras" colspan="2">{% trans "TOTAL TTC" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titrelarge tg-fondgris" colspan="31">{% trans "[TVA] ex : 0%" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titrelarge tg-fondgris" colspan="31">{% trans "[CATÉGORIE] ex : Bars Soft" %}</td>
+  </tr>
+  <tr>
+    <td class="tg-titreope">{% trans "Orangina" %}</td>
+    <td class="tg-orange tg-droite" colspan="2">43,00</td>
+    <td class="tg-orange tg-droite" colspan="2">2,00</td>
+    <td class="tg-orange tg-droite" colspan="2">45,00</td>
+    <td class="tg-bleu tg-droite" colspan="2">0,78 €</td>
+    <td class="tg-bleu tg-droite" colspan="2">33,54 €</td>
+    <td class="tg-bleu tg-droite" colspan="2">1,56 €</td>
+    <td class="tg-bleu tg-droite" colspan="2">35,10 €</td>
+    <td class="tg-violet tg-droite" colspan="2">2,00 €</td>
+    <td class="tg-violet tg-droite" colspan="2">2,00 €</td>
+    <td class="tg-vert tg-droite">0%</td>
+    <td class="tg-vert tg-droite">0,00 €</td>
+    <td class="tg-jaune tg-droite" colspan="2">86,00 €</td>
+    <td class="tg-jaune tg-droite" colspan="2">86,00 €</td>
+    <td class="tg-cyan tg-droite" colspan="2">50,90 €</td>
+    <td class="tg-rose tg-droite" colspan="2">4,00 €</td>
+    <td class="tg-rose tg-droite" colspan="2">4,00 €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre">Ice Tea</td>
+    <td class="tg-orange tg-droite" colspan="2">73,00</td>
+    <td class="tg-orange tg-droite" colspan="2">5,00</td>
+    <td class="tg-orange tg-droite" colspan="2">78,00</td>
+    <td class="tg-bleu tg-droite" colspan="2">0,40 €</td>
+    <td class="tg-bleu tg-droite" colspan="2">29,20 €</td>
+    <td class="tg-bleu tg-droite" colspan="2">2,00 €</td>
+    <td class="tg-bleu tg-droite" colspan="2">31,20 €</td>
+    <td class="tg-violet tg-droite" colspan="2">2,00 €</td>
+    <td class="tg-violet tg-droite" colspan="2">2,00 €</td>
+    <td class="tg-vert tg-droite">0%</td>
+    <td class="tg-vert tg-droite">0,00 €</td>
+    <td class="tg-jaune tg-droite" colspan="2">146,00 €</td>
+    <td class="tg-jaune tg-droite" colspan="2">146,00 €</td>
+    <td class="tg-cyan tg-droite" colspan="2">114,80 €</td>
+    <td class="tg-rose tg-droite" colspan="2">10,00 €</td>
+    <td class="tg-rose tg-droite" colspan="2">10,00 €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-gras">SOUS-TOTAL BRUT*</td>
+    <td class="tg-orange tg-droite tg-gras" colspan="2">116,00</td>
+    <td class="tg-orange tg-droite tg-gras" colspan="2">7,00</td>
+    <td class="tg-orange tg-droite tg-gras" colspan="2">123,00</td>
+    <td class="tg-bleu tg-droite tg-gras" colspan="2">-</td>
+    <td class="tg-bleu tg-droite tg-gras" colspan="2">62,74 €</td>
+    <td class="tg-bleu tg-droite tg-gras" colspan="2">3,56 €</td>
+    <td class="tg-bleu tg-droite tg-gras" colspan="2">66,30 €</td>
+    <td class="tg-violet tg-droite tg-gras" colspan="2">-</td>
+    <td class="tg-violet tg-droite tg-gras" colspan="2">-</td>
+    <td class="tg-vert tg-droite tg-gras">0%</td>
+    <td class="tg-vert tg-droite tg-gras">0,00 €</td>
+    <td class="tg-jaune tg-droite tg-gras" colspan="2">232,00 €</td>
+    <td class="tg-jaune tg-droite tg-gras" colspan="2">232,00 €</td>
+    <td class="tg-cyan tg-droite tg-gras" colspan="2">165,70 €</td>
+    <td class="tg-rose tg-droite tg-gras" colspan="2">14,00 €</td>
+    <td class="tg-rose tg-droite tg-gras" colspan="2">14,00 €</td>
+  </tr>
+  <tr>
+    <td class="tg-titrelarge tg-fondgris" colspan="31">[TVA] ex : 20%</td>
+  </tr>
+  <tr>
+    <td class="tg-titrelarge tg-fondgris" colspan="31">[CATÉGORIE] ex : Goodies</td>
+  </tr>
+  <tr>
+    <td class="tg-titre">T-shirt</td>
+    <td class="tg-orange tg-droite" colspan="2">17,00</td>
+    <td class="tg-orange tg-droite" colspan="2">2,00</td>
+    <td class="tg-orange tg-droite" colspan="2">19,00</td>
+    <td class="tg-bleu tg-droite" colspan="2">11,05 €</td>
+    <td class="tg-bleu tg-droite" colspan="2">187,85 €</td>
+    <td class="tg-bleu tg-droite" colspan="2">22,10 €</td>
+    <td class="tg-bleu tg-droite" colspan="2">209,95 €</td>
+    <td class="tg-violet tg-droite" colspan="2">12,50 €</td>
+    <td class="tg-violet tg-droite" colspan="2">15,00 €</td>
+    <td class="tg-vert tg-droite">20%</td>
+    <td class="tg-vert tg-droite">2,50 €</td>
+    <td class="tg-jaune tg-droite" colspan="2">212,50 €</td>
+    <td class="tg-jaune tg-droite" colspan="2">255,00 €</td>
+    <td class="tg-cyan tg-droite" colspan="2">2,55 €</td>
+    <td class="tg-rose tg-droite" colspan="2">25,00 €</td>
+    <td class="tg-rose tg-droite" colspan="2">30,00 €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre">Casquette</td>
+    <td class="tg-orange tg-droite" colspan="2">3,00</td>
+    <td class="tg-orange tg-droite" colspan="2">0,00</td>
+    <td class="tg-orange tg-droite" colspan="2">3,00</td>
+    <td class="tg-bleu tg-droite" colspan="2">12,24 €</td>
+    <td class="tg-bleu tg-droite" colspan="2">36,72 €</td>
+    <td class="tg-bleu tg-droite" colspan="2">0,00 €</td>
+    <td class="tg-bleu tg-droite" colspan="2">36,72 €</td>
+    <td class="tg-violet tg-droite" colspan="2">13,33 €</td>
+    <td class="tg-violet tg-droite" colspan="2">16,00 €</td>
+    <td class="tg-vert tg-droite">20%</td>
+    <td class="tg-vert tg-droite">2,67 €</td>
+    <td class="tg-jaune tg-droite" colspan="2">40,00 €</td>
+    <td class="tg-jaune tg-droite" colspan="2">48,00 €</td>
+    <td class="tg-cyan tg-droite" colspan="2">3,28 €</td>
+    <td class="tg-rose tg-droite" colspan="2">0,00 €</td>
+    <td class="tg-rose tg-droite" colspan="2">0,00 €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-gras">SOUS-TOTAL BRUT &nbsp;* </td>
+    <td class="tg-orange tg-droite tg-gras" colspan="2">20,00</td>
+    <td class="tg-orange tg-droite tg-gras" colspan="2">2,00</td>
+    <td class="tg-orange tg-droite tg-gras" colspan="2">22,00</td>
+    <td class="tg-bleu tg-droite tg-gras" colspan="2">-</td>
+    <td class="tg-bleu tg-droite tg-gras" colspan="2">224,57 €</td>
+    <td class="tg-bleu tg-droite tg-gras" colspan="2">22,10 €</td>
+    <td class="tg-bleu tg-droite tg-gras" colspan="2">246,67 €</td>
+    <td class="tg-violet tg-droite tg-gras" colspan="2">-</td>
+    <td class="tg-violet tg-droite tg-gras" colspan="2">-</td>
+    <td class="tg-vert tg-droite tg-gras">20%</td>
+    <td class="tg-vert tg-droite tg-gras">5,17 €</td>
+    <td class="tg-jaune tg-droite tg-gras" colspan="2">252,50 €</td>
+    <td class="tg-jaune tg-droite tg-gras" colspan="2">303,00 €</td>
+    <td class="tg-cyan tg-droite tg-gras" colspan="2">5,83 €</td>
+    <td class="tg-rose tg-droite tg-gras" colspan="2">25,00 €</td>
+    <td class="tg-rose tg-droite tg-gras" colspan="2">30,00 €</td>
+  </tr>
+  <tr>
+    <td class="tg-titre tg-gras tg-fondgrisfonce">TOTAL BRUT (EUR)</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">136,00</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">9,00</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">145,00</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">-</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">287,31 €</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">25,66 €</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">312,97 €</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">-</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">-</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce">-</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce">5,17 €</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">484,50 €</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">535,00 €</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">171,53 €</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">39,00 €</td>
+    <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">44,00 €</td>
+  </tr>
+    </tbody></thead></table>
+      <table class="tg"><thead><tbody>
+  <br>
+  <tr>
+    <td class="tg-titrespecial tg-noborder" colspan="1">*&nbsp;à déclarer par vos soins comme recette aux impôts</td>
+  </tr>
+  </tbody></thead></table>
+    <table class="tg"><thead><tbody>
+  <br>
+  <br>
+  <tr>
+    <th class="tg-texte tg-noborder">Pour aller plus loin :</th>
+  </tr>
+  <tr>
+    <td class="tg-texte tg-gras" colspan="4">TVA Collectée par taux</td>
+  </tr>
+  <tr>
+    <td class="tg-texte tg-gras">Taux</td>
+    <td class="tg-texte tg-gras">HT</td>
+    <td class="tg-texte tg-gras">TVA</td>
+    <td class="tg-texte tg-gras">TTC</td>
+  </tr>
+  <tr>
+    <td class="tg-texte">15,00%</td>
+    <td class="tg-texte">14,00 € </td>
+    <td class="tg-texte">2,10 € </td>
+    <td class="tg-texte">16,10 € </td>
+  </tr>
+  <tr>
+    <td class="tg-texte">20,00%</td>
+    <td class="tg-texte">19,17 €</td>
+    <td class="tg-texte">3,83 €</td>
+    <td class="tg-texte">23,00 €</td>
+  </tr>
+  <tr>
+    <td class="tg-texte tg-gras">TOTAL</td>
+    <td class="tg-texte tg-gras">33,17 € </td>
+    <td class="tg-texte tg-gras">5,93 € </td>
+    <td class="tg-texte tg-gras">39,10 € </td>
+  </tr>
+</tbody></thead></table>
+
+</table><tbody>
+      <table class="tg"><thead>
+  <br>
+  <tr>
+  	<td class="tg-titre tg-gras tg-centre" >Commentaires</td>
+  </tr>
+      <br>
+  <tr>
+    <td class="tg-titre"></td>
+  </tr>
+    </thead>
+</tbody></table>

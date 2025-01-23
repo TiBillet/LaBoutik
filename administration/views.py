@@ -61,7 +61,7 @@ class DecimalEncoder(json.JSONEncoder):
 
 ### NEW METHOD CLOTURE CAISSE
 class TicketZToday(APIView):
-    template_name = "rapports/ticketZ_simple.html"
+    template_name = "rapports/V4.html"
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
