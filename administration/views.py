@@ -31,6 +31,8 @@ from APIcashless.models import RapportTableauComptable, Configuration, ArticleVe
     Appareil
 from APIcashless.tasks import envoie_rapport_et_ticketz_par_mail, GetOrCreateRapportFromDate, email_new_hardware
 from administration.ticketZ import TicketZ
+from administration.ticketZ_V4 import TicketZ as TicketZV4
+
 from epsonprinter.tasks import ticketZ_tasks_printer
 
 logger = logging.getLogger(__name__)
@@ -44,6 +46,7 @@ class DecimalEncoder(json.JSONEncoder):
         if isinstance(o, decimal.Decimal):
             return str(o)
         return super(DecimalEncoder, self).default(o)
+
 
 #
 # def start_end_event_4h_am(date, fuseau_horaire=None, heure_pivot=4):
@@ -74,10 +77,11 @@ class TicketZToday(APIView):
             start = start - timedelta(days=1)
         matin = timezone.make_aware(datetime.combine(start, heure_cloture))
 
-        ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
+        ticketZ = TicketZV4(start_date=matin, end_date=timezone.localtime())
         if ticketZ.calcul_valeurs():
             return render(request, self.template_name, context=ticketZ.to_dict)
         return HttpResponse('No sales today')
+
 
 class RapportToday(APIView):
     template_name = "rapports/rapport_complet.html"
@@ -97,6 +101,7 @@ class RapportToday(APIView):
         if ticketZ.calcul_valeurs():
             return render(request, self.template_name, context=ticketZ.to_dict)
         return HttpResponse('No sales today')
+
 
 class TicketZsimpleFromCloture(APIView):
     template_name = "rapports/ticketZ_simple.html"
@@ -330,7 +335,7 @@ def activate(request, uid, token):
         if is_token_valid:
             user.is_active = True
             user.save()
-        else :
+        else:
             return HttpResponse(_('Token non valide ou expiré'))
 
     except SignatureExpired:
@@ -345,7 +350,7 @@ def activate(request, uid, token):
     elif request.method == 'POST':
         data = request.POST
         password = data['password']
-        try :
+        try:
             validate_password(password)
         except ValidationError as e:
             return render(request, 'users/password_reset.html', context={'user': user, 'error': e.messages[0]})
