@@ -15,13 +15,13 @@ Including another URLconf
 """
 
 from django.urls import path
-from administration.views import TicketZhtml, InvoicePdf, TicketZapi, TicketZpdf, TicketZsimpleFromCloture, \
+from administration.views import TicketZhtml, InvoicePdf, TicketZpdf, TicketZsimpleFromCloture, \
     RapportFromCloture, ClotureToPrinter, ClotureToMail, RecalculerCloture, TicketZToday, RapportToday, \
     test_new_terminal, test_email_activation, activate
 
 urlpatterns = [
     path('<uuid:pk_uuid>', TicketZhtml.as_view()),
-    path('TicketZapi/<uuid:pk_uuid>', TicketZapi.as_view()),
+    # path('TicketZapi/<uuid:pk_uuid>', TicketZapi.as_view()),
     path('TicketZpdf/<uuid:pk_uuid>', TicketZpdf.as_view()),
     path('invoice/<uuid:pk_uuid>', InvoicePdf.as_view()),
 

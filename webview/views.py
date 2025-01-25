@@ -788,11 +788,13 @@ class Commande:
                 total_vente_article += dround((qty * prix))
         return dround(total_vente_article)
 
-    def _to_db_article_vendu(self, article, qty, asset):
+    def _to_db_article_vendu(self, article: Articles, qty, asset):
 
         ligne_article_vendu = ArticleVendu.objects.create(
             article=article,
             prix=article.prix,
+            prix_achat=article.prix_achat,
+            tva=article.categorie.tva.taux,
             qty=qty,
             pos=self.point_de_vente,
             carte=asset.carte,
@@ -811,6 +813,8 @@ class Commande:
         ArticleVendu.objects.create(
             article=article,
             prix=article.prix,
+            prix_achat=article.prix_achat,
+            tva=article.categorie.tva.taux,
             qty=qty,
             pos=self.point_de_vente,
             moyen_paiement=self.moyen_paiement,
@@ -967,6 +971,8 @@ class Commande:
         ligne_article_vendu = ArticleVendu.objects.create(
             article=article,
             prix=article.prix,
+            prix_achat=article.prix_achat,
+            tva=article.categorie.tva.taux,
             qty=qty,
             pos=self.point_de_vente,
             carte=carte,
@@ -1141,6 +1147,8 @@ class Commande:
         art = ArticleVendu.objects.create(
             article=article,
             prix=article.prix,
+            prix_achat=article.prix_achat,
+            tva=article.categorie.tva.taux,
             qty=qty,
             pos=self.point_de_vente,
             carte=self.carte_db,
@@ -1228,6 +1236,8 @@ class Commande:
         ArticleVendu.objects.create(
             article=article,
             prix=total,
+            prix_achat=article.prix_achat,
+            tva=article.categorie.tva.taux,
             qty=1,
             pos=self.point_de_vente,
             carte=carte_db,
@@ -1279,6 +1289,8 @@ class Commande:
             ArticleVendu.objects.create(
                 article=article,
                 prix=article.prix,
+                prix_achat=article.prix_achat,
+                tva=article.categorie.tva.taux,
                 qty=qty,
                 pos=self.point_de_vente,
                 carte=self.carte_db,

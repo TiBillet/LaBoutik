@@ -778,15 +778,15 @@ class MoyenPaiement(models.Model):
 
     CATEGORIES = [
         # Cashless
-        (LOCAL_EURO, _('Token local €')),
-        (LOCAL_GIFT, _('Token local cadeau')),
-        (EXTERIEUR_FED, _('Token fédéré exterieur €')),
-        (EXTERIEUR_GIFT, _('Token fédéré cadeau')),
+        (LOCAL_EURO, _('Token local')),
+        (LOCAL_GIFT, _('Token cadeau')),
+        (EXTERIEUR_FED, _('Token exterieur')),
+        (EXTERIEUR_GIFT, _('Token exterieur cadeau')),
         (FEDOW, _('Fedow')),
 
         (CASH, _('Espèces')),
         (CREDIT_CARD_NOFED, _('Carte bancaire')),
-        (CHEQUE, _('Cheque')),
+        (CHEQUE, _('Chèque')),
         (FREE, _('Offert')),
 
         (FRACTIONNE, _('Fractionné')),
@@ -794,7 +794,7 @@ class MoyenPaiement(models.Model):
         (ARDOISE, _('Ardoise')),
 
         (STRIPE_NOFED, _('Stripe')),
-        (STRIPE_FED, _('Stripe (fedéré)')),
+        (STRIPE_FED, _('Token fédéré')),
 
         (OCECO, _('Oceco')),
         (BADGE, _('Badgeuse')),
@@ -1812,7 +1812,7 @@ class ClotureCaisse(models.Model):
     start = models.DateTimeField(verbose_name=_("Début"))
     end = models.DateTimeField(verbose_name=_("Fin"))
 
-    # chiffre_affaire = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Chiffre d'affaire")
+    # ENregistrement dans le dur du tableau qui a été généré.
     ticketZ = JSONField(default=dict, max_length=50000)
 
     # TODO: Ajouter point de vente et responsable
@@ -1832,6 +1832,9 @@ class ClotureCaisse(models.Model):
 
     def chiffre_affaire(self):
         return json.loads(self.ticketZ).get('total_TTC')
+
+    def uuid_8(self):
+        return str(self.id)[:8]
 
     class Meta:
         ordering = ('-datetime',)

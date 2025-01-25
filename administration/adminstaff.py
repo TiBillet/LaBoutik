@@ -684,6 +684,7 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'article',
         'prix',
         'qty',
+        'prix_achat',
         'moyen_paiement',
         'carte',
         'comment',

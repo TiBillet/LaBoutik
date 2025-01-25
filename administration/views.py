@@ -78,9 +78,8 @@ class TicketZToday(APIView):
         matin = timezone.make_aware(datetime.combine(start, heure_cloture))
 
         ticketZ = TicketZV4(start_date=matin, end_date=timezone.localtime())
-        if ticketZ.calcul_valeurs():
-            return render(request, self.template_name, context=ticketZ.to_dict)
-        return HttpResponse('No sales today')
+        return render(request, self.template_name, context=ticketZ.context())
+        # return HttpResponse('No sales today')
 
 
 class RapportToday(APIView):
@@ -195,32 +194,32 @@ class RecalculerCloture(APIView):
 
 ### END NEW METHOD CLOTURE CAISSE
 
-
-class TicketZapi(APIView):
-    """
-    # Pour la prod billetterie :
-    permission_classes = [HasAPIKey]
-    def get(self, request, pk_uuid):
-        if not billetterie_white_list(request):
-            logger.warning('not billetterie white list')
-            return Response('no no no', status=status.HTTP_401_UNAUTHORIZED)
-    """
-    # Pour le dev et l'impression :
-    permission_classes = [AllowAny]
-
-    def get(self, request, pk_uuid):
-        # date = DateSerializer(data=request.data)
-        # if not date.is_valid():
-        #     return Response(f'{date.errors}', status=status.HTTP_400_BAD_REQUEST)
-
-        rapport = get_object_or_404(RapportTableauComptable, pk=pk_uuid)
-
-        ticketz_validator = TicketZ(rapport=rapport)
-        if ticketz_validator.calcul_valeurs():
-            ticketz_json = ticketz_validator.to_json
-
-            return Response(json.loads(ticketz_json), status=status.HTTP_200_OK)
-        return Response('Erreur json ticketz', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#
+# class TicketZapi(APIView):
+#     """
+#     # Pour la prod billetterie :
+#     permission_classes = [HasAPIKey]
+#     def get(self, request, pk_uuid):
+#         if not billetterie_white_list(request):
+#             logger.warning('not billetterie white list')
+#             return Response('no no no', status=status.HTTP_401_UNAUTHORIZED)
+#     """
+#     # Pour le dev et l'impression :
+#     permission_classes = [AllowAny]
+#
+#     def get(self, request, pk_uuid):
+#         # date = DateSerializer(data=request.data)
+#         # if not date.is_valid():
+#         #     return Response(f'{date.errors}', status=status.HTTP_400_BAD_REQUEST)
+#
+#         rapport = get_object_or_404(RapportTableauComptable, pk=pk_uuid)
+#
+#         ticketz_validator = TicketZ(rapport=rapport)
+#         if ticketz_validator.calcul_valeurs():
+#             ticketz_json = ticketz_validator.to_json
+#
+#             return Response(json.loads(ticketz_json), status=status.HTTP_200_OK)
+#         return Response('Erreur json ticketz', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TicketZFromDatePdf(WeasyTemplateView):
