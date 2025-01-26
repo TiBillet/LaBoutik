@@ -357,7 +357,6 @@ class TicketZ():
         # Préparation des lignes en fonction de leur prix vendu (un même article peut changer de prix)
         lignes = list(set([(article_v.article, article_v.prix, article_v.prix_achat, article_v.tva) for article_v in
                            articles_vendus]))
-        print(lignes)
         # Pour chaque ligne d'article, on va effectuer les calculs prévu pour les cases
         for ligne in lignes:
             article: Articles = ligne[0]
@@ -407,15 +406,60 @@ class TicketZ():
                 "chiffre_affaire_ht": tva_from_ttc(total_euro_vendu, taux_tva),
                 "chiffre_affaire_ttc": total_euro_vendu,
                 "benefice": total_euro_vendu - cout_total - tva,
-                "ca_cadeau_ht": "",
-                "ca_cadeau_ttc": "",
+                # "ca_cadeau_ht": "",
+                # "ca_cadeau_ttc": "",
             }
-
-        # categories = articles_vendus.values('responsable__id', 'responsable__name').order_by().distinct('responsable')
 
         # Suppression des catégories vides
         table_sans_cat_vide = {k: v for k, v in table.items() if v}
-        return table_sans_cat_vide
+        table = table_sans_cat_vide
+
+        # Calcul du grand TOTAL
+        total_global= {
+            "name": "TOTAL GLOBAL",
+            "qty_vendus": sum(ligne["qty_vendus"] for cat in table.values() for ligne in cat.values()),
+            "qty_offertes": sum(ligne["qty_offertes"] for cat in table.values() for ligne in cat.values()),
+            "qty_totale": sum(ligne["qty_totale"] for cat in table.values() for ligne in cat.values()),
+            "achat_unit": 0,  # Non applicable pour un total
+            "cout_vendu": sum(ligne["cout_vendu"] for cat in table.values() for ligne in cat.values()),
+            "cout_offert": sum(ligne["cout_offert"] for cat in table.values() for ligne in cat.values()),
+            "cout_total": sum(ligne["cout_total"] for cat in table.values() for ligne in cat.values()),
+            "prix_ttc": 0,  # Non applicable pour un total
+            "taux_tva": 0,  # Non applicable pour un total
+            "prix_tva": 0,  # Non applicable pour un total
+            "prix_ht": 0,  # Non applicable pour un total
+            "chiffre_affaire_ht": sum(ligne["chiffre_affaire_ht"] for cat in table.values() for ligne in cat.values()),
+            "chiffre_affaire_ttc": sum(ligne["chiffre_affaire_ttc"] for cat in table.values() for ligne in cat.values()),
+            "benefice": sum(ligne["benefice"] for cat in table.values() for ligne in cat.values()),
+            # "ca_cadeau_ht": sum(ligne["ca_cadeau_ht"] or 0 for ligne in lignes.values()),
+            # "ca_cadeau_ttc": sum(ligne["ca_cadeau_ttc"] or 0 for ligne in lignes.values()),
+        }
+
+        # Calcul du total dans chaque catégorie :
+        for categorie, lignes in table.items():
+            table[categorie]['SUBTOTAL'] =  {
+                "name": "SUBTOTAL",
+                "qty_vendus": sum(ligne["qty_vendus"] for ligne in lignes.values()),
+                "qty_offertes": sum(ligne["qty_offertes"] for ligne in lignes.values()),
+                "qty_totale": sum(ligne["qty_totale"] for ligne in lignes.values()),
+                "achat_unit": 0,  # Non applicable pour un total
+                "cout_vendu": sum(ligne["cout_vendu"] for ligne in lignes.values()),
+                "cout_offert": sum(ligne["cout_offert"] for ligne in lignes.values()),
+                "cout_total": sum(ligne["cout_total"] for ligne in lignes.values()),
+                "prix_ttc": 0,  # Non applicable pour un total
+                "taux_tva": 0,  # Non applicable pour un total
+                "prix_tva": 0 , # Non applicable pour un total
+                "prix_ht":  0 , # Non applicable pour un total
+                "chiffre_affaire_ht": sum(ligne["chiffre_affaire_ht"] for ligne in lignes.values()),
+                "chiffre_affaire_ttc": sum(ligne["chiffre_affaire_ttc"] for ligne in lignes.values()),
+                "benefice": sum(ligne["benefice"] for ligne in lignes.values()),
+                # "ca_cadeau_ht": sum(ligne["ca_cadeau_ht"] or 0 for ligne in lignes.values()),
+                # "ca_cadeau_ttc": sum(ligne["ca_cadeau_ttc"] or 0 for ligne in lignes.values()),
+            }
+
+        table["TOTAL"] = total_global
+
+        return table
 
     def context(self):
         return {

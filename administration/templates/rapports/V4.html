@@ -140,15 +140,15 @@
     </tbody>
 </table>
 
-<br>
-<table class="tg">
-    <tbody>
-    <tr>
-        <td class="tg-texte">{% trans "SORTIE DE CAISSE N°" %}</td>
-        <td class="tg-texte">{% if cloture %}{{ cloture.uuid_8 }}{% else %}{% trans "Temporaire" %}{% endif %}</td>
-    </tr>
-    </tbody>
-</table>
+{#<br>#}
+{#<table class="tg">#}
+{#    <tbody>#}
+{#    <tr>#}
+{#        <td class="tg-texte">{% trans "SORTIE DE CAISSE N°" %}</td>#}
+{#        <td class="tg-texte">{% if cloture %}{{ cloture.uuid_8 }}{% else %}{% trans "Temporaire" %}{% endif %}</td>#}
+{#    </tr>#}
+{#    </tbody>#}
+{#</table>#}
 
 
 <br>
@@ -157,7 +157,7 @@
     <tbody>
     <tr>
         <td class="tg-titre tg-gras tg-centre tg-noborder" colspan="4">{% trans "POINT DE VENTE" %}</td>
-        <td class="tg-texte tg-gras" colspan="2" rowspan="2">{% trans "SOLDE DE CAISSE" %}</td>
+        <td class="tg-texte tg-gras" colspan="2" rowspan="2">{% trans "C.A." %}</td>
     </tr>
     <tr>
         <td class="tg-texte" colspan="2">{% trans "Responsable(s) :" %}</td>
@@ -174,7 +174,7 @@
                 <button hx-get="/report/{{ pdv.pos__id }}/">{{ pdv.pos__name }}</button>
             {% endfor %}
         </td>
-        <td class="tg-texte tg-positif tg-gras" colspan="2">{{ fond_caisse | floatformat:2 }}€</td>
+        <td class="tg-texte tg-positif tg-gras" colspan="2">{{ total_ttc | floatformat:2 | default:0 }}€</td>
     </tr>
     </tbody>
 </table>
@@ -189,7 +189,8 @@
     </tr>
     <tr>
         <td class="tg-texte" colspan="2">{% trans "Session n° : " %}</td>
-        <td class="tg-texte" colspan="4"></td>
+        <td class="tg-texte" colspan="4">
+            {% if cloture %}{{ cloture.uuid_8 }}{% else %}{% trans "Temporaire" %}{% endif %}</td>
     </tr>
     <tr>
         <td class="tg-texte" colspan="2">{% trans "Ouverte le :" %}</td>
@@ -438,10 +439,9 @@
         <td class="tg-data tg-vert" colspan="2">{% trans "TVA" %}</td>
         <td class="tg-texte tg-jaune" colspan="4">{% trans "CHIFFRE D'AFFAIRE" %}</td>
         <td class="tg-data tg-cyan" colspan="2">{% trans "BÉNÉFICE" %}</td>
-        <td class="tg-texte tg-rose" colspan="4">{% trans "CHIFFRE D'AFFAIRE CADEAUX" %}</td>
+        {#        <td class="tg-texte tg-rose" colspan="4">{% trans "CHIFFRE D'AFFAIRE CADEAUX" %}</td>#}
     </tr>
     </thead>
-    <tbody>
     <tr>
         <td class="tg-titre tg-gras tg-fondgrisfonce">{% trans "ARTICLES" %}</td>
         <td class="tg-data tg-orange tg-gras" colspan="2">{% trans "VENDUE" %}</td>
@@ -458,149 +458,106 @@
         <td class="tg-data tg-jaune tg-gras" colspan="2">{% trans "TOTAL HT" %}</td>
         <td class="tg-data tg-jaune tg-gras" colspan="2">{% trans "TOTAL TTC" %}</td>
         <td class="tg-data tg-cyan tg-gras" colspan="2">{% trans "BRUT" %}</td>
-        <td class="tg-data tg-rose tg-gras" colspan="2">{% trans "TOTAL HT" %}</td>
-        <td class="tg-data tg-rose tg-gras" colspan="2">{% trans "TOTAL TTC" %}</td>
+        {#        <td class="tg-data tg-rose tg-gras" colspan="2">{% trans "TOTAL HT" %}</td>#}
+        {#        <td class="tg-data tg-rose tg-gras" colspan="2">{% trans "TOTAL TTC" %}</td>#}
     </tr>
 
+    <tbody>
     <!-- -->
     {% for categorie, article_lines in table_detail_ventes.items %}
-        {% if categorie != "total" %}
-
+        {% if categorie != "TOTAL" %}
             <tr>
-                <td class="tg-titrelarge tg-fondgris" colspan="31">{% trans "Catégorie" %} {{ categorie }}</td>
+                <td class="tg-titrelarge tg-fondgris" colspan="27">{% trans "Catégorie" %} {{ categorie }}</td>
             </tr>
             {% for art, line in article_lines.items %}
+                {% if line.name != "SUBTOTAL" %}
+                    <tr>
+                        <td class="tg-titreope">{{ line.name }}</td>
+                        <td class="tg-orange tg-droite"
+                            colspan="2">{{ line.qty_vendus | floatformat:2 | default:0 }}</td>
+                        <td class="tg-orange tg-droite"
+                            colspan="2">{{ line.qty_offertes | floatformat:2 | default:0 }}</td>
+                        <td class="tg-orange tg-droite"
+                            colspan="2">{{ line.qty_totale | floatformat:2 | default:0 }}</td>
+                        <td class="tg-bleu tg-droite" colspan="2">{{ line.achat_unit | floatformat:2 | default:0 }}</td>
+                        <td class="tg-bleu tg-droite" colspan="2">{{ line.cout_vendu | floatformat:2 | default:0 }}</td>
+                        <td class="tg-bleu tg-droite"
+                            colspan="2">{{ line.cout_offert | floatformat:2 | default:0 }}</td>
+                        <td class="tg-bleu tg-droite" colspan="2">{{ line.cout_total | floatformat:2 | default:0 }}</td>
+                        <td class="tg-violet tg-droite" colspan="2">{{ line.prix_ht | floatformat:2 | default:0 }}</td>
+                        <td class="tg-violet tg-droite" colspan="2">{{ line.prix_ttc | floatformat:2 | default:0 }}</td>
+                        <td class="tg-vert tg-droite">{{ line.taux_tva | floatformat:2 | default:0 }}%</td>
+                        <td class="tg-vert tg-droite">{{ line.prix_tva | floatformat:2 | default:0 }}</td>
+                        <td class="tg-jaune tg-droite"
+                            colspan="2">{{ line.chiffre_affaire_ht | floatformat:2 | default:0 }}</td>
+                        <td class="tg-jaune tg-droite"
+                            colspan="2">{{ line.chiffre_affaire_ttc | floatformat:2 | default:0 }}</td>
+                        <td class="tg-cyan tg-droite" colspan="2">{{ line.benefice | floatformat:2 | default:0 }}</td>
+                        {#                    <td class="tg-rose tg-droite" colspan="2">{{ line.ca_cadeau_ht | floatformat:2 | default:0 }}</td>#}
+                        {#                    <td class="tg-rose tg-droite" colspan="2">{{ line.ca_cadeau_ttc | floatformat:2 | default:0 }}</td>#}
+                    </tr>
+                {% elif line.name == "SUBTOTAL" %}
+                    <tr>
+                        <td class="tg-titre tg-gras">{% trans "SOUS-TOTAL" %}</td>
+                        <td class="tg-orange tg-droite"
+                            colspan="2">{{ line.qty_vendus | floatformat:2 | default:0 }}</td>
+                        <td class="tg-orange tg-droite"
+                            colspan="2">{{ line.qty_offertes | floatformat:2 | default:0 }}</td>
+                        <td class="tg-orange tg-droite"
+                            colspan="2">{{ line.qty_totale | floatformat:2 | default:0 }}</td>
+                        <td class="tg-bleu tg-droite" colspan="2">{% trans "N/A" %}</td>
+                        <td class="tg-bleu tg-droite" colspan="2">{{ line.cout_vendu | floatformat:2 | default:0 }}</td>
+                        <td class="tg-bleu tg-droite"
+                            colspan="2">{{ line.cout_offert | floatformat:2 | default:0 }}</td>
+                        <td class="tg-bleu tg-droite" colspan="2">{{ line.cout_total | floatformat:2 | default:0 }}</td>
+                        <td class="tg-violet tg-droite" colspan="2">{% trans "N/A" %}</td>
+                        <td class="tg-violet tg-droite" colspan="2">{% trans "N/A" %}</td>
+                        <td class="tg-vert tg-droite">{{ line.taux_tva | floatformat:2 | default:0 }}%</td>
+                        <td class="tg-vert tg-droite">{% trans "N/A" %}</td>
+                        <td class="tg-jaune tg-droite"
+                            colspan="2">{{ line.chiffre_affaire_ht | floatformat:2 | default:0 }}</td>
+                        <td class="tg-jaune tg-droite"
+                            colspan="2">{{ line.chiffre_affaire_ttc | floatformat:2 | default:0 }}</td>
+                        <td class="tg-cyan tg-droite" colspan="2">{{ line.benefice | floatformat:2 | default:0 }}</td>
+                        {#                    <td class="tg-rose tg-droite" colspan="2">{{ line.ca_cadeau_ht | floatformat:2 | default:0 }}</td>#}
+                        {#                    <td class="tg-rose tg-droite" colspan="2">{{ line.ca_cadeau_ttc | floatformat:2 | default:0 }}</td>#}
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            </tbody>
+
+        {% elif categorie == "TOTAL" %}
+            {% with article_lines as line %}
+                <tfoot>
                 <tr>
-                    <td class="tg-titreope">{{ line.name }}</td>
-                    <td class="tg-orange tg-droite" colspan="2">{{ line.qty_vendus | floatformat:2 | default:0 }}</td>
-                    <td class="tg-orange tg-droite" colspan="2">{{ line.qty_offertes | floatformat:2 | default:0 }}</td>
-                    <td class="tg-orange tg-droite" colspan="2">{{ line.qty_totale | floatformat:2 | default:0 }}</td>
-                    <td class="tg-bleu tg-droite" colspan="2">{{ line.achat_unit | floatformat:2 | default:0 }}</td>
+                    <td class="tg-titre tg-gras">{% trans "TOTAL GLOBAL" %}</td>
+                    <td class="tg-orange tg-droite"
+                        colspan="2">{{ line.qty_vendus | floatformat:2 | default:0 }}</td>
+                    <td class="tg-orange tg-droite"
+                        colspan="2">{{ line.qty_offertes | floatformat:2 | default:0 }}</td>
+                    <td class="tg-orange tg-droite"
+                        colspan="2">{{ line.qty_totale | floatformat:2 | default:0 }}</td>
+                    <td class="tg-bleu tg-droite" colspan="2">{% trans "N/A" %}</td>
                     <td class="tg-bleu tg-droite" colspan="2">{{ line.cout_vendu | floatformat:2 | default:0 }}</td>
-                    <td class="tg-bleu tg-droite" colspan="2">{{ line.cout_offert | floatformat:2 | default:0 }}</td>
+                    <td class="tg-bleu tg-droite"
+                        colspan="2">{{ line.cout_offert | floatformat:2 | default:0 }}</td>
                     <td class="tg-bleu tg-droite" colspan="2">{{ line.cout_total | floatformat:2 | default:0 }}</td>
-                    <td class="tg-violet tg-droite" colspan="2">{{ line.prix_ht | floatformat:2 | default:0 }}</td>
-                    <td class="tg-violet tg-droite" colspan="2">{{ line.prix_ttc | floatformat:2 | default:0 }}</td>
-                    <td class="tg-vert tg-droite">{{ line.taux_tva | floatformat:2 | default:0 }}%</td>
-                    <td class="tg-vert tg-droite">{{ line.prix_tva | floatformat:2 | default:0 }}</td>
+                    <td class="tg-violet tg-droite" colspan="2">{% trans "N/A" %}</td>
+                    <td class="tg-violet tg-droite" colspan="2">{% trans "N/A" %}</td>
+                    <td class="tg-vert tg-droite">{% trans "N/A" %}</td>
+                    <td class="tg-vert tg-droite">{% trans "N/A" %}</td>
                     <td class="tg-jaune tg-droite"
                         colspan="2">{{ line.chiffre_affaire_ht | floatformat:2 | default:0 }}</td>
                     <td class="tg-jaune tg-droite"
                         colspan="2">{{ line.chiffre_affaire_ttc | floatformat:2 | default:0 }}</td>
                     <td class="tg-cyan tg-droite" colspan="2">{{ line.benefice | floatformat:2 | default:0 }}</td>
-                    <td class="tg-rose tg-droite" colspan="2">{{ line.ca_cadeau_ht | floatformat:2 | default:0 }}</td>
-                    <td class="tg-rose tg-droite" colspan="2">{{ line.ca_cadeau_ttc | floatformat:2 | default:0 }}</td>
+                    {#                    <td class="tg-rose tg-droite" colspan="2">{{ line.ca_cadeau_ht | floatformat:2 | default:0 }}</td>#}
+                    {#                    <td class="tg-rose tg-droite" colspan="2">{{ line.ca_cadeau_ttc | floatformat:2 | default:0 }}</td>#}
                 </tr>
-            {% endfor %}
-
-        {% elif categorie == "total" %}
-
-        <tr>
-            <td class="tg-titre tg-gras">SOUS-TOTAL BRUT*</td>
-            <td class="tg-orange tg-droite tg-gras" colspan="2">116,00</td>
-            <td class="tg-orange tg-droite tg-gras" colspan="2">7,00</td>
-            <td class="tg-orange tg-droite tg-gras" colspan="2">123,00</td>
-            <td class="tg-bleu tg-droite tg-gras" colspan="2">-</td>
-            <td class="tg-bleu tg-droite tg-gras" colspan="2">62,74 €</td>
-            <td class="tg-bleu tg-droite tg-gras" colspan="2">3,56 €</td>
-            <td class="tg-bleu tg-droite tg-gras" colspan="2">66,30 €</td>
-            <td class="tg-violet tg-droite tg-gras" colspan="2">-</td>
-            <td class="tg-violet tg-droite tg-gras" colspan="2">-</td>
-            <td class="tg-vert tg-droite tg-gras">0%</td>
-            <td class="tg-vert tg-droite tg-gras">0,00 €</td>
-            <td class="tg-jaune tg-droite tg-gras" colspan="2">232,00 €</td>
-            <td class="tg-jaune tg-droite tg-gras" colspan="2">232,00 €</td>
-            <td class="tg-cyan tg-droite tg-gras" colspan="2">165,70 €</td>
-            <td class="tg-rose tg-droite tg-gras" colspan="2">14,00 €</td>
-            <td class="tg-rose tg-droite tg-gras" colspan="2">14,00 €</td>
-        </tr>
-
+                </tfoot>
+            {% endwith %}
         {% endif %}
-
     {% endfor %}
-    <tr>
-        <td class="tg-titrelarge tg-fondgris" colspan="31">[TVA] ex : 20%</td>
-    </tr>
-    <tr>
-        <td class="tg-titrelarge tg-fondgris" colspan="31">[CATÉGORIE] ex : Goodies</td>
-    </tr>
-    <tr>
-        <td class="tg-titre">T-shirt</td>
-        <td class="tg-orange tg-droite" colspan="2">17,00</td>
-        <td class="tg-orange tg-droite" colspan="2">2,00</td>
-        <td class="tg-orange tg-droite" colspan="2">19,00</td>
-        <td class="tg-bleu tg-droite" colspan="2">11,05 €</td>
-        <td class="tg-bleu tg-droite" colspan="2">187,85 €</td>
-        <td class="tg-bleu tg-droite" colspan="2">22,10 €</td>
-        <td class="tg-bleu tg-droite" colspan="2">209,95 €</td>
-        <td class="tg-violet tg-droite" colspan="2">12,50 €</td>
-        <td class="tg-violet tg-droite" colspan="2">15,00 €</td>
-        <td class="tg-vert tg-droite">20%</td>
-        <td class="tg-vert tg-droite">2,50 €</td>
-        <td class="tg-jaune tg-droite" colspan="2">212,50 €</td>
-        <td class="tg-jaune tg-droite" colspan="2">255,00 €</td>
-        <td class="tg-cyan tg-droite" colspan="2">2,55 €</td>
-        <td class="tg-rose tg-droite" colspan="2">25,00 €</td>
-        <td class="tg-rose tg-droite" colspan="2">30,00 €</td>
-    </tr>
-    <tr>
-        <td class="tg-titre">Casquette</td>
-        <td class="tg-orange tg-droite" colspan="2">3,00</td>
-        <td class="tg-orange tg-droite" colspan="2">0,00</td>
-        <td class="tg-orange tg-droite" colspan="2">3,00</td>
-        <td class="tg-bleu tg-droite" colspan="2">12,24 €</td>
-        <td class="tg-bleu tg-droite" colspan="2">36,72 €</td>
-        <td class="tg-bleu tg-droite" colspan="2">0,00 €</td>
-        <td class="tg-bleu tg-droite" colspan="2">36,72 €</td>
-        <td class="tg-violet tg-droite" colspan="2">13,33 €</td>
-        <td class="tg-violet tg-droite" colspan="2">16,00 €</td>
-        <td class="tg-vert tg-droite">20%</td>
-        <td class="tg-vert tg-droite">2,67 €</td>
-        <td class="tg-jaune tg-droite" colspan="2">40,00 €</td>
-        <td class="tg-jaune tg-droite" colspan="2">48,00 €</td>
-        <td class="tg-cyan tg-droite" colspan="2">3,28 €</td>
-        <td class="tg-rose tg-droite" colspan="2">0,00 €</td>
-        <td class="tg-rose tg-droite" colspan="2">0,00 €</td>
-    </tr>
-    <tr>
-        <td class="tg-titre tg-gras">SOUS-TOTAL BRUT &nbsp;*</td>
-        <td class="tg-orange tg-droite tg-gras" colspan="2">20,00</td>
-        <td class="tg-orange tg-droite tg-gras" colspan="2">2,00</td>
-        <td class="tg-orange tg-droite tg-gras" colspan="2">22,00</td>
-        <td class="tg-bleu tg-droite tg-gras" colspan="2">-</td>
-        <td class="tg-bleu tg-droite tg-gras" colspan="2">224,57 €</td>
-        <td class="tg-bleu tg-droite tg-gras" colspan="2">22,10 €</td>
-        <td class="tg-bleu tg-droite tg-gras" colspan="2">246,67 €</td>
-        <td class="tg-violet tg-droite tg-gras" colspan="2">-</td>
-        <td class="tg-violet tg-droite tg-gras" colspan="2">-</td>
-        <td class="tg-vert tg-droite tg-gras">20%</td>
-        <td class="tg-vert tg-droite tg-gras">5,17 €</td>
-        <td class="tg-jaune tg-droite tg-gras" colspan="2">252,50 €</td>
-        <td class="tg-jaune tg-droite tg-gras" colspan="2">303,00 €</td>
-        <td class="tg-cyan tg-droite tg-gras" colspan="2">5,83 €</td>
-        <td class="tg-rose tg-droite tg-gras" colspan="2">25,00 €</td>
-        <td class="tg-rose tg-droite tg-gras" colspan="2">30,00 €</td>
-    </tr>
-    <tr>
-        <td class="tg-titre tg-gras tg-fondgrisfonce">TOTAL BRUT (EUR)</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">136,00</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">9,00</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">145,00</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">-</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">287,31 €</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">25,66 €</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">312,97 €</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">-</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">-</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce">-</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce">5,17 €</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">484,50 €</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">535,00 €</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">171,53 €</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">39,00 €</td>
-        <td class="tg-gras tg-droite tg-fondgrisfonce" colspan="2">44,00 €</td>
-    </tr>
-    </tbody>
 </table>
 
 <!--
