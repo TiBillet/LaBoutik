@@ -506,6 +506,7 @@ class TicketZ():
 
         articles_vendus_cashless = self.all_articles.filter(carte__isnull=False)
         cards = articles_vendus_cashless.order_by('carte').values_list('carte', flat=True).distinct()
+
         table_habitus['cards_count'] = cards.count()
 
         # Tri par carte pour calculer la recharge médiane,
@@ -519,7 +520,9 @@ class TicketZ():
             if toute_recharge_de_la_carte > 0:
                 total_recharge_par_carte.append(toute_recharge_de_la_carte)
 
-        if len(total_recharge_par_carte) >0 :
+        # On peut en déduire du coup toute les recharge cashless de la période
+        total_recharge_toutes_cartes = sum(total_recharge_par_carte)
+        if total_recharge_toutes_cartes >0 :
             table_habitus['recharge_mediane'] = statistics.median(total_recharge_par_carte)
 
         # Pour calculer le panier moyen, on va chercher toute les dépenses par cartes
@@ -527,13 +530,16 @@ class TicketZ():
         for card in cards:
             toute_depense_de_la_carte = self.all_articles.filter(
                 carte=card,
+                moyen_paiement__categorie__in=[LOCAL_EURO, STRIPE_FED, EXTERIEUR_FED],
                 article__methode_choices__in=[Articles.VENTE, Articles.CASHBACK, Articles.BILLET],
             ).aggregate(total=Sum(F('qty') * F('prix')))['total'] or 0
             # Si la carte a dépensé plus de 0 pendant la période, on prend en compte :
             if toute_depense_de_la_carte > 0:
                 total_depense_par_carte.append(toute_depense_de_la_carte)
 
-        if len(total_depense_par_carte) > 0 :
+        # On peut en déduire du coup toute les dépense cashless de la période
+        total_depense_toute_carte = sum(total_depense_par_carte)
+        if total_depense_toute_carte > 0 :
             table_habitus['panier_moyen'] = statistics.mean(total_depense_par_carte)
 
         # Nombre d'ahdésions
@@ -541,9 +547,11 @@ class TicketZ():
             article__methode_choices=Articles.ADHESIONS).count()
 
         # Reste sur carte :
-        table_habitus['on_card'] = Assets.objects.filter(monnaie__categorie__in=[
-            LOCAL_EURO, STRIPE_FED, EXTERIEUR_FED
-        ]).aggregate(Avg('qty'))['qty__avg'] or 0
+        table_habitus['total_on_card'] = total_recharge_toutes_cartes - total_depense_toute_carte
+        table_habitus['med_on_card'] = Assets.objects.filter(
+            monnaie__categorie__in=[LOCAL_EURO, STRIPE_FED, EXTERIEUR_FED],
+            carte__in=cards,
+        ).aggregate(Avg('qty'))['qty__avg'] or 0
 
         return table_habitus
 

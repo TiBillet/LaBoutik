@@ -1812,12 +1812,8 @@ class ClotureCaisse(models.Model):
     start = models.DateTimeField(verbose_name=_("Début"))
     end = models.DateTimeField(verbose_name=_("Fin"))
 
-    # ENregistrement dans le dur du tableau qui a été généré.
+    # Enregistrement dans le dur du tableau qui a été généré.
     ticketZ = JSONField(default=dict, max_length=50000)
-
-    # TODO: Ajouter point de vente et responsable
-    # pos = PointDeVente
-    # responsable = Membre
 
     CUSTOM, POS, CLOTURE, HEBDOMADAIRE, MENSUEL, ANNUEL = 'K', 'P', 'C', 'H', 'M', 'A'
     CAT_CHOICES = [
