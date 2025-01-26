@@ -426,6 +426,46 @@
 </table>
 
 
+<!-- Table ventilation TVA -->
+<br>
+<br>
+<table class="tg">
+    <thead>
+    <tr>
+        <td class="tg-texte tg-gras" colspan="4">TVA Collectée par taux</td>
+    </tr>
+    <tr>
+        <td class="tg-texte tg-gras">Taux</td>
+        <td class="tg-texte tg-gras">HT</td>
+        <td class="tg-texte tg-gras">TVA</td>
+        <td class="tg-texte tg-gras">TTC</td>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for taux, valeurs in table_tva.items %}
+        {% if taux != 'TOTAL' %}
+            <tr>
+                <td class="tg-texte">{{ taux }}%</td>
+                <td class="tg-texte">{{ valeurs.ht }} €</td>
+                <td class="tg-texte">{{ valeurs.tva }} €</td>
+                <td class="tg-texte">{{ valeurs.ttc }} €</td>
+            </tr>
+        {% else %}
+            </tbody>
+            <tfoot>
+            <tr>
+                <td class="tg-texte tg-gras">{% trans "TOTAL" %}</td>
+                <td class="tg-texte tg-gras">{{ valeurs.ht }} €</td>
+                <td class="tg-texte tg-gras">{{ valeurs.tva }} €</td>
+                <td class="tg-texte tg-gras">{{ valeurs.ttc }} €</td>
+            </tr>
+            </tfoot>
+        {% endif %}
+    {% endfor %}
+</table>
+
+
 {#<tr>#}
 <br>
 <br>
@@ -560,68 +600,37 @@
     {% endfor %}
 </table>
 
-<!--
 
 <table class="tg">
     <tbody>
     <br>
     <tr>
-        <td class="tg-titrespecial tg-noborder" colspan="1">*&nbsp;à déclarer par vos soins comme recette aux impôts
+        <td class="tg-titrespecial tg-noborder"
+            colspan="1">{% trans "* à déclarer par vos soins comme recette aux impôts" %}
         </td>
     </tr>
     </tbody>
 </table>
 
-<table class="tg">
-    <tbody>
-    <br>
-    <br>
-    <tr>
-        <th class="tg-texte tg-noborder">Pour aller plus loin :</th>
-    </tr>
-    <tr>
-        <td class="tg-texte tg-gras" colspan="4">TVA Collectée par taux</td>
-    </tr>
-    <tr>
-        <td class="tg-texte tg-gras">Taux</td>
-        <td class="tg-texte tg-gras">HT</td>
-        <td class="tg-texte tg-gras">TVA</td>
-        <td class="tg-texte tg-gras">TTC</td>
-    </tr>
-    <tr>
-        <td class="tg-texte">15,00%</td>
-        <td class="tg-texte">14,00 €</td>
-        <td class="tg-texte">2,10 €</td>
-        <td class="tg-texte">16,10 €</td>
-    </tr>
-    <tr>
-        <td class="tg-texte">20,00%</td>
-        <td class="tg-texte">19,17 €</td>
-        <td class="tg-texte">3,83 €</td>
-        <td class="tg-texte">23,00 €</td>
-    </tr>
-    <tr>
-        <td class="tg-texte tg-gras">TOTAL</td>
-        <td class="tg-texte tg-gras">33,17 €</td>
-        <td class="tg-texte tg-gras">5,93 €</td>
-        <td class="tg-texte tg-gras">39,10 €</td>
-    </tr>
-    </tbody>
-</table>
 
+{#    <tr>#}
+{#        <th class="tg-texte tg-noborder">Pour aller plus loin :</th>#}
+{#    </tr>#}
+
+<br>
+<br>
 <table class="tg">
-    <tbody>
-    <br>
+    <thead>
     <tr>
         <td class="tg-titre tg-gras tg-centre">Commentaires</td>
     </tr>
-    <br>
+    </thead>
+    <tbody>
     <tr>
         <td class="tg-titre"></td>
     </tr>
     </tbody>
 </table>
 
---->
 <script src="{% static 'webview/js/htmx@2.0.1.min.js' %}"></script>
 </html>

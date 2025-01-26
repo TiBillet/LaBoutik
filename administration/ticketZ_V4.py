@@ -194,7 +194,7 @@ class TicketZ():
         # Une table qui ne comprend que les articles / produits classiques vendus.
         # Ne contient pas les recharges, les adhésions, retour consignes, remboursement
         articles = self.all_articles.filter(
-            article__methode_choices__in=[Articles.VENTE, Articles.CASHBACK]
+            article__methode_choices__in=[Articles.VENTE, Articles.CASHBACK, Articles.BILLET]
         )
 
         table = {
@@ -305,6 +305,38 @@ class TicketZ():
         self.refill_cash = table[CASH]
         return table
 
+    def table_tva(self):
+        # start = datetime.now().timestamp()
+        articles_a_tva = self.all_articles.filter(
+            article__methode_choices__in=[Articles.VENTE, Articles.CASHBACK, Articles.BILLET],
+            moyen_paiement__categorie__in=CATEGORIES_EURO,
+        )
+
+        all_tva = articles_a_tva.order_by('tva').values_list('tva', flat=True).distinct()
+
+        # Création d'un dict avec key : taux, value : ttc
+        table_tva = {
+            float(tva): {
+                "ttc": articles_a_tva.filter(tva=tva).aggregate(total=Sum(F('qty') * F('prix')))['total'] or 0
+            } for tva in all_tva}
+
+        # ajout dans le dict le HT et le total TVA
+        for tva, val in table_tva.items():
+            val['ttc'] = dround(val['ttc'])
+            val['ht'] = ht_from_ttc(val['ttc'], Decimal(tva))
+            val['tva'] = tva_from_ttc(val['ttc'], Decimal(tva))
+
+        table_tva['TOTAL'] = {
+            'ttc': sum(val['ttc'] for val in table_tva.values()),
+            'ht': sum(val['ht'] for val in table_tva.values()),
+            'tva': sum(val['tva'] for val in table_tva.values()),
+        }
+        # self.total_collecte_ttc = sum([v['ttc'] for v in dict_TVA_complet.values()])
+        # self.total_collecte_ht = sum([v['ht'] for v in dict_TVA_complet.values()])
+        # self.total_collecte_tva = sum([v['tva'] for v in dict_TVA_complet.values()])
+
+        return table_tva
+
     def table_solde_de_caisse(self):
         self.fond_caisse = self.rapport.cash_float if self.rapport else self.config.cash_float
 
@@ -349,10 +381,10 @@ class TicketZ():
 
     def table_detail_ventes(self):
         articles_vendus = self.all_articles.filter(
-            article__methode_choices__in=[Articles.VENTE, Articles.CASHBACK]
+            article__methode_choices__in=[Articles.VENTE, Articles.CASHBACK, Articles.BILLET]
         )
         # Fabrication de la ligne catégorie
-        table = {categorie:{} for categorie in Categorie.objects.filter(cashless=False).distinct()}
+        table = {categorie: {} for categorie in Categorie.objects.filter(cashless=False).distinct()}
 
         # Préparation des lignes en fonction de leur prix vendu (un même article peut changer de prix)
         lignes = list(set([(article_v.article, article_v.prix, article_v.prix_achat, article_v.tva) for article_v in
@@ -388,7 +420,6 @@ class TicketZ():
             #     tva = tva_from_ttc(total_euro_vendu, categorie.tva.taux)
             # benefice = total_euro_vendu - cout_total - tva
 
-
             # Toute les cases du tableau. Le tuple de 3 unique est utilisé comme clé
             table[categorie][ligne] = {
                 "name": article.name,
@@ -401,8 +432,8 @@ class TicketZ():
                 "cout_total": cout_total,
                 "prix_ttc": prix,
                 "taux_tva": taux_tva,
-                "prix_tva": tva_from_ttc(prix,taux_tva),
-                "prix_ht": prix-tva_from_ttc(prix,taux_tva),
+                "prix_tva": tva_from_ttc(prix, taux_tva),
+                "prix_ht": prix - tva_from_ttc(prix, taux_tva),
                 "chiffre_affaire_ht": tva_from_ttc(total_euro_vendu, taux_tva),
                 "chiffre_affaire_ttc": total_euro_vendu,
                 "benefice": total_euro_vendu - cout_total - tva,
@@ -415,7 +446,7 @@ class TicketZ():
         table = table_sans_cat_vide
 
         # Calcul du grand TOTAL
-        total_global= {
+        total_global = {
             "name": "TOTAL GLOBAL",
             "qty_vendus": sum(ligne["qty_vendus"] for cat in table.values() for ligne in cat.values()),
             "qty_offertes": sum(ligne["qty_offertes"] for cat in table.values() for ligne in cat.values()),
@@ -429,7 +460,8 @@ class TicketZ():
             "prix_tva": 0,  # Non applicable pour un total
             "prix_ht": 0,  # Non applicable pour un total
             "chiffre_affaire_ht": sum(ligne["chiffre_affaire_ht"] for cat in table.values() for ligne in cat.values()),
-            "chiffre_affaire_ttc": sum(ligne["chiffre_affaire_ttc"] for cat in table.values() for ligne in cat.values()),
+            "chiffre_affaire_ttc": sum(
+                ligne["chiffre_affaire_ttc"] for cat in table.values() for ligne in cat.values()),
             "benefice": sum(ligne["benefice"] for cat in table.values() for ligne in cat.values()),
             # "ca_cadeau_ht": sum(ligne["ca_cadeau_ht"] or 0 for ligne in lignes.values()),
             # "ca_cadeau_ttc": sum(ligne["ca_cadeau_ttc"] or 0 for ligne in lignes.values()),
@@ -437,7 +469,7 @@ class TicketZ():
 
         # Calcul du total dans chaque catégorie :
         for categorie, lignes in table.items():
-            table[categorie]['SUBTOTAL'] =  {
+            table[categorie]['SUBTOTAL'] = {
                 "name": "SUBTOTAL",
                 "qty_vendus": sum(ligne["qty_vendus"] for ligne in lignes.values()),
                 "qty_offertes": sum(ligne["qty_offertes"] for ligne in lignes.values()),
@@ -448,8 +480,8 @@ class TicketZ():
                 "cout_total": sum(ligne["cout_total"] for ligne in lignes.values()),
                 "prix_ttc": 0,  # Non applicable pour un total
                 "taux_tva": 0,  # Non applicable pour un total
-                "prix_tva": 0 , # Non applicable pour un total
-                "prix_ht":  0 , # Non applicable pour un total
+                "prix_tva": 0,  # Non applicable pour un total
+                "prix_ht": 0,  # Non applicable pour un total
                 "chiffre_affaire_ht": sum(ligne["chiffre_affaire_ht"] for ligne in lignes.values()),
                 "chiffre_affaire_ttc": sum(ligne["chiffre_affaire_ttc"] for ligne in lignes.values()),
                 "benefice": sum(ligne["benefice"] for ligne in lignes.values()),
@@ -457,6 +489,7 @@ class TicketZ():
                 # "ca_cadeau_ttc": sum(ligne["ca_cadeau_ttc"] or 0 for ligne in lignes.values()),
             }
 
+        # noinspection PyTypeChecker
         table["TOTAL"] = total_global
 
         return table
@@ -475,11 +508,13 @@ class TicketZ():
             "table_remboursement": self.table_remboursement(),
             "table_solde_de_caisse": self.table_solde_de_caisse(),
             "table_TOTAL_sop": self.table_TOTAL_sop(),
-            "table_detail_ventes" : self.table_detail_ventes(),
+            "table_detail_ventes": self.table_detail_ventes(),
+            "table_tva": self.table_tva(),
 
             "fond_caisse": self.fond_caisse,
             "categories": dict(MoyenPaiement.CATEGORIES),
-            "responsables": self.all_articles.values('responsable__id', 'responsable__name').order_by().distinct('responsable'),
+            "responsables": self.all_articles.values('responsable__id', 'responsable__name').order_by().distinct(
+                'responsable'),
             "pos": self.all_articles.values('pos__id', 'pos__name').order_by().distinct('pos'),
         }
 
@@ -506,7 +541,7 @@ class TicketZ():
         #     return False
 
         self.articles_vendus = self.lignes_tableau_vente.filter(
-            article__methode_choices__in=[Articles.VENTE, Articles.CASHBACK]
+            article__methode_choices__in=[Articles.VENTE, Articles.CASHBACK, Articles.BILLET]
         )
 
         self.articles_vendus_euro = self.articles_vendus.filter(
