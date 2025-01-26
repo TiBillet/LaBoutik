@@ -617,20 +617,38 @@
 {#        <th class="tg-texte tg-noborder">Pour aller plus loin :</th>#}
 {#    </tr>#}
 
+
 <br>
 <br>
 <table class="tg">
     <thead>
     <tr>
-        <td class="tg-titre tg-gras tg-centre">Commentaires</td>
+        <td class="tg-titre tg-gras tg-centre">{% trans "Nombre de cartes utilisées" %}</td>
+        <td class="tg-titre tg-gras tg-centre">{% trans "Recharge mediane" %}</td>
+        <td class="tg-titre tg-gras tg-centre">{% trans "Panier moyen par carte" %}</td>
+        <td class="tg-titre tg-gras tg-centre">{% trans "Reste sur carte" %}</td>
+        <td class="tg-titre tg-gras tg-centre">{% trans "Nouvelles adhésions" %}</td>
     </tr>
     </thead>
     <tbody>
     <tr>
-        <td class="tg-titre"></td>
+        <td class="tg-titre">{{ table_habitus.cards_count | default:0 }}</td>
+        <td class="tg-titre">{{ table_habitus.recharge_mediane | floatformat:2 | default:0 }}</td>
+        <td class="tg-titre">{{ table_habitus.panier_moyen | floatformat:2 | default:0 }}</td>
+        <td class="tg-titre">{{ table_habitus.on_card | floatformat:2 | default:0 }}</td>
+        <td class="tg-titre">{{ table_habitus.new_memberships | default:0 }}</td>
     </tr>
     </tbody>
 </table>
+
+<br>
+<br>
+<div>{% trans "Commentaires" %} :</div>
+<div>
+    {% for comment in comments %}
+        <li>{{ comment }}</li>
+    {% endfor %}
+</div>
 
 <script src="{% static 'webview/js/htmx@2.0.1.min.js' %}"></script>
 </html>

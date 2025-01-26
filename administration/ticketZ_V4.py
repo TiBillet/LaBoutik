@@ -494,6 +494,60 @@ class TicketZ():
 
         return table
 
+    def table_habitus(self):
+        # start = datetime.now().timestamp()
+        table_habitus = {
+            "cards_count":0,
+            "recharge_mediane":0,
+            "panier_moyen":0,
+            "new_memberships":0,
+            "on_card":0,
+        }
+
+        articles_vendus_cashless = self.all_articles.filter(carte__isnull=False)
+        cards = articles_vendus_cashless.order_by('carte').values_list('carte', flat=True).distinct()
+        table_habitus['cards_count'] = cards.count()
+
+        # Tri par carte pour calculer la recharge médiane,
+        total_recharge_par_carte = []
+        for card in cards:
+            # Si la carte a rechargé plusieurs fois, on additionne tout
+            toute_recharge_de_la_carte = self.all_articles.filter(
+                carte=card,
+                article__methode_choices=Articles.RECHARGE_EUROS,
+            ).aggregate(total=Sum(F('qty') * F('prix')))['total'] or 0
+            if toute_recharge_de_la_carte > 0:
+                total_recharge_par_carte.append(toute_recharge_de_la_carte)
+
+        if len(total_recharge_par_carte) >0 :
+            table_habitus['recharge_mediane'] = statistics.median(total_recharge_par_carte)
+
+        # Pour calculer le panier moyen, on va chercher toute les dépenses par cartes
+        total_depense_par_carte = []
+        for card in cards:
+            toute_depense_de_la_carte = self.all_articles.filter(
+                carte=card,
+                article__methode_choices__in=[Articles.VENTE, Articles.CASHBACK, Articles.BILLET],
+            ).aggregate(total=Sum(F('qty') * F('prix')))['total'] or 0
+            # Si la carte a dépensé plus de 0 pendant la période, on prend en compte :
+            if toute_depense_de_la_carte > 0:
+                total_depense_par_carte.append(toute_depense_de_la_carte)
+
+        if len(total_depense_par_carte) > 0 :
+            table_habitus['panier_moyen'] = statistics.mean(total_depense_par_carte)
+
+        # Nombre d'ahdésions
+        table_habitus['new_memberships'] = self.all_articles.filter(
+            article__methode_choices=Articles.ADHESIONS).count()
+
+        # Reste sur carte :
+        table_habitus['on_card'] = Assets.objects.filter(monnaie__categorie__in=[
+            LOCAL_EURO, STRIPE_FED, EXTERIEUR_FED
+        ]).aggregate(Avg('qty'))['qty__avg'] or 0
+
+        return table_habitus
+
+
     def context(self):
         return {
             "config": self.config,
@@ -510,6 +564,8 @@ class TicketZ():
             "table_TOTAL_sop": self.table_TOTAL_sop(),
             "table_detail_ventes": self.table_detail_ventes(),
             "table_tva": self.table_tva(),
+            "table_habitus": self.table_habitus(),
+            "comments": self.all_articles.filter(comment__isnull=False).values_list('comment', flat=True),
 
             "fond_caisse": self.fond_caisse,
             "categories": dict(MoyenPaiement.CATEGORIES),
@@ -517,6 +573,7 @@ class TicketZ():
                 'responsable'),
             "pos": self.all_articles.values('pos__id', 'pos__name').order_by().distinct('pos'),
         }
+
 
     ### EX TABLE
 
@@ -555,6 +612,7 @@ class TicketZ():
         logger.info(f"Temps de calcul de _classement_lignes_tableau_vente : {datetime.now().timestamp() - self.start}")
 
         return self.articles_vendus
+
 
     def _quantite_vendus(self):
         """
@@ -675,6 +733,7 @@ class TicketZ():
 
         return dict_quantites_vendus
 
+
     def _tva(self):
         # start = datetime.now().timestamp()
 
@@ -717,6 +776,7 @@ class TicketZ():
         # logger.info(f"Temps de calcul de _tva : {datetime.now().timestamp() - start}")
         return self.total_collecte_toute_tva
 
+
     def _recharge_locale(self):
         # start = datetime.now().timestamp()
         # Tableau du récap de recharge cashless
@@ -748,6 +808,7 @@ class TicketZ():
 
         return total_recharge
 
+
     def _retour_consigne(self):
         retour_consignes_espece = self.lignes_tableau_vente.filter(
             article__methode_choices=Articles.RETOUR_CONSIGNE,
@@ -771,6 +832,7 @@ class TicketZ():
         self.retour_consigne_total = (abs(retour_consignes_espece) +
                                       abs(retour_consignes_cashless) +
                                       abs(retour_consignes_cb))
+
 
     def _remboursement_local(self):
         # Les vider et void carte :
@@ -796,6 +858,7 @@ class TicketZ():
 
         # logger.info(f"Temps de calcul de _remboursement_local : {datetime.now().timestamp() - start}")
         return self.total_remboursement
+
 
     def _vente_par_moyen_de_paiement(self):
         # start = datetime.now().timestamp()
@@ -827,6 +890,7 @@ class TicketZ():
         # logger.info(f"Temps de calcul de _classement_par_moyen_paiement : {datetime.now().timestamp() - start}")
 
         return self.dict_moyenPaiement_euros
+
 
     def _monnaie_dormante(self):
         # start = datetime.now().timestamp()
@@ -892,6 +956,7 @@ class TicketZ():
 
         return True
 
+
     def _delta(self):
         # start = datetime.now().timestamp()
 
@@ -916,6 +981,7 @@ class TicketZ():
 
         # logger.info(f"Temps de calcul de _delta : {datetime.now().timestamp() - start}")
         return True
+
 
     def _adhesion(self):
         # start = datetime.now().timestamp()
@@ -948,6 +1014,7 @@ class TicketZ():
 
         return dict_adhesions
 
+
     def _fond_caisse(self):
         # start = datetime.now().timestamp()
 
@@ -968,6 +1035,7 @@ class TicketZ():
         # logger.info(f"Temps de calcul de _fond_caisse : {datetime.now().timestamp() - start}")
         return self.fond_caisse
 
+
     def _recap_toutes_entrees(self):
         start = datetime.now().timestamp()
         list_uuid = set(self.lignes_tableau_vente.values_list('moyen_paiement', flat=True).distinct())
@@ -987,12 +1055,14 @@ class TicketZ():
         # import ipdb; ipdb.set_trace()
         self.dict_toute_entrees_par_moyen_paiement = dict_toute_entrees_par_moyen_paiement
 
+
     def _badgeuse(self):
         articles_badge = ArticleVendu.objects.filter(article__methode_choices=Articles.BADGEUSE)
         if articles_badge.exists() > 0:
             self.cartes_badgees_qty = len(set(articles_badge.values_list('carte', flat=True).distinct()))
         else:
             self.cartes_badgees_qty = None
+
 
     def _habitus(self):
         # start = datetime.now().timestamp()
@@ -1026,6 +1096,7 @@ class TicketZ():
         self.nouveaux_membres = nouveaux_membres
 
         # logger.info(f"Temps de calcul de _habitus : {datetime.now().timestamp() - start}")
+
 
     def _to_dict(self):
         context = {
@@ -1101,6 +1172,7 @@ class TicketZ():
         self.to_dict = context
         return context
 
+
     def _to_json(self):
         # Transformation des object ORM en string pour SERIALIZER
         # noinspection PyUnresolvedReferences
@@ -1126,8 +1198,8 @@ class TicketZ():
 
         return context_json
 
-    def calcul_valeurs(self):
 
+    def calcul_valeurs(self):
         # logger.info("calcul valeur")
         if not self.start_date or self.end_date:
             if self.rapport:
