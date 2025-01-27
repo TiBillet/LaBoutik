@@ -78,8 +78,10 @@ class TicketZToday(APIView):
         matin = timezone.make_aware(datetime.combine(start, heure_cloture))
 
         ticketZ = TicketZV4(start_date=matin, end_date=timezone.localtime())
-        return render(request, self.template_name, context=ticketZ.context())
-        # return HttpResponse('No sales today')
+        # Le context json lance le calcul et s'assure qu'il est serialisable.
+        json_context = ticketZ.json_context()
+        # on pourrait envoyer le query_context, mais avec le json.loads on s'assure que le json stoqué en DB est OK
+        return render(request, self.template_name, context=json.loads(json_context))
 
 
 class RapportToday(APIView):

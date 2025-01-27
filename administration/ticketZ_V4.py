@@ -7,6 +7,9 @@ from datetime import datetime, timedelta
 import dateutil.parser
 import numpy as np
 import pytz
+from django.core.serializers.json import DjangoJSONEncoder
+from django.core.serializers import serialize
+
 from django.db.models import Sum, F, Avg
 from django.utils.translation import ugettext_lazy as _
 
@@ -28,15 +31,11 @@ def tva_from_ttc(ttc, tva):
     return dround(ttc - ht_from_ttc(ttc, tva))
 
 
-class TiBilletJsonEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, Decimal):
-            return str(dround(o))
-        elif isinstance(o, datetime):
-            return str(o.isoformat())
-        elif isinstance(o, np.ndarray):
-            return o.tolist()
-        return super(TiBilletJsonEncoder, self).default(o)
+# class TiBilletJsonEncoder(DjangoJSONEncoder):
+#     def default(self, o):
+#         if isinstance(o, Categorie):
+#             return o.__str__
+#         return super(TiBilletJsonEncoder, self).default(o)
 
 
 def start_end_event_4h_am(date, fuseau_horaire=None, heure_pivot=4):
@@ -326,13 +325,15 @@ class TicketZ():
     def table_solde_de_caisse(self):
         self.fond_caisse = self.rapport.cash_float if self.rapport else self.config.cash_float
 
+        # le proxy _ n'est pas accepté par le json dumps.
+        # On fait un str() pour graver la trad
         table = {
-            _("Fond de caisse"): self.fond_caisse,
-            _("Recharge cashless en espèce"): self.topin_cash,
-            _("Remboursement cashless en espèce"): self.refill_cash,
-            _("Adhésion en espèce"): self.membership_cash,
-            _("Vente directe en espèce"): self.sales_cash,
-            _("Retour consigne en espèce"): self.return_consign_cash,
+            str(_("Fond de caisse")): self.fond_caisse,
+            str(_("Recharge cashless en espèce")): self.topin_cash,
+            str(_("Remboursement cashless en espèce")): self.refill_cash,
+            str(_("Adhésion en espèce")): self.membership_cash,
+            str(_("Vente directe en espèce")): self.sales_cash,
+            str(_("Retour consigne en espèce")): self.return_consign_cash,
         }
         table['TOTAL'] = sum(table.values())
         return table
@@ -370,7 +371,7 @@ class TicketZ():
             article__methode_choices__in=[Articles.VENTE, Articles.CASHBACK, Articles.BILLET]
         )
         # Fabrication de la ligne catégorie
-        table = {categorie: {} for categorie in Categorie.objects.filter(cashless=False).distinct()}
+        table = {f"{categorie}": {} for categorie in Categorie.objects.filter(cashless=False).distinct()}
 
         # Préparation des lignes en fonction de leur prix vendu (un même article peut changer de prix)
         lignes = list(set([(article_v.article, article_v.prix, article_v.prix_achat, article_v.tva) for article_v in
@@ -382,7 +383,8 @@ class TicketZ():
             prix_achat: Decimal = ligne[2]
             taux_tva: Decimal = ligne[3]
 
-            categorie: Categorie = article.categorie
+            # STR plutôt que Categorie pour le json dump
+            categorie: str = f"{article.categorie}"
 
             # Tous les articles vendus de ce tuple
             articles_totaux = articles_vendus.filter(article=article, prix=prix, prix_achat=prix_achat)
@@ -393,13 +395,6 @@ class TicketZ():
             total_euro_vendu = vendus.aggregate(total=Sum(F('qty') * F('prix')))['total'] or 0
             cout_total = articles_totaux.aggregate(total=Sum(F('qty') * F('prix_achat')))['total'] or 0
             tva = tva_from_ttc(total_euro_vendu, taux_tva)
-
-            """
-            total_ttc_cat += total_euro_vendu
-            total_ttc_cat_l.append(total_euro_vendu)
-            # total_euro_offert = articles_offerts.aggregate(total=Sum(F('qty') * F('prix')))['total'] or 0
-
-            """
 
             # tva = 0
             # if categorie.tva:
@@ -430,6 +425,11 @@ class TicketZ():
         # Suppression des catégories vides
         table_sans_cat_vide = {k: v for k, v in table.items() if v}
         table = table_sans_cat_vide
+
+        # Remplacement du tupple article par une STR pour le dump json
+        for categorie, tuple in table.items():
+            # k est le tuple
+            table[categorie] = {str(k): v for k, v in tuple.items()}
 
         # Calcul du grand TOTAL
         total_global = {
@@ -541,9 +541,34 @@ class TicketZ():
 
         return table_habitus
 
-    def context(self):
-        return {
-            "config": self.config,
+    def table_comment(self):
+        comments = {}
+        for art in self.all_articles.filter(comment__isnull=False):
+            comments[f"{art.uuid}"] = art.comment
+        return comments
+
+    def table_responsables(self):
+        table = {}
+        for resp in self.all_articles.values('responsable__id', 'responsable__name').order_by().distinct('responsable'):
+            table[str(resp['responsable__id'])] = resp['responsable__name']
+        return table
+
+    def table_pos(self):
+        table = {}
+        for pos in self.all_articles.values('pos__id', 'pos__name').order_by().distinct('pos'):
+            table[str(pos['pos__id'])] = pos['pos__name']
+        return table
+
+    def config_serializer(self):
+        config = Configuration.get_solo()
+        serialized_data = {
+            "structure": config.structure,
+        }
+        return serialized_data
+
+    def query_context(self):
+        self.dict_query_context = {
+            "config": self.config_serializer(),
             "cloture": self.cloture,
             "start_date": self.start_date,
             "end_date": self.end_date,
@@ -558,14 +583,17 @@ class TicketZ():
             "table_detail_ventes": self.table_detail_ventes(),
             "table_tva": self.table_tva(),
             "table_habitus": self.table_habitus(),
-            "comments": self.all_articles.filter(comment__isnull=False).values_list('comment', flat=True),
+            "comments": self.table_comment(),
 
             "fond_caisse": self.fond_caisse,
             "categories": dict(MoyenPaiement.CATEGORIES),
-            "responsables": self.all_articles.values('responsable__id', 'responsable__name').order_by().distinct(
-                'responsable'),
-            "pos": self.all_articles.values('pos__id', 'pos__name').order_by().distinct('pos'),
+            "responsables": self.table_responsables(),
+            "pos": self.table_pos(),
         }
 
-    def to_json(self):
-        import ipdb; ipdb.set_trace()
+        return self.dict_query_context
+
+    def json_context(self):
+        query_context = self.query_context()
+        self.context_json = json.dumps(query_context, cls=DjangoJSONEncoder)
+        return self.context_json
