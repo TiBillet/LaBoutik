@@ -162,16 +162,32 @@
     <tr>
         <td class="tg-texte" colspan="2">{% trans "Responsable(s) :" %}</td>
         <td class="tg-texte" colspan="2">
+
+            {# Le bouton TOUS #}
+            {% if cloture %}
+                <a href="/rapport/ticketz_v2/{{ cloture }}/"> <button>{% trans "Tous" %}</button></a>
+            {% else %}
+                <a href="/rapport/ticketz_v2/"> <button>{% trans "Tous" %}</button></a>
+            {% endif %}
+
             {% for responsable in responsables %}
-                <button hx-get="/report/{{ responsable.responsable__id }}/">{{ responsable.responsable__name }}</button>
+                <a href='?resp={{ responsable.id }}'><button>{{ responsable.name }}</button></a>
             {% endfor %}
         </td>
     </tr>
     <tr>
         <td class="tg-texte" colspan="2">{% trans "Point de vente :" %}</td>
         <td class="tg-texte" colspan="2">
+
+            {# Le bouton TOUS #}
+            {% if cloture %}
+                <a href="/rapport/ticketz_v2/{{ cloture }}/"> <button>{% trans "Tous" %}</button></a>
+            {% else %}
+                <a href="/rapport/ticketz_v2/"> <button>{% trans "Tous" %}</button></a>
+            {% endif %}
+
             {% for pdv in pos %}
-                <button hx-get="/report/{{ pdv.pos__id }}/">{{ pdv.pos__name }}</button>
+                <a href='?pos={{ pdv.id }}'><button>{{ pdv.name }}</button></a>
             {% endfor %}
         </td>
         <td class="tg-texte tg-positif tg-gras" colspan="2">{{ total_ttc | floatformat:2 | default:0 }}€</td>
@@ -190,15 +206,15 @@
     <tr>
         <td class="tg-texte" colspan="2">{% trans "Session n° : " %}</td>
         <td class="tg-texte" colspan="4">
-            {% if cloture %}{{ cloture.uuid_8 }}{% else %}{% trans "Temporaire" %}{% endif %}</td>
+            {% if cloture %}{{ cloture }}{% else %}{% trans "Temporaire" %}{% endif %}</td>
     </tr>
     <tr>
         <td class="tg-texte" colspan="2">{% trans "Ouverte le :" %}</td>
-        <td class="tg-texte" colspan="4">{{ start_date }}</td>
+        <td class="tg-texte" colspan="4">{{ start_date | format_iso_date }}</td>
     </tr>
     <tr>
         <td class="tg-texte" colspan="2">{% trans "Fermée le : " %}</td>
-        <td class="tg-texte" colspan="4">{{ end_date }}</td>
+        <td class="tg-texte" colspan="4">{{ end_date | format_iso_date }}</td>
     </tr>
     </tbody>
 </table>

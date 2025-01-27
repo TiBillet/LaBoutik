@@ -1,33 +1,33 @@
 from copy import deepcopy
+from uuid import uuid4
 
 import requests
 from adminsortable2.admin import SortableAdminMixin
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.admin import AdminSite
 from django.contrib.admin.views.main import ChangeList
 from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import Group
-
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.utils import translation
+from django.utils.html import format_html
 from django.utils.translation import gettext as _
 from rest_framework_api_key.models import APIKey
 from solo.admin import SingletonModelAdmin
 
-from APIcashless.custom_utils import badgeuse_creation, declaration_to_discovery_server, get_pin_on_appareillage
+from APIcashless.custom_utils import declaration_to_discovery_server, get_pin_on_appareillage
 from APIcashless.models import Categorie, CarteMaitresse, CommandeSauvegarde, Appareil, \
-    Couleur, TauxTVA, ClotureCaisse
+    Couleur, TauxTVA, ClotureCaisse, PointDeVente, Articles
 from APIcashless.models import GroupementCategorie, Table, MoyenPaiement
 from APIcashless.tasks import email_activation
-from administration.views import TicketZ
 from administration.admin_commun import *
+from administration.views import TicketZ
 from epsonprinter.models import Printer
 from epsonprinter.tasks import ticketZ_tasks_printer
 from fedow_connect.tasks import create_card_to_fedow
-from fedow_connect.views import handshake
 from odoo_api.odoo_api import OdooAPI
 from tibiauth.models import TibiUser
 
@@ -306,6 +306,7 @@ class CustomArticleRequiredForm(forms.ModelForm):
     # def clean(self):
     #     import ipdb; ipdb.set_trace()
 
+
 class PosInline(admin.TabularInline):
     model = Articles.points_de_ventes.through
     extra = 1
@@ -369,10 +370,9 @@ class ArticlesAdmin(SortableAdminMixin, admin.ModelAdmin):
               .filter(archive=False)
               .exclude(methode_choices=Articles.FRACTIONNE))
         # affiche par defaul les ventes :
-        if not request.GET.get('methode_choices__exact') and not request.GET.get('_changelist_filters') :
+        if not request.GET.get('methode_choices__exact') and not request.GET.get('_changelist_filters'):
             qs = qs.filter(methode_choices=Articles.VENTE)
         return qs
-
 
     # On retire les non utile dans les champs foreign key
     def get_form(self, request, obj=None, **kwargs):  # Just added this override
@@ -945,8 +945,8 @@ class ConfigurationAdmin(SingletonModelAdmin):
         #     'fields': (
         #         'prix_adhesion',
         #         'calcul_adhesion',
-                # 'adhesion_suspendue',
-            # ),
+        # 'adhesion_suspendue',
+        # ),
         # }),
         ('Ticket Z', {
             'fields': (
@@ -1448,7 +1448,8 @@ class ClotureCaisseAdmin(admin.ModelAdmin):
         html = f'<a class="button" href="/rapport/RapportFromCloture/{obj.pk}">Rapport</a>&nbsp;' \
                f'<a class="button" href="/rapport/TicketZsimpleFromCloture/{obj.pk}">Ticket Z</a>&nbsp;' \
                f'<a class="button" href="/rapport/ClotureToPrinter/{obj.pk}?next={self.uri}">-> Thermal Print</a>&nbsp;' \
-               f'<a class="button" href="/rapport/ClotureToMail/{obj.pk}?next={self.uri}">-> Mail</a>&nbsp;'
+               f'<a class="button" href="/rapport/ClotureToMail/{obj.pk}?next={self.uri}">-> Mail</a>&nbsp;' \
+               f'<a class="button" href="/rapport/ticketz_v2/{obj.pk}">Rapport V2 (beta)</a>&nbsp;'
 
         # Si on est root ou si le rapport a été généré il y a moins de 24h
         # if self.root or obj.end > (timezone.localtime() - timezone.timedelta(days=1)):

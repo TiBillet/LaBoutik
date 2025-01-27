@@ -14,7 +14,7 @@ from django.db.models import Sum, F, Avg
 from django.utils.translation import ugettext_lazy as _
 
 from APIcashless.models import Configuration, ArticleVendu, Articles, MoyenPaiement, Assets, Categorie, \
-    ClotureCaisse
+    ClotureCaisse, PointDeVente, Membre
 
 logger = logging.getLogger(__name__)
 
@@ -114,6 +114,9 @@ class TicketZ():
                  calcul_dormante_from_date=False,
 
                  cloture: ClotureCaisse = None,
+                 responsable: Membre = None,
+                 point_de_vente: PointDeVente = None,
+
                  start_date=None,
                  end_date=None,
                  *args, **kwargs):
@@ -128,6 +131,9 @@ class TicketZ():
 
         """Methode V4"""
         self.cloture = cloture
+        self.responsable = responsable
+        self.point_de_vente = point_de_vente
+
         self.config = Configuration.get_solo()
         self.start_date, self.end_date = self.set_start_end_date(start_date, end_date, cloture)
         self.all_articles = self.get_articles()
@@ -172,6 +178,10 @@ class TicketZ():
             'responsable',
             'moyen_paiement',
         )
+        if self.responsable:
+            return all_articles.filter(responsable=self.responsable)
+        elif self.point_de_vente:
+            return all_articles.filter(pos=self.point_de_vente)
         return all_articles
 
     def table_vente(self):
@@ -548,16 +558,22 @@ class TicketZ():
         return comments
 
     def table_responsables(self):
-        table = {}
+        responsables = []
         for resp in self.all_articles.values('responsable__id', 'responsable__name').order_by().distinct('responsable'):
-            table[str(resp['responsable__id'])] = resp['responsable__name']
-        return table
+            responsables.append({
+                "id": str(resp['responsable__id']),
+                "name": resp['responsable__name'],
+            })
+        return responsables
 
     def table_pos(self):
-        table = {}
+        pdvs = []
         for pos in self.all_articles.values('pos__id', 'pos__name').order_by().distinct('pos'):
-            table[str(pos['pos__id'])] = pos['pos__name']
-        return table
+            pdvs.append({
+                "id": str(pos['pos__id']),
+                "name": pos['pos__name'],
+            })
+        return pdvs
 
     def config_serializer(self):
         config = Configuration.get_solo()
@@ -569,7 +585,7 @@ class TicketZ():
     def query_context(self):
         self.dict_query_context = {
             "config": self.config_serializer(),
-            "cloture": self.cloture,
+            "cloture": self.cloture.pk if self.cloture else None,
             "start_date": self.start_date,
             "end_date": self.end_date,
 
@@ -583,11 +599,11 @@ class TicketZ():
             "table_detail_ventes": self.table_detail_ventes(),
             "table_tva": self.table_tva(),
             "table_habitus": self.table_habitus(),
+            "responsables": self.table_responsables(),
             "comments": self.table_comment(),
 
             "fond_caisse": self.fond_caisse,
             "categories": dict(MoyenPaiement.CATEGORIES),
-            "responsables": self.table_responsables(),
             "pos": self.table_pos(),
         }
 
