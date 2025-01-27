@@ -789,12 +789,16 @@ class Commande:
         return dround(total_vente_article)
 
     def _to_db_article_vendu(self, article: Articles, qty, asset):
+        tva = 0
+        if article.categorie:
+            if article.categorie.tva:
+                tva = article.categorie.tva.taux
 
         ligne_article_vendu = ArticleVendu.objects.create(
             article=article,
             prix=article.prix,
             prix_achat=article.prix_achat,
-            tva=article.categorie.tva.taux,
+            tva=tva,
             qty=qty,
             pos=self.point_de_vente,
             carte=asset.carte,
@@ -810,11 +814,16 @@ class Commande:
         return ligne_article_vendu
 
     def _to_db_cash_cb(self, article, qty):
+        tva = 0
+        if article.categorie:
+            if article.categorie.tva:
+                tva = article.categorie.tva.taux
+
         ArticleVendu.objects.create(
             article=article,
             prix=article.prix,
             prix_achat=article.prix_achat,
-            tva=article.categorie.tva.taux,
+            tva=tva,
             qty=qty,
             pos=self.point_de_vente,
             moyen_paiement=self.moyen_paiement,
@@ -968,11 +977,16 @@ class Commande:
             logger.warning(f"Article badge payant, en cours de dev.")
             raise NotAcceptable(detail=f"Pas de badge payant tout de suite :)", code=None)
 
+        tva = 0
+        if article.categorie:
+            if article.categorie.tva:
+                tva = article.categorie.tva.taux
+
         ligne_article_vendu = ArticleVendu.objects.create(
             article=article,
             prix=article.prix,
             prix_achat=article.prix_achat,
-            tva=article.categorie.tva.taux,
+            tva=tva,
             qty=qty,
             pos=self.point_de_vente,
             carte=carte,
@@ -1148,7 +1162,6 @@ class Commande:
             article=article,
             prix=article.prix,
             prix_achat=article.prix_achat,
-            tva=article.categorie.tva.taux,
             qty=qty,
             pos=self.point_de_vente,
             carte=self.carte_db,
@@ -1233,11 +1246,16 @@ class Commande:
                 code=None
             )
 
+        tva = 0
+        if article.categorie:
+            if article.categorie.tva:
+                tva = article.categorie.tva.taux
+
         ArticleVendu.objects.create(
             article=article,
             prix=total,
             prix_achat=article.prix_achat,
-            tva=article.categorie.tva.taux,
+            tva=tva,
             qty=1,
             pos=self.point_de_vente,
             carte=carte_db,
@@ -1286,11 +1304,16 @@ class Commande:
             asset_principal = self.asset_principal()
             asset_principal.qty += - total
 
+            tva = 0
+            if article.categorie:
+                if article.categorie.tva:
+                    tva = article.categorie.tva.taux
+
             ArticleVendu.objects.create(
                 article=article,
                 prix=article.prix,
                 prix_achat=article.prix_achat,
-                tva=article.categorie.tva.taux,
+                tva=tva,
                 qty=qty,
                 pos=self.point_de_vente,
                 carte=self.carte_db,

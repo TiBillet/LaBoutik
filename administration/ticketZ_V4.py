@@ -566,3 +566,6 @@ class TicketZ():
                 'responsable'),
             "pos": self.all_articles.values('pos__id', 'pos__name').order_by().distinct('pos'),
         }
+
+    def to_json(self):
+        import ipdb; ipdb.set_trace()
