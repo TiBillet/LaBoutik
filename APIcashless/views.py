@@ -373,6 +373,7 @@ class OnboardStripeReturn(APIView):
         return HttpResponseRedirect('/adminstaff/APIcashless/configuration/#/tab/module_8/')
 
 
+"""
 class Membership(APIView):
     permission_classes = [HasAPIKey]
 
@@ -413,6 +414,7 @@ class Membership(APIView):
 
             return Response(validator.validated_data, status=status.HTTP_200_OK)
         return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
+"""
 
 
 class CheckCarteQrUuid(viewsets.ViewSet):

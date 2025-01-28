@@ -820,10 +820,10 @@ class Commande:
                 tva = article.categorie.tva.taux
 
         ArticleVendu.objects.create(
-            article=article,
-            prix=article.prix,
             prix_achat=article.prix_achat,
             tva=tva,
+            article=article,
+            prix=article.prix,
             qty=qty,
             pos=self.point_de_vente,
             moyen_paiement=self.moyen_paiement,
@@ -983,10 +983,10 @@ class Commande:
                 tva = article.categorie.tva.taux
 
         ligne_article_vendu = ArticleVendu.objects.create(
+            tva=tva,
+            prix_achat=article.prix_achat,
             article=article,
             prix=article.prix,
-            prix_achat=article.prix_achat,
-            tva=tva,
             qty=qty,
             pos=self.point_de_vente,
             carte=carte,
@@ -1101,9 +1101,9 @@ class Commande:
         self._refill_token(token, reste)
 
         ArticleVendu.objects.create(
+            qty=qty,
             article=article,
             prix=article.prix,
-            qty=qty,
             pos=self.point_de_vente,
             carte=self.carte_db,
             membre=self.carte_db.membre,
@@ -1310,10 +1310,10 @@ class Commande:
                     tva = article.categorie.tva.taux
 
             ArticleVendu.objects.create(
-                article=article,
-                prix=article.prix,
                 prix_achat=article.prix_achat,
                 tva=tva,
+                article=article,
+                prix=article.prix,
                 qty=qty,
                 pos=self.point_de_vente,
                 carte=self.carte_db,

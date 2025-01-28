@@ -673,7 +673,6 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'total',
         'date_time',
         'moyen_paiement',
-        # 'membre',
         'carte',
         'pos',
         'table',
@@ -684,10 +683,12 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'article',
         'prix',
         'qty',
+        'tva',
         'prix_achat',
         'moyen_paiement',
         'carte',
         'comment',
+        'depuis_fractionne',
         # 'comptabilise',
     )
 
@@ -696,6 +697,8 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'prix',
         'qty',
         'carte',
+        'tva',
+        'depuis_fractionne',
     )
 
     # list_editable = ('moyen_paiement',)

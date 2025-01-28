@@ -1503,6 +1503,10 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                             article_vendu: ArticleVendu = paiement.get('article_vendu')
                             qty: Decimal = paiement.get('qty')
 
+                            original_article = article.article
+                            categorie: Categorie = original_article.categorie
+                            tva = categorie.tva.taux if categorie.tva else 0
+
                             # Tant que l'un des deux est > 0 :
                             while qty > 0 and qty_non_comptabilisee > 0:
                                 a_encaisser = qty - total_non_comptabilisee
@@ -1511,8 +1515,14 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                     logger.info(
                                         f"On peut piocher {qty}€ dans {article_vendu} "
                                         f": a encaisser >= 0 : {a_encaisser}")
+                                    logger.info(
+                                        f"Boucle1 Original article : {original_article} - categorie : {categorie} "
+                                        f"tva : {tva}")
+
 
                                     ArticleVendu.objects.create(
+                                        prix_achat=original_article.prix_achat,
+                                        tva=tva,
                                         article=article.article,
                                         prix=article.article.prix,
                                         qty=qty_non_comptabilisee,
@@ -1540,8 +1550,13 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                         f"On peut piocher {qty}€ dans {article_vendu} : "
                                         f"a encaisser < 0 : {a_encaisser} - "
                                         f"qty_a_encaisser = {qty_a_encaisser}")
+                                    logger.info(
+                                        f"Boucle2 Original article : {original_article} - categorie : {categorie} "
+                                        f"tva : {tva}")
 
                                     ArticleVendu.objects.create(
+                                        prix_achat=original_article.prix_achat,
+                                        tva=tva,
                                         article=article.article,
                                         prix=article.article.prix,
                                         qty=qty_a_encaisser,
