@@ -103,14 +103,14 @@ services:
       - traefik.http.routers.laboutik_nginx.rule=Host(`${DOMAIN}`)
 
       # Headers optionnel de sécurité et pour le ws
-      - "traefik.http.routers.laboutik_nginx.middlewares=laboutik_nginx_custom_header"
+#      - "traefik.http.routers.laboutik_nginx.middlewares=laboutik_nginx_custom_header"
 #      - "traefik.http.middlewares.laboutik_nginx_custom_header.headers.customResponseHeaders.Strict-Transport-Security=max-age=15552000; includeSubDomains; preload;"
 #      - "traefik.http.middlewares.laboutik_nginx_custom_header.headers.forceSTSHeader=true"
 #      - "traefik.http.middlewares.laboutik_nginx_custom_header.headers.browserXssFilter=true"
 #      - "traefik.http.middlewares.laboutik_nginx_custom_header.headers.customRequestHeaders.X-Forwarded-Proto=https"
       # CORS
-      - "traefik.http.middlewares.laboutik_nginx_custom_header.headers.customFrameOptionsValue=ALLOW"
-      - "traefik.http.middlewares.laboutik_nginx_custom_header.headers.contentSecurityPolicy=frame-ancestors 'self' http://192.168.0.68:8008/* http://192.168.0.68:8008 http://192.168.0.68 http://192.168.0.68"
+#      - "traefik.http.middlewares.laboutik_nginx_custom_header.headers.customFrameOptionsValue=ALLOW"
+#      - "traefik.http.middlewares.laboutik_nginx_custom_header.headers.contentSecurityPolicy=frame-ancestors 'self' http://192.168.0.68:8008/* http://192.168.0.68:8008 http://192.168.0.68 http://192.168.0.68"
 
     networks:
       - frontend
