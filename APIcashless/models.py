@@ -1512,13 +1512,12 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                 a_encaisser = qty - total_non_comptabilisee
 
                                 if a_encaisser >= 0:
-                                    logger.info(
-                                        f"On peut piocher {qty}€ dans {article_vendu} "
-                                        f": a encaisser >= 0 : {a_encaisser}")
-                                    logger.info(
-                                        f"Boucle1 Original article : {original_article} - categorie : {categorie} "
-                                        f"tva : {tva}")
-
+                                    # logger.info(
+                                    #     f"On peut piocher {qty}€ dans {article_vendu} "
+                                    #     f": a encaisser >= 0 : {a_encaisser}")
+                                    # logger.info(
+                                    #     f"Boucle1 Original article : {original_article} - categorie : {categorie} "
+                                    #     f"tva : {tva}")
 
                                     ArticleVendu.objects.create(
                                         prix_achat=original_article.prix_achat,
@@ -1546,13 +1545,13 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                 elif a_encaisser < 0:
                                     qty_a_encaisser = Decimal(float(qty) / float(article.article.prix))
 
-                                    logger.info(
-                                        f"On peut piocher {qty}€ dans {article_vendu} : "
-                                        f"a encaisser < 0 : {a_encaisser} - "
-                                        f"qty_a_encaisser = {qty_a_encaisser}")
-                                    logger.info(
-                                        f"Boucle2 Original article : {original_article} - categorie : {categorie} "
-                                        f"tva : {tva}")
+                                    # logger.info(
+                                    #     f"On peut piocher {qty}€ dans {article_vendu} : "
+                                    #     f"a encaisser < 0 : {a_encaisser} - "
+                                    #     f"qty_a_encaisser = {qty_a_encaisser}")
+                                    # logger.info(
+                                    #     f"Boucle2 Original article : {original_article} - categorie : {categorie} "
+                                    #     f"tva : {tva}")
 
                                     ArticleVendu.objects.create(
                                         prix_achat=original_article.prix_achat,
