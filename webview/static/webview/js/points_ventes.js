@@ -1,5 +1,5 @@
 import "./menuPlugins/addAllMenuPlugin.js"
-import { isCordovaApp, enableBluetooth, bluetoothGetMacAddress, bluetoothWriteText, bluetoothWrite } from './modules/mobileDevice.js'
+import { isCordovaApp, enableBluetooth, bluetoothGetMacAddress, bluetoothWrite } from './modules/mobileDevice.js'
 
 
 // ---- cordova ---
@@ -30,22 +30,14 @@ async function wsHandlerMessag(dataString) {
   // console.log('-> ws, dataString =', dataString)
   try {
     const data = JSON.parse(dataString)
-    console.log('-> ws, data =', data)
+    // console.log('-> ws, data =', data)
 
     // printRaw
     if (data.message === 'print') {
-      const macAddress = await bluetoothGetMacAddress("InnerPrinter")
-      console.log('macAddress =', macAddress);
-    
-      bluetoothSerial.connect(macAddress, (result) => {
-        console.log('connxion:', result);
-        bluetoothWrite(data.data)
-      }, (error) => {
-        console.log('-> bluetoothSerial.connect, error =', error)
-      })
+      await bluetoothWrite(data.data)
     }
   } catch (error) {
-    console.log("-> ws, erreur : ce n'est pas un json !")
+    console.log("-> wsHandlerMessag, erreur :", error)
   }
 }
 

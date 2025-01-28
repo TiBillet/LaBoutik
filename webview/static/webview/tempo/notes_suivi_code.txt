@@ -1,1 +1,32 @@
-addEventListener("offline", (event) => {});
+ ticket = [
+            {"type": "image", "url":"https://laboutik.filaos.re/static/webview/images/logoTicket.png"},
+            {"type": "bold", "value": 1},
+            {"type": "text", "value": "TiBillet"},
+            {"type": "bold", "value": 0},
+            {"type": "newLine"},
+            {"type": "qrcode", "url": "https://tibillet.org/"},
+            {"type": "bold", "value": 1},
+            {"type": "text", "value": "Email: contact@tibillet.re"},
+            {"type": "newLine"},
+            {"type": "blockText",
+              "value": [
+              {"type": "text", "value":"--------------------------------"},
+              {"type": "text", "value":"Qt Produits         Prix   Total"},
+              {"type": "text", "value":"2  oignons rouges   0.99   1.98"},
+              {"type": "text", "value":"1  pizza            3.45   3.45"},
+              {"type": "text", "value":"4  roul. printemps  2.99   11.96"},
+              {"type": "text", "value":"3  canette coca     2.90   8.70"},
+              {"type": "text", "value":"--------------------------------"},
+              {"type": "text", "value":"  TOTAL                    26.09"},
+              {"type": "text", "value":"--------------------------------"}]
+            },
+            {"type": "newLine"},
+            {"type": "barCode", "value": "3130630574613", "symbology": "ean13"},
+            {"type": "newLine"},
+            {"type": "text", "value": "3130630574613"},
+            {"type": "newLine"},
+            {"type": "newLine"},
+            {"type": "text", "value": "merci à vous"},
+            {"type": "newLine"},
+            {"type": "text", "value": "23/01/2025 10:43"}
+        ]

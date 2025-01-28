@@ -1,5 +1,5 @@
-// source : https://github.com/NielsLeenheer/ReceiptPrinterEncoder/blob/main/documentation/usage.md
-import ReceiptPrinterEncoder from './receipt-printer-encoder.esm.js'
+// source : https://github.com/don/BluetoothSerial?tab=readme-ov-file
+// source : https://github.com/neodynamic/js-escpos-builder
 
 /**
  * Cordova add
@@ -122,114 +122,220 @@ export async function bluetoothGetMacAddress(name) {
 }
 
 
-export function bluetoothWriteText(msg) {
-  console.log('imprimantes :', ReceiptPrinterEncoder.printerModels)
-  let encoder = new ReceiptPrinterEncoder({
-    columns: 48,
-    feedBeforeCut: 4
-  })
-
-  let result = encoder
-    .initialize()
-    .text('------ test 3 -----')
-    .box({ width: 30, align: 'left', style: 'double', marginLeft: 0 }, 'The quick brown fox jumps over the lazy dog')
-    .newline()
-    .qrcode('https://tibillet.org/')
-    .newline()
-    .barcode('313063057461', 'ean13', {
-      height: 100,
-      text: true
-    })
-    .newline()
-    .table(
-      [
-        { width: 36, align: 'left' },
-        { width: 10, align: 'right' }
-      ],
-      [
-        ['Item 1', '€ 10,00'],
-        ['Item 2', '15,00'],
-        ['Item 3', '9,95'],
-        ['Item 4', '4,75'],
-        ['Item 5', '211,05'],
-        ['', '='.repeat(10)],
-        ['Total', (encoder) => encoder.bold().text('€ 250,75').bold()],
-      ]
-    )
-    .newline()
-    .raw([0x1d, 0x56, 0x42])
-    .encode()
-
-  console.log('impression =', result);
-  bluetoothSerial.write(result, (status) => {
-    console.log('-> bluetoothWriteText, success:', status)
-    bluetoothDisconnect()
-  }, (error) => {
-    console.log('-> bluetoothWriteText,error :', error)
-  });
-}
-
-async function loadImage(url) {
-  const load = await new Promise((resolve, reject) => {
+async function loadAndConvertImageToB64(url) {
+  const load = await new Promise((resolve) => {
     try {
       let img = new Image()
       img.src = url
-      img.onload = function () {
-        resolve(img)
+      img.onload = () => {
+        let canvas = document.createElement('canvas')
+        let ctx = canvas.getContext('2d')
+        canvas.height = img.naturalHeight;
+        canvas.width = img.naturalWidth;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const base64String = canvas.toDataURL('image/png')
+        resolve(base64String)
       }
     } catch (error) {
-      reject(null)
+      console.log('-> loadAndConvertImageToB64,', error)
+      resolve(null)
     }
   })
   return load
 }
 
-/**
- * Print command
- * @param {Array} content 
- */
-export function bluetoothWrite(content) {
-  let encoder = new ReceiptPrinterEncoder({
-    language: 'esc-pos',
-    columns: 48,
-    feedBeforeCut: 4
-  })
-
-  // init encode
-  let result = encoder.initialize()
-
-  // process data
-  content.forEach(line => {
-    console.log('-> line =', line)
-    // encode image
-    if (line.type === 'image') {
-      const img = loadImage(line.url)
-      encoder.image(img, 64, 64, 'atkinson')
+async function escPosImageLoad(url) {
+  return await new Promise(async (resolve) => {
+    try {
+      const escpos = Neodynamic.JSESCPOSBuilder
+      const imageB64 = await loadAndConvertImageToB64(url)
+      escpos.ESCPOSImage.load(imageB64).then(image => {
+        resolve(image)
+      })
+    } catch (error) {
+      console.log('-> EscPosImageLoad,', error)
+      resolve(null)
     }
- 
   })
+}
 
-// end encode
-encoder.encode()
-
-
-
-  // write result
-  /*
-  bluetoothSerial.write(result, (status) => {
-    console.log('-> bluetoothWriteText, success:', status)
-    bluetoothDisconnect()
-  }, (error) => {
-    console.log('-> bluetoothWriteText,error :', error)
+/**
+ * async bluetooth connect
+ * @param {string} macAddress 
+ * @returns 
+ */
+async function bluetoothConnect(macAddress) {
+  const test = await new Promise((resolve) => {
+    bluetoothSerial.connect(macAddress, async (result) => {
+      resolve(true)
+    }, (error) => {
+      resolve(false)
+      console.log(`-> bluetoothConnect, error = ${error}`)
+    })
   })
-  */
+  return test
+}
+/**
+ * async bluetooth is connected
+ */
+async function bluetoothIsConnected() {
+  const test = await new Promise((resolve) => {
+    bluetoothSerial.isConnected(() => {
+      resolve(true)
+    }, (error) => {
+      resolve(false)
+      console.log(`-> bluetoothIsConnected, error = ${error}`)
+    })
+  })
+  return test
 }
 
 
-export function bluetoothDisconnect() {
-  bluetoothSerial.disconnect((success) => {
-    console.log('-> bluetoothDisconnect, success:', success)
-  }, (error) => {
-    console.log('-> bluetoothDisconnect,error :', error)
+async function bluetoothSerialWrite(contentToWrite) {
+  const write = await new Promise((resolve) => {
+    bluetoothSerial.write(contentToWrite, () => {
+      resolve(true)
+    }, (error) => {
+      resolve(false)
+      console.log(`-> bluetoothSerialWrite, error = ${error}`)
+    })
   })
+  return write
+}
+
+
+async function bluetoothDisconnect() {
+  const disconnect = await new Promise((resolve) => {
+    bluetoothSerial.disconnect(() => {
+      resolve(true)
+    }, (error) => {
+      resolve(false)
+      console.log(`-> bluetoothDisconnect, error = ${error}`)
+    })
+  })
+  return disconnect
+}
+
+/**
+ * Print command, largeur impression max par ligne = 32 caractères
+ * @param {Array} content 
+ */
+export async function bluetoothWrite(content) {
+  let connect = null
+  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
+  console.log('macAddress =', macAddress)
+
+  const isConnected = await bluetoothIsConnected()
+  console.log('bluetoothIsConnected =', isConnected)
+
+  if (isConnected !== true) {
+    connect = await bluetoothConnect(macAddress)
+    console.log('bluetoot connect =', connect)
+  }
+
+  const escpos = Neodynamic.JSESCPOSBuilder
+  const escposCommands = new escpos.Document()
+  // fonte par défaut
+  escposCommands.font(escpos.FontFamily.A)
+  window.escpos = escpos  // dev
+  // process data
+  for (let i = 0; i < content.length; i++) {
+    const line = content[i]
+    let readLineType = false // pour le dev
+
+    // image
+    if (line.type === 'image') {
+      const image = await escPosImageLoad(line.value)
+      escposCommands.image(image, escpos.BitmapDensity.D24)
+      readLineType = true
+    }
+
+    // text
+    if (line.type === 'text') {
+      escposCommands.text(line.value)
+      readLineType = true
+    }
+
+    // barcode
+    if (line.type === 'barcode') {
+      escposCommands.linearBarcode(line.value, escpos.Barcode1DType.EAN13, new escpos.Barcode1DOptions(2, 100, true, escpos.BarcodeTextPosition.Below, escpos.BarcodeFont.A))
+      readLineType = true
+    }
+
+    // qrcode
+    if (line.type === 'qrcode') {
+      escposCommands.qrCode(line.value, new escpos.BarcodeQROptions(escpos.QRLevel.L, 6))
+      readLineType = true
+    }
+
+    // size
+    if (line.type === 'size') {
+      escposCommands.size(line.value, line.value)
+      readLineType = true
+    }
+
+    // align
+    if (line.type === 'align') {
+      let result = escpos.TextAlignment.Center
+      if (line.value === "left") {
+        result = escpos.TextAlignment.LeftJustification
+      }
+      if (line.value === "right") {
+        result = escpos.TextAlignment.RightJustification
+      }
+      escposCommands.align(result)
+      readLineType = true
+    }
+
+    // font
+    if (line.type === 'font') {
+      if (line.value === "A") {
+        escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.A)
+      }
+      if (line.value === "B") {
+        escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.B)
+      }
+      if (line.value === "C") {
+        escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.C)
+      }
+      readLineType = true
+    }
+
+    /* ne fonctionne pas
+     // bold
+     if (line.type === 'bold') {
+      if (line.value === 1) {
+        console.log('-> bold =', escpos.FontStyle.Bold)
+        
+        escposCommands.style([escpos.FontStyle.Bold])
+      } else {
+        escposCommands.style([])
+      }
+      readLineType = true
+    }
+    */
+
+    // feed
+    if (line.type === 'feed') {
+      escposCommands.feed(line.value)
+      readLineType = true
+    }
+
+    // cut
+    if (line.type === 'cut') {
+      escposCommands.cut()
+      readLineType = true
+    }
+
+    if (readLineType === false) {
+      console.log('-> Todo: line =', line)
+    }
+  }
+
+  const result = escposCommands.generateUInt8Array()
+
+  const state = bluetoothSerialWrite(result)
+  console.log('impression =', await state)
+  await bluetoothDisconnect()
+
 }

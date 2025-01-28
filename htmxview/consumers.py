@@ -198,32 +198,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         # Send message to WebSocket
         # dev moke data
+        # largeur impression max 32 caractères par ligne
         ticket = [
-            {"type": "image", "url":"https://filaos.re/image.png"},
-            {"type": "titre1", "content": "TiBillet"},
-            {"type": "newLine"},
-            {"type": "qrcode", "url": "https://tibillet.org/"},
-            {"type": "bold", "level": 1},
-            {"type": "text", "content": "Email: contact@tibillet.re"},
-            {"type": "newLine"},
-            {"type": "blockText",
-              "content": [
-              {"type": "text", "content":"------------------------------------------------"},
-              {"type": "text", "content":"  Qt  Produits                     Prix    Total"},
-              {"type": "text", "content":"  2   oignons rouges               0.99    1.98"},
-              {"type": "text", "content":"  1   pizza                        3.45    3.45"},
-              {"type": "text", "content":"  4   rouleaux de printemps        2.99    11.96"},
-              {"type": "text", "content":"  3   canette coca                 2.90    8.70"},
-              {"type": "text", "content":"------------------------------------------------"},
-              {"type": "text", "content":"  TOTAL                                    26.09"},
-              {"type": "text", "content":"------------------------------------------------"}]
-            },
-            {"type": "newLine"},
-            {"type": "barCode", "content": "3130630574613", "symbology": "ean13"},
-            {"type": "text", "content": "3130630574613"},
-            {"type": "newLine"},
-            {"type": "text", "content": "merci à vous"},
-            {"type": "text", "content": "23/01/2025 10:43"}
+            {"type": "text", "value": "--------------------------------"},
+            {"type": "align", "value": "center"},
+            {"type": "image", "value": "https://laboutik.filaos.re/static/webview/images/logoTicket.png"},
+            {"type": "font", "value": "A"},
+            {"type": "size", "value": 1},
+            {"type": "bold", "value": 1},
+            {"type": "text", "value": "Titre"},
+            {"type": "bold", "value": 0},
+            {"type": "size", "value": 0},
+            {"type": "barcode", "value": "1234567890456"},
+            {"type": "qrcode", "value": "https://tibillet.org/"},
+            {"type": "text", "value": "---- fin ----"},
+            {"type": "feed", "value": 3},
+            {"type": "cut"}
         ]
 
         await self.send(text_data=json.dumps({
