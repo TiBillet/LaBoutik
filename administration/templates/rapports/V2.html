@@ -190,11 +190,10 @@
                 <a href='?pos={{ pdv.id }}'><button>{{ pdv.name }}</button></a>
             {% endfor %}
         </td>
-        <td class="tg-texte tg-positif tg-gras" colspan="2">{{ total_ttc | floatformat:2 | default:0 }}€</td>
+        <td class="tg-texte tg-positif tg-gras" colspan="2">{{ table_vente.TOTAL | floatformat:2 | default:0 }}€</td>
     </tr>
     </tbody>
 </table>
-
 
 <br>
 <br>
