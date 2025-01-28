@@ -5,11 +5,8 @@ from _decimal import Decimal
 from datetime import datetime, timedelta
 
 import dateutil.parser
-import numpy as np
 import pytz
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.serializers import serialize
-
 from django.db.models import Sum, F, Avg
 from django.utils.translation import ugettext_lazy as _
 
