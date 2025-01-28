@@ -144,11 +144,13 @@
 
     <script src="{% static 'js/sweetalert.js' %}"></script>
     <div class="ticket__field">
+        {% trans "Confirm the closing of cash registers" as confirm_title %}
+
         <button class="ticket__btn ticket__btn--danger" type="button"
                 hx-get="/htmx/sales/close_all_pos"
                 hx-trigger='confirmed'
                 hx-target="#service-commandes" hx-swap="innerHTML" {# the query returns the table z-ticket#}
-                onClick="Swal.fire({title: '{% trans 'Confirm the closing of cash registers' %}', text:'{% trans 'Do or do not, there is no try.' %}'}).then((result)=>{
+                onClick="Swal.fire({title: `{{ confirm_title }}`, text:`Do or do not, there is no try. Yoda.`}).then((result)=>{
                         if(result.isConfirmed){
                         htmx.trigger(this, 'confirmed');
                         }
