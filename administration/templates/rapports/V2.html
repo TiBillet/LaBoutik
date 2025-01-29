@@ -133,6 +133,8 @@
     <tr>
         <td class="tg-texte">{% trans "LIEUX :" %}</td>
         <td class="tg-texte">{{ config.structure }}</td>
+    </tr>
+    <tr>
         <td class="tg-texte">{% trans "GÉNÉRÉ LE :" %}</td>
         <td class="tg-texte">
             {% if cloture %}{{ cloture.datetime }}{% else %}{% now "SHORT_DATETIME_FORMAT" %}{% endif %}</td>
@@ -190,7 +192,7 @@
                 <a href='?pos={{ pdv.id }}'><button>{{ pdv.name }}</button></a>
             {% endfor %}
         </td>
-        <td class="tg-texte tg-positif tg-gras" colspan="2">{{ table_vente.TOTAL | floatformat:2 | default:0 }}€</td>
+        <td class="tg-texte {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %} tg-gras" colspan="2">{{ table_vente.TOTAL | floatformat:2 | default:0 }}€</td>
     </tr>
     </tbody>
 </table>
@@ -225,38 +227,37 @@
     <tr>
         <td class="tg-titre tg-gras tg-noborder" colspan="5">{% trans "SYNTHÈSE DES OPÉRATIONS" %}</td>
         <td class="tg-data tg-fondgris" colspan="2">{% trans "Carte Bancaire" %}</td>
-        <td class="tg-data tg-fondgris" colspan="2">{% trans "Cashless" %}</td>
+        <td class="tg-data tg-fondgris" colspan="2">{% trans "Local" %}</td>
         <td class="tg-data tg-fondgris" colspan="2">{% trans "Espèces" %}</td>
-        <td class="tg-data tg-fondgris" colspan="2">{% trans "En ligne" %}</td>
+        <td class="tg-data tg-fondgris" colspan="2">{% trans "Fédéré" %}</td>
         <td class="tg-data tg-fondgris" colspan="2">{% trans "Chèque" %}</td>
+        <td class="tg-data tg-fondgris" colspan="2">{% trans "En ligne" %}</td>
+        <td class="tg-data tg-fondgris" colspan="2">{% trans "Externe" %}</td>
         <td class="tg-data tg-fondgris" colspan="2">{% trans "MONTANT" %}</td>
     </tr>
     </thead>
     <tbody>
     <tr>
         <td class="tg-titre" colspan="5">{% trans "Ventes" %}</td>
-        <td class="tg-data" colspan="2">{{ table_vente.CC | floatformat:2 | default:0 }} €</td>
-        <!-- CC "Carte Bancaire" -->
-        <td class="tg-data" colspan="2">{{ table_vente.LE | floatformat:2 | default:0 }} €</td>
-        <!-- LE Token Local "Cashless" -->
+        <td class="tg-data" colspan="2">{{ table_vente.CC | floatformat:2 | default:0 }} €</td> <!-- CC "Carte Bancaire" -->
+        <td class="tg-data" colspan="2">{{ table_vente.LE | floatformat:2 | default:0 }} €</td> <!-- Cashless "token local" -->
         <td class="tg-data" colspan="2">{{ table_vente.CA | floatformat:2 | default:0 }} €</td> <!-- CA "Espèces" -->
-        <td class="tg-data" colspan="2">{{ table_vente.SF | floatformat:2 | default:0 }} €</td>
-        <!-- Stripe "En ligne" -->
+        <td class="tg-data" colspan="2">{{ table_vente.SF | floatformat:2 | default:0 }} €</td> <!-- Stripe fed "Fédéré" -->
         <td class="tg-data" colspan="2">{{ table_vente.CH | floatformat:2 | default:0 }} €</td> <!-- "Chèque" -->
-        <td class="tg-data tg-positif" colspan="2">{{ table_vente.TOTAL | floatformat:2 | default:0 }} €</td>
-        <!-- "MONTANT" -->
+        <td class="tg-data" colspan="2">{{ table_vente.STRIPE_NOFED | floatformat:2 | default:0 }} €</td> <!-- "Stripe "en ligne" no fed" -->
+        <td class="tg-data" colspan="2">{{ table_vente.XG | floatformat:2 | default:0 }} €</td> <!-- "Externe "Token externe" -->
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_vente.TOTAL | floatformat:2 | default:0 }} €</td> <!-- "MONTANT" -->
     </tr>
     <tr>
         <td class="tg-titre" colspan="5">{% trans "Recharges" %}</td>
-        <td class="tg-data" colspan="2">{{ table_recharges.CC | floatformat:2 | default:0 }} €</td>
-        <!-- CC "Carte Bancaire" -->
+        <td class="tg-data" colspan="2">{{ table_recharges.CC | floatformat:2 | default:0 }} €</td> <!-- CC "Carte Bancaire" -->
         <td class="tg-data" colspan="2">N/A</td> <!-- pas de recharge en cashless -->
-        <td class="tg-data" colspan="2">{{ table_recharges.CA | floatformat:2 | default:0 }} €</td>
-        <!-- CA "Espèces" -->
-        <td class="tg-data" colspan="2">N/A</td>
-        <!-- TODO : Aller chercher dans fedow les recharges stripe sur les cartes --> <!-- Stripe "En ligne" -->
+        <td class="tg-data" colspan="2">{{ table_recharges.CA | floatformat:2 | default:0 }} €</td> <!-- CA "Espèces" -->
+        <td class="tg-data" colspan="2">N/A</td> <!-- TODO : Aller chercher dans fedow les recharges stripe sur les cartes --> <!-- Stripe "En ligne" -->
         <td class="tg-data" colspan="2">{{ table_recharges.CH | floatformat:2 | default:0 }} €</td> <!-- "Chèque" -->
-        <td class="tg-data tg-negatif" colspan="2">{{ table_recharges.TOTAL | floatformat:2 | default:0 }} €</td>
+        <td class="tg-data" colspan="2">{{ table_vente.STRIPE_NOFED | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
+        <td class="tg-data" colspan="2">{{ table_vente.XG | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_recharges.TOTAL | floatformat:2 | default:0 }} €</td>
     </tr>
     <tr>
         <td class="tg-titre" colspan="5">{% trans "Adhésions" %}</td>
@@ -269,7 +270,9 @@
         <td class="tg-data" colspan="2">{{ table_adhesions.SF | floatformat:2 | default:0 }} €</td>
         <!-- Stripe "En ligne" -->
         <td class="tg-data" colspan="2">{{ table_adhesions.CH | floatformat:2 | default:0 }} €</td> <!-- "Chèque" -->
-        <td class="tg-data tg-positif" colspan="2">{{ table_adhesions.TOTAL | floatformat:2 | default:0 }} €</td>
+        <td class="tg-data" colspan="2">{{ table_vente.STRIPE_NOFED | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
+        <td class="tg-data" colspan="2">{{ table_vente.XG | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_adhesions.TOTAL | floatformat:2 | default:0 }} €</td>
     </tr>
     <tr>
         <td class="tg-titre" colspan="5">{% trans "Retours consigne" %}</td>
@@ -280,7 +283,9 @@
         <!-- CA "Espèces" -->
         <td class="tg-data" colspan="2">N/A</td> <!-- Stripe "En ligne" -->
         <td class="tg-data" colspan="2">N/A</td> <!-- "Chèque" -->
-        <td class="tg-data tg-negatif" colspan="2">{{ table_retour_consigne.TOTAL | floatformat:2 | default:0 }} €</td>
+        <td class="tg-data" colspan="2">{{ table_vente.STRIPE_NOFED | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
+        <td class="tg-data" colspan="2">{{ table_vente.XG | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_retour_consigne.TOTAL | floatformat:2 | default:0 }} €</td>
     </tr>
     <tr>
         <td class="tg-titre" colspan="5">{% trans "Remboursements" %}</td>
@@ -291,20 +296,20 @@
         <td class="tg-data" colspan="2">N/A</td>
         <!-- TODO : Aller chercher dans fedow les recharges stripe sur les cartes --> <!-- Stripe "En ligne" -->
         <td class="tg-data" colspan="2">N/A</td> <!-- "Chèque" -->
-        <td class="tg-data tg-positif" colspan="2">{{ table_remboursement.TOTAL | floatformat:2 | default:0 }} €</td>
+        <td class="tg-data" colspan="2">{{ table_vente.STRIPE_NOFED | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
+        <td class="tg-data" colspan="2">{{ table_vente.XG | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_remboursement.TOTAL | floatformat:2 | default:0 }} €</td>
     </tr>
     <tr>
         <td class="tg-titre tg-gras" colspan="5">{% trans "TOTAL" %}</td>
-        <td class="tg-data" colspan="2">{{ table_TOTAL_sop.CC | floatformat:2 | default:0 }} €</td>
-        <!-- CC "Carte Bancaire" -->
-        <td class="tg-data" colspan="2">{{ table_TOTAL_sop.LE | floatformat:2 | default:0 }} €</td>
-        <!-- LE Token Local "Cashless" -->
-        <td class="tg-data" colspan="2">{{ table_TOTAL_sop.CA | floatformat:2 | default:0 }} €</td>
-        <!-- CA "Espèces" -->
-        <td class="tg-data" colspan="2">{{ table_TOTAL_sop.SF | floatformat:2 | default:0 }} €</td>
-        <!-- Stripe "En ligne" -->
-        <td class="tg-data" colspan="2">{{ table_TOTAL_sop.CH | floatformat:2 | default:0 }} €</td> <!-- "Chèque" -->
-        <td class="tg-data tg-positif" colspan="2">{{ table_TOTAL_sop.TOTAL | floatformat:2 | default:0 }} €</td>
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_TOTAL_sop.CC | floatformat:2 | default:0 }} €</td> <!-- CC "Carte Bancaire" -->
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_TOTAL_sop.LE | floatformat:2 | default:0 }} €</td> <!-- LE Token Local "Cashless" -->
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_TOTAL_sop.CA | floatformat:2 | default:0 }} €</td> <!-- CA "Espèces" -->
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_TOTAL_sop.SF | floatformat:2 | default:0 }} €</td> <!-- Stripe "En ligne" -->
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_TOTAL_sop.CH | floatformat:2 | default:0 }} €</td> <!-- "Chèque" -->
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_vente.STRIPE_NOFED | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_vente.XG | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
+        <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_TOTAL_sop.TOTAL | floatformat:2 | default:0 }} €</td>
     </tr>
     </tbody>
 </table>
@@ -327,7 +332,7 @@
             <!-- Dans le dict, ici table_vente, les moyens de paiement sont notés en accronyme (CC, CA, etc ...) categories|getvalue:mp va chercher la string traduite. -->
             <td class="tg-titre" colspan="6">
                 {% if forloop.last %}{% trans "TOTAL" %}{% else %}{{ categories|getvalue:mp }}{% endif %}</td>
-            <td class="tg-data tg-positif" colspan="5">{{ value | floatformat:2 | default:0 }} €
+            <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="5">{{ value | floatformat:2 | default:0 }} €
             </td>
         </tr>
     {% endfor %}
@@ -348,7 +353,7 @@
         <tr>
             <td class="tg-titre" colspan="6">
                 {% if forloop.last %}{% trans "TOTAL" %}{% else %}{{ categories|getvalue:mp }}{% endif %}</td>
-            <td class="tg-data tg-positif" colspan="5">{{ value | floatformat:2 | default:0 }} €
+            <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="5">{{ value | floatformat:2 | default:0 }} €
             </td>
         </tr>
     {% endfor %}
@@ -369,13 +374,12 @@
         <tr>
             <td class="tg-titre" colspan="6">
                 {% if forloop.last %}{% trans "TOTAL" %}{% else %}{{ categories|getvalue:mp }}{% endif %}</td>
-            <td class="tg-data tg-positif" colspan="5">{{ value | floatformat:2 | default:0 }} €
+            <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="5">{{ value | floatformat:2 | default:0 }} €
             </td>
         </tr>
     {% endfor %}
     </tbody>
 </table>
-
 
 <br>
 <table class="tg"><!-- Table des consignes par moyen de paiement -->
@@ -386,11 +390,31 @@
     </tr>
     </thead>
     <tbody>
+    {% for mp, value in table_consigne.items %}
+        <tr>
+            <td class="tg-titre" colspan="6">
+                {% if forloop.last %}{% trans "TOTAL" %}{% else %}{{ categories|getvalue:mp }}{% endif %}</td>
+            <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="5">{{ value | floatformat:2 | default:0 }} €
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<br>
+<table class="tg"><!-- Table des consignes par moyen de paiement -->
+    <thead>
+    <tr>
+        <td class="tg-titre tg-gras tg-noborder" colspan="6">{% trans "RETOURS CONSIGNES" %}</td>
+        <td class="tg-titre tg-fondgris tg-centre" colspan="5">{% trans "MONTANT" %}</td>
+    </tr>
+    </thead>
+    <tbody>
     {% for mp, value in table_retour_consigne.items %}
         <tr>
             <td class="tg-titre" colspan="6">
                 {% if forloop.last %}{% trans "TOTAL" %}{% else %}{{ categories|getvalue:mp }}{% endif %}</td>
-            <td class="tg-data tg-positif" colspan="5">{{ value | floatformat:2 | default:0 }} €
+            <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="5">{{ value | floatformat:2 | default:0 }} €
             </td>
         </tr>
     {% endfor %}
@@ -411,7 +435,7 @@
         <tr>
             <td class="tg-titre" colspan="6">
                 {% if forloop.last %}{% trans "TOTAL" %}{% else %}{{ categories|getvalue:mp }}{% endif %}</td>
-            <td class="tg-data tg-positif" colspan="5">{{ value | floatformat:2 | default:0 }} €
+            <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="5">{{ value | floatformat:2 | default:0 }} €
             </td>
         </tr>
     {% endfor %}
@@ -433,51 +457,11 @@
     {% for mp, value in table_solde_de_caisse.items %}
         <tr>
             <td class="tg-titre" colspan="6">{% if forloop.last %}{% trans "TOTAL" %}{% else %}{{ mp }}{% endif %}</td>
-            <td class="tg-data tg-positif" colspan="5">{{ value | floatformat:2 | default:0 }} €
+            <td class="tg-data {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="5">{{ value | floatformat:2 | default:0 }} €
             </td>
         </tr>
     {% endfor %}
     </tbody>
-</table>
-
-
-<!-- Table ventilation TVA -->
-<br>
-<br>
-<table class="tg">
-    <thead>
-    <tr>
-        <td class="tg-texte tg-gras" colspan="4">TVA Collectée par taux</td>
-    </tr>
-    <tr>
-        <td class="tg-texte tg-gras">Taux</td>
-        <td class="tg-texte tg-gras">HT</td>
-        <td class="tg-texte tg-gras">TVA</td>
-        <td class="tg-texte tg-gras">TTC</td>
-    </tr>
-    </thead>
-
-    <tbody>
-    {% for taux, valeurs in table_tva.items %}
-        {% if taux != 'TOTAL' %}
-            <tr>
-                <td class="tg-texte">{{ taux }}%</td>
-                <td class="tg-texte">{{ valeurs.ht }} €</td>
-                <td class="tg-texte">{{ valeurs.tva }} €</td>
-                <td class="tg-texte">{{ valeurs.ttc }} €</td>
-            </tr>
-        {% else %}
-            </tbody>
-            <tfoot>
-            <tr>
-                <td class="tg-texte tg-gras">{% trans "TOTAL" %}</td>
-                <td class="tg-texte tg-gras">{{ valeurs.ht }} €</td>
-                <td class="tg-texte tg-gras">{{ valeurs.tva }} €</td>
-                <td class="tg-texte tg-gras">{{ valeurs.ttc }} €</td>
-            </tr>
-            </tfoot>
-        {% endif %}
-    {% endfor %}
 </table>
 
 
@@ -627,6 +611,44 @@
     </tbody>
 </table>
 
+<!-- Table ventilation TVA -->
+<br>
+<br>
+<table class="tg">
+    <thead>
+    <tr>
+        <td class="tg-texte tg-gras" colspan="4">TVA Collectée par taux</td>
+    </tr>
+    <tr>
+        <td class="tg-texte tg-gras">Taux</td>
+        <td class="tg-texte tg-gras">HT</td>
+        <td class="tg-texte tg-gras">TVA</td>
+        <td class="tg-texte tg-gras">TTC</td>
+    </tr>
+    </thead>
+
+    <tbody>
+    {% for taux, valeurs in table_tva.items %}
+        {% if taux != 'TOTAL' %}
+            <tr>
+                <td class="tg-texte">{{ taux }}%</td>
+                <td class="tg-texte">{{ valeurs.ht }} €</td>
+                <td class="tg-texte">{{ valeurs.tva }} €</td>
+                <td class="tg-texte">{{ valeurs.ttc }} €</td>
+            </tr>
+        {% else %}
+            </tbody>
+            <tfoot>
+            <tr>
+                <td class="tg-texte tg-gras">{% trans "TOTAL" %}</td>
+                <td class="tg-texte tg-gras">{{ valeurs.ht }} €</td>
+                <td class="tg-texte tg-gras">{{ valeurs.tva }} €</td>
+                <td class="tg-texte tg-gras">{{ valeurs.ttc }} €</td>
+            </tr>
+            </tfoot>
+        {% endif %}
+    {% endfor %}
+</table>
 
 {#    <tr>#}
 {#        <th class="tg-texte tg-noborder">Pour aller plus loin :</th>#}
