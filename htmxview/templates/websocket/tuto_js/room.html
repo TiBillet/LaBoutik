@@ -7,10 +7,12 @@
 </head>
 <body>
     <textarea id="chat-log" cols="100" rows="20"></textarea><br>
-    <input id="chat-message-input" type="text" size="100"><br>
-    <input id="chat-message-submit" type="button" value="Send">
+    <!-- <input id="chat-message-input" type="text" size="100"><br>
+    <input id="chat-message-submit" type="button" value="Send"> -->
+    <input id="sunmi-print" type="button" value="print">
     {{ room_name|json_script:"room-name" }}
     <script>
+        /*
         const roomName = JSON.parse(document.getElementById('room-name').textContent);
         console.log('roomName =', roomName)
 
@@ -46,6 +48,27 @@
             }));
             messageInputDom.value = '';
         };
+        */
+        const chatSocket = new WebSocket('wss://' + window.location.host + '/ws/tuto_js/print/')
+
+        chatSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            document.querySelector('#chat-log').value += (data.message + '\n')
+        }
+
+        chatSocket.onclose = function(e) {
+            console.error('Chat socket closed unexpectedly')
+            document.querySelector('#chat-log').value += 'Chat socket closed unexpectedly\n'
+        }
+
+        document.querySelector('#sunmi-print').onclick = function(e) {
+            chatSocket.send(JSON.stringify({message: 'sunmi_print'}))
+            document.querySelector('#chat-log').value += '-> sunmi_print send !\n'
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelector('#chat-log').value = ''
+        })
     </script>
 </body>
 </html>

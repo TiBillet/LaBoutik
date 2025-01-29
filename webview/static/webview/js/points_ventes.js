@@ -1,30 +1,10 @@
 import "./menuPlugins/addAllMenuPlugin.js"
-import { isCordovaApp, enableBluetooth, bluetoothGetMacAddress, bluetoothWrite } from './modules/mobileDevice.js'
+// import { isCordovaApp, enableBluetooth, bluetoothGetMacAddress, bluetoothWrite } from './modules/mobileDevice.js'
+import { isCordovaApp, bluetoothWrite } from './modules/mobileDevice.js'
 
 
 // ---- cordova ---
 window.mobile = isCordovaApp()
-// cordova bluetooth
-// TODO: export conditionnel ==> si cordova app
-export async function printTicket(event) {
-  bluetoothSerial.enable(() => {
-    console.log('-> bluetoothSerial.enable, success !')
-
-  }, (error) => {
-    console.log('-> bluetoothSerial.enable, error :', error)
-
-  });
-  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
-  console.log('macAddress =', macAddress);
-
-  bluetoothSerial.connect(macAddress, (result) => {
-    console.log('connxion:', result);
-    bluetoothWriteText('bonjour')
-  }, (error) => {
-    console.log('-> bluetoothSerial.connect, error =', error)
-  })
-}
-
 // ---- websocket route tuto_js ----
 async function wsHandlerMessag(dataString) {
   // console.log('-> ws, dataString =', dataString)
@@ -32,10 +12,11 @@ async function wsHandlerMessag(dataString) {
     const data = JSON.parse(dataString)
     // console.log('-> ws, data =', data)
 
-    // printRaw
+    // cordova bluetooth print
     if (data.message === 'print') {
       await bluetoothWrite(data.data)
     }
+
   } catch (error) {
     console.log("-> wsHandlerMessag, erreur :", error)
   }

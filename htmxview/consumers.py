@@ -194,33 +194,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from room group
     async def chat_message(self, event):
         inputContent = event['message']
-        print(f"tuto_js, message = {inputContent}")
 
-        # Send message to WebSocket
-        # dev moke data
-        # largeur impression max 32 caractères par ligne
-        ticket = [
-            {"type": "text", "value": "--------------------------------"},
-            {"type": "align", "value": "center"},
-            {"type": "image", "value": "https://laboutik.filaos.re/static/webview/images/logoTicket.png"},
-            {"type": "font", "value": "A"},
-            {"type": "size", "value": 1},
-            {"type": "bold", "value": 1},
-            {"type": "text", "value": "Titre"},
-            {"type": "bold", "value": 0},
-            {"type": "size", "value": 0},
-            {"type": "barcode", "value": "1234567890456"},
-            {"type": "qrcode", "value": "https://tibillet.org/"},
-            {"type": "text", "value": "---- fin ----"},
-            {"type": "feed", "value": 3},
-            {"type": "cut"}
-        ]
+        if inputContent == "sunmi_print":
+            # Send message to WebSocket
+            # dev moke data
+            # largeur impression max 32 caractères par ligne
+            ticket = [
+                {"type": "text", "value": "--------------------------------"},
+                {"type": "align", "value": "center"},
+                {"type": "image", "value": "https://laboutik.filaos.re/static/webview/images/logoTicket.png"},
+                {"type": "font", "value": "A"},
+                {"type": "size", "value": 1},
+                {"type": "bold", "value": 1},
+                {"type": "text", "value": "Titre"},
+                {"type": "bold", "value": 0},
+                {"type": "size", "value": 0},
+                {"type": "barcode", "value": "1234567890456"},
+                {"type": "qrcode", "value": "https://tibillet.org/"},
+                {"type": "text", "value": "---- fin ----"},
+                {"type": "feed", "value": 3},
+                {"type": "cut"}
+            ]
 
-        await self.send(text_data=json.dumps({
-            'message': 'print',
-            'data': ticket,
-            'user': f"{self.user}"
-        }))
+            await self.send(text_data=json.dumps({
+                'message': 'print',
+                'data': ticket,
+                'user': f"{self.user}"
+            }))
 
 
 # Pour TUTO HTMX

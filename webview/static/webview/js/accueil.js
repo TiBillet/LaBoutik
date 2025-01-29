@@ -44,8 +44,7 @@ try {
 
 // --- lance le programme ---
 window.initProgramme = function () {
-  console.log('-> acceuil, initProgramme ')
-  
+  // console.log('-> acceuil, initProgramme ')
   let contexte = {
     indexPv: 0,
     csrfToken: glob.csrf_token

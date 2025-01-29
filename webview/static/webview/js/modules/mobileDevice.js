@@ -337,5 +337,35 @@ export async function bluetoothWrite(content) {
   const state = bluetoothSerialWrite(result)
   console.log('impression =', await state)
   await bluetoothDisconnect()
+}
 
+export async function bluetoothOpenCashDrawer() {
+  let connect = null
+  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
+  console.log('macAddress =', macAddress)
+
+  const isConnected = await bluetoothIsConnected()
+  console.log('bluetoothIsConnected =', isConnected)
+
+  if (isConnected !== true) {
+    connect = await bluetoothConnect(macAddress)
+    console.log('bluetoot connect =', connect)
+  }
+
+  console.log('-> bluetoothOpenCashDrawer !')
+  let data = new Uint8Array(5)
+  data[0] = 0x10
+  data[1] = 0x14
+  data[2] = 0x00
+  data[3] = 0x00
+  data[4] = 0x00
+  bluetoothSerial.write(data, (success) => {
+    console.log('cash drawer open!')
+    // efface le menu
+    document.querySelector('#menu-burger-conteneur').classList.remove('burger-show')
+  }, (error) => {
+    console.log('bluetoothSerial.write :', error)
+  })
+
+  await bluetoothDisconnect()
 }
