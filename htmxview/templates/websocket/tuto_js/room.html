@@ -9,7 +9,9 @@
     <textarea id="chat-log" cols="100" rows="20"></textarea><br>
     <!-- <input id="chat-message-input" type="text" size="100"><br>
     <input id="chat-message-submit" type="button" value="Send"> -->
-    <input id="sunmi-print" type="button" value="print">
+    <input id="sunmi-print" type="button" value="print max">
+    <br>
+    <input id="sunmi-print-mini" type="button" value="print min">
     {{ room_name|json_script:"room-name" }}
     <script>
         /*
@@ -63,7 +65,12 @@
 
         document.querySelector('#sunmi-print').onclick = function(e) {
             chatSocket.send(JSON.stringify({message: 'sunmi_print'}))
-            document.querySelector('#chat-log').value += '-> sunmi_print send !\n'
+            document.querySelector('#chat-log').value += '-> send "sunmi_print" !\n'
+        }
+
+        document.querySelector('#sunmi-print-mini').onclick = function(e) {
+            chatSocket.send(JSON.stringify({message: 'sunmi_print_mini'}))
+            document.querySelector('#chat-log').value += '-> send "sunmi_print_mini" !\n'
         }
 
         document.addEventListener('DOMContentLoaded', () => {

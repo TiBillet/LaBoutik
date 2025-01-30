@@ -222,6 +222,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'user': f"{self.user}"
             }))
 
+        if inputContent == "sunmi_print_mini":
+            # Send message to WebSocket
+            # dev moke data
+            # largeur impression max 32 caractères par ligne
+            ticket = [
+                {"type": "size", "value": 1},
+                {"type": "bold", "value": 1},
+                {"type": "text", "value": "Titre"},
+                {"type": "text", "value": "---- fin ----"},
+                {"type": "feed", "value": 2},
+                {"type": "cut"}
+            ]
+
+            await self.send(text_data=json.dumps({
+                'message': 'print',
+                'data': ticket,
+                'user': f"{self.user}"
+            }))
 
 # Pour TUTO HTMX
 class HtmxConsumer(AsyncWebsocketConsumer):

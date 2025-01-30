@@ -1,44 +1,72 @@
+// construction d'une partie du menu provenant des plugins
 import "./menuPlugins/addAllMenuPlugin.js"
 // import { isCordovaApp, enableBluetooth, bluetoothGetMacAddress, bluetoothWrite } from './modules/mobileDevice.js'
-import { isCordovaApp, bluetoothWrite } from './modules/mobileDevice.js'
+import { isCordovaApp, bluetoothWrite, bluetoothGetMacAddress } from './modules/mobileDevice.js'
 
 
 // ---- cordova ---
 window.mobile = isCordovaApp()
-// ---- websocket route tuto_js ----
-async function wsHandlerMessag(dataString) {
-  // console.log('-> ws, dataString =', dataString)
-  try {
-    const data = JSON.parse(dataString)
-    // console.log('-> ws, data =', data)
 
-    // cordova bluetooth print
-    if (data.message === 'print') {
-      await bluetoothWrite(data.data)
-    }
-
-  } catch (error) {
-    console.log("-> wsHandlerMessag, erreur :", error)
+// sunmi printer condition
+window.hasSunmiPrinter = async function () {
+  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
+  if (macAddress === 'unknown') {
+    return false
+  } else {
+    return true
   }
 }
 
-// TODO: changer la route si besoin
-window.wsTerminal = {
-  socket: new WebSocket(`wss://${window.location.host}/ws/tuto_js/print/`),
-  on: false
+function initWebsocket(server) {
+  // ---- websocket handler ----
+  async function wsHandlerMessag(dataString) {
+    // console.log('-> ws, dataString =', dataString)
+    try {
+      const data = JSON.parse(dataString)
+      // console.log('-> ws, data =', data)
+
+      // cordova bluetooth print
+      const testHasSunmiPrinter = await hasSunmiPrinter()
+      if (data.message === 'print' && testHasSunmiPrinter === true) {
+        await bluetoothWrite(data.data)
+      }
+
+    } catch (error) {
+      console.log("-> wsHandlerMessag, erreur :", error)
+    }
+  }
+
+  // TODO: changer la route si besoin
+  window.wsTerminal = {
+    socket: new WebSocket(server),
+    on: false
+  }
+
+  // Connection ws ok
+  wsTerminal.socket.addEventListener("open", (event) => {
+    console.log("-> connection ws -", new Date())
+    wsTerminal.on = true
+    document.querySelector('#temps-charge-valeur').innerHTML = '<div style="color: green;">ws</div>'
+  })
+
+  // écoute data ws
+  wsTerminal.socket.addEventListener("message", function (event) {
+    // aiguillage en fonction du message
+    wsHandlerMessag(event.data)
+  })
+
+  // connection hs
+  wsTerminal.socket.addEventListener("close", (event) => {
+    console.log("The connection has been closed successfully.");
+    document.querySelector('#temps-charge-valeur').innerHTML = '<div style="color: red;">ws</div>'
+    // supprime le WebSocket
+    wsTerminal = null
+    // relance le websocket après 3 secondes
+    setTimeout(initWebsocket(server), 3000)
+  })
 }
 
-// Connection ws
-wsTerminal.socket.addEventListener("open", (event) => {
-  console.log("connection ws terminal ok !")
-  wsTerminal.on = true
-})
-
-// écoute data ws
-wsTerminal.socket.addEventListener("message", function (event) {
-  // aiguillage en fonction du message
-  wsHandlerMessag(event.data)
-})
+initWebsocket(`wss://${window.location.host}/ws/tuto_js/print/`)
 
 window.nomModulePrive = null
 window.pv_uuid_courant = ''

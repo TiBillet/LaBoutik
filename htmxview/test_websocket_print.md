@@ -6,8 +6,8 @@ Soit un domain "tibillet.org"
 ## client browser
 https://tibillet.org/htmx/tuto_js/print/
 
-Cliquer sur le bouton "Send" (pas besoin de renseigner le input) lancera la commande
-sur le sunmi (v2 ou d3mini)
+Cliquer sur le bouton "print"  lancera la commande
+sur le sunmi (v2 ou/et d3mini)
 
 ## client sunmi
 - L'url est codé en dur pour le sunmi dans le fichier points_ventes.js

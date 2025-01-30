@@ -101,13 +101,13 @@ export async function enableBluetooth() {
 
 export async function bluetoothGetMacAddress(name) {
   let retour = 'unknown'
-  const list = await new Promise((resolve, reject) => {
+  const list = await new Promise((resolve) => {
     // list devices
     bluetoothSerial.list(function (devices) {
       resolve(devices)
     }, (error) => {
       console.log('error =', error);
-      reject(error)
+      resolve([])
     });
   })
 
@@ -184,7 +184,6 @@ async function bluetoothIsConnected() {
       resolve(true)
     }, (error) => {
       resolve(false)
-      console.log(`-> bluetoothIsConnected, error = ${error}`)
     })
   })
   return test
@@ -203,7 +202,6 @@ async function bluetoothSerialWrite(contentToWrite) {
   return write
 }
 
-
 async function bluetoothDisconnect() {
   const disconnect = await new Promise((resolve) => {
     bluetoothSerial.disconnect(() => {
@@ -216,22 +214,31 @@ async function bluetoothDisconnect() {
   return disconnect
 }
 
+export async function bluetoothConnection() {
+  let connect = false
+  console.log('-> bluetoothConnection -', new Date())
+  
+  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
+  const isConnected = await bluetoothIsConnected()
+
+  if (isConnected === false) {
+    connect = await bluetoothConnect(macAddress)
+  } else {
+    connect = true
+  }
+
+  // tentative de reconnexion après 2 secondes
+  if (connect === false) {
+    setTimeout(bluetoothConnection, 2 * 1000)
+  }
+}
+
 /**
- * Print command, largeur impression max par ligne = 32 caractères
+ * Print command
  * @param {Array} content 
  */
 export async function bluetoothWrite(content) {
-  let connect = null
-  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
-  console.log('macAddress =', macAddress)
-
-  const isConnected = await bluetoothIsConnected()
-  console.log('bluetoothIsConnected =', isConnected)
-
-  if (isConnected !== true) {
-    connect = await bluetoothConnect(macAddress)
-    console.log('bluetoot connect =', connect)
-  }
+  await bluetoothConnection()
 
   const escpos = Neodynamic.JSESCPOSBuilder
   const escposCommands = new escpos.Document()
@@ -241,37 +248,31 @@ export async function bluetoothWrite(content) {
   // process data
   for (let i = 0; i < content.length; i++) {
     const line = content[i]
-    let readLineType = false // pour le dev
 
     // image
     if (line.type === 'image') {
       const image = await escPosImageLoad(line.value)
       escposCommands.image(image, escpos.BitmapDensity.D24)
-      readLineType = true
     }
 
     // text
     if (line.type === 'text') {
       escposCommands.text(line.value)
-      readLineType = true
     }
 
     // barcode
     if (line.type === 'barcode') {
       escposCommands.linearBarcode(line.value, escpos.Barcode1DType.EAN13, new escpos.Barcode1DOptions(2, 100, true, escpos.BarcodeTextPosition.Below, escpos.BarcodeFont.A))
-      readLineType = true
     }
 
     // qrcode
     if (line.type === 'qrcode') {
       escposCommands.qrCode(line.value, new escpos.BarcodeQROptions(escpos.QRLevel.L, 6))
-      readLineType = true
     }
 
     // size
     if (line.type === 'size') {
       escposCommands.size(line.value, line.value)
-      readLineType = true
     }
 
     // align
@@ -284,7 +285,6 @@ export async function bluetoothWrite(content) {
         result = escpos.TextAlignment.RightJustification
       }
       escposCommands.align(result)
-      readLineType = true
     }
 
     // font
@@ -298,7 +298,6 @@ export async function bluetoothWrite(content) {
       if (line.value === "C") {
         escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.C)
       }
-      readLineType = true
     }
 
     /* ne fonctionne pas
@@ -311,61 +310,36 @@ export async function bluetoothWrite(content) {
       } else {
         escposCommands.style([])
       }
-      readLineType = true
     }
     */
 
     // feed
     if (line.type === 'feed') {
       escposCommands.feed(line.value)
-      readLineType = true
     }
 
     // cut
     if (line.type === 'cut') {
       escposCommands.cut()
-      readLineType = true
-    }
-
-    if (readLineType === false) {
-      console.log('-> Todo: line =', line)
     }
   }
 
   const result = escposCommands.generateUInt8Array()
-
-  const state = bluetoothSerialWrite(result)
-  console.log('impression =', await state)
+  await bluetoothSerialWrite(result)
   await bluetoothDisconnect()
 }
 
 export async function bluetoothOpenCashDrawer() {
-  let connect = null
-  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
-  console.log('macAddress =', macAddress)
-
-  const isConnected = await bluetoothIsConnected()
-  console.log('bluetoothIsConnected =', isConnected)
-
-  if (isConnected !== true) {
-    connect = await bluetoothConnect(macAddress)
-    console.log('bluetoot connect =', connect)
-  }
-
-  console.log('-> bluetoothOpenCashDrawer !')
+  await bluetoothConnection()
+  
   let data = new Uint8Array(5)
   data[0] = 0x10
   data[1] = 0x14
   data[2] = 0x00
   data[3] = 0x00
   data[4] = 0x00
-  bluetoothSerial.write(data, (success) => {
-    console.log('cash drawer open!')
-    // efface le menu
-    document.querySelector('#menu-burger-conteneur').classList.remove('burger-show')
-  }, (error) => {
-    console.log('bluetoothSerial.write :', error)
-  })
 
+  const state = await bluetoothSerialWrite(data)
   await bluetoothDisconnect()
+  return state
 }
