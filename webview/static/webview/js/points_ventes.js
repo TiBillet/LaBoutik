@@ -1,4 +1,18 @@
 import "./menuPlugins/addAllMenuPlugin.js"
+import { isCordovaApp, bluetoothGetMacAddress } from './modules/mobileDevice.js'
+
+// ---- cordova ---
+window.mobile = isCordovaApp()
+
+// sunmi printer condition
+window.hasSunmiPrinter = async function () {
+  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
+  if (macAddress === 'unknown') {
+    return false
+  } else {
+    return true
+  }
+}
 
 window.nomModulePrive = null
 window.pv_uuid_courant = ''
