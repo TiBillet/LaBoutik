@@ -5,11 +5,8 @@ from _decimal import Decimal
 from datetime import datetime, timedelta
 
 import dateutil.parser
-import numpy as np
 import pytz
 from django.core.serializers.json import DjangoJSONEncoder
-from django.core.serializers import serialize
-
 from django.db.models import Sum, F, Avg
 from django.utils.translation import ugettext_lazy as _
 
@@ -58,7 +55,7 @@ RECAP DES MOYEN DE PAIEMENTS DIFFERENTS
 CREDIT_CARD_NOFED = MoyenPaiement.CREDIT_CARD_NOFED  # 'CC'
 CASH = MoyenPaiement.CASH  # 'CA'
 CHEQUE = MoyenPaiement.CHEQUE  # 'CH'
-STRIPE_NOFED = MoyenPaiement.STRIPE_NOFED
+STRIPE_NOFED = MoyenPaiement.STRIPE_NOFED # 'SN'
 LOCAL_EURO = MoyenPaiement.LOCAL_EURO  # 'LE'
 EXTERIEUR_FED = MoyenPaiement.EXTERIEUR_FED  # 'XE'
 STRIPE_FED = MoyenPaiement.STRIPE_FED
@@ -195,21 +192,21 @@ class TicketZ():
             CREDIT_CARD_NOFED:
                 articles.filter(moyen_paiement__categorie=CREDIT_CARD_NOFED).aggregate(total=Sum(F('qty') * F('prix')))[
                     'total'] or 0,
+            LOCAL_EURO:
+                articles.filter(moyen_paiement__categorie=LOCAL_EURO).aggregate(total=Sum(F('qty') * F('prix')))[
+                    'total'] or 0,
             CASH: articles.filter(moyen_paiement__categorie=CASH).aggregate(total=Sum(F('qty') * F('prix')))[
                       'total'] or 0,
+            STRIPE_FED:
+                articles.filter(moyen_paiement__categorie=STRIPE_FED).aggregate(total=Sum(F('qty') * F('prix')))[
+                    'total'] or 0,
             CHEQUE: articles.filter(moyen_paiement__categorie=CHEQUE).aggregate(total=Sum(F('qty') * F('prix')))[
                         'total'] or 0,
             STRIPE_NOFED:
                 articles.filter(moyen_paiement__categorie=STRIPE_NOFED).aggregate(total=Sum(F('qty') * F('prix')))[
                     'total'] or 0,
-            LOCAL_EURO:
-                articles.filter(moyen_paiement__categorie=LOCAL_EURO).aggregate(total=Sum(F('qty') * F('prix')))[
-                    'total'] or 0,
             EXTERIEUR_FED:
                 articles.filter(moyen_paiement__categorie=EXTERIEUR_FED).aggregate(total=Sum(F('qty') * F('prix')))[
-                    'total'] or 0,
-            STRIPE_FED:
-                articles.filter(moyen_paiement__categorie=STRIPE_FED).aggregate(total=Sum(F('qty') * F('prix')))[
                     'total'] or 0,
         }
         table['TOTAL'] = sum(table.values())
@@ -247,15 +244,15 @@ class TicketZ():
         table = {
             CREDIT_CARD_NOFED: adhesions.filter(moyen_paiement__categorie=MoyenPaiement.CREDIT_CARD_NOFED).aggregate(
                 total=Sum(F('qty') * F('prix')))['total'] or 0,
+            LOCAL_EURO:
+                adhesions.filter(moyen_paiement__categorie=LOCAL_EURO).aggregate(total=Sum(F('qty') * F('prix')))[
+                    'total'] or 0,
             CASH: adhesions.filter(moyen_paiement__categorie=MoyenPaiement.CASH).aggregate(
                 total=Sum(F('qty') * F('prix')))['total'] or 0,
             CHEQUE: adhesions.filter(moyen_paiement__categorie=MoyenPaiement.CHEQUE).aggregate(
                 total=Sum(F('qty') * F('prix')))['total'] or 0,
             STRIPE_NOFED: adhesions.filter(moyen_paiement__categorie=MoyenPaiement.STRIPE_NOFED).aggregate(
                 total=Sum(F('qty') * F('prix')))['total'] or 0,
-            LOCAL_EURO:
-                adhesions.filter(moyen_paiement__categorie=LOCAL_EURO).aggregate(total=Sum(F('qty') * F('prix')))[
-                    'total'] or 0,
         }
         table['TOTAL'] = sum(table.values())
 
@@ -270,9 +267,9 @@ class TicketZ():
         )
 
         table = {
-            CASH: retour_consigne.filter(moyen_paiement__categorie=MoyenPaiement.CASH).aggregate(
-                total=Sum(F('qty') * F('prix')))['total'] or 0,
             LOCAL_EURO: retour_consigne.filter(moyen_paiement__categorie=MoyenPaiement.LOCAL_EURO).aggregate(
+                total=Sum(F('qty') * F('prix')))['total'] or 0,
+            CASH: retour_consigne.filter(moyen_paiement__categorie=MoyenPaiement.CASH).aggregate(
                 total=Sum(F('qty') * F('prix')))['total'] or 0,
         }
         table['TOTAL'] = sum(table.values())

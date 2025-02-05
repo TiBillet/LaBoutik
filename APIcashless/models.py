@@ -778,9 +778,9 @@ class MoyenPaiement(models.Model):
 
     CATEGORIES = [
         # Cashless
-        (LOCAL_EURO, _('Token local')),
+        (LOCAL_EURO, _('Local')),
         (LOCAL_GIFT, _('Token cadeau')),
-        (EXTERIEUR_FED, _('Token exterieur')),
+        (EXTERIEUR_FED, _('Externe')),
         (EXTERIEUR_GIFT, _('Token exterieur cadeau')),
         (FEDOW, _('Fedow')),
 
@@ -793,8 +793,8 @@ class MoyenPaiement(models.Model):
         (COMMANDE, _('Commande')),
         (ARDOISE, _('Ardoise')),
 
-        (STRIPE_NOFED, _('Stripe')),
-        (STRIPE_FED, _('Token fédéré')),
+        (STRIPE_NOFED, _('En ligne')),
+        (STRIPE_FED, _('Fédéré')),
 
         (OCECO, _('Oceco')),
         (BADGE, _('Badgeuse')),

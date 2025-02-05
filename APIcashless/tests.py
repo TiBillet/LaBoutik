@@ -1,9 +1,6 @@
-import time
 from io import StringIO
 from uuid import UUID
 
-import requests
-from OpenSSL.crypto import verify
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.serializers.json import DjangoJSONEncoder
@@ -12,7 +9,7 @@ from faker import Faker
 
 from APIcashless.models import *
 from fedow_connect.fedow_api import FedowAPI
-from fedow_connect.validators import TransactionValidator, AssetValidator
+from fedow_connect.validators import TransactionValidator
 
 
 class TiBilletTestCase(TestCase):
