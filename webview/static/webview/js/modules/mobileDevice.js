@@ -159,6 +159,7 @@ async function escPosImageLoad(url) {
   })
 }
 
+
 /**
  * async bluetooth connect
  * @param {string} macAddress 
@@ -175,6 +176,7 @@ async function bluetoothConnect(macAddress) {
   })
   return test
 }
+
 /**
  * async bluetooth is connected
  */
@@ -340,6 +342,33 @@ export async function bluetoothOpenCashDrawer() {
   data[4] = 0x00
 
   const state = await bluetoothSerialWrite(data)
+  await bluetoothDisconnect()
+  return state
+}
+
+export async function bluetoothLcd() {
+  await bluetoothConnection()
+  
+  let iniLcd = new Uint8Array(5)
+  iniLcd[0] = 0x01
+  iniLcd[1] = 0x1A
+  iniLcd[2] = 0x1C
+  iniLcd[3] = 0x01
+  iniLcd[4] = 0x00
+  
+  let test = new Uint8Array(5)
+  test[0] = 0x1b
+  test[1] = 0x1C
+  test[2] = 0x1C
+  test[3] = 0x04
+  test[4] = 0x00
+  // console.log('data =', data)
+
+  // [1BH][51H][41H]d1d2d3…dn[0DH]
+  // 31 32 33 34 35 36 0a
+
+  // await bluetoothSerialWrite(iniLcd)
+  const state = await bluetoothSerialWrite(test)
   await bluetoothDisconnect()
   return state
 }

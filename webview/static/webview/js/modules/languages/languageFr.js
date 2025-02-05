@@ -158,6 +158,7 @@ export const fr = {
     allOrders: 'toutes commandes',
     noNetwork: 'Connexion au serveur perdue.\nVeuillez vérifier votre réseau.',
     anonymousCard: 'Carte anonyme',
-    cashDrawer: 'tiroir-caisse'
+    cashDrawer: 'tiroir-caisse',
+    testLcd: 'test lcd'
   }
 }

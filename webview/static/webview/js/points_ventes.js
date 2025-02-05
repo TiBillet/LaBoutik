@@ -46,7 +46,9 @@ function initWebsocket(server) {
   wsTerminal.socket.addEventListener("open", (event) => {
     console.log("-> connection ws -", new Date())
     wsTerminal.on = true
-    document.querySelector('#temps-charge-valeur').innerHTML = '<div style="color: green;">ws</div>'
+    if (document.querySelector('#temps-charge-valeur') !== undefined && document.querySelector('#temps-charge-valeur') !== null) {
+      document.querySelector('#temps-charge-valeur').innerHTML = '<div style="color: green;">ws</div>'
+    }
   })
 
   // écoute data ws
