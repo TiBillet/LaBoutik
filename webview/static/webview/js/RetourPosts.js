@@ -383,8 +383,8 @@ function infosPaiementRetourTable(retour, status, options) {
 }
 
 function afficherRetourVenteDirecte(retour, status, options) {
-  // console.log(`-> fonction afficherRetourVenteDirecte !`)
-  // sys.logValeurs({ retour: retour, status: status, options: options })
+  console.log(`-> fonction afficherRetourVenteDirecte !`)
+  sys.logValeurs({ retour: retour, status: status, options: options })
   let typeMsg = 'succes', msgDefaut = '', msg = '', fonction = ''
 
 
@@ -436,7 +436,8 @@ function afficherRetourVenteDirecte(retour, status, options) {
             const sommeDonnee = parseFloat(options.sommeDonnee)
             const resultat = new Big(sommeDonnee).minus(totalAchat)
             // const sumValue = (new Big(sum)).valueOf()
-            msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
+            if (sommeDonnee > 0) {
+              msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
               <span data-i8n="givenSum">Somme donnée</span>
               <span>${sommeDonnee}</span>
               <span data-i8n="currencySymbol"></span>
@@ -446,6 +447,7 @@ function afficherRetourVenteDirecte(retour, status, options) {
               <span role="status" aria-label="change">${resultat}</span>
               <span data-i8n="currencySymbol"></span>
             </div>`
+            }
           }
 
           // gestion moyen de paiement unique  "nfc"

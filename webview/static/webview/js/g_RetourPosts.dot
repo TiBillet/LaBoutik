@@ -1,0 +1,8 @@
+digraph {
+  gererRetourPostPaiement [label="gererRetourPostPaiement(retour, status, options)", shape=rectangle]
+  optionsActionAValider [label="options.actionAValider === ?", shape=diamond, fontsize="12"]
+   afficherRetourVenteDirecte [label=" afficherRetourVenteDirecte(retour, status, options)", shape=rectangle]
+
+  gererRetourPostPaiement -> optionsActionAValider
+  optionsActionAValider -> afficherRetourVenteDirecte [label="vente_directe"]
+}
