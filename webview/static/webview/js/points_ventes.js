@@ -1522,8 +1522,12 @@ export function postEtapeMoyenComplementaire(data) {
     },
     data: achats
   }
-  sys.ajax(requete, (retour, status) => {
-    // sys.logJson('postEtapeMoyenComplementaire retour = ', retour)
+  sys.ajax(requete, async (retour, status) => {
+    // console.log(`-> postEtapeMoyenComplementaire !`)
+    // sys.logValeurs({ retour: retour, status: status, globSataCarte1: glob.dataCarte1.options })
+    if (data.moyenPaiement === 'espece') {
+      await openCashDrawer()
+    }
     gererRetourPostPaiement(retour, status, glob.dataCarte1.options)
   })
 
