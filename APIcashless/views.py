@@ -468,6 +468,8 @@ class SaleFromLespass(APIView):
             fedowAPI = FedowAPI()
             fedowAPI.place.get_accepted_assets()
             # Mets à jour tout les articles adhésions ou badges
+            # import ipdb; ipdb.set_trace()
+            logger.info(retrieve_product.json())
             product = ProductFromLespassValidator(data=retrieve_product.json())
             if not product.is_valid():
                 logger.error(product.errors)

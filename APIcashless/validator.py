@@ -57,7 +57,7 @@ class EmailMembreValidator(serializers.Serializer):
 ### FROM LESPASS
 
 class PriceFromLespassValidator(serializers.Serializer):
-    adhesion_obligatoire = serializers.BooleanField(allow_null=True)
+    # adhesion_obligatoire = serializers.BooleanField(allow_null=True, allow_blank=True)
     name = serializers.CharField(max_length=250)
     short_description = serializers.CharField(max_length=250, allow_null=True, allow_blank=True)
     long_description = serializers.CharField(max_length=2500, allow_null=True, allow_blank=True)
