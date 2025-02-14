@@ -1,0 +1,50 @@
+digraph {
+  gererRetourPostPaiement [label="gererRetourPostPaiement(retour, status, options)", shape=rectangle]
+  optionsActionAValider [label="options.actionAValider === ?", shape=diamond, fontsize="12"]
+  afficherRetourVenteDirecte [label=" afficherRetourVenteDirecte\n(retour, status, options)", shape=rectangle]
+  afficherRetourEnvoyerPreparationPayer [label="afficherRetourEnvoyerPreparation\n(retour, status, options)", shape=rectangle]
+  aiguillagePagePaiementCommande [label="aiguillagePagePaiementCommande\n(retour, status, options)", shape=rectangle]
+  restauAfficherCommandesTable [label="restau.afficherCommandesTable(idTable)", shape=rectangle]
+  infosPaiementRetourTable [label="infosPaiementRetourTable\n(retour, status, options)", shape=rectangle]
+
+  statusCode [label="status.code === ?", shape=diamond]
+  statusCode400 [label="Affiche les erreurs", shape=rectangle]
+  retourMessage [label="retour.message === ?", shape=diamond]
+  gestionTransactionFondsInsuffisants [label="gestionTransactionFondsInsuffisants(retour, options)", shape=rectangle]
+  infosTransaction [label="Affiche les infos de la transaction", shape=rectangle]
+
+  btEspece [label="affiche bt espèce\n si \naccepte_especes === 'true'", shape=rectangle]
+  btCb [label="affiche bt CB\n si \naccepte_carte_bancaire === 'true'", shape=rectangle]
+  btCashless [label="affiche bt Cashless", shape=rectangle]
+
+  validerEtapeMoyenComplementaire [label="vue_pv.validerEtapeMoyenComplementaire(moyenPaiement, sommeDonnee)", shape=rectangle]
+  popupConfirme [label="popupConfirme(moyenPaiement, nom, fonction)", shape=rectangle]
+  validerEtapeMoyenComplementaire [label="vue_pv.validerEtapeMoyenComplementaire", shape=rectangle]
+
+  testMoyenPaiement [label="moyenPaiement === ?", shape=diamond]
+  postEtapeMoyenComplementaire [label="vue_pv.postEtapeMoyenComplementaire\n({ moyenPaiement, et/ou sommeDonnee })", shape=rectangle]
+  lireTagId [label=". lire tag Id\n. postEtapeMoyenComplementaire", shape=rectangle]
+
+  gererRetourPostPaiement -> optionsActionAValider
+  optionsActionAValider -> afficherRetourVenteDirecte [label="vente_directe"]
+  optionsActionAValider -> afficherRetourEnvoyerPreparationPayer [label="envoyer_preparation_payer"]
+  optionsActionAValider -> aiguillagePagePaiementCommande [label="envoyer_preparation_payer_fractionner"]
+  optionsActionAValider -> infosPaiementRetourTable [label="addition_liste\n || \naddition_fractionnee"]
+  aiguillagePagePaiementCommande -> restauAfficherCommandesTable
+
+  afficherRetourVenteDirecte -> statusCode
+  statusCode -> retourMessage [label="200"]
+  statusCode -> statusCode400 [label="!200"]
+  retourMessage -> infosTransaction [label="undefined"]
+  retourMessage -> gestionTransactionFondsInsuffisants [label="!undefined"]
+  gestionTransactionFondsInsuffisants -> btEspece
+  gestionTransactionFondsInsuffisants -> btCb
+  gestionTransactionFondsInsuffisants -> btCashless
+  btEspece -> popupConfirme [label="moyenPaiement = 'carte_bancaire'"]
+  btCb -> popupConfirme [label="moyenPaiement = 'carte_bancaire'"]
+  btCashless -> validerEtapeMoyenComplementaire [label="moyenPaiement = 'nfc'"]
+  popupConfirme -> validerEtapeMoyenComplementaire
+  validerEtapeMoyenComplementaire -> testMoyenPaiement
+  testMoyenPaiement -> postEtapeMoyenComplementaire [label="! nfc 1528"]
+  testMoyenPaiement -> lireTagId [label="nfc"]
+}

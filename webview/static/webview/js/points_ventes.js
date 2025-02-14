@@ -1,4 +1,29 @@
 import "./menuPlugins/addAllMenuPlugin.js"
+import { isCordovaApp, bluetoothGetMacAddress, bluetoothOpenCashDrawer } from './modules/mobileDevice.js'
+
+// ---- cordova ---
+window.mobile = isCordovaApp()
+
+// sunmi printer condition
+window.hasSunmiPrinter = async function () {
+  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
+  if (macAddress === 'unknown') {
+    return false
+  } else {
+    return true
+  }
+}
+
+
+window.openCashDrawer = async function () {
+  try {
+    if (hasSunmiPrinter) {
+      await bluetoothOpenCashDrawer()
+    }
+  } catch (error) {
+    console.log('-> openCashDrawer error infos:', error);
+  }
+}
 
 window.nomModulePrive = null
 window.pv_uuid_courant = ''
@@ -100,8 +125,8 @@ function showNetworkOff() {
   // 5 secondes
   setTimeout(() => {
     if (window.navigator.onLine === false) {
-			document.dispatchEvent(new CustomEvent('netWorkOffLine', {}))
-		} else {
+      document.dispatchEvent(new CustomEvent('netWorkOffLine', {}))
+    } else {
       document.querySelector('#network-offline').remove()
       reloadData()
     }
@@ -1115,7 +1140,7 @@ function determinerInterfaceValidation(actionAValider, achats) {
   let accepteEspeces = dataPv.accepte_especes
   let accepteCarteBancaire = dataPv.accepte_carte_bancaire
   let accepteCheque = dataPv.accepte_cheque
-  
+
   // sys.logValeurs({ accepteEspeces: accepteEspeces, accepteCarteBancaire: accepteCarteBancaire })testPaiementPossible
   let moyens_paiement_tab = [], methodes_tab = [], besoin_tag_id = [], restriction_tab = []
 
@@ -1497,8 +1522,12 @@ export function postEtapeMoyenComplementaire(data) {
     },
     data: achats
   }
-  sys.ajax(requete, (retour, status) => {
-    // sys.logJson('postEtapeMoyenComplementaire retour = ', retour)
+  sys.ajax(requete, async (retour, status) => {
+    // console.log(`-> postEtapeMoyenComplementaire !`)
+    // sys.logValeurs({ retour: retour, status: status, globSataCarte1: glob.dataCarte1.options })
+    if (data.moyenPaiement === 'espece') {
+      await openCashDrawer()
+    }
     gererRetourPostPaiement(retour, status, glob.dataCarte1.options)
   })
 
@@ -1570,9 +1599,13 @@ export function validerEtape2(data) {
     data: options.achats
   }
   // console.log('options.achats =', options.achats)
-  sys.ajax(requete, function (retour, status) {
+  sys.ajax(requete, async function (retour, status) {
     gererRetourPostPaiement(retour, status, options)
     // sys.logValeurs({retour: retour, status: status, options: options})
+    // ouvre la caisse
+    if (options.achats.moyen_paiement === 'espece') {
+      await openCashDrawer()
+    }
   })
 }
 

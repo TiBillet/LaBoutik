@@ -79,3 +79,115 @@ export function isCordovaApp() {
     return false
   }
 }
+
+// --- bluetooth ---
+export async function bluetoothGetMacAddress(name) {
+  let retour = 'unknown'
+  const list = await new Promise((resolve) => {
+    // list devices
+    bluetoothSerial.list(function (devices) {
+      resolve(devices)
+    }, (error) => {
+      console.log('error =', error);
+      resolve([])
+    });
+  })
+
+  for (let i = 0; i < list.length; i++) {
+    const device = list[i];
+    if (device.name === name) {
+      retour = device.id
+      break
+    }
+  }
+  return retour
+}
+
+/**
+ * async bluetooth is connected
+ */
+async function bluetoothIsConnected() {
+  const test = await new Promise((resolve) => {
+    bluetoothSerial.isConnected(() => {
+      resolve(true)
+    }, (error) => {
+      resolve(false)
+    })
+  })
+  return test
+}
+
+/**
+ * async bluetooth connect
+ * @param {string} macAddress
+ * @returns
+ */
+async function bluetoothConnect(macAddress) {
+  const test = await new Promise((resolve) => {
+    bluetoothSerial.connect(macAddress, async (result) => {
+      resolve(true)
+    }, (error) => {
+      resolve(false)
+      console.log(`-> bluetoothConnect, error = ${error}`)
+    })
+  })
+  return test
+}
+
+export async function bluetoothConnection() {
+  let connect = false
+  console.log('-> bluetoothConnection -', new Date())
+
+  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
+  const isConnected = await bluetoothIsConnected()
+
+  if (isConnected === false) {
+    connect = await bluetoothConnect(macAddress)
+  } else {
+    connect = true
+  }
+
+  // tentative de reconnexion après 2 secondes
+  if (connect === false) {
+    setTimeout(bluetoothConnection, 2 * 1000)
+  }
+}
+
+async function bluetoothSerialWrite(contentToWrite) {
+  const write = await new Promise((resolve) => {
+    bluetoothSerial.write(contentToWrite, () => {
+      resolve(true)
+    }, (error) => {
+      resolve(false)
+      console.log(`-> bluetoothSerialWrite, error = ${error}`)
+    })
+  })
+  return write
+}
+
+async function bluetoothDisconnect() {
+  const disconnect = await new Promise((resolve) => {
+    bluetoothSerial.disconnect(() => {
+      resolve(true)
+    }, (error) => {
+      resolve(false)
+      console.log(`-> bluetoothDisconnect, error = ${error}`)
+    })
+  })
+  return disconnect
+}
+
+ export async function bluetoothOpenCashDrawer() {
+  await bluetoothConnection()
+
+  let data = new Uint8Array(5)
+  data[0] = 0x10
+  data[1] = 0x14
+  data[2] = 0x00
+  data[3] = 0x00
+  data[4] = 0x00
+
+  const state = await bluetoothSerialWrite(data)
+  await bluetoothDisconnect()
+  return state
+}

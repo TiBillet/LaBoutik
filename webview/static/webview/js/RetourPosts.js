@@ -6,8 +6,8 @@ window.orthoPaiement = {
 }
 
 function gestionTransactionFondsInsuffisants(retour, options) {
-  console.log('--- fonction gestionTransactionFondsInsuffisants :')
-  sys.logValeurs({ retour, options })
+  // console.log('--- fonction gestionTransactionFondsInsuffisants :')
+  // sys.logValeurs({ retour, options })
 
   let boutons = ''
   let msg = `<div class="BF-col-uniforme message-fonds-insuffisants">`
@@ -44,7 +44,7 @@ function gestionTransactionFondsInsuffisants(retour, options) {
       <div class="popup-msg1 test-returm-possible-purchase" data-i8n="possiblePurchaseBy,capitalize">Achat possible par :</div>
     `
   } else {
-    console.log("-> Fonds insuffisants sur deuxieme carte")
+    // console.log("-> Fonds insuffisants sur deuxieme carte")
     // la deuxième carte n'a pas les fonds
     msg += `<div class="popup-titre1" data-i8n="insufficientFunds,capitalize">Fonds insuffisants.</div>
     <div class="popup-titre1" data-i8n="onSecondCard">sur deuxieme carte</div>
@@ -141,8 +141,8 @@ function messageRetourCarte(retour, options) {
  * @param {Object} options = données avant le lancement de la requète
  */
 function afficherRetourEnvoyerPreparation(retour, status, options) {
-  // console.log('-> fonc afficherRetourEnvoyerPreparation !')
-  // sys.logValeurs({ retour: retour, status: status, options: options })
+  console.log('-> fonc afficherRetourEnvoyerPreparation !')
+  sys.logValeurs({ retour: retour, status: status, options: options })
   let msg = '', msgPaye = '', msgDifErreur = '', typeMsg = 'succes', fonction = '', msgAssets = '', msgTotalCarteApresAchats = '',
     msgTotalCartesAvantAchats = '', msgEspece = ''
 
@@ -184,7 +184,6 @@ function afficherRetourEnvoyerPreparation(retour, status, options) {
             if (options.achats.complementaire.moyen_paiement === "nfc") {
               msgTotalCartesAvantAchats = `<div class="popup-msg1 test-return-purchase-cards"><span data-i8n="cardsTotal,capitalize">Total des cartes</span> ${retour.total_sur_carte_avant_achats} <span data-i8n="currencySymbol"></span></div>`
             }
-
           }
         }
         // gestion moyen de paiement unique  "espèce", somme à rendre
@@ -192,8 +191,10 @@ function afficherRetourEnvoyerPreparation(retour, status, options) {
           const totalAchat = parseFloat(options.achats.total)
           const sommeDonnee = parseFloat(options.sommeDonnee)
           const resultat = new Big(sommeDonnee).minus(totalAchat)
-          // const sumValue = (new Big(sum)).valueOf()
-          msgEspece = `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
+          console.log('-> sommeDonnee =', sommeDonnee, '  --  type =', typeof (sommeDonnee));
+
+          if (sommeDonnee > 0) {
+            msgEspece = `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
             <span data-i8n="givenSum">Somme donnée</span>
             <span>${sommeDonnee}</span>
             <span data-i8n="currencySymbol"></span>
@@ -203,6 +204,7 @@ function afficherRetourEnvoyerPreparation(retour, status, options) {
             <span role="status" aria-label="change">${resultat}</span>
             <span data-i8n="currencySymbol"></span>
           </div>`
+          }
         }
       }
 
@@ -259,8 +261,11 @@ function afficherRetourEnvoyerPreparation(retour, status, options) {
  * @param {Object} status = etat de la requète
  * @param {Object} options = données avant le lancement de la requète
  */
+// TODO: mettre cette fonction dans restaurant.js
 function aiguillagePagePaiementCommande(retour, status, options) {
-  // console.log(`-> fonction aiguillagePagePaiementCommande !`)
+  console.log(`-> fonction aiguillagePagePaiementCommande !`)
+  sys.logValeurs({ retour: retour, status: status, options: options })
+
   if (status.code === 200) {
     // reset articles sélectionnés
     vue_pv.rezet_commandes()
@@ -333,8 +338,8 @@ function infosPaiementRetourTable(retour, status, options) {
         const totalAchat = parseFloat(options.achats.total)
         const sommeDonnee = parseFloat(options.sommeDonnee)
         const resultat = new Big(sommeDonnee).minus(totalAchat)
-        // const sumValue = (new Big(sum)).valueOf()
-        msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
+        if (sommeDonnee > 0) {
+          msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
           <span data-i8n="givenSum,capitalize">Somme donnée</span>
           <span>${sommeDonnee}</span>
           <span data-i8n="currencySymbol"></span>
@@ -344,6 +349,7 @@ function infosPaiementRetourTable(retour, status, options) {
           <span role="status" aria-label="change">${resultat}</span>
           <span data-i8n="currencySymbol"></span>
         </div>`
+        }
       }
 
       msg = `
@@ -436,7 +442,8 @@ function afficherRetourVenteDirecte(retour, status, options) {
             const sommeDonnee = parseFloat(options.sommeDonnee)
             const resultat = new Big(sommeDonnee).minus(totalAchat)
             // const sumValue = (new Big(sum)).valueOf()
-            msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
+            if (sommeDonnee > 0) {
+              msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
               <span data-i8n="givenSum">Somme donnée</span>
               <span>${sommeDonnee}</span>
               <span data-i8n="currencySymbol"></span>
@@ -446,6 +453,7 @@ function afficherRetourVenteDirecte(retour, status, options) {
               <span role="status" aria-label="change">${resultat}</span>
               <span data-i8n="currencySymbol"></span>
             </div>`
+            }
           }
 
           // gestion moyen de paiement unique  "nfc"
@@ -469,11 +477,13 @@ function afficherRetourVenteDirecte(retour, status, options) {
             const sommeDonnee = parseFloat(options.sommeDonnee)
 
             msgDefaut += `<div class="popup-msg1 test-return-additional"><span data-i8n="additional,capitalize">Complémentaire</span> ${options.achats.complementaire.manque} <span data-i8n="currencySymbol"></span> <span data-i8n="in">en</span> <span data-i8n="cash"></span></div>
-              <div class="popup-msg1 test-total-achats">
-                <span data-i8n="givenSum">Somme donnée</span>
+              <div class="popup-msg1 test-total-achats">`
+            if (sommeDonnee > 0) {
+              msgDefaut += `<span data-i8n="givenSum">Somme donnée</span>
                 <span>${sommeDonnee}</span>
-                <span data-i8n="currencySymbol"></span>
-              </div><br>`
+                <span data-i8n="currencySymbol"></span>`
+            }
+            msgDefaut += '</div><br>'
 
             // --- complémentaire après achats ---
             // achat initial nfc
@@ -481,13 +491,15 @@ function afficherRetourVenteDirecte(retour, status, options) {
               msgDefaut += `<div class="popup-msg1 test-return-post-purchase-card">${retour.carte.membre_name} - <span data-i8n="postPurchaseCard">carte après achats</span> 0 <span data-i8n="currencySymbol"></span></div>`
             }
 
-            const sommeManquante = parseFloat(options.achats.complementaire.manque)
-            const resultat = new Big(sommeDonnee).minus(sommeManquante)
-            msgDefaut += `<div class="test-return-change" style="margin-top:2rem; font-size: 2rem;font-weight: bold;">
+            if (sommeDonnee > 0) {
+              const sommeManquante = parseFloat(options.achats.complementaire.manque)
+              const resultat = new Big(sommeDonnee).minus(sommeManquante)
+              msgDefaut += `<div class="test-return-change" style="margin-top:2rem; font-size: 2rem;font-weight: bold;">
                 <span data-i8n="change,capitalize">monnaie à rendre</span>
                 <span role="status" aria-label="change">${resultat}</span>
                 <span data-i8n="currencySymbol"></span>
               </div>`
+            }
           }
 
           // complémentaire nfc

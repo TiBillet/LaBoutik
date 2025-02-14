@@ -1,0 +1,40 @@
+digraph {
+  restau [label="restau.choixTypePreparation()", shape=rectangle]
+  btEnvoyerPreparation [label="Ajouter bouton\nenvoyer en préparation", shape=rectangle]
+  btEnvoyerPreparationPayer [label="Ajouter bouton\nenvoyer préparation et payer", shape=rectangle]
+  btEnvoyerPreparationPayerFraction [label="Ajouter bouton\nenvoyer preparation\net paiement fractionne", shape=rectangle]
+  btRetour [label="RETOUR", shape=rectangle]
+  restauEnvoyerPreparation [label="restau.envoyerPreparation(actionAValider)", shape=rectangle]
+
+  valEtape1 [label="vue_pv.validerEtape1\n({url: 'paiement',actionAValider,achats})", shape=rectangle]
+  valEtape2 [label="vue_pv.validerEtape2\n({ tagId: 'inutile', donnees: donnees })", shape=rectangle]
+  testActionAValider [label="actionAValider === ?", shape=diamond]
+
+  testObtActionAValider [label="actionAValider === ?", shape=diamond]
+  selActionAValider [label ="achats.moyen_paiement = 'commande'"]
+  
+  subgraph cluster_obtenirAchats {
+    testObtActionAValider -> selActionAValider [label="envoyer_preparation\n || \nenvoyer_preparation_payer_fractionner"]
+    label = "vue_pv.obtenirAchats(actionAValider) :"
+    shape = rectangle
+  }
+
+
+  gererRetourPostPaiement [label="gererRetourPostPaiement(retour, status, options)\nRetourPosts.js", shape=rectangle]
+
+  restau -> btEnvoyerPreparation [label="envoyer_preparation"]
+  restau -> btEnvoyerPreparationPayer [label="envoyer_preparation_payer"]
+  restau -> btEnvoyerPreparationPayerFraction [label="envoyer_preparation_payer_fractionner"]
+  restau -> btRetour
+
+  btEnvoyerPreparation -> restauEnvoyerPreparation
+  btEnvoyerPreparationPayer -> restauEnvoyerPreparation
+  btEnvoyerPreparationPayerFraction -> restauEnvoyerPreparation
+  restauEnvoyerPreparation -> testObtActionAValider
+  selActionAValider -> testActionAValider
+
+  testActionAValider -> valEtape1 [label = "envoyer_preparation_payer"]
+  testActionAValider -> valEtape2 [label="envoyer_preparation\n||\nenvoyer_preparation_payer_fractionner"]
+  valEtape2 -> gererRetourPostPaiement [label="moyen_paiement = 'commande'"]
+  valEtape1 -> valEtape2
+}

@@ -1,0 +1,74 @@
+digraph {
+  restau [label="restau.choixTypePreparation()", shape=rectangle]
+  valEtape1 [label="validerEtape1\n({url: 'paiement',actionAValider,achats})", shape=rectangle]
+  testNbArticles [label="articlesListeAddition.length == ?", shape=diamond]
+  obtenirAchats [label="vue_pv.obtenirAchats(actionAValider)", shape=rectangle]
+  affMsgArticlesNonSel [label="afficherMessageArticlesNonSelectionnes()", shape=rectangle]
+  validerPaiementArticleCommande [label ="restau.validerPaiementArticleCommande(actionAValider)", shape=rectangle]
+
+  determinerInterfaceValidation [label ="determinerInterfaceValidation\n(options.actionAValider, options.achats)", shape=rectangle]
+
+  testMoyensPaiement [label="moyens_paiement_tab.length === ?", shape=diamond]
+
+  obtenirIdentiteClientSiBesoin [label="vue_pv.obtenirIdentiteClientSiBesoin(moyenPaiement, sumValue)", shape=rectangle]
+  moyensPaiementTab [label="moyens_paiement_tab[i]",shape=diamond]
+
+  test [shape=diamond, label="vue_pv.testPaiementPossible(actionAValider)", color=blue]
+  achatPossible [label="achatPossible === ?", shape=diamond]
+  ajouBtEspece [label="ajout bt 'ESPECE'", shape=rectangle]
+  ajouBtCb [label="ajout bt 'CB'", shape=rectangle]
+  ajouBtCh [label="ajout bt 'CH'", shape=rectangle]
+  ajouBtReturn [label="ajout bt 'RETOUR'", shape=rectangle]
+
+  popupConfirme [label="fn.popupConfirme\n(moyenPaiement, nom, fonction)", shape=rectangle]
+
+  testFonction [shape=diamond, label="fonction"]
+  validerEtapeMoyenComplementaire [label="vue_pv.validerEtapeMoyenComplementaire('espece', sumValue)", shape=rectangle]
+
+  testBesoinNfc [label="donnees.besoin_tag_id.includes('tout') === true\n ||\n moyenPaiement === 'nfc'", shape=diamond]
+  valEtape2 [label="vue_pv.validerEtape2\n({ tagId: 'inutile', donnees: donnees })", shape=rectangle]
+  lireTagId [label=". lireTagId()\n.tagIdIdentite', 'client1'", shape=rectangle]
+
+  gererRetourPostPaiement [label="gererRetourPostPaiement(retour, status, options)\nRetourPosts.js", shape=rectangle]
+
+  optionsAchatsMoyenPaiement [label="options.achats.moyen_paiement === ?", shape=diamond]
+  openCashDrawer [label="async openCashDrawer()", shape=rectangle]
+
+  test -> achatPossible [ label="= vente_directe || prendre_commande" ]
+  test -> testNbArticles [ label="= addition_liste" ]
+
+  achatPossible -> obtenirAchats [label="achatPossible = 1 &\n vente_directe"]
+  achatPossible -> affMsgArticlesNonSel [label="achatPossible = 0"]
+  obtenirAchats -> valEtape1
+  
+  achatPossible -> restau [label="achatPossible = 1&\n prendre_commande"]
+  
+  testNbArticles ->  validerPaiementArticleCommande  [label="articlesListeAddition.length > 0"]
+  testNbArticles -> affMsgArticlesNonSel  [label="articlesListeAddition.length < 0"]
+
+  valEtape1 -> determinerInterfaceValidation
+  determinerInterfaceValidation -> testMoyensPaiement
+
+  testMoyensPaiement -> obtenirIdentiteClientSiBesoin [label="moyens_paiement_tab.length < 1"]
+  testMoyensPaiement -> moyensPaiementTab [label="moyens_paiement_tab.length >= 1"]
+  moyensPaiementTab -> ajouBtEspece [label="espece"]
+  moyensPaiementTab -> ajouBtCb  [label="carte_bancaire"]
+  moyensPaiementTab ->  ajouBtCh [label="CH"]
+  moyensPaiementTab -> ajouBtReturn
+
+  ajouBtEspece -> popupConfirme [label="'espece',\n'ESPECE',\nvue_pv.obtenirIdentiteClientSiBesoin'"]
+  ajouBtCb -> popupConfirme [label="'carte_bancaire',\n'CB',\nvue_pv.obtenirIdentiteClientSiBesoin'"]
+  ajouBtCh -> popupConfirme [label="'CH',\n'CH',\nvue_pv.obtenirIdentiteClientSiBesoin'"]
+  popupConfirme -> testFonction
+  testFonction -> validerEtapeMoyenComplementaire
+  testFonction -> obtenirIdentiteClientSiBesoin
+
+  obtenirIdentiteClientSiBesoin -> testBesoinNfc
+  testBesoinNfc -> lireTagId [label="true"]
+  testBesoinNfc -> valEtape2 [label="false"]
+  lireTagId -> valEtape2
+
+  valEtape2 -> gererRetourPostPaiement [label="vente_directe"]
+  gererRetourPostPaiement -> optionsAchatsMoyenPaiement
+  optionsAchatsMoyenPaiement -> openCashDrawer  [label="espece"]
+}
