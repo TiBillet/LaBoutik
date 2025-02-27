@@ -1892,10 +1892,12 @@ class CashlessTest(TiBilletTestCase):
             data={
                 'email': email,
                 'cgu': True,
+                'emailConfirmation': email,
                 'qrcode_uuid': f"{card.uuid_qrcode}"
             },
             verify=False,
         )
+
         self.assertEqual(lespass_link.status_code, 200)
 
         # On vérifie sur Fedow que la card n'est plus ephémère :
@@ -2228,8 +2230,8 @@ class CashlessTest(TiBilletTestCase):
         ### BADGE
         self.badge()
         # TODO: tester badge sur dashboard fedow
-        import ipdb;
-        ipdb.set_trace()
+        logger.info("TOUT PASSE ! On mets un ipdb pour s'amuser avec les tests si besoin.")
+        import ipdb; ipdb.set_trace()
 
         # On rebadge avec un asset exterieur
         # tester refund et void -> toujours membership et badge
