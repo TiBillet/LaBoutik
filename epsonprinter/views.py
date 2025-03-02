@@ -197,21 +197,26 @@ class print_command():
 
                     title = f"{groupe.name} {groupe.compteur_ticket_journee}"
 
-                # Pour serveur sous flask :
+
                 req = requests.session()
-                reponse = req.post(f'{groupe.printer.serveur_impression}',
-                                   data={
-                                       'coucouapi': groupe.printer.api_serveur_impression,
-                                       'adresse_printer': groupe.printer.thermal_printer_adress,
-                                       'copy': groupe.qty_ticket,
+                try :
+                    # Pour serveur sous flask :
+                    reponse = req.post(f'{groupe.printer.serveur_impression}',
+                                       data={
+                                           'coucouapi': groupe.printer.api_serveur_impression,
+                                           'adresse_printer': groupe.printer.thermal_printer_adress,
+                                           'copy': groupe.qty_ticket,
 
-                                       'title': title,
-                                       'header': header,
-                                       'body': body,
-                                       'footer': footer,
-                                   })
-
-                logger.info(f"REPONSE Serveur impression : {reponse.status_code} - {reponse.text}")
+                                           'title': title,
+                                           'header': header,
+                                           'body': body,
+                                           'footer': footer,
+                                       })
+                    logger.info(f"REPONSE Serveur impression : {reponse.status_code} - {reponse.text}")
+                except ConnectionError:
+                    logger.error(f"print_command ConnectionError for {groupe.printer.thermal_printer_adress} ")
+                except Exception as e:
+                    logger.error(f"print_command Exception for {groupe.printer.thermal_printer_adress} : {e}")
 
                 req.close()
 
@@ -454,8 +459,8 @@ class TicketZPrinter():
                     logger.info(f"nb_try : {nb_try}")
                 logger.info(f"REPONSE Serveur impression : {reponse.status_code} - {reponse.text}")
         except ConnectionError :
-            logger.error(f"TicketZPrinter ConnectionError")
+            logger.error(f"TicketZPrinter ConnectionError for {printer.thermal_printer_adress}")
         except Exception as e:
-            logger.error(f"TicketZPrinter Exception : {e}")
+            logger.error(f"TicketZPrinter Exception for {printer.thermal_printer_adress} : {e}")
 
         req.close()
