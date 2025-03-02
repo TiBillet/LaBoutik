@@ -418,7 +418,6 @@ class TicketZPrinter():
             return True
         return False
 
-    # noinspection PyStatementEffect
     def to_printer(self):
 
         # On itère de 0 à qty pour imprimer autant de ticket que de billets vendus
@@ -432,26 +431,31 @@ class TicketZPrinter():
 
         printer = self.config.ticketZ_printer
 
-        busy = True
-        nb_try = 0
-        while busy == True and nb_try < 20:
-            busy = False
-            nb_try += 1
-            reponse = req.post(f'{printer.serveur_impression}',
-                               data={
-                                   'coucouapi': printer.api_serveur_impression,
-                                   'adresse_printer': printer.thermal_printer_adress,
-                                   'copy': 1,
-                                   'title': title,
-                                   'header': header,
-                                   'body': body,
-                                   'footer': footer,
-                               })
+        try :
+            busy = True
+            nb_try = 0
+            while busy == True and nb_try < 20:
+                busy = False
+                nb_try += 1
+                reponse = req.post(f'{printer.serveur_impression}',
+                                   data={
+                                       'coucouapi': printer.api_serveur_impression,
+                                       'adresse_printer': printer.thermal_printer_adress,
+                                       'copy': 1,
+                                       'title': title,
+                                       'header': header,
+                                       'body': body,
+                                       'footer': footer,
+                                   })
 
-            if "Resource busy" in reponse.text:
-                time.sleep(0.5)
-                busy = True
-                logger.info(f"nb_try : {nb_try}")
-            logger.info(f"REPONSE Serveur impression : {reponse.status_code} - {reponse.text}")
+                if "Resource busy" in reponse.text:
+                    time.sleep(0.5)
+                    busy = True
+                    logger.info(f"nb_try : {nb_try}")
+                logger.info(f"REPONSE Serveur impression : {reponse.status_code} - {reponse.text}")
+        except ConnectionError :
+            logger.error(f"TicketZPrinter ConnectionError")
+        except Exception as e:
+            logger.error(f"TicketZPrinter Exception : {e}")
 
         req.close()
