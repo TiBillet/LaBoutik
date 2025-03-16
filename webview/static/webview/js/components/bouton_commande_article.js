@@ -310,7 +310,7 @@ export default class BoutonCommandeArticle extends HTMLElement {
   afficherPrix() {
     return `
        <div class="ele-prix BF-ligne-g">
-          ${this.prix} ${getTranslate('currencySymbol')}
+          ${this.prix} ${getTranslate('currencySymbol', null, 'methodCurrency')}
        </div>
     `
   }
@@ -389,9 +389,7 @@ export default class BoutonCommandeArticle extends HTMLElement {
       this.nbCommande = this.getAttribute("nb-commande")
       if (this.shadowRoot !== null) {
         // maj nombre article
-        this.shadowRoot.querySelector(
-          `#rep-nb-article${this.articleUuid}`
-        ).innerHTML = this.nbCommande
+        this.shadowRoot.querySelector(`#rep-nb-article${this.articleUuid}`).innerHTML = this.nbCommande
         // maj liste addition
         restau.majListeAddition()
       }

@@ -24,6 +24,7 @@ function colorLuminance(hex, lum) {
   return rgb
 }
 
+// TODO: les hauteurs du bouton article doivent être en pourcentage du conteneur principal
 function get_template(ctx) {
   // console.log('couleur_texte = '+ctx.couleur_texte + '  --  type = ' + typeof ctx.couleur_texte+ '  --  nom = '+ctx.nom);
   let template = `
@@ -293,7 +294,7 @@ export default class BoutonArticle extends HTMLElement {
     if (this.afficher_les_prix === true) {
       return `
         <div class="ele-prix BF-ligne-g">
-          ${this.prix} ${getTranslate('currencySymbol')}
+          ${this.prix} ${getTranslate('currencySymbol', null, 'methodCurrency')}
         </div>
       `
     }
@@ -358,7 +359,7 @@ export default class BoutonArticle extends HTMLElement {
       document.querySelector('#article-infos-divers').setAttribute('achat-possible', 1)
 
       // renseigne le bouton "VALIDER" contenant l'information du total des achats
-      document.querySelector('#bt-valider-total').innerHTML = 'TOTAL ' + total + ' €'
+      document.querySelector('#bt-valider-total').innerHTML = `TOTAL ${total} ${getTranslate('currencySymbol', null, 'methodCurrency')}`
 
       // renseigne/peuple la liste
       let liste = document.querySelector('#achats-liste')
@@ -377,7 +378,7 @@ export default class BoutonArticle extends HTMLElement {
           </div>
           <div class="achats-col-prix">
             <div class="achats-col-prix-contenu">
-              ${this.prix}${getTranslate('currencySymbol')}
+              ${this.prix}${getTranslate('currencySymbol', null, 'methodCurrency')}
             </div>
           </div> 
         </div>

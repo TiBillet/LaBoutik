@@ -138,6 +138,8 @@ export default class BoutonBasique extends HTMLElement {
   connectedCallback() {
     this.couleur_fond = this.getAttribute('couleur-fond')
     let texte = this.getAttribute('texte')
+    // console.log('-> BoutonBasique, texte =', texte);
+    
     const i8n = this.getAttribute('i8n')
     this.largeur = this.getAttribute('width');
     this.hauteur = this.getAttribute('height');
