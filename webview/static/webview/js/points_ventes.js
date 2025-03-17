@@ -94,6 +94,7 @@ import BoutonServiceArticle from '/static/webview/js/components/bouton_service_a
 import * as restaurant from '/static/webview/js/restaurant.js'
 
 window.restau = restaurant
+window.paymentBt = paymentBt
 
 import { Keyboard } from '/static/webview/js/modules/virtualKeyboard/vk.js'
 window.keyboard = new Keyboard(45)

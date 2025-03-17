@@ -1,6 +1,8 @@
-export function paymentBt({ width, height, backgroundColor, textColor, icon, methods, currency, total, cssClass }) {
+export function paymentBt({ width, height, backgroundColor, textColor, icon, methods, currency, total, cssClass, addHtmlContent, paymentBtForceHeight}) {
   try {
-    console.log('-> btBasique')
+    // console.log('-> btBasique')
+    // change height value
+    height = paymentBtForceHeight !== undefined ? paymentBtForceHeight : height
     const commonStyle = `<style id="payment-bt-common-style">
       .paiement-bt-container {
         width: ${width}px;
@@ -57,14 +59,21 @@ export function paymentBt({ width, height, backgroundColor, textColor, icon, met
       }
     </style>`
 
-    let curencyContent = currency.name
-    console.log('currency.tradIndex =', currency.tradIndex, '  --  currency.tradOption =', currency.tradOption);
-    if (currency.tradIndex !== undefined) {
-      curencyContent = getTranslate(currency.tradIndex, currency.tradOption)
+    let curencyContent = ''
+    if (Array.isArray(currency)) {
+      currency.forEach(item => {
+        curencyContent += item.tradIndex !== undefined ? (getTranslate(item.tradIndex, item.tradOption) + ' ') : (item.name + ' ')
+      })
+    } else {
+      // traduction ou pas de traduction
+      curencyContent = currency.tradIndex !== undefined ? getTranslate(currency.tradIndex, currency.tradOption) : currency.name
     }
 
     const fonctions = methods.join(';')
     const addClassCss = 'paiement-bt-container ' + cssClass.join(' ')
+
+    // add html or not
+    const html = addHtmlContent !== undefined ? addHtmlContent : ''
 
     return `${commonStyle}
     <div class="${addClassCss}" onclick="${fonctions}">
@@ -73,6 +82,7 @@ export function paymentBt({ width, height, backgroundColor, textColor, icon, met
       </div>
       <div class="paiement-bt-text">
         <div>${curencyContent}</div>
+        ${html}
         <div class="paiement-bt-total">${getTranslate('total', 'uppercase')} ${total} ${getTranslate('currencySymbol', null, 'methodCurrency')}</div>
       </div>
     </div>`
