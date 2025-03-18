@@ -573,7 +573,7 @@ function dejaPayeeDansCommandes(commandes) {
               <div>${article.name}</div>
             </div>
             <div class="addition-col-prix">
-              <div>${prix} ${getTranslate('currencySymbol', null, 'methodCurrency')}</div>
+              <div>${prix}${getTranslate('currencySymbol', null, 'methodCurrency')}</div>
             </div>
           </div>
         `
