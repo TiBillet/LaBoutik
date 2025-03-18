@@ -21,9 +21,6 @@ window.ledPossibilite = true
 window.intervalActualisationVuePreparations = 5000 // 3600000
 window.attenteLancerVerifierEtatCommandes = { rep: 0, etat: 0, interval: intervalActualisationVuePreparations }
 
-// data current curency
-glob['currencyData'] = getCurrentCurrency(currency)
-
 // récupère les données de l'appli
 try {
   window.glob['appConfig'] = JSON.parse(localStorage.getItem('laboutik'))
@@ -56,7 +53,7 @@ const demande_pvs = function (data) {
     data: { "type-action": "valider_carte_maitresse", "type-post": "ajax", "tag-id-cm": tagIdCm }
   }
   sys.ajax(requete, function (retour, status) {
-    // sys.logJson('retour = ',retour)
+    sys.logJson('accueil.js - retour = ',retour)
     // sys.logJson('status = ',status)
 
     // icon de chargement
@@ -91,6 +88,11 @@ const demande_pvs = function (data) {
         glob.tables = retour.tables
         glob.passageModeGerant = retour.responsable.edit_mode
         glob.modeGerant = false
+        // tempo moke currency
+        glob.currency = { name: 'dirham', country: 'morocco' }
+        // prod ok
+        // data current curency
+        glob['currencyData'] = getCurrentCurrency(glob.currency)
         retour = null
         initProgramme()
       }

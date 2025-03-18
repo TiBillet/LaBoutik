@@ -17,9 +17,7 @@
   </head>
   <body id="contenu" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     {% block content %} {% endblock content %}
-    <script>window.version = '{{ version }}'; window.language = '{{ language }}';
-      const currency = { name: 'dirham', country: 'morocco' }
-    </script>
+    <script>window.version = '{{ version }}'; window.language = '{{ language }}';</script>
     <script src="http://localhost/cordova.js"></script>
     <script src="{% static 'webview/js/htmx@2.0.1.min.js' %}"></script>
     {% block script %} {% endblock script %}

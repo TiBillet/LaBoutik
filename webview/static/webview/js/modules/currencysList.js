@@ -40,8 +40,8 @@ const currencysList = [
     country: 'Morocco',
     // htmlContent: '&#77;&#65;&#68;'
     // htmlContent: 'DH<span itemprop="priceCurrency" content="MAD"></span>'
-    htmlContent: '<span style="margin-left:2px;font-weight:bold;">&#x62f;&#x2e;&#x625;</span>'
-    // htmlContent: '&#x62f;&#x2e;&#x625;'
+    // htmlContent: '<span style="margin-left:2px;font-weight:bold;">&#x62f;&#x2e;&#x625;</span>'
+    htmlContent: '&#x62f;&#x2e;&#x625;'
   },
   {
     name: 'dollar',
