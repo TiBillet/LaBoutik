@@ -752,6 +752,7 @@ class MoyenPaiement(models.Model):
     CASH = 'CA'
     CREDIT_CARD_NOFED = 'CC'
     CHEQUE = 'CH'
+    TRANSFER = 'TR'
     FREE = 'NA'
 
     # Methode special
@@ -787,6 +788,7 @@ class MoyenPaiement(models.Model):
         (CASH, _('Espèces')),
         (CREDIT_CARD_NOFED, _('Carte bancaire')),
         (CHEQUE, _('Chèque')),
+        (TRANSFER, _('Bank transfer')),
         (FREE, _('Offert')),
 
         (FRACTIONNE, _('Fractionné')),
