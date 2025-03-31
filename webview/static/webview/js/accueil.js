@@ -1,6 +1,8 @@
 // console.log('-> accueil.js')
 import * as Sys from '/static/webview/js/modules/systeme.js'
+import { getCurrentCurrency } from '/static/webview/js/modules/currencysList.js'
 import { translate, getTranslate, getLanguages } from '/static/webview/js/modules/i8n.js'
+import * as Fn from "/static/webview/js/modules/fonctions.js"
 
 // scope global
 window.sys = Sys
@@ -11,8 +13,6 @@ window.getLanguages = getLanguages
 // icon de chargement
 sys.affCharge({ etat: 1, largeur: 80, couleur: '#0F0', nbc: 8, rpt: 4, epaisseur: 8 })
 
-import * as Fn from "/static/webview/js/modules/fonctions.js"
-
 window.fn = Fn
 
 window.glob = {}
@@ -20,19 +20,6 @@ window.rfid = new Nfc()
 window.ledPossibilite = true
 window.intervalActualisationVuePreparations = 5000 // 3600000
 window.attenteLancerVerifierEtatCommandes = { rep: 0, etat: 0, interval: intervalActualisationVuePreparations }
-
-/*
-try {
-  Sentry.init({
-    dns: "https://677e4405e6f765888fdec02d174000d6@o262913.ingest.us.sentry.io/4506881155596288",
-    tracesSampleRate: 1.0,
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
-  })  
-} catch (error) {
-  console.log('sentry :', error) 
-}
-*/
 
 // récupère les données de l'appli
 try {
@@ -66,7 +53,7 @@ const demande_pvs = function (data) {
     data: { "type-action": "valider_carte_maitresse", "type-post": "ajax", "tag-id-cm": tagIdCm }
   }
   sys.ajax(requete, function (retour, status) {
-    // sys.logJson('retour = ',retour)
+    sys.logJson('accueil.js - retour = ',retour)
     // sys.logJson('status = ',status)
 
     // icon de chargement
@@ -101,6 +88,11 @@ const demande_pvs = function (data) {
         glob.tables = retour.tables
         glob.passageModeGerant = retour.responsable.edit_mode
         glob.modeGerant = false
+        // tempo moke currency
+        glob.currency = { name: 'dirham', country: 'morocco' }
+        // prod ok
+        // data current curency
+        glob['currencyData'] = getCurrentCurrency(glob.currency)
         retour = null
         initProgramme()
       }

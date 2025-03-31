@@ -5,7 +5,7 @@ import { fr } from './languages/languageFr.js'
 
 const lang = { en, fr }
 let local = localStorage.getItem("language")
-const defaultLanguage = (language === '' || language === null ) ? 'en' : language
+const defaultLanguage = (language === '' || language === null) ? 'en' : language
 if (local === null || local === '') {
   localStorage.setItem("language", defaultLanguage)
   local = defaultLanguage
@@ -54,25 +54,31 @@ export function translate(selector) {
 }
 
 /**
- * * retourne le text de la traduction / return the translation text
+ * retourne le text de la traduction / return the translation text
  * @param {string} index - index de traduction
  * @param {string} option - option de traduction : capitalize, uppercase
+ * @param {string} method - fonction à appeler pour bypasser la traduction
  * @returns 
  */
-export function getTranslate(index, option) {
+export function getTranslate(index, option, method) {
   try {
-    let trad = lang[local].content[index]
-    // option existe
-    if (option !== undefined && typeof (option) === 'string') {
+    let trad
+    // bypass by method
+    if (method !== undefined) {
+      trad = window[method](option)
+    } else {
+      trad = lang[local].content[index]
+      // option existe
+      if (option !== undefined && option !== null && typeof (option) === 'string') {
 
-      if (option.includes('capitalize')) {
-        trad = trad.charAt(0).toUpperCase() + trad.slice(1)
+        if (option.includes('capitalize')) {
+          trad = trad.charAt(0).toUpperCase() + trad.slice(1)
+        }
+
+        if (option.includes('uppercase')) {
+          trad = trad.toUpperCase()
+        }
       }
-
-      if (option.includes('uppercase')) {
-        trad = trad.toUpperCase()
-      }
-
     }
     return trad
   } catch (error) {

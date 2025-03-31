@@ -188,7 +188,7 @@ body {
 
 /* pas de dépassement */
 .pdep {
-    overflow: hidden;
+    overflow: hidden !important;
 }
 
 /* fonds */
