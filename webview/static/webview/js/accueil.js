@@ -88,11 +88,8 @@ const demande_pvs = function (data) {
         glob.tables = retour.tables
         glob.passageModeGerant = retour.responsable.edit_mode
         glob.modeGerant = false
-        // tempo moke currency
-        glob.currency = { name: 'dirham', country: 'morocco' }
-        // prod ok
         // data current curency
-        glob['currencyData'] = getCurrentCurrency(glob.currency)
+        glob['currencyData'] = getCurrentCurrency(retour.currency_code)
         retour = null
         initProgramme()
       }
