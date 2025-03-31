@@ -208,16 +208,15 @@ def index(request):
     if not getattr(request.user, 'appareil', None) and not mode_demo:
         return HttpResponseNotFound(_(f"Terminal non appairé ou mode demo : {mode_demo}"))
 
+    configuration = Configuration.get_solo()
     # print("----------------------------------------------")
     # print(f"-> request.method = {request.method}")
     # print("----------------------------------------------")
-
     if request.method == 'POST':
         # print("----------------------------------------------")
         # print(f"->data ={request.POST}")
         # print("----------------------------------------------")
 
-        configuration = Configuration.get_solo()
         # valider la carte primaire
         if request.POST.get('type-action') == 'valider_carte_maitresse':
             tag_id_cm = request.POST.get('tag-id-cm').upper()
@@ -250,7 +249,7 @@ def index(request):
                         data['responsable']['edit_mode'] = True
 
                     data['monnaie_principale_name'] = monnaie_principale_name
-
+                    data['currency_code'] = configuration.currency_code
                     return Response(data, status=status.HTTP_200_OK)
                 else:
                     logger.error("/wv/index Carte sans nom !")
@@ -262,7 +261,7 @@ def index(request):
         'version': '0.9.10',
         'titrePage': _('Laboutik | Tibillet'),
         'demo': mode_demo,
-        'time_zone': settings.TIME_ZONE,
+        'time_zone': configuration.fuseau_horaire,
         'demoTagIdCm': os.getenv("DEMO_TAGID_CM"),
         'demoTagIdClient1': os.getenv("DEMO_TAGID_CLIENT1"),
         'demoTagIdClient2': os.getenv("DEMO_TAGID_CLIENT2"),

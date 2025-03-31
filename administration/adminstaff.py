@@ -930,6 +930,7 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 'numero_tva',
                 'taux_tva',
                 'fuseau_horaire',
+                'currency_code',
                 'horaire_ouverture',
                 'horaire_fermeture',
             )

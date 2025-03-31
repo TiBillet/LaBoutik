@@ -4,6 +4,7 @@ import os, random
 from uuid import uuid4
 from decimal import Decimal
 
+import pytz
 import requests
 from django.core.cache import cache
 from django.utils.html import format_html
@@ -1896,17 +1897,14 @@ class Configuration(SingletonModel):
     horaire_ouverture = models.TimeField(null=True, blank=True)
     horaire_fermeture = models.TimeField(null=True, blank=True)
 
-    # TODO: utiliser settings.TIME_ZONE
-    TZ_REUNION, TZ_PARIS = "Indian/Reunion", "Europe/Paris"
-    TZ_CHOICES = [
-        (TZ_REUNION, _('Indian/Reunion')),
-        (TZ_PARIS, _('Europe/Paris')),
-    ]
-
-    fuseau_horaire = models.CharField(default=TZ_REUNION,
+    TZ_CHOICES = zip(pytz.all_timezones, pytz.all_timezones)
+    fuseau_horaire = models.CharField(default="Europe/Paris",
                                       max_length=50,
                                       choices=TZ_CHOICES,
+                                      verbose_name=_("Timezone"),
                                       )
+
+    currency_code = models.CharField(max_length=3, default="EUR")
 
     def timezone(self):
         return settings.TIME_ZONE
