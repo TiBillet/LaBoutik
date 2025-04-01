@@ -707,17 +707,24 @@
     </tbody>
 </table>
 -->
-
-<!--              
+            
 <br>
 <br>
-<div>{% trans "Commentaires" %} :</div>
-<div>
-    {% for comment in comments %}
-        <li>{{ comment }}</li>
-    {% endfor %}
-</div>
--->
+<table class="tg">
+    <tbody>
+    <tr>
+        <td class="tg-titre tg-gras tg-centre tg-noborder" colspan="6">{% trans "Versement Stripe" %}</td>
+    </tr>
+    <tr>
+        <td class="tg-texte" colspan="2">{% trans "État du versement pour le mois précédent : " %}</td>
+        <td class="tg-data" colspan="2">{% trans "Validé ou En attente" %}</td>
+    </tr>
+    <tr>
+        <td class="tg-texte" colspan="2">{% trans "Montant total du versement :" %}</td>
+        <td class="tg-texte" colspan="4">{{ table_TOTAL_sop.SF | floatformat:2 | default:0 }} €</td> <!-- Stripe "En ligne" -->
+    </tr>
+    </tbody>
+</table>
 
 <script src="{% static 'webview/js/htmx@2.0.1.min.js' %}"></script>
 </html>
