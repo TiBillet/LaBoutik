@@ -92,9 +92,7 @@
 }
 
 .tg-ca {
-    position: absolute;
-    left: 60%; 
-    transform: translateX(-50%); 
+    position: relative;
     white-space: nowrap;
     text-align: center;
     line-height: 58px;
@@ -177,7 +175,6 @@
     <tbody>
     <tr>
         <td class="tg-titre tg-gras tg-centre tg-noborder tg-relative" colspan="4">{% trans "POINT DE VENTE" %}</td>
-        <td class="tg-texte tg-gras tg-ca" colspan="2" rowspan="2">{% trans "CHIFFRE D'AFFAIRES" %}</td>
     </tr>
     <tr>
         <td class="tg-texte" colspan="2">{% trans "Responsable(s) :" %}</td>
@@ -210,7 +207,6 @@
                 <a href='?pos={{ pdv.id }}'><button>{{ pdv.name }}</button></a>
             {% endfor %}
         </td>
-        <td class="tg-texte tg-ca {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %} tg-gras" colspan="2">{{ table_vente.TOTAL | floatformat:2 | default:0 }}€</td>
     </tr>
     </tbody>
 </table>
@@ -234,6 +230,19 @@
     <tr>
         <td class="tg-texte" colspan="2">{% trans "Fermée le : " %}</td>
         <td class="tg-texte" colspan="4">{{ end_date | format_iso_date }}</td>
+    </tr>
+    </tbody>
+</table>
+
+<br>
+<br>
+<table class="tg">
+    <tbody>
+    <tr>
+        <td class="tg-texte tg-gras tg-ca" colspan="2">{% trans "CHIFFRE D'AFFAIRES" %}</td>
+    </tr>
+    <tr>
+        <td class="tg-texte tg-ca {% if value < 0 %}tg-negatif{% else %}tg-positif{% endif %} tg-gras" colspan="2">{{ table_vente.TOTAL | floatformat:2 | default:0 }}€</td>
     </tr>
     </tbody>
 </table>
