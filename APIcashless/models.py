@@ -543,6 +543,7 @@ class Articles(models.Model):
     BADGEUSE = 'BG'
     FIDELITY = 'FD'
     CASHBACK = 'HB'
+    TRANSFERT = 'TR'
 
     METHODES_CHOICES = [
         (VENTE, _('Vente')),
@@ -559,6 +560,7 @@ class Articles(models.Model):
         (BADGEUSE, _('Badgeuse')),
         (FIDELITY, _('Fidélité')),
         (CASHBACK, _('Cashback')),
+        (TRANSFERT, _('Virement bancaire')),
     ]
 
     methode_choices = models.CharField(
