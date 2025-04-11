@@ -617,6 +617,8 @@ class Command(BaseCommand):
                 testMembre, created = Membre.objects.get_or_create(name="TEST")
                 jonas_membre, created = Membre.objects.get_or_create(name="JONAS")
                 client_1_membre, created = Membre.objects.get_or_create(name="CLIENT 1")
+                client_2_membre, created = Membre.objects.get_or_create(name="CLIENT 2")
+                client_3_membre, created = Membre.objects.get_or_create(name="CLIENT 3")
                 framboise_membre, created = Membre.objects.get_or_create(name="FRAMBOISIÉ")
                 origin = Origin.objects.get_or_create(generation=1)[0]
 
@@ -706,12 +708,16 @@ class Command(BaseCommand):
 
                 cards_db[0].membre = testMembre
                 cards_db[0].save()
+                cards_db[1].membre = client_2_membre
+                cards_db[1].save()
                 cards_db[2].membre = client_1_membre
                 cards_db[2].save()
                 cards_db[3].membre = jonas_membre
                 cards_db[3].save()
                 cards_db[4].membre = framboise_membre
                 cards_db[4].save()
+                cards_db[5].membre = client_3_membre
+                cards_db[5].save()
 
                 bar1, created = PointDeVente.objects.get_or_create(
                     name="Bar 1",
