@@ -78,19 +78,16 @@ def handshake(config: Configuration):
     if request_fedow.status_code == 202:
         decoded_return_handshake = jsonb64decode(request_fedow.content)
         place_admin_apikey = decoded_return_handshake.get('place_admin_apikey')
-        url_onboard = decoded_return_handshake.get('url_onboard')
         place_wallet_uuid = decoded_return_handshake.get('place_wallet_uuid')
 
         if key and place_wallet_uuid :
             config.fedow_place_admin_apikey = place_admin_apikey
-            config.onboard_url = url_onboard
             config.fedow_domain = fedow_domain
             config.fedow_place_uuid = fedow_place_uuid
             config.fedow_place_wallet_uuid = place_wallet_uuid
             config.save()
 
             return True
-
 
     # Raise erreur si le code n'est pas 202
     logger.error(f"{timezone.localdate()} - erreur handkshake : {request_fedow.status_code} {request_fedow.content}")
