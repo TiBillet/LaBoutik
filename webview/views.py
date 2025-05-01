@@ -1201,47 +1201,27 @@ class Commande:
         fedowAPI = FedowAPI()
         fedow_serialized_card = fedowAPI.NFCcard.cached_retrieve(carte_db.tag_id)
 
-        # Si wallet ephemère = pas d'email
-        # if fedow_serialized_card.get('is_wallet_ephemere'):
-        #     logger.error('methode_adhesion : Pas de membre sur cette carte')
-        #     raise NotAcceptable(
-        #         detail=_("Pas d'email lié sur cette carte.\n"
-        #                "Merci de lier un email à cette carte en scannant son QRCode."),
-        #         code=None
-        #     )
+        try :
+            adh = fedowAPI.subscription.create_sub(
+                wallet=f"{fedow_serialized_card['wallet']['uuid']}",
+                amount=int(self.total_vente_article * 100),
+                article=article,
+                user_card_firstTagId=carte_db.tag_id,
+                primary_card_fisrtTagId=primary_card_fisrtTagId.tag_id
+            )
 
-        adh = fedowAPI.subscription.create_sub(
-            wallet=f"{fedow_serialized_card['wallet']['uuid']}",
-            amount=int(self.total_vente_article * 100),
-            article=article,
-            user_card_firstTagId=carte_db.tag_id,
-            primary_card_fisrtTagId=primary_card_fisrtTagId.tag_id
-        )
+            if not adh['verify_hash']:
+                raise NotAcceptable(
+                    detail="Erreur fédération.\n"
+                           "Notez la transaction et contactez un administrateur.",
+                    code=None
+                )
 
-        # On va chercher l'adhérant
-        # if carte_db.membre:
-        #     adherant: Membre = carte_db.membre
-        #
-        #     # if adherant.a_jour_cotisation():
-        #     #     raise NotAcceptable(
-        #     #         detail=f"Le membre {adherant.name} à déja adhéré le {adherant.date_derniere_cotisation} "
-        #     #                f"via l'interface : {adherant.choice_str(Membre.ORIGIN_ADHESIONS_CHOICES, adherant.adhesion_origine)}.",
-        #     #         code=None
-        #     #     )
-        #
-        #     aujourdhui = datetime.now().date()
-        #     adherant.date_derniere_cotisation = aujourdhui
-        #     adherant.cotisation = total
-        #
-        #     if not adherant.date_inscription:
-        #         adherant.date_inscription = aujourdhui
-        #
-        #     adherant.save()
-
-        if not adh['verify_hash']:
+        except Exception as e:
+            logger.error(f"methode_AD fedowAPI.subscription.create_sub : {e}")
             raise NotAcceptable(
                 detail="Erreur fédération.\n"
-                       "Contactez un administrateur.",
+                       "Notez la transaction et contactez un administrateur.",
                 code=None
             )
 
