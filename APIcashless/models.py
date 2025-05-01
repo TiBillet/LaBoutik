@@ -351,6 +351,7 @@ class PointDeVente(models.Model):
                             null=True, choices=FONT_ICONS_CHOICES)
 
     poid_liste = models.PositiveSmallIntegerField(default=0, verbose_name=_("Poids"))
+    hidden = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name

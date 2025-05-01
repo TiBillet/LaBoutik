@@ -224,6 +224,13 @@ class PointOfSaleAdmin(SortableAdminMixin, admin.ModelAdmin):
             )
         return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
+    def get_queryset(self, request):
+        """
+        On ne filtre que les hidden = False
+        """
+        queryset = super().get_queryset(request)
+        return queryset.filter(hidden=False)
+
 
 staff_admin_site.register(PointDeVente, PointOfSaleAdmin)
 

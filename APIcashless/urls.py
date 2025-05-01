@@ -37,6 +37,9 @@ urlpatterns = [
     path('salefromlespass', views.SaleFromLespass.as_view(),
          name="salefromlespass"),
 
+    path('stripebankdepositfromlespass', views.StripeBankDepositFromLespass.as_view(),
+         name="stripebankdepositfromlespass"),
+
     path('preparations', views.preparations.as_view(),
          name="preparations"),
 

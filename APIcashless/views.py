@@ -3,7 +3,7 @@
 import decimal
 import json
 import logging
-from datetime import timedelta
+from datetime import timedelta, datetime
 from decimal import Decimal
 from urllib.parse import urlparse
 from uuid import uuid4, UUID
@@ -440,11 +440,64 @@ class CheckCarteQrUuid(viewsets.ViewSet):
 
         return Response(serializer_copy)
 
+class StripeBankDepositFromLespass(APIView):
+    permission_classes = [HasAPIKey]
+    def post(self, request):
+        logger.debug(request.data)
+        payload = request.data
+        transfert, created = Articles.objects.get_or_create(name="Stripe TiBillet transfert",
+                                                 prix=1,
+                                                 methode_choices=Articles.TRANSFERT)
+
+        # Amount est un entier.
+        amount = payload['data']['object']['amount'] / 100
+        id = payload['fedow_transaction_uuid']
+
+        if ArticleVendu.objects.filter(uuid=id).exists():
+            return Response("Déja enregistré", status=status.HTTP_208_ALREADY_REPORTED)
+
+        # Création si besoin du pos Fedow
+        try :
+            pos = PointDeVente.objects.get(name=_('Fedow'))
+        except PointDeVente.DoesNotExist:
+            pos = PointDeVente.objects.create(name=_('Fedow'), hidden=True)
+
+        try:
+            mp = MoyenPaiement.objects.get(categorie=MoyenPaiement.STRIPE_NOFED)
+        except MoyenPaiement.DoesNotExist:
+            mp = MoyenPaiement.objects.create(name="Web (Stripe)", blockchain=False,
+                                                     categorie=MoyenPaiement.STRIPE_NOFED)[0]
+
+        try:
+            vente_depuis_lespass = ArticleVendu.objects.create(
+                uuid=payload['fedow_transaction_uuid'],
+                article=transfert,
+                prix=amount,
+                date_time=datetime.fromtimestamp(payload['data']['object']['created']),
+                qty=1,
+                pos=pos,
+                tva=0,
+                membre=None,
+                responsable=None,
+                carte=None,
+                moyen_paiement=mp,
+                uuid_paiement=payload['fedow_transaction_uuid'],
+                commande=payload['fedow_transaction_uuid'],
+                sync_fedow=True,
+                hash_fedow=payload['fedow_transaction_hash'],
+            )
+            return Response("", status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Error creating ArticleVendu StripeBankDepositFromLespass :  {str(e)}")
+            return Response(
+                {"error": f"Failed to create ArticleVendu StripeBankDepositFromLespass : {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class SaleFromLespass(APIView):
     permission_classes = [HasAPIKey]
     def post(self, request):
-        logger.info(request.data)
+        logger.debug(request.data)
         validator = SaleFromLespassValidator(data=request.data)
         if not validator.is_valid():
             logger.error(f"Sale from lespass not valid : {validator.errors}")
@@ -479,23 +532,29 @@ class SaleFromLespass(APIView):
         article = Articles.objects.get(pk=price_uuid)
         pos, created = PointDeVente.objects.get_or_create(name=_('Billetterie'))
 
-        vente_depuis_lespass = ArticleVendu.objects.create(
-            uuid=validator.validated_data['uuid'],
-            article=article,
-            prix=amount,
-            date_time=validator.validated_data['datetime'],
-            qty=validator.validated_data['qty'],
-            pos=pos,
-            tva=validator.validated_data['vat'],
-            membre=None,
-            responsable=None,
-            carte=None,
-            moyen_paiement=moyen_paiement,
-            uuid_paiement=validator.validated_data['uuid'],
-            commande=validator.validated_data['uuid'],
-        )
-        return Response("", status=status.HTTP_200_OK)
-
+        try:
+            vente_depuis_lespass = ArticleVendu.objects.create(
+                uuid=validator.validated_data['uuid'],
+                article=article,
+                prix=amount,
+                date_time=validator.validated_data['datetime'],
+                qty=validator.validated_data['qty'],
+                pos=pos,
+                tva=validator.validated_data['vat'],
+                membre=None,
+                responsable=None,
+                carte=None,
+                moyen_paiement=moyen_paiement,
+                uuid_paiement=validator.validated_data['uuid'],
+                commande=validator.validated_data['uuid'],
+            )
+            return Response("", status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Error creating ArticleVendu SaleFromLespass: {str(e)}")
+            return Response(
+                {"error": f"Failed to create ArticleVendu SaleFromLespass: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 # ex api pre fedow
 """
