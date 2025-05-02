@@ -151,9 +151,10 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
         self.user = self.scope['user']
 
+        # Utilisation de l'ip de l'appareil comme room name websocket
+        self.room_group_name = self.user.appareil.id.hex # hex car il ne faut pas de tiret dans le nom
 
         # Si l'user n'est pas un terminal préalablement appairé :
         if not settings.DEBUG:
@@ -163,11 +164,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         logger.info(f"CONNECT ChatConsumer room_name / room_group_name: {self.room_name} / {self.room_group_name} \n"
                     f"self.user : {self.user} - authenticated : {self.user.is_authenticated}\n"
-                    f"appareil : {hasattr(self.user, 'appareil')}\n")
+                    f"appareil : {self.user.appareil}\n")
 
         # Join room group
         await self.channel_layer.group_add(
-            self.room_group_name,
+            self.room_group_name, # Nom du canal de chaque appareil
             self.channel_name
         )
 
@@ -207,7 +208,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'message': 'print',
             'data': ticket,
-            'user': f"{user}"
+            # 'user': f"{user}"
         }))
 
 
