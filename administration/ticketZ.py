@@ -763,21 +763,21 @@ class TicketZ():
         ]
 
         for moyen_paiement, valeur in self.to_dict.get('dict_moyenPaiement_euros').items():
-            ticket.append({"type": "text", "value": f"{moyen_paiement.upper()}:{valeur} EUR"})
+            ticket.append({"type": "text", "value": f"{moyen_paiement.upper()}:{dround(valeur)} EUR"})
 
         ticket += [
             {"type": "text", "value": "-" * 32},
-            {"type": "text", "value": f"TOTAL HT:{self.to_dict.get('total_HT')} EUR"},
-            {"type": "text", "value": f"TOTAL TVA:{self.total_collecte_toute_tva} EUR"},
-            {"type": "text", "value": f"TOTAL TTC:{self.total_TTC} EUR"},
-            {"type": "text", "value": f"TOTAL Offert:{self.total_gift_by_mp} EUR"},
+            {"type": "text", "value": f"TOTAL HT:{dround(self.to_dict.get('total_HT'))} EUR"},
+            {"type": "text", "value": f"TOTAL TVA:{dround(self.total_collecte_toute_tva)} EUR"},
+            {"type": "text", "value": f"TOTAL TTC:{dround(self.total_TTC)} EUR"},
+            {"type": "text", "value": f"TOTAL Offert:{dround(self.total_gift_by_mp)} EUR"},
             {"type": "text", "value": "-" * 32},
         ]
 
         # Ventillation TVA
         dict_TVA = self.to_dict.get('dict_TVA')
         for tva, total in dict_TVA.items():
-            ticket.append({"type": "text", "value": f"TVA {tva}% : {total} EUR"})
+            ticket.append({"type": "text", "value": f"TVA {tva}% : {dround(total)} EUR"})
         ticket.append({"type": "text", "value": f"TOTAL TVA:{self.total_collecte_toute_tva} EUR"})
 
         # Cashless
@@ -786,9 +786,9 @@ class TicketZ():
             {"type": "align", "value": "center"},
             {"type": "text", "value": f"CASHLESS"},
             {"type": "align", "value": "left"},
-            {"type": "text", "value": f"Recharge:{self.to_dict.get('total_recharge')} EUR\n"},
-            {"type": "text", "value": f"Recharge cadeau:{self.to_dict.get('total_recharge_cadeau')} EUR\n"},
-            {"type": "text", "value": f"Remboursement:{self.to_dict.get('total_remboursement')} EUR\n"},
+            {"type": "text", "value": f"Recharge:{dround(self.to_dict.get('total_recharge'))} EUR\n"},
+            {"type": "text", "value": f"Recharge cadeau:{dround(self.to_dict.get('total_recharge_cadeau'))} EUR\n"},
+            {"type": "text", "value": f"Remboursement:{dround(self.to_dict.get('total_remboursement'))} EUR\n"},
         ]
 
         # Fond de caisse :
@@ -799,18 +799,18 @@ class TicketZ():
             {"type": "align", "value": "left"},
             {"type": "text", "value": f""},
 
-            {"type": "text", "value": f"Fond caisse initial:{self.to_dict.get('fond_caisse')} EUR\n"},
-            {"type": "text", "value": f"+ cashless esp:{self.to_dict.get('recharge_cash')} EUR\n"},
-            {"type": "text", "value": f"- cashless esp:{self.to_dict.get('remboursement_espece')} EUR\n"},
-            {"type": "text", "value": f"Adhésion en esp:{self.to_dict.get('adhesion_espece')} EUR\n"},
-            {"type": "text", "value": f"Ventes en esp:{self.to_dict.get('ventes_directe_espece')} EUR\n"},
-            {"type": "text", "value": f"Fond caisse final:{self.to_dict.get('total_cash')} EUR\n"},
+            {"type": "text", "value": f"Fond caisse initial:{dround(self.to_dict.get('fond_caisse'))} EUR\n"},
+            {"type": "text", "value": f"+ cashless esp:{dround(self.to_dict.get('recharge_cash'))} EUR\n"},
+            {"type": "text", "value": f"- cashless esp:{dround(self.to_dict.get('remboursement_espece'))} EUR\n"},
+            {"type": "text", "value": f"Adhesions en esp:{dround(self.to_dict.get('adhesion_espece'))} EUR\n"},
+            {"type": "text", "value": f"Ventes en esp:{dround(self.to_dict.get('ventes_directe_espece'))} EUR\n"},
+            {"type": "text", "value": f"Fond caisse final:{dround(self.to_dict.get('total_cash'))} EUR\n"},
         ]
 
         ### THE END
         ticket += [
             {"type": "text", "value": "-" * 32},
-            {"type": "feed", "value": 3},
+            {"type": "feed", "value": 2},
             {"type": "cut"}
         ]
         return ticket
