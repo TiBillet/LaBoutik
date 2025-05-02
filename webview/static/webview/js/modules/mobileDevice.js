@@ -110,7 +110,10 @@ function bluetoothSerialExist() {
 
 export async function bluetoothGetMacAddress(name) {
   let retour = 'unknown'
-  if (bluetoothSerialExist()) {
+  const testBluetoothSerialExist = bluetoothSerialExist()
+  console.log('testBluetoothSerialExist =', testBluetoothSerialExist)
+  
+  if (testBluetoothSerialExist) {
     const list = await new Promise((resolve) => {
       // list devices
       bluetoothSerial.list(function (devices) {
