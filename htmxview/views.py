@@ -155,7 +155,7 @@ class Sales(viewsets.ViewSet):
                 {
                     'type': 'chat_message',
                     'message': 'ticket_z_print',
-                    'data': json.dumps(ticketZ.to_sunmi_printer_57()),
+                    'data': ticketZ.to_sunmi_printer_57(),
                 }
             )
 

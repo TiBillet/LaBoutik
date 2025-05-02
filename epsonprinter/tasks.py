@@ -28,6 +28,8 @@ def print_command_epson_tm20(commande_pk, groupement_solo_pk=None):
         #TODO: Tester max retry avec le débranchage de l'imprimante
         ticket.to_printer()
 
+
+
 @app.task
 def direct_to_print(article_vendu_pk):
     article_vendu = ArticleVendu.objects.get(pk=article_vendu_pk)
