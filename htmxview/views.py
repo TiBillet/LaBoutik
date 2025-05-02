@@ -45,7 +45,7 @@ class Sales(viewsets.ViewSet):
     def list(self, request: Request):
 
         # ex : wv/allOrders?oldest_first=True
-        order = '-date_time' #todo : check datetime ou date_time ?
+        order = '-date_time'
         authorized_management_mode = False
 
         oldest_first = False
@@ -118,6 +118,28 @@ class Sales(viewsets.ViewSet):
             'ticket_today': ticket_today,
         }
         return render(request, "sales/z_ticket.html", context)
+
+
+    @action(detail=False, methods=['GET'])
+    def print_temp_ticket(self, request):
+        # Ticket Z temporaire :
+        config = Configuration.get_solo()
+        heure_cloture = config.cloture_de_caisse_auto
+
+        start = timezone.localtime()
+        if start.time() < heure_cloture:
+            # Alors on est au petit matin, on prend la date de la veille
+            start = start - timedelta(days=1)
+        matin = timezone.make_aware(datetime.combine(start, heure_cloture))
+        print('-> url = z_ticket !')
+
+        ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
+        ticket_today = ticketZ.to_dict if ticketZ.calcul_valeurs() else {}
+        context = {
+            'ticket_today': ticket_today,
+        }
+        return render(request, "sales/z_ticket.html", context)
+
 
     @action(detail=False, methods=['POST'])
     def change_payment_method(self, request):
