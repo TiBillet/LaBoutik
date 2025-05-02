@@ -7,6 +7,16 @@ import { isCordovaApp, bluetoothWrite, bluetoothGetMacAddress, bluetoothOpenCash
 // ---- cordova ---
 window.mobile = isCordovaApp()
 
+window.bluetoothSerialAvailable = function() {
+  window.bluetoothSerial.available(() => {
+    console.log('-> bluetoothSerialAvailable =  succès')
+    return true
+   }, () => {
+    console.log('-> bluetoothSerialAvailable =  no')
+    return false
+  })
+}
+
 // sunmi printer condition
 window.hasSunmiPrinter = async function () {
   const macAddress = await bluetoothGetMacAddress("InnerPrinter")
