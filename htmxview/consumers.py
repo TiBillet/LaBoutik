@@ -154,13 +154,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_group_name = 'chat_%s' % self.room_name
         self.user = self.scope['user']
 
+
         # Si l'user n'est pas un terminal préalablement appairé :
         if not settings.DEBUG:
             if not self.user.is_authenticated or not hasattr(self.user, 'appareil'):
                 logger.error(f"{self.room_name} {self.room_group_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
                 raise Exception(f"{self.room_name} {self.room_group_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
 
-        logger.info(f"{self.room_name} {self.room_group_name} {self.user} connected")
+        logger.info(f"CONNECT ChatConsumer room_name / room_group_name: {self.room_name} / {self.room_group_name} \n"
+                    f"self.user : {self.user} - authenticated : {self.user.is_authenticated}\n"
+                    f"appareil : {hasattr(self.user, 'appareil')}\n")
 
         # Join room group
         await self.channel_layer.group_add(
@@ -206,6 +209,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'data': ticket,
             'user': f"{user}"
         }))
+
 
         '''
         if inputContent == "sunmi_print":
