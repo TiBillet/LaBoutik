@@ -754,14 +754,11 @@ class TicketZ():
             {"type": "text", "value": f"Impression:{timezone.localtime().strftime('%d/%m/%Y %H:%M')}"},
             {"type": "text", "value": f"Ouverture:{self.start_date.strftime('%d/%m/%Y %H:%M')}"},
             {"type": "text", "value": f"Fermeture:{self.end_date.strftime('%d/%m/%Y %H:%M')}"},
-        ]
-        # header = remove_accents(header)
-        ### BODY ###
-        ticket += [
             {"type": "text", "value": "-" * 32},
             {"type": "align", "value": "left"},
         ]
-
+        # header = remove_accents(header)
+        ### BODY ###
         for moyen_paiement, valeur in self.to_dict.get('dict_moyenPaiement_euros').items():
             ticket.append({"type": "text", "value": f"{moyen_paiement.upper()}:{dround(valeur)} EUR"})
 
