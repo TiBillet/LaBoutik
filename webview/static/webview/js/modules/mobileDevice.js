@@ -103,10 +103,10 @@ export async function bluetoothSerialAvailable() {
   return await new Promise((resolve) => {
     try {
       window.bluetoothSerial.available(() => {
-        console.log('-> bluetoothSerialAvailable =  succès')
+        // console.log('-> bluetoothSerialAvailable =  succès')
         resolve(true)
       }, () => {
-        console.log('-> bluetoothSerialAvailable =  no')
+        // console.log('-> bluetoothSerialAvailable =  no')
         resolve(false)
       })
     } catch (error) {
@@ -120,7 +120,7 @@ export async function bluetoothSerialAvailable() {
 export async function bluetoothGetMacAddress(name) {
   let retour = 'unknown'
   const testBluetoothSerialAvailable = await bluetoothSerialAvailable()
-  console.log('testBluetoothSerialAvailable =', testBluetoothSerialAvailable)
+  // console.log('testBluetoothSerialAvailable =', testBluetoothSerialAvailable)
 
   if (testBluetoothSerialAvailable) {
     const list = await new Promise((resolve) => {

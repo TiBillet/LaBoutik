@@ -657,7 +657,10 @@ async function afficherRetourVenteDirecte(retour, status, options) {
       console.log('wsTerminal =', wsTerminal);
       console.log('hasSunmiPrinter =', await hasSunmiPrinter())
       
-
+      if(wsTerminal.on === true && await hasSunmiPrinter() === true) {
+        const foncPrintTicket = `onClick='wsSendMessage({message:"print-ticket", data: "${glob.appConfig.hostname}"})'`
+        msgDefaut += `<button ${foncPrintTicket} type="button">Print a ticket</button> `
+      }
 
       msg = `
         <div class="BF-col-uniforme l100p h100p">
