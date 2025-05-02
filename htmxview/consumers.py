@@ -152,6 +152,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.user = self.scope['user']
+
+        # Utilisation de l'ip de l'appareil comme room name websocket
         self.room_group_name = self.user.appareil.id
 
         # Si l'user n'est pas un terminal préalablement appairé :
@@ -206,7 +208,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({
             'message': 'print',
             'data': ticket,
-            'user': f"{user}"
+            # 'user': f"{user}"
         }))
 
 
