@@ -743,6 +743,7 @@ class TicketZ():
         ### HEADER ####
         config = self.config
         ticket = [
+            {"type": "size", "value": 0},
             {"type": "text", "value": "-" * 32},
             {"type": "align", "value": "center"},
             {"type": "text", "value": f"{config.structure}"},
