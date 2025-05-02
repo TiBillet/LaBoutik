@@ -757,7 +757,7 @@ class TicketZ():
         ]
         # header = remove_accents(header)
         ### BODY ###
-        ticket = [
+        ticket += [
             {"type": "text", "value": "-" * 32},
             {"type": "align", "value": "left"},
         ]
