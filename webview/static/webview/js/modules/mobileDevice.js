@@ -101,13 +101,17 @@ export async function enableBluetooth() {
 
 export async function bluetoothSerialAvailable() {
   return await new Promise((resolve) => {
-    window.bluetoothSerial.available(() => {
-      console.log('-> bluetoothSerialAvailable =  succès')
-      resolve(true)
-    }, () => {
-      console.log('-> bluetoothSerialAvailable =  no')
+    try {
+      window.bluetoothSerial.available(() => {
+        console.log('-> bluetoothSerialAvailable =  succès')
+        resolve(true)
+      }, () => {
+        console.log('-> bluetoothSerialAvailable =  no')
+        resolve(false)
+      })
+    } catch (error) {
       resolve(false)
-    })
+    }
   })
 }
 
