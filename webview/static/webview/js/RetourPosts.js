@@ -650,8 +650,7 @@ async function afficherRetourVenteDirecte(retour, status, options) {
             <span data-i8n="cardCreditedWith,capitalize">Votre carte est crédité de</span> ${Math.abs(retour.somme_totale)} ${glob.monnaie_principale_name}
           </div>`
         }
-        const foncPrintTicket = `onClick='wsSendMessage({message:"print-ticket", data: "${glob.appConfig.hostname}"})'`
-        msgDefaut += `<button ${foncPrintTicket} type="button">Print a ticket</button> `
+        msgDefaut += `</div>`
       }
 
       // insert bt print
@@ -659,7 +658,8 @@ async function afficherRetourVenteDirecte(retour, status, options) {
       console.log('hasSunmiPrinter =', await hasSunmiPrinter())
       
       if(wsTerminal.on === true && await hasSunmiPrinter() === true) {
-         msgDefaut += `<button`
+        const foncPrintTicket = `onClick='wsSendMessage({message:"print-ticket", data: "${glob.appConfig.hostname}})'`
+        msgDefaut += `<button ${foncPrintTicket} type="button">Print a ticket</button> `
       }
 
       msg = `
