@@ -85,7 +85,7 @@ export function isCordovaApp() {
 
 export async function enableBluetooth() {
   return await new Promise((resolve, reject) => {
-    bluetoothSerial.enable(
+    window.bluetoothSerial.enable(
       function () {
         console.log("Bluetooth is enabled");
         resolve(true)
@@ -99,24 +99,23 @@ export async function enableBluetooth() {
 
 }
 
-function bluetoothSerialExist() {
-  try  {
-    bluetoothSerial = cordova.plugins.bluetoothSerial
+function bluetoothSerialAvailable() {
+  window.bluetoothSerial.available(() => {
     return true
-   } catch (error)  {
+   }, () => {
     return false
-   }
+  })
 }
 
 export async function bluetoothGetMacAddress(name) {
   let retour = 'unknown'
-  const testBluetoothSerialExist = bluetoothSerialExist()
-  console.log('testBluetoothSerialExist =', testBluetoothSerialExist)
+  const testBluetoothSerialAvailable = bluetoothSerialAvailable()
+  console.log('testBluetoothSerialAvailable =', testBluetoothSerialAvailable)
   
   if (testBluetoothSerialExist) {
     const list = await new Promise((resolve) => {
       // list devices
-      bluetoothSerial.list(function (devices) {
+      window.bluetoothSerial.list(function (devices) {
         resolve(devices)
       }, (error) => {
         console.log('error =', error);
@@ -134,7 +133,6 @@ export async function bluetoothGetMacAddress(name) {
   }
   return retour
 }
-
 
 async function loadAndConvertImageToB64(url) {
   const load = await new Promise((resolve) => {
@@ -181,7 +179,7 @@ async function escPosImageLoad(url) {
  */
 async function bluetoothConnect(macAddress) {
   const test = await new Promise((resolve) => {
-    bluetoothSerial.connect(macAddress, async (result) => {
+    window.bluetoothSerial.connect(macAddress, async (result) => {
       resolve(true)
     }, (error) => {
       resolve(false)
@@ -196,7 +194,7 @@ async function bluetoothConnect(macAddress) {
  */
 async function bluetoothIsConnected() {
   const test = await new Promise((resolve) => {
-    bluetoothSerial.isConnected(() => {
+    window.bluetoothSerial.isConnected(() => {
       resolve(true)
     }, (error) => {
       resolve(false)
@@ -208,7 +206,7 @@ async function bluetoothIsConnected() {
 
 async function bluetoothSerialWrite(contentToWrite) {
   const write = await new Promise((resolve) => {
-    bluetoothSerial.write(contentToWrite, () => {
+    window.bluetoothSerial.write(contentToWrite, () => {
       resolve(true)
     }, (error) => {
       resolve(false)
@@ -220,7 +218,7 @@ async function bluetoothSerialWrite(contentToWrite) {
 
 async function bluetoothDisconnect() {
   const disconnect = await new Promise((resolve) => {
-    bluetoothSerial.disconnect(() => {
+    window.bluetoothSerial.disconnect(() => {
       resolve(true)
     }, (error) => {
       resolve(false)
