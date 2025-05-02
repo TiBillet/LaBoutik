@@ -28,6 +28,12 @@ window.openCashDrawer = async function () {
   }
 }
 
+window.wsSendMessage = function (data) {
+  if (wsTerminal.on) {
+    wsTerminal.socket.send(JSON.stringify(data))
+  }
+}
+
 function initWebsocket(server) {
   // ---- websocket handler ----
   async function wsHandlerMessag(dataString) {
