@@ -170,9 +170,9 @@ class Sales(viewsets.ViewSet):
             }
         )
 
-                # 'user': f"{request.user}",
-                # 'type': f'from_ws_to_printer',
-                # 'text': 'Print me !'
+        # 'user': f"{request.user}",
+        # 'type': f'from_ws_to_printer',
+        # 'text': 'Print me !'
         return render(request, "sales/z_ticket.html", context)
 
 
