@@ -161,7 +161,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 logger.error(f"{self.room_name} {self.room_group_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
                 raise Exception(f"{self.room_name} {self.room_group_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
 
-        logger.info(f"CONNECT ChatConsumer : {self.room_name} {self.room_group_name} \n{self.user} - authenticated : {self.user.is_authenticated}\n")
+        logger.info(f"CONNECT ChatConsumer room_name / room_group_name: {self.room_name} / {self.room_group_name} \n"
+                    f"self.user : {self.user} - authenticated : {self.user.is_authenticated}\n"
+                    f"appareil : {hasattr(self.user, 'appareil')}\n")
 
         # Join room group
         await self.channel_layer.group_add(
