@@ -124,54 +124,44 @@ class Sales(viewsets.ViewSet):
     @action(detail=False, methods=['GET'])
     def print_temp_ticket(self, request):
         # Ticket Z temporaire :
+        user = request.user
+        # Le wscanal est celui de l'appareil
+        ws_room_appareil = user.appareil.pk.hex
+        # On récupère la configuration de la DB
         config = Configuration.get_solo()
+        # On récupère l'heure de clôture de caisse configurée
         heure_cloture = config.cloture_de_caisse_auto
 
+        # On récupère la date/heure locale actuelle
         start = timezone.localtime()
         if start.time() < heure_cloture:
-            # Alors on est au petit matin, on prend la date de la veille
+            # Si on est avant l'heure de clôture, on est au petit matin
+            # donc on doit prendre la date de la veille
             start = start - timedelta(days=1)
+        # On crée une date/heure avec la date du start et l'heure de clôture
         matin = timezone.make_aware(datetime.combine(start, heure_cloture))
         print('-> url = z_ticket !')
 
+        # On crée le ticket Z entre le matin et maintenant
         ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
+        # On calcule les valeurs et on récupère le dictionnaire, sinon un dict vide
         ticket_today = ticketZ.to_dict if ticketZ.calcul_valeurs() else {}
-        context = {
-            'ticket_today': ticket_today,
-        }
-
-        destination = "print"
-        ticket = [
-            {"type": "text", "value": "--------------------------------"},
-            {"type": "align", "value": "center"},
-            {"type": "font", "value": "A"},
-            {"type": "size", "value": 1},
-            {"type": "bold", "value": 1},
-            {"type": "text", "value": "Titre"},
-            {"type": "bold", "value": 0},
-            {"type": "size", "value": 0},
-            {"type": "barcode", "value": "1234567890456"},
-            {"type": "qrcode", "value": "https://tibillet.org/"},
-            {"type": "text", "value": "---- fin ----"},
-            {"type": "feed", "value": 3},
-        ]
-            # {"type": "cut"}
-
-
-        # On envoi sur le canal que seul l'appareil reçoit l'ordre d'impression depuis le WS
-        logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {destination}")
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            "chat_print",
-            {
-                'type': 'chat_message',
-                'message': 'sunmi_print',
-                'data': json.dumps(ticket),
-            }
-        )
+        if ticket_today:
+            # On envoie sur le canal que seul l'appareil reçoit l'ordre d'impression depuis le WS
+            logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {ws_room_appareil}")
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                ws_room_appareil,
+                {
+                    'type': 'chat_message',
+                    'message': 'ticket_z_print',
+                    'data': json.dumps(ticketZ.to_sunmi_printer_57()),
+                }
+            )
 
         # 'user': f"{request.user}",
         # 'type': f'from_ws_to_printer',
+        context = {'ticket_today': ticket_today,}
         # 'text': 'Print me !'
         return render(request, "sales/z_ticket.html", context)
 

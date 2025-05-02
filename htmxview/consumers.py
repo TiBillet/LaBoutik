@@ -198,13 +198,34 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
-    # Receive message from room group
+    # Called when server sends a message to device's group, triggered by 'chat_message' type
     async def chat_message(self, event):
+        """
+        Handles messages sent from server to device WebSocket.
+        
+        The server sends a message using:
+        async_to_sync(channel_layer.group_send)(
+            "<device_id>",  # Group name is device ID
+            {
+                'type': 'chat_message',     # Triggers this handler
+                'message': 'print_command',  # Command to execute
+                'data': [                    # Print job data
+                    {"type": "barcode", "value": "1234567890456"},
+                    {"type": "qrcode", "value": "https://tibillet.org/"}
+                ],
+            }
+        )
+        
+        Args:
+            event (dict): Contains message and data payload sent by server
+                         data format: list of print commands as dicts
+        """
+        
         inputContent = event['message']
         ticket = event['data']
         user = self.user
         logger.info(f"chat_message \ninputContent: {inputContent} \nticket: {ticket} \nuser: {user} \nend chat_message \n")
-
+        
         await self.send(text_data=json.dumps({
             'message': 'print',
             'data': ticket,
@@ -212,52 +233,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }))
 
 
-        '''
-        if inputContent == "sunmi_print":
-            # Send message to WebSocket
-            # dev moke data
-            # largeur impression max 32 caractères par ligne
-            ticket = [
-                {"type": "text", "value": "--------------------------------"},
-                {"type": "align", "value": "center"},
-                {"type": "image", "value": "https://laboutik.filaos.re/static/webview/images/logoTicket.png"},
-                {"type": "font", "value": "A"},
-                {"type": "size", "value": 1},
-                {"type": "bold", "value": 1},
-                {"type": "text", "value": "Titre"},
-                {"type": "bold", "value": 0},
-                {"type": "size", "value": 0},
-                {"type": "barcode", "value": "1234567890456"},
-                {"type": "qrcode", "value": "https://tibillet.org/"},
-                {"type": "text", "value": "---- fin ----"},
-                {"type": "feed", "value": 3},
-                {"type": "cut"}
-            ]
-
-            await self.send(text_data=json.dumps({
-                'message': 'print',
-                'data': ticket,
-                'user': f"{self.user}"
-            }))
-
-        if inputContent == "sunmi_print_mini":
-            # Send message to WebSocket
-            # dev moke data
-            # largeur impression max 32 caractères par ligne
-            ticket = [
-                {"type": "size", "value": 1},
-                {"type": "bold", "value": 1},
-                {"type": "text", "value": "Titre"},
-                {"type": "text", "value": "---- fin ----"},
-                {"type": "feed", "value": 2},
-                {"type": "cut"}
-            ]
-
-            await self.send(text_data=json.dumps({
-                'message': 'print',
-                'data': ticket,
-                'user': f"{self.user}"
-            }))
+        ''' 
+        exemple :
+        ticket = [
+            {"type": "text", "value": "--------------------------------"},
+            {"type": "align", "value": "center"},
+            {"type": "image", "value": "https://laboutik.filaos.re/static/webview/images/logoTicket.png"},
+            {"type": "font", "value": "A"},
+            {"type": "size", "value": 1},
+            {"type": "bold", "value": 1},
+            {"type": "text", "value": "Titre"},
+            {"type": "bold", "value": 0},
+            {"type": "size", "value": 0},
+            {"type": "barcode", "value": "1234567890456"},
+            {"type": "qrcode", "value": "https://tibillet.org/"},
+            {"type": "text", "value": "---- fin ----"},
+            {"type": "feed", "value": 3},
+            {"type": "cut"}
+        ]
         '''
 
 # Pour TUTO HTMX
