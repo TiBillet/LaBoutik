@@ -15,13 +15,19 @@ Including another URLconf
 """
 
 from django.urls import path
-from administration.views import TicketZhtml, InvoicePdf, TicketZapi, TicketZpdf, TicketZsimpleFromCloture, \
+from administration.views import TicketZhtml, InvoicePdf, TicketZpdf, TicketZsimpleFromCloture, \
     RapportFromCloture, ClotureToPrinter, ClotureToMail, RecalculerCloture, TicketZToday, RapportToday, \
     test_new_terminal, test_email_activation, activate
+import administration.views as adminview
+
+from rest_framework import routers
+
+router = routers.DefaultRouter()
+router.register(r'ticketz_v2', adminview.TicketZ_V2, basename='TicketZ_V2')
 
 urlpatterns = [
     path('<uuid:pk_uuid>', TicketZhtml.as_view()),
-    path('TicketZapi/<uuid:pk_uuid>', TicketZapi.as_view()),
+    # path('TicketZapi/<uuid:pk_uuid>', TicketZapi.as_view()),
     path('TicketZpdf/<uuid:pk_uuid>', TicketZpdf.as_view()),
     path('invoice/<uuid:pk_uuid>', InvoicePdf.as_view()),
 
@@ -40,4 +46,4 @@ urlpatterns = [
 
     path('test_mail/test_new_terminal/', test_new_terminal, name='test_new_terminal'),
     path('test_mail/test_email_activation/', test_email_activation, name='test_email_activation')
-]
+] + router.urls

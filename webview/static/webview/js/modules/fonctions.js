@@ -179,7 +179,8 @@ window.validateGivenSum = function (fonction) {
       throw new Error('Fonction inconnue !')
     }
 
-    const sum = parseFloat(document.querySelector('#given-sum').value)
+    const sumString = document.querySelector('#given-sum').value
+    let sum = parseFloat(sumString)
     let firstSumFromCashless = 0
 
     // additional sum from first cashless card
@@ -187,6 +188,36 @@ window.validateGivenSum = function (fonction) {
       firstSumFromCashless = parseFloat(glob.dataCarte1.retour.carte.total_monnaie)
     }
 
+    let sumMin = false
+    if (isNaN(sum)) {
+      document.querySelector('#given-sum-msg-erreur').innerHTML = `<span data-i8n="isNotNumber,capitalize" style="color: red;">Ce n'est pas un nombre</span>`
+    } else {
+      if ((glob.actionAValider === 'prendre_commande' || glob.actionAValider === 'envoyer_preparation_payer' || glob.actionAValider === 'vente_directe' || glob.actionAValider === 'addition_liste') && (sum + firstSumFromCashless) < totalAchat) {
+        document.querySelector('#given-sum-msg-erreur').innerHTML = `<span data-i8n="total,uppercase" style="color: red;">total = ${totalAchat} </span>
+      <span data-i8n="currencySymbol" style="color: red;"></span>`
+        // une somme entrée, inférieure au total bloque la validation
+        sumMin = true
+      }
+    }
+
+    if (sumString.length === 0) {
+      sum = 0
+    }
+
+    if (sumMin === false) {
+      // une somme quelconque
+      const sumValue = (new Big(sum)).valueOf()
+
+      fn.popupConfirmeAnnuler()
+      fn.popupAnnuler()
+      if (fonction === 'vue_pv.validerEtapeMoyenComplementaire') {
+        vue_pv.validerEtapeMoyenComplementaire('espece', sumValue)
+      }
+      if (fonction === 'vue_pv.obtenirIdentiteClientSiBesoin') {
+        vue_pv.obtenirIdentiteClientSiBesoin('espece', sumValue)
+      }
+    }
+    /*
     if (isNaN(sum)) {
       document.querySelector('#given-sum-msg-erreur').innerHTML = `<span data-i8n="isNotNumber,capitalize" style="color: red;">Ce n'est pas un nombre</span>`
     } else {
@@ -194,7 +225,7 @@ window.validateGivenSum = function (fonction) {
       // console.log('totalAchat =', totalAchat, '  --  type =', typeof(totalAchat))
       // console.log('glob.actionAValider =', glob.actionAValider)
       // console.log('sum < totalAchat =', sum < totalAchat)
-
+ 
       // payer en une seule fois, somme exacte ou supérieure
       if ((glob.actionAValider === 'prendre_commande' || glob.actionAValider === 'envoyer_preparation_payer' || glob.actionAValider === 'vente_directe' || glob.actionAValider === 'addition_liste') && (sum + firstSumFromCashless) < totalAchat) {
         document.querySelector('#given-sum-msg-erreur').innerHTML = `<span data-i8n="total,uppercase" style="color: red;">total = ${totalAchat} </span>
@@ -213,6 +244,7 @@ window.validateGivenSum = function (fonction) {
         }
       }
     }
+      */
   } catch (error) {
     console.log('error', error)
   }

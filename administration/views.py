@@ -20,7 +20,9 @@ from django.utils import timezone
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode
 from django_weasyprint import WeasyTemplateView
-from rest_framework import status
+from rest_framework import status, viewsets
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
@@ -28,9 +30,11 @@ from rest_framework.views import APIView
 from django.utils.translation import ugettext_lazy as _
 
 from APIcashless.models import RapportTableauComptable, Configuration, ArticleVendu, ClotureCaisse, Articles, \
-    Appareil
+    Appareil, Membre, PointDeVente
 from APIcashless.tasks import envoie_rapport_et_ticketz_par_mail, GetOrCreateRapportFromDate, email_new_hardware
 from administration.ticketZ import TicketZ
+from administration.ticketZ_V4 import TicketZ as TicketZV4
+
 from epsonprinter.tasks import ticketZ_tasks_printer
 
 logger = logging.getLogger(__name__)
@@ -45,6 +49,7 @@ class DecimalEncoder(json.JSONEncoder):
             return str(o)
         return super(DecimalEncoder, self).default(o)
 
+
 #
 # def start_end_event_4h_am(date, fuseau_horaire=None, heure_pivot=4):
 #     if fuseau_horaire is None:
@@ -58,10 +63,74 @@ class DecimalEncoder(json.JSONEncoder):
 #         days=1, hours=heure_pivot)
 #     return debut_event, fin_event
 
+class TicketZ_V2(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+
+    def retrieve(self, request, pk):
+        # avec un uuid
+        ticketz_v2 = self.get_ticketz_v2(
+            cloture= get_object_or_404(ClotureCaisse, pk=pk),
+            responsable = request.GET.get('resp'),
+            point_de_vente = request.GET.get('pos'),
+        )
+        return render(request, "rapports/V2.html", context=ticketz_v2)
+
+    def list(self, request, *args, **kwargs):
+        ticketz_v2 = self.get_ticketz_v2(
+            responsable=request.GET.get('resp'),
+            point_de_vente=request.GET.get('pos'),
+        )
+        return render(request, "rapports/V2.html", context=ticketz_v2)
+
+
+    def get_ticketz_v2(self,
+                       cloture=None,
+                       responsable=None,
+                       point_de_vente=None):
+
+        # check si besoin d'un responsable uniquement :
+        if responsable:
+            responsable = get_object_or_404(Membre, pk=responsable)
+
+        # check si besoin d'un pdv uniquement :
+        if point_de_vente:
+            point_de_vente = get_object_or_404(PointDeVente, pk=point_de_vente)
+
+        config = Configuration.get_solo()
+
+        # check si cela proviens d'une cloture déja réalisée
+        if cloture :
+            # Alors start et end viennent de la cloture
+            start, end = cloture.start, cloture.end
+        else :
+            # Prendre la fermeture de base :
+            heure_cloture = config.cloture_de_caisse_auto
+            start = timezone.localtime()
+            if start.time() < heure_cloture:
+                # Alors on est au petit matin, on prend la date de la veille
+                start = start - timedelta(days=1)
+            start = timezone.make_aware(datetime.combine(start, heure_cloture))
+            end = timezone.localtime()
+
+        ticketZ = TicketZV4(
+            start_date=start, end_date=end,
+            cloture=cloture,
+            responsable=responsable,
+            point_de_vente=point_de_vente,
+        )
+
+        # Le context json lance le calcul et s'assure qu'il est serialisable.
+        json_context = ticketZ.json_context()
+        # on pourrait envoyer le query_context, mais avec le json.loads on s'assure que le json stoqué en DB est OK
+        return json.loads(json_context)
+
+
+
 
 ### NEW METHOD CLOTURE CAISSE
 class TicketZToday(APIView):
-    template_name = "rapports/ticketZ_simple.html"
+    template_name = "rapports/V2.html"
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -74,10 +143,12 @@ class TicketZToday(APIView):
             start = start - timedelta(days=1)
         matin = timezone.make_aware(datetime.combine(start, heure_cloture))
 
-        ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
-        if ticketZ.calcul_valeurs():
-            return render(request, self.template_name, context=ticketZ.to_dict)
-        return HttpResponse('No sales today')
+        ticketZ = TicketZV4(start_date=matin, end_date=timezone.localtime())
+        # Le context json lance le calcul et s'assure qu'il est serialisable.
+        json_context = ticketZ.json_context()
+        # on pourrait envoyer le query_context, mais avec le json.loads on s'assure que le json stoqué en DB est OK
+        return render(request, self.template_name, context=json.loads(json_context))
+
 
 class RapportToday(APIView):
     template_name = "rapports/rapport_complet.html"
@@ -97,6 +168,7 @@ class RapportToday(APIView):
         if ticketZ.calcul_valeurs():
             return render(request, self.template_name, context=ticketZ.to_dict)
         return HttpResponse('No sales today')
+
 
 class TicketZsimpleFromCloture(APIView):
     template_name = "rapports/ticketZ_simple.html"
@@ -190,32 +262,32 @@ class RecalculerCloture(APIView):
 
 ### END NEW METHOD CLOTURE CAISSE
 
-
-class TicketZapi(APIView):
-    """
-    # Pour la prod billetterie :
-    permission_classes = [HasAPIKey]
-    def get(self, request, pk_uuid):
-        if not billetterie_white_list(request):
-            logger.warning('not billetterie white list')
-            return Response('no no no', status=status.HTTP_401_UNAUTHORIZED)
-    """
-    # Pour le dev et l'impression :
-    permission_classes = [AllowAny]
-
-    def get(self, request, pk_uuid):
-        # date = DateSerializer(data=request.data)
-        # if not date.is_valid():
-        #     return Response(f'{date.errors}', status=status.HTTP_400_BAD_REQUEST)
-
-        rapport = get_object_or_404(RapportTableauComptable, pk=pk_uuid)
-
-        ticketz_validator = TicketZ(rapport=rapport)
-        if ticketz_validator.calcul_valeurs():
-            ticketz_json = ticketz_validator.to_json
-
-            return Response(json.loads(ticketz_json), status=status.HTTP_200_OK)
-        return Response('Erreur json ticketz', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+#
+# class TicketZapi(APIView):
+#     """
+#     # Pour la prod billetterie :
+#     permission_classes = [HasAPIKey]
+#     def get(self, request, pk_uuid):
+#         if not billetterie_white_list(request):
+#             logger.warning('not billetterie white list')
+#             return Response('no no no', status=status.HTTP_401_UNAUTHORIZED)
+#     """
+#     # Pour le dev et l'impression :
+#     permission_classes = [AllowAny]
+#
+#     def get(self, request, pk_uuid):
+#         # date = DateSerializer(data=request.data)
+#         # if not date.is_valid():
+#         #     return Response(f'{date.errors}', status=status.HTTP_400_BAD_REQUEST)
+#
+#         rapport = get_object_or_404(RapportTableauComptable, pk=pk_uuid)
+#
+#         ticketz_validator = TicketZ(rapport=rapport)
+#         if ticketz_validator.calcul_valeurs():
+#             ticketz_json = ticketz_validator.to_json
+#
+#             return Response(json.loads(ticketz_json), status=status.HTTP_200_OK)
+#         return Response('Erreur json ticketz', status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TicketZFromDatePdf(WeasyTemplateView):
@@ -330,7 +402,7 @@ def activate(request, uid, token):
         if is_token_valid:
             user.is_active = True
             user.save()
-        else :
+        else:
             return HttpResponse(_('Token non valide ou expiré'))
 
     except SignatureExpired:
@@ -345,7 +417,7 @@ def activate(request, uid, token):
     elif request.method == 'POST':
         data = request.POST
         password = data['password']
-        try :
+        try:
             validate_password(password)
         except ValidationError as e:
             return render(request, 'users/password_reset.html', context={'user': user, 'error': e.messages[0]})

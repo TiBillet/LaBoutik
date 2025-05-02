@@ -6,8 +6,8 @@ window.orthoPaiement = {
 }
 
 function gestionTransactionFondsInsuffisants(retour, options) {
-  console.log('--- fonction gestionTransactionFondsInsuffisants :')
-  sys.logValeurs({ retour, options })
+  // console.log('--- fonction gestionTransactionFondsInsuffisants :')
+  // sys.logValeurs({ retour, options })
 
   let boutons = ''
   let msg = `<div class="BF-col-uniforme message-fonds-insuffisants">`
@@ -15,6 +15,9 @@ function gestionTransactionFondsInsuffisants(retour, options) {
   let accepte_especes = rep_infos.getAttribute('data-accepte-especes')
   let accepte_carte_bancaire = rep_infos.getAttribute('data-accepte-carte-bancaire')
   let totalManque = retour.message.manque
+  const paymentBtWidth = 280
+  const paymentBtHeight = 90
+
   options['totalCarte2'] = totalManque
 
   glob.dataCarte1 = {
@@ -25,18 +28,54 @@ function gestionTransactionFondsInsuffisants(retour, options) {
   if (retour.route === 'transcation_nfc_fonds_insuffisants') {
     // la première carte n'a pas les fonds
     if (accepte_especes === 'true') {
-      // boutons += `<bouton-basique class="test-fonds-insuffisants-espece" traiter-texte="1" texte="ESPECE|2rem|,TOTAL ${totalManque} €|1.5rem|" width="400px" height="120px" couleur-fond="#3b567f" icon="fa-coins||2.5rem" onclick="fn.popupAnnuler();vue_pv.validerEtapeMoyenComplementaire('espece')" style="margin-top:16px;"></bouton-basique>`
-      boutons += `<bouton-basique class="test-fonds-insuffisants-espece" traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${totalManque} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#3b567f" icon="fa-coins||2.5rem" onclick="fn.popupConfirme('espece', 'ESPECE', 'vue_pv.validerEtapeMoyenComplementaire')" style="margin-top:16px;"></bouton-basique>`
+      // boutons += `<bouton-basique class="test-fonds-insuffisants-espece" traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${totalManque} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#3b567f" icon="fa-coins||2.5rem" onclick="fn.popupConfirme('espece', 'ESPECE', 'vue_pv.validerEtapeMoyenComplementaire')" style="margin-top:16px;"></bouton-basique>`
+      boutons += paymentBt({
+        width: paymentBtWidth,
+        height: paymentBtHeight,
+        backgroundColor: "#3b567f",
+        textColor: "#FFFFFF",
+        icon: "fa-coins",
+        methods: ["fn.popupConfirme('espece', 'ESPECE', 'vue_pv.validerEtapeMoyenComplementaire')"],
+        currency: {name: "ESPECE", tradIndex: 'cash', tradOption: 'uppercase'},
+        total: totalManque,
+        cssClass: ["test-fonds-insuffisants-espece"]
+      })
     }
     if (accepte_carte_bancaire === 'true') {
-      boutons += `<bouton-basique class="test-fonds-insuffisants-cb" traiter-texte="1"  texte="CB|2rem||cb-uppercase,[TOTAL] ${totalManque} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#3b567f" icon="fa-coins||2.5rem" onclick="fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.validerEtapeMoyenComplementaire')" style="margin-top:16px;"></bouton-basique>`
+      // boutons += `<bouton-basique class="test-fonds-insuffisants-cb" traiter-texte="1"  texte="CB|2rem||cb-uppercase,[TOTAL] ${totalManque} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#3b567f" icon="fa-coins||2.5rem" onclick="fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.validerEtapeMoyenComplementaire')" style="margin-top:16px;"></bouton-basique>`
+      boutons += paymentBt({
+        width: paymentBtWidth,
+        height: paymentBtHeight,
+        backgroundColor: "#3b567f",
+        textColor: "#FFFFFF",
+        icon: "fa-credit-card",
+        methods: ["fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.validerEtapeMoyenComplementaire')"],
+        currency: {name: "CB", tradIndex: 'cb', tradOption: 'uppercase'},
+        total: totalManque,
+        cssClass: ["test-fonds-insuffisants-cb"]
+      })
     }
 
-    boutons += `<bouton-basique class="test-fonds-insuffisants-nfc" traiter-texte="1" texte="[autre] [CARTE]|2rem||other-uppercase;card-uppercase,(CASHLESS)|1.2rem,[TOTAL] ${totalManque} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#3b567f" icon="fa-coins||2.5rem" onclick="fn.popupAnnuler();vue_pv.validerEtapeMoyenComplementaire('nfc')" style="margin-top:16px;margin-bottom:40px;"></bouton-basique>`
+    // 2ème carte cashless
+    // boutons += `<bouton-basique class="test-fonds-insuffisants-nfc" traiter-texte="1" texte="[autre] [CARTE]|2rem||other-uppercase;card-uppercase,(CASHLESS)|1.2rem,[TOTAL] ${totalManque} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#3b567f" icon="fa-coins||2.5rem" onclick="fn.popupAnnuler();vue_pv.validerEtapeMoyenComplementaire('nfc')" style="margin-top:16px;margin-bottom:40px;"></bouton-basique>`
+    boutons += paymentBt({
+      width: paymentBtWidth,
+      height: paymentBtHeight,
+      backgroundColor: "#3b567f",
+      textColor: "#FFFFFF",
+      icon: "fa-address-card",
+      methods: ["fn.popupAnnuler();vue_pv.validerEtapeMoyenComplementaire('nfc')"],
+      currency: [{name: "AUTRE", tradIndex: 'other', tradOption: 'uppercase'}, {name: "CARTE", tradIndex: 'card', tradOption: 'uppercase'}],
+      addHtmlContent: '<div style="font-size:1.2rem">(CASHLESS)</div>',
+      total: totalManque,
+      cssClass: ["test-fonds-insuffisants-nfc"],
+      paymentBtForceHeight: 100
+    })
+
     msg += `
       <div class="popup-titre1 test-return-title" data-i8n="insufficientFunds,capitalize">Fonds insuffisants.</div>
       <div class="popup-msg1 test-return-missing-cash">
-        <span data-i8n="isMissing,capitalize">Il manque</span> <span id="test-manque-monnaie">${retour.message.manque}</span> <span data-i8n="currencySymbol">€</span>
+        <span data-i8n="isMissing,capitalize">Il manque</span> <span id="test-manque-monnaie">${retour.message.manque}</span> <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
       </div>
       <div class="popup-msg1 test-return-fisrt-card-content">
         ${retour.carte.membre_name} <span data-i8n="has">a</span> <span id="test-carte-total-monnaie">${retour.carte.total_monnaie}</span>
@@ -44,12 +83,12 @@ function gestionTransactionFondsInsuffisants(retour, options) {
       <div class="popup-msg1 test-returm-possible-purchase" data-i8n="possiblePurchaseBy,capitalize">Achat possible par :</div>
     `
   } else {
-    console.log("-> Fonds insuffisants sur deuxieme carte")
+    // console.log("-> Fonds insuffisants sur deuxieme carte")
     // la deuxième carte n'a pas les fonds
     msg += `<div class="popup-titre1" data-i8n="insufficientFunds,capitalize">Fonds insuffisants.</div>
     <div class="popup-titre1" data-i8n="onSecondCard">sur deuxieme carte</div>
     <div class="popup-msg1">
-      <span data-i8n="isMissing,capitalize">Il manque</span> <span id="test-manque-monnaie">${retour.message.manque}</span> <span data-i8n="currencySymbol"></span>
+      <span data-i8n="isMissing,capitalize">Il manque</span> <span id="test-manque-monnaie">${retour.message.manque}</span> <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
     </div>`
   }
 
@@ -86,7 +125,7 @@ function messageRetourAssets(retour) {
     let categorie = assets[i].categorie.toLowerCase()
     if (valeurAsset > 0) {
       valAssetsTest = 1
-      enumAssets += `<div class="popup-msg1 test-return-monnaie-${categorie}">- <span class="test-return-nom-monnaie nom-monnaie-item${i}">${nomAsset}</span> : <span class="test-return-valeur-monnaie valeur-monnaie-item${i}">${valeurAsset} </span><span data-i8n="currencySymbol"></span></div>`
+      enumAssets += `<div class="popup-msg1 test-return-monnaie-${categorie}">- <span class="test-return-nom-monnaie nom-monnaie-item${i}">${nomAsset}</span> : <span class="test-return-valeur-monnaie valeur-monnaie-item${i}">${valeurAsset} </span><span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>`
     }
   }
   if (valAssetsTest === 1) {
@@ -109,7 +148,9 @@ function messageRetourCarte(retour, options) {
     // total sur carte avant achats
     if (retour.total_sur_carte_avant_achats) {
       fragmentHtml += `<div class="popup-msg1 test-carte-avant-achats">
-        <span data-i8n="on,capitalize">Sur</span> <span data-i8n="card">carte</span> <span data-i8n="before">avant</span> ${motsPourAchat} : <span id="test-total-carte-avant-achats">${retour.total_sur_carte_avant_achats}</span>
+        <span data-i8n="on,capitalize">Sur</span> <span data-i8n="card">carte</span> <span data-i8n="before">avant</span>
+         ${motsPourAchat} : <span id="test-total-carte-avant-achats">${retour.total_sur_carte_avant_achats}</span> 
+         ${getTranslate('currencySymbol', null, 'methodCurrency')}
       </div>`
     }
     // total acaht(s)
@@ -119,13 +160,14 @@ function messageRetourCarte(retour, options) {
         moyenDePaiement = window.orthoPaiement[options.achats.complementaire.moyen_paiement]
       }
       fragmentHtml += `<div class="popup-msg1 test-total-achats">
-        <span data-i8n="total,capitalize">Total</span> (${moyenDePaiement}) : <span id="test-somme-payee">${retour.somme_totale}</span>
+        <span data-i8n="total,capitalize">Total</span> (${moyenDePaiement}) : <span id="test-somme-payee">${retour.somme_totale}</span> ${getTranslate('currencySymbol', null, 'methodCurrency')}
       </div>`
     }
     // reste sur carte
     if (retour.carte.total_monnaie) {
       fragmentHtml += `<div class="popup-msg1 test-carte-apres-achats">
-      <span data-i8n="rest,capitalize">Reste</span> <span data-i8n="on">sur</span> <span data-i8n="card">carte</span> : <span id="test-total-carte">${retour.carte.total_monnaie}</span>
+      <span data-i8n="rest,capitalize">Reste</span> <span data-i8n="on">sur</span> <span data-i8n="card">carte</span> : <span id="test-total-carte">${retour.carte.total_monnaie}</span> 
+      ${getTranslate('currencySymbol', null, 'methodCurrency')}
       </div>`
     }
   }
@@ -141,8 +183,8 @@ function messageRetourCarte(retour, options) {
  * @param {Object} options = données avant le lancement de la requète
  */
 function afficherRetourEnvoyerPreparation(retour, status, options) {
-  // console.log('-> fonc afficherRetourEnvoyerPreparation !')
-  // sys.logValeurs({ retour: retour, status: status, options: options })
+  console.log('-> fonc afficherRetourEnvoyerPreparation !')
+  sys.logValeurs({ retour: retour, status: status, options: options })
   let msg = '', msgPaye = '', msgDifErreur = '', typeMsg = 'succes', fonction = '', msgAssets = '', msgTotalCarteApresAchats = '',
     msgTotalCartesAvantAchats = '', msgEspece = ''
 
@@ -163,28 +205,30 @@ function afficherRetourEnvoyerPreparation(retour, status, options) {
           moyenDePaiement = `(<span data-i8n="${orthoPaiement[options.achats.complementaire.moyen_paiement]}"></span>)`
         }
         msgPaye = `<div class="popup-msg1 test-return-total-achats">
-          <span data-i8n="total,capitalize">Total</span>${moyenDePaiement} <span id="test-somme-payee">${infoTotal}</span> <span data-i8n="currencySymbol"></span>
+          <span data-i8n="total,capitalize">Total</span>${moyenDePaiement} <span id="test-somme-payee">${infoTotal}</span> <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
         </div>`
 
         if (retour.carte) {
           // assets
           msgAssets = messageRetourAssets(retour)
           // total monnaie sur carte
-          msgTotalCarteApresAchats = `<div class="popup-msg1 test-return-post-purchase-card">${retour.carte.membre_name} - <span data-i8n="postPurchaseCard">carte après achats</span> ${retour.carte.total_monnaie} </span><span data-i8n="currencySymbol"></span></div>`
+          msgTotalCarteApresAchats = `<div class="popup-msg1 test-return-post-purchase-card">${retour.carte.membre_name} - <span data-i8n="postPurchaseCard">carte après achats</span> ${retour.carte.total_monnaie} </span>
+          <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>`
 
           // total sur carte avant achats
           console.log('options.achats.complementaire =', options.achats.complementaire)
           if (options.achats.complementaire === undefined) {
             if (retour.total_sur_carte_avant_achats !== undefined && retour.total_sur_carte_avant_achats !== null) {
               // pas de complémentaire
-              msgTotalCartesAvantAchats = `<div class="popup-msg1 test-return-pre-purchase-card">${retour.carte.membre_name} - <span data-i8n="prePurchaseCard">carte avant achats</span> ${retour.total_sur_carte_avant_achats} <span data-i8n="currencySymbol"></span></div>`
+              msgTotalCartesAvantAchats = `<div class="popup-msg1 test-return-pre-purchase-card">${retour.carte.membre_name} - <span data-i8n="prePurchaseCard">carte avant achats</span> ${retour.total_sur_carte_avant_achats} 
+              <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>`
             }
           } else {
             // complémentaire nfc
             if (options.achats.complementaire.moyen_paiement === "nfc") {
-              msgTotalCartesAvantAchats = `<div class="popup-msg1 test-return-purchase-cards"><span data-i8n="cardsTotal,capitalize">Total des cartes</span> ${retour.total_sur_carte_avant_achats} <span data-i8n="currencySymbol"></span></div>`
+              msgTotalCartesAvantAchats = `<div class="popup-msg1 test-return-purchase-cards"><span data-i8n="cardsTotal,capitalize">Total des cartes</span> ${retour.total_sur_carte_avant_achats} 
+              <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>`
             }
-
           }
         }
         // gestion moyen de paiement unique  "espèce", somme à rendre
@@ -192,17 +236,20 @@ function afficherRetourEnvoyerPreparation(retour, status, options) {
           const totalAchat = parseFloat(options.achats.total)
           const sommeDonnee = parseFloat(options.sommeDonnee)
           const resultat = new Big(sommeDonnee).minus(totalAchat)
-          // const sumValue = (new Big(sum)).valueOf()
-          msgEspece = `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
+          console.log('-> sommeDonnee =', sommeDonnee, '  --  type =', typeof (sommeDonnee));
+
+          if (sommeDonnee > 0) {
+            msgEspece = `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
             <span data-i8n="givenSum">Somme donnée</span>
             <span>${sommeDonnee}</span>
-            <span data-i8n="currencySymbol"></span>
+            <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
           </div>
           <div class="test-return-change" style="font-size: 2rem;font-weight: bold;">
             <span data-i8n="change,capitalize">monnaie à rendre</span>
             <span role="status" aria-label="change">${resultat}</span>
-            <span data-i8n="currencySymbol"></span>
+            <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
           </div>`
+          }
         }
       }
 
@@ -259,8 +306,11 @@ function afficherRetourEnvoyerPreparation(retour, status, options) {
  * @param {Object} status = etat de la requète
  * @param {Object} options = données avant le lancement de la requète
  */
+// TODO: mettre cette fonction dans restaurant.js
 function aiguillagePagePaiementCommande(retour, status, options) {
-  // console.log(`-> fonction aiguillagePagePaiementCommande !`)
+  console.log(`-> fonction aiguillagePagePaiementCommande !`)
+  sys.logValeurs({ retour: retour, status: status, options: options })
+
   if (status.code === 200) {
     // reset articles sélectionnés
     vue_pv.rezet_commandes()
@@ -325,7 +375,7 @@ function infosPaiementRetourTable(retour, status, options) {
       } else {
         let moyensDePaiement = `(<span data-i8n="${orthoPaiement[options.achats.moyen_paiement]}"></span>)`
         msgDefaut += `<div class="popup-msg1 test-total-achats">
-          <span data-i8n="total,capitalize">Total</span> ${moyensDePaiement}<span> ${retour.somme_totale}</span> <span data-i8n="currencySymbol"></span>
+          <span data-i8n="total,capitalize">Total</span> ${moyensDePaiement}<span> ${retour.somme_totale}</span> <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
         </div>`
       }
 
@@ -333,17 +383,18 @@ function infosPaiementRetourTable(retour, status, options) {
         const totalAchat = parseFloat(options.achats.total)
         const sommeDonnee = parseFloat(options.sommeDonnee)
         const resultat = new Big(sommeDonnee).minus(totalAchat)
-        // const sumValue = (new Big(sum)).valueOf()
-        msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
+        if (sommeDonnee > 0) {
+          msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
           <span data-i8n="givenSum,capitalize">Somme donnée</span>
           <span>${sommeDonnee}</span>
-          <span data-i8n="currencySymbol"></span>
+          <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
         </div>
         <div class="test-return-change" style="font-size: 2rem;font-weight: bold;">
           <span data-i8n="change,capitalize">monnaie à rendre</span>
           <span role="status" aria-label="change">${resultat}</span>
-          <span data-i8n="currencySymbol"></span>
+          <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
         </div>`
+        }
       }
 
       msg = `
@@ -370,8 +421,10 @@ function infosPaiementRetourTable(retour, status, options) {
       <div class="BF-col-uniforme l100p h100p">
         <div class="BF-col">
           <div class="popup-titre1">
-            <span data-i8n="error,capitalize">Erreur <span data-i8n="payment">Paiement !</span>
+            <span data-i8n="error,capitalize">Erreur</span>
+            <span> ${status.code}</span>
           </div>
+          <div class="popup-msg1" data-i8n="payment">Paiement !</div>
           <div class="popup-msg1">actionAValider = ${options.actionAValider}</div>
         </div>
         <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
@@ -415,7 +468,7 @@ async function afficherRetourVenteDirecte(retour, status, options) {
       if (options.methodes[0] === "VenteArticle" || options.methodes[0] === "AjoutMonnaieVirtuelle") {
         // affiche le total et la ou les monnaies utilisées
         msgDefaut += `<div class="test-return-total-achats" style="font-size: 2rem;font-weight: bold;">
-          <span data-i8n="total,capitalize">Total</span>${moyensDePaiement}<span> ${retour.somme_totale}</span> <span data-i8n="currencySymbol"></span>
+          <span data-i8n="total,capitalize">Total</span>${moyensDePaiement}<span> ${retour.somme_totale}</span> <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
         </div>`
 
         if (options.achats.complementaire === undefined) {
@@ -424,7 +477,7 @@ async function afficherRetourVenteDirecte(retour, status, options) {
           // total sur carte lors d'un achat de monnaies virtuelles
           if (options.methodes[0] === "AjoutMonnaieVirtuelle") {
             const surCarte = new Big(retour.carte.total_monnaie)
-            msgDefaut += `<div class="popup-msg1 test-return-total-carte">${retour.carte.membre_name} - <span data-i8n="card">carte</span> ${surCarte} <span data-i8n="currencySymbol"></span></div>`
+            msgDefaut += `<div class="popup-msg1 test-return-total-carte">${retour.carte.membre_name} - <span data-i8n="card">carte</span> ${surCarte} <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>`
           }
 
           if (retour.carte) {
@@ -436,24 +489,28 @@ async function afficherRetourVenteDirecte(retour, status, options) {
             const sommeDonnee = parseFloat(options.sommeDonnee)
             const resultat = new Big(sommeDonnee).minus(totalAchat)
             // const sumValue = (new Big(sum)).valueOf()
-            msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
+            if (sommeDonnee > 0) {
+              msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
               <span data-i8n="givenSum">Somme donnée</span>
               <span>${sommeDonnee}</span>
-              <span data-i8n="currencySymbol"></span>
+              <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
             </div>
             <div class="test-return-change" style="font-size: 2rem;font-weight: bold;">
               <span data-i8n="change,capitalize">monnaie à rendre</span>
               <span role="status" aria-label="change">${resultat}</span>
-              <span data-i8n="currencySymbol"></span>
+              <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
             </div>`
+            }
           }
 
           // gestion moyen de paiement unique  "nfc"
           if (options.achats.moyen_paiement === 'nfc') {
             const surCarteAvantAchat = new Big(retour.total_sur_carte_avant_achats)
             const surCarteApresAchat = new Big(retour.carte.total_monnaie)
-            msgDefaut += `<div class="popup-msg1 test-return-pre-purchase-card">${retour.carte.membre_name} - <span data-i8n="prePurchaseCard">carte avant achats</span> ${surCarteAvantAchat} <span data-i8n="currencySymbol"></span></div>
-            <div class="popup-msg1 test-return-post-purchase-card">${retour.carte.membre_name} - <span data-i8n="postPurchaseCard">carte après achats</span> ${surCarteApresAchat} <span data-i8n="currencySymbol"></span></div>`
+            msgDefaut += `<div class="popup-msg1 test-return-pre-purchase-card">${retour.carte.membre_name} - <span data-i8n="prePurchaseCard">carte avant achats</span> 
+            ${surCarteAvantAchat} <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>
+            <div class="popup-msg1 test-return-post-purchase-card">${retour.carte.membre_name} - <span data-i8n="postPurchaseCard">carte après achats</span> ${surCarteApresAchat} 
+            <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>`
           }
 
         } else {
@@ -461,52 +518,62 @@ async function afficherRetourVenteDirecte(retour, status, options) {
           // achat initial nfc, complémentaire avant achats
           if (retour.carte !== undefined) {
             const surCarteAvantAchat = new Big(retour.somme_totale).minus(options.achats.complementaire.manque)
-            msgDefaut += `<div class="popup-msg1 test-return-pre-purchase-card">${retour.carte.membre_name} - <span data-i8n="prePurchaseCard">carte avant achats</span> ${surCarteAvantAchat} <span data-i8n="currencySymbol"></span></div>`
+            msgDefaut += `<div class="popup-msg1 test-return-pre-purchase-card">${retour.carte.membre_name} - <span data-i8n="prePurchaseCard">carte avant achats</span> ${surCarteAvantAchat} 
+            <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>`
           }
           // complémentaire espèce
           if (options.achats.complementaire.moyen_paiement === 'espece') {
             // paiement complémentaire espèce
             const sommeDonnee = parseFloat(options.sommeDonnee)
 
-            msgDefaut += `<div class="popup-msg1 test-return-additional"><span data-i8n="additional,capitalize">Complémentaire</span> ${options.achats.complementaire.manque} <span data-i8n="currencySymbol"></span> <span data-i8n="in">en</span> <span data-i8n="cash"></span></div>
-              <div class="popup-msg1 test-total-achats">
-                <span data-i8n="givenSum">Somme donnée</span>
+            msgDefaut += `<div class="popup-msg1 test-return-additional"><span data-i8n="additional,capitalize">Complémentaire</span> ${options.achats.complementaire.manque} 
+            <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span> <span data-i8n="in">en</span> <span data-i8n="cash"></span></div>
+            <div class="popup-msg1 test-total-achats">`
+            if (sommeDonnee > 0) {
+              msgDefaut += `<span data-i8n="givenSum">Somme donnée</span>
                 <span>${sommeDonnee}</span>
-                <span data-i8n="currencySymbol"></span>
-              </div><br>`
+                <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>`
+            }
+            msgDefaut += '</div><br>'
 
             // --- complémentaire après achats ---
             // achat initial nfc
             if (retour.carte !== undefined) {
-              msgDefaut += `<div class="popup-msg1 test-return-post-purchase-card">${retour.carte.membre_name} - <span data-i8n="postPurchaseCard">carte après achats</span> 0 <span data-i8n="currencySymbol"></span></div>`
+              msgDefaut += `<div class="popup-msg1 test-return-post-purchase-card">${retour.carte.membre_name} - <span data-i8n="postPurchaseCard">carte après achats</span> 0 <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>`
             }
 
-            const sommeManquante = parseFloat(options.achats.complementaire.manque)
-            const resultat = new Big(sommeDonnee).minus(sommeManquante)
-            msgDefaut += `<div class="test-return-change" style="margin-top:2rem; font-size: 2rem;font-weight: bold;">
+            if (sommeDonnee > 0) {
+              const sommeManquante = parseFloat(options.achats.complementaire.manque)
+              const resultat = new Big(sommeDonnee).minus(sommeManquante)
+              msgDefaut += `<div class="test-return-change" style="margin-top:2rem; font-size: 2rem;font-weight: bold;">
                 <span data-i8n="change,capitalize">monnaie à rendre</span>
                 <span role="status" aria-label="change">${resultat}</span>
-                <span data-i8n="currencySymbol"></span>
+                <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
               </div>`
+            }
           }
 
           // complémentaire nfc
           if (options.achats.complementaire.moyen_paiement === 'nfc') {
             msgDefaut += `<div class="popup-msg1 test-return-additional">
-              <span data-i8n="additional,capitalize">Complémentaire</span> ${options.achats.complementaire.manque} <span data-i8n="currencySymbol"></span> <span data-i8n="in">en</span> <span data-i8n="cashless"></span>
+              <span data-i8n="additional,capitalize">Complémentaire</span> ${options.achats.complementaire.manque} 
+              <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span> <span data-i8n="in">en</span> <span data-i8n="cashless"></span>
             </div>
             <div class="popup-msg1 test-return-post-purchase-card">
-              <span>${retour.carte.membre_name} - <span data-i8n="postPurchaseCard">carte après achats</span> 0 </span><span data-i8n="currencySymbol"></span>
+              <span>${retour.carte.membre_name} - <span data-i8n="postPurchaseCard">carte après achats</span> 0 </span>
+              <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
             </div>`
           }
 
           // complémentaire carte bancaire
           if (options.achats.complementaire.moyen_paiement === 'carte_bancaire') {
             msgDefaut += `<div class="popup-msg1 test-return-additional">
-            <span data-i8n="additional,capitalize">Complémentaire</span> ${options.achats.complementaire.manque} <span data-i8n="currencySymbol"></span> <span data-i8n="in">en</span> <span data-i8n="cb"></span>
+            <span data-i8n="additional,capitalize">Complémentaire</span> ${options.achats.complementaire.manque} 
+            <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span> <span data-i8n="in">en</span> <span data-i8n="cb"></span>
             </div>
             <div class="popup-msg1 test-return-post-purchase-card">
-              <span>${retour.carte.membre_name} - <span data-i8n="postPurchaseCard">carte après achats</span> 0 </span><span data-i8n="currencySymbol"></span>
+              <span>${retour.carte.membre_name} - <span data-i8n="postPurchaseCard">carte après achats</span> 0 </span>
+              <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
             </div>`
           }
         }
@@ -521,7 +588,8 @@ async function afficherRetourVenteDirecte(retour, status, options) {
         msgDefaut = `
           <div class="popup-titre1 test-return-reset" data-i8n="clearingCardOk,capitalize">Vidage carte OK !</div>
           <div class="popup-msg1 test-msg-vider-carte">
-            <span data-i8n="toRepay,capitalize">A rembourser</span> : ${retour.somme_totale}
+            <span data-i8n="toRepay,capitalize">A rembourser</span> : ${retour.somme_totale} 
+            <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
           </div>
         `
       }
@@ -541,7 +609,8 @@ async function afficherRetourVenteDirecte(retour, status, options) {
         msgDefaut = `<div class="popup-titre1 test-return-title-content" data-i8n="membership,capitalize">Adhésion</div>
         ${msgCotisation}
         <div class="test-return-total-achats" style="font-size: 2rem;font-weight: bold;">
-          <span data-i8n="total,capitalize">Total</span>${moyensDePaiement}<span> ${retour.somme_totale}</span> <span data-i8n="currencySymbol"></span>
+          <span data-i8n="total,capitalize">Total</span>${moyensDePaiement}<span> ${retour.somme_totale}</span> 
+          <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
         </div>`
 
         // paiement espèce, somme donnée; pas de complémentaire
@@ -553,12 +622,12 @@ async function afficherRetourVenteDirecte(retour, status, options) {
           msgDefaut += `<div class="popup-msg1 test-return-given-sum" style="margin-top:2rem">
               <span data-i8n="givenSum,capitalize">Somme donnée</span>
               <span>${sommeDonnee}</span>
-              <span data-i8n="currencySymbol"></span>
+              <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
             </div>
             <div class="test-return-change" style="font-size: 2rem;font-weight: bold;">
               <span data-i8n="change,capitalize">monnaie à rendre</span>
               <span role="status" aria-label="change">${resultat}</span>
-              <span data-i8n="currencySymbol"></span>
+              <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
             </div>`
         }
       }
@@ -571,7 +640,8 @@ async function afficherRetourVenteDirecte(retour, status, options) {
         `
         if (options.achats.moyen_paiement === 'espece') {
           msgDefaut += `<div class="popup-msg1 test-msg-retour-consigne-espece">
-            <span data-i8n="toRepay,capitalize">A rembourser</span> : ${Math.abs(retour.somme_totale)}
+            <span data-i8n="toRepay,capitalize">A rembourser</span> : ${Math.abs(retour.somme_totale)} 
+            <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span>
           </div>`
         }
         if (options.achats.moyen_paiement === 'nfc') {

@@ -16,7 +16,7 @@ class PlaceValidator(serializers.Serializer):
     uuid = serializers.UUIDField()
     name = serializers.CharField()
     wallet = serializers.UUIDField()
-    stripe_connect_valid = serializers.BooleanField()
+    # stripe_connect_valid = serializers.BooleanField()
     dokos_id = serializers.CharField(max_length=50, allow_null=True, required=False)
 
     def validate(self, attrs):
@@ -33,7 +33,7 @@ class PlaceValidator(serializers.Serializer):
         except Exception as e:
             raise serializers.ValidationError(f"Erreur lors de la récupération du lieu : {e}")
 
-        self.place.stripe_connect_valid = attrs['stripe_connect_valid']
+        # self.place.stripe_connect_valid = attrs['stripe_connect_valid']
         return attrs
 
 

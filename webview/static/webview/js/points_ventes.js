@@ -134,10 +134,12 @@ for (let clef in glob.bt_groupement) {
 import BoutonArticle from '/static/webview/js/components/bouton_article.js'
 import BoutonCommandeArticle from '/static/webview/js/components/bouton_commande_article.js'
 import BoutonBasique from '/static/webview/js/components/boutonBasique.js'
+import { paymentBt } from '/static/webview/js/components/paymentButton.js'
 import BoutonServiceArticle from '/static/webview/js/components/bouton_service_article.js'
 import * as restaurant from '/static/webview/js/restaurant.js'
 
 window.restau = restaurant
+window.paymentBt = paymentBt
 
 import { Keyboard } from '/static/webview/js/modules/virtualKeyboard/vk.js'
 window.keyboard = new Keyboard(45)
@@ -372,7 +374,7 @@ function cacherAfficherClassElementHtml(nomClasse, action, typeEle) {
 
 /**
  * Renseigne la div titre
- * @param {String} titre - titre de la vue
+ * @param {String} titre - titre de la vue (peut contenir un élément html + attribut 'data-i8n')
  */
 export function asignerTitreVue(titre) {
   document.querySelector('#header-part-left-titre').innerHTML = `
@@ -499,7 +501,7 @@ export function majBoutonValiderPointsDeVentes(typeMaj) {
     <i class="footer-bt-icon fas fa-check-circle md4px"></i>
     <div class="BF-col-deb footer-bt-text mg4px">
       <div data-i8n="validate,uppercase">VALIDER</div>
-      <div id="bt-valider-total"><span data-i8n="total,uppercase">TOTAL</span> ${vue_pv.getTotalPointDeVentes()} €</div>
+      <div id="bt-valider-total"><span data-i8n="total,uppercase">TOTAL</span> ${vue_pv.getTotalPointDeVentes()} ${getTranslate('currencySymbol', null, 'methodCurrency')}</div>
     </div>
   </div>`
 
@@ -781,7 +783,7 @@ export function decrementer_nombre_produit(uuid_bt_article) {
     // enregistre la nouvelle valeur dans le DOM
     document.querySelector('#article-infos-divers').setAttribute('data-total', total)
     // maj bouton valider
-    document.querySelector('#bt-valider-total').innerHTML = `<span data-i8n="total,uppercase">TOTAL</span> ${total} <span data-i8n="currencySymbol">€</span>`
+    document.querySelector('#bt-valider-total').innerHTML = `<span data-i8n="total,uppercase">TOTAL</span> ${total} ${getTranslate('currencySymbol', null, 'methodCurrency')}`
     // une fois plus de produit dans la liste d'achats, reset les boutons articles
     if (total === 0) {
       rezet_commandes()
@@ -796,7 +798,7 @@ export function rezet_commandes() {
   document.querySelector('#article-infos-divers').setAttribute('achat-possible', 0)
 
   // renseigne le bouton "VALIDER" contenant l'information du total des achats
-  document.querySelector('#bt-valider-total').innerHTML = '<span data-i8n="total,uppercase">TOTAL</span> 0 <span data-i8n="currencySymbol">€</span>'
+  document.querySelector('#bt-valider-total').innerHTML = `<span data-i8n="total,uppercase">TOTAL</span> 0 ${getTranslate('currencySymbol', null, 'methodCurrency')}`
   translate('#bt-valider-total')
 
   // met le nombre d'article commander de tous les articles à 0
@@ -1427,6 +1429,8 @@ export function validerEtape1(options) {
   let boutons = ''
 
   if (moyens_paiement_tab.length >= 1) {
+    const paymentBtWidth = 280
+    const paymentBtHeight = 90
     for (let i = 0; i < moyens_paiement_tab.length; i++) {
       glob.dataObtenirIdentiteClientSiBesoin = {
         options: options,
@@ -1452,27 +1456,81 @@ export function validerEtape1(options) {
         if (obtenirPvCashless === 'C' && testAchatsArticlesAdhesion > 0) {
           // ne pas afficher le cashless , adhésion sur point de vente cashless
         } else {
-          boutons += `<bouton-basique class="test-ref-cashless" traiter-texte="1" texte="CASHLESS|2rem|,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-address-card||2.5rem" onclick="fn.popupAnnuler();vue_pv.obtenirIdentiteClientSiBesoin('nfc')" style="margin-top:16px;"></bouton-basique>`
+          // boutons += `<bouton-basique class="test-ref-cashless" traiter-texte="1" texte="CASHLESS|2rem|,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-address-card||2.5rem" onclick="fn.popupAnnuler();vue_pv.obtenirIdentiteClientSiBesoin('nfc')" style="margin-top:16px;"></bouton-basique>`
+          boutons += paymentBt({
+            width: paymentBtWidth,
+            height: paymentBtHeight,
+            backgroundColor: "#339448",
+            textColor: "#FFFFFF",
+            icon: "fa-address-card",
+            methods: ["fn.popupAnnuler()", "vue_pv.obtenirIdentiteClientSiBesoin('nfc')"],
+            currency: {name: "CASHLESS"},
+            total,
+            cssClass: ["test-ref-cashless"]
+          })
         }
       }
 
       if (moyens_paiement_tab[i] === 'espece') {
         if (depositIsPresent(options.achats) === false) {
           // je paye en espèce, ce n'est pas une consigne
-          boutons += `<bouton-basique class="test-ref-cash" traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-coins||2.5rem" onclick="fn.popupConfirme('espece', 'ESPECE', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
+          // boutons += `<bouton-basique class="test-ref-cash" traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-coins||2.5rem" onclick="fn.popupConfirme('espece', 'ESPECE', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
+          boutons += paymentBt({
+            width: paymentBtWidth,
+            height: paymentBtHeight,
+            backgroundColor: "#339448",
+            textColor: "#FFFFFF",
+            icon: "fa-coins",
+            methods: ["fn.popupConfirme('espece', 'ESPECE', 'vue_pv.obtenirIdentiteClientSiBesoin')"],
+            currency: {name: "ESPECE", tradIndex: 'cash', tradOption: 'uppercase'},
+            total,
+            cssClass: ["test-ref-cash"]
+          })
         } else {
           // c'est une consigne, espèce; mais espèce à rendre 
-          boutons += `<bouton-basique class="test-ref-cash" traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-coins||2.5rem" onclick="fn.popupAnnuler();vue_pv.obtenirIdentiteClientSiBesoin('espece')" style="margin-top:16px;"></bouton-basique>`
+          // boutons += `<bouton-basique class="test-ref-cash" traiter-texte="1" texte="ESPECE|2rem||cash-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-coins||2.5rem" onclick="fn.popupAnnuler();vue_pv.obtenirIdentiteClientSiBesoin('espece')" style="margin-top:16px;"></bouton-basique>`
+          boutons += paymentBt({
+            width: paymentBtWidth,
+            height: paymentBtHeight,
+            backgroundColor: "#339448",
+            textColor: "#FFFFFF",
+            icon: "fa-coins",
+            methods: ["fn.popupAnnuler()", "vue_pv.obtenirIdentiteClientSiBesoin('espece')"],
+            currency: {name: "ESPECE", tradIndex: 'cash', tradOption: 'uppercase'},
+            total,
+            cssClass: ["test-ref-cash"]
+          })
         }
       }
 
       if (moyens_paiement_tab[i] === 'carte_bancaire') {
-
-        boutons += `<bouton-basique class="test-ref-cb" traiter-texte="1" texte="CB|2rem||cb-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-credit-card||2.5rem" onclick="vue_pv.wsSendTotalCb();fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
+        // boutons += `<bouton-basique class="test-ref-cb" traiter-texte="1" texte="CB|2rem||cb-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-credit-card||2.5rem" onclick="fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
+        boutons += paymentBt({
+          width: paymentBtWidth,
+          height: paymentBtHeight,
+          backgroundColor: "#339448",
+          textColor: "#FFFFFF",
+          icon: "fa-credit-card",
+          methods: ["fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.obtenirIdentiteClientSiBesoin')"],
+          currency: {name: "CB", tradIndex: 'cb', tradOption: 'uppercase'},
+          total,
+          cssClass: ["test-ref-cb"]
+        })
       }
 
       if (moyens_paiement_tab[i] === 'CH') {
-        boutons += `<bouton-basique class="test-ref-ch" traiter-texte="1" texte="CH|2rem||cheque-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-money-check||2.5rem" onclick="fn.popupConfirme('CH', 'CH', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
+        // boutons += `<bouton-basique class="test-ref-ch" traiter-texte="1" texte="CH|2rem||cheque-uppercase,[TOTAL] ${total} [€]|1.5rem||total-uppercase;currencySymbol" width="400px" height="120px" couleur-fond="#339448" icon="fa-money-check||2.5rem" onclick="fn.popupConfirme('CH', 'CH', 'vue_pv.obtenirIdentiteClientSiBesoin')" style="margin-top:16px;"></bouton-basique>`
+        boutons += paymentBt({
+          width: paymentBtWidth,
+          height: paymentBtHeight,
+          backgroundColor: "#339448",
+          textColor: "#FFFFFF",
+          icon: "fa-money-check",
+          methods: ["fn.popupConfirme('CH', 'CH', 'vue_pv.obtenirIdentiteClientSiBesoin')"],
+          currency: {name: "CH", tradIndex: 'cheque', tradOption: 'uppercase'},
+          total,
+          cssClass: ["test-ref-ch"]
+        })
       }
 
     }
@@ -1484,7 +1542,6 @@ export function validerEtape1(options) {
     }
 
     boutons += `<bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="fn.popupAnnuler();" style="margin-top:16px;"></bouton-basique>`
-
     let optionsPopup = {
       boutons: boutons,
       titre: `<div class="selection-type-paiement" data-i8n="paymentTypes,capitalize">Types de paiement</div>`,
@@ -1587,8 +1644,12 @@ export function postEtapeMoyenComplementaire(data) {
     },
     data: achats
   }
-  sys.ajax(requete, (retour, status) => {
-    // sys.logJson('postEtapeMoyenComplementaire retour = ', retour)
+  sys.ajax(requete, async (retour, status) => {
+    // console.log(`-> postEtapeMoyenComplementaire !`)
+    // sys.logValeurs({ retour: retour, status: status, globSataCarte1: glob.dataCarte1.options })
+    if (data.moyenPaiement === 'espece') {
+      await openCashDrawer()
+    }
     gererRetourPostPaiement(retour, status, glob.dataCarte1.options)
   })
 
@@ -1660,9 +1721,13 @@ export function validerEtape2(data) {
     data: options.achats
   }
   // console.log('options.achats =', options.achats)
-  sys.ajax(requete, function (retour, status) {
+  sys.ajax(requete, async function (retour, status) {
     gererRetourPostPaiement(retour, status, options)
     // sys.logValeurs({retour: retour, status: status, options: options})
+    // ouvre la caisse
+    if (options.achats.moyen_paiement === 'espece') {
+      await openCashDrawer()
+    }
   })
 }
 

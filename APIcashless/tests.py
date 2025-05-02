@@ -1,9 +1,6 @@
-import time
 from io import StringIO
 from uuid import UUID
 
-import requests
-from OpenSSL.crypto import verify
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.serializers.json import DjangoJSONEncoder
@@ -12,7 +9,7 @@ from faker import Faker
 
 from APIcashless.models import *
 from fedow_connect.fedow_api import FedowAPI
-from fedow_connect.validators import TransactionValidator, AssetValidator
+from fedow_connect.validators import TransactionValidator
 
 
 class TiBilletTestCase(TestCase):
@@ -1895,10 +1892,12 @@ class CashlessTest(TiBilletTestCase):
             data={
                 'email': email,
                 'cgu': True,
+                'emailConfirmation': email,
                 'qrcode_uuid': f"{card.uuid_qrcode}"
             },
             verify=False,
         )
+
         self.assertEqual(lespass_link.status_code, 200)
 
         # On vérifie sur Fedow que la card n'est plus ephémère :
@@ -2231,8 +2230,8 @@ class CashlessTest(TiBilletTestCase):
         ### BADGE
         self.badge()
         # TODO: tester badge sur dashboard fedow
-        import ipdb;
-        ipdb.set_trace()
+        logger.info("TOUT PASSE ! On mets un ipdb pour s'amuser avec les tests si besoin.")
+        import ipdb; ipdb.set_trace()
 
         # On rebadge avec un asset exterieur
         # tester refund et void -> toujours membership et badge

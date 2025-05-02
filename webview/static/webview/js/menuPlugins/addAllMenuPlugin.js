@@ -1,5 +1,6 @@
 // add the folder name of your new menu plugin, the array index gives the display order
-const listMenuToAdd = ['pettyCash', 'closeAccounts', 'changeLanguage', 'allOrders', 'cashDrawer', 'testLcd']
+// const listMenuToAdd = ['pettyCash', 'closeAccounts', 'changeLanguage', 'allOrders', 'testLcd']
+const listMenuToAdd = ['changeLanguage', 'allOrders']
 window.menuAddHtmlFragment = ''
 
 window.addPluginFunctionsToMenu = function () {
@@ -17,9 +18,9 @@ listMenuToAdd.forEach(async (plug) => {
     for (let i = 0; i < menu.conditions.length; i++) {
       const condition = menu.conditions[i]
       try {
-        activateMenu = await window[condition]()  
+        activateMenu = await window[condition]()
       } catch (error) {
-        console.log(`addAllMenuPlugin.js, la fonction condition = "${condition}" n'existe pas !`) 
+        console.log(`addAllMenuPlugin.js, la fonction condition = "${condition}" n'existe pas !`)
       }
     }
   }

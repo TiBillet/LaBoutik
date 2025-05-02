@@ -1,0 +1,175 @@
+{% load i18n humanize static %}
+<style>
+    .order__tabs {
+        display: flex;
+        justify-content: space-around;
+        margin: 1rem;
+    }
+
+    .order__btn {
+        background: #ccc;
+        border: none;
+        border-radius: .5rem;
+        cursor: pointer;
+        font-size: larger;
+        padding: 1rem;
+    }
+
+    .ticket {
+        border-collapse: collapse;
+        margin: 1rem auto;
+        max-width: 800px;
+        width: 90%;
+
+        tr + tr {
+            border: none;
+            border-top: 1px solid;
+        }
+
+        th, td {
+            padding-block: 1.5rem;
+        }
+
+        th {
+            text-align: left;
+        }
+
+        td {
+            text-align: right;
+        }
+    }
+
+    .ticket__field {
+        display: flex;
+        margin: 2rem auto 0;
+        max-width: 800px;
+        width: 90%;
+    }
+
+    .ticket__input {
+        padding: .5rem .8rem;
+        margin-inline-end: 1rem;
+    }
+
+    .ticket__btn {
+        background: #ccc;
+        border: none;
+        border-radius: .5rem;
+        cursor: pointer;
+        padding: 1rem;
+    }
+
+    .ticket__btn--danger {
+        background-color: darkred;
+        color: white;
+    }
+
+    @media screen and (min-width: 960px) {
+        .order__tabs {
+            justify-content: space-evenly;
+        }
+    }
+</style>
+
+<nav class="order__tabs">
+    <button class="order__btn" type="menu" hx-get="/htmx/sales?oldest_first=false"
+            hx-target="#service-commandes">{% trans 'Sales' %}</button>
+    <button class="order__btn" type="menu" hx-get="/htmx/sales/z_ticket/"
+            hx-target="#service-commandes">{% trans 'Z-Ticket' %}
+    </button>
+</nav>
+
+<div class="order-sup-overflow-y">
+    <table class="ticket">
+        <tr>
+            <th>{% trans 'Start' %}</th>
+            <td>
+                {{ ticket_today.start_date | naturaltime }}<br/>
+                <small>{{ ticket_today.start_date }}</small>
+            </td>
+        </tr>
+        <tr>
+            <th>{% trans 'End' %}</th>
+            <td>
+                {{ ticket_today.end_date | naturaltime }}<br/>
+                <small>{{ ticket_today.end_date }}</small>
+            </td>
+        </tr>
+
+        <tr>
+            <th>{% trans 'TOTAL sales only' %}</th>
+            <td>{{ ticket_today.total_TTC | floatformat:2 }}&nbsp;€</td>
+        </tr>
+
+        <tr>
+            <th colspan="2" style="text-align: center">{% trans "All entries, by payment method :" %}</th>
+        </tr>
+
+
+        {% for moyen_de_paiement, value in ticket_today.dict_toute_entrees_par_moyen_paiement.items %}
+            <tr>
+                <th>{{ moyen_de_paiement }}</th>
+                <td>{{ value | floatformat:2 }}&nbsp;€</td>
+            </tr>
+        {% endfor %}
+
+        <tr>
+            <th colspan="2" style="text-align: center">{% trans "Cash :" %}</th>
+        </tr>
+
+        <tr>
+            <th>{% trans 'Cash float on opening' %}</th>
+            <td>
+                <form id="change_cash_float" class="order__line"
+                      hx-post="/htmx/sales/change_cash_float/"
+                      hx-target="#service-commandes" hx-swap="innerHTML"> {# the query returns the table z-ticket#}
+
+                    <input name="cashfloat" class="ticket__input" type="number" step="0.01" size="6"
+                           value="{{ ticket_today.fond_caisse }}"/>
+                    <button class="ticket__btn" hx-indicator="#indicator-cash-float" type="submit">
+                        {% trans 'Change the cash float' %}
+                        <img id="indicator-cash-float" src="{% static 'htmxview/bars.svg' %}"
+                             class="htmx-indicator" alt=""/>
+                    </button>
+
+                </form>
+            </td>
+        </tr>
+        <tr>
+            <th>{% trans 'Total cash' %}</th>
+            <td>{{ ticket_today.total_cash }}</td>
+        </tr>
+
+    </table>
+
+    <script src="{% static 'js/sweetalert.js' %}"></script>
+    <div class="ticket__field">
+        {% trans "Confirm the closing of cash registers" as confirm_title %}
+
+        <button class="ticket__btn ticket__btn--danger" type="button"
+                hx-get="/htmx/sales/close_all_pos"
+                hx-trigger='confirmed'
+                hx-target="#service-commandes" hx-swap="innerHTML" {# the query returns the table z-ticket#}
+                onClick="Swal.fire({title: `{{ confirm_title }}`, text:`Do or do not, there is no try. Yoda.`}).then((result)=>{
+                        if(result.isConfirmed){
+                        htmx.trigger(this, 'confirmed');
+                        }
+                        })">
+            {% trans 'Close all cash registers' %}
+        </button>
+    </div>
+
+    {% for message in messages %}
+        <script>
+            console.log(`{{message}}`);
+            Swal.fire({
+                icon: '{{ message.tags }}', // Utilise les tags définis dans settings.py (success, error, warning, info)
+                title: '{{ message }}',    // Affiche le contenu du message
+                {#timer: 5000,              // Message disparaît après 5 secondes#}
+                showConfirmButton: true  // Pas de bouton "OK"
+            });
+        </script>
+    {% endfor %}
+</div>
+
+

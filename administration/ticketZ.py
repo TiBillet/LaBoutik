@@ -655,6 +655,7 @@ class TicketZ():
             'retour_consignes_espece': self.retour_consignes_espece,
             'retour_consignes_cashless': self.retour_consignes_cashless,
             'retour_consignes_cb': self.retour_consignes_cb,
+            'retour_consigne_total': self.retour_consigne_total,
 
             "total_remboursement": self.total_remboursement,
             "remboursement_espece": self.remboursement_espece,

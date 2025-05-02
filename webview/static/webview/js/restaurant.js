@@ -457,7 +457,7 @@ export function majListeAddition() {
   // let totalAddition = 0
   let totalAddition = new Big(0)
   // monnaie
-  const monnaie = getTranslate('currencySymbol')
+  const monnaie = getTranslate('currencySymbol', null, 'methodCurrency')
 
   for (let i = 0; i < eles.length; i++) {
     let ele = eles[i]
@@ -493,7 +493,7 @@ export function majListeAddition() {
     }
   }
   // contenu bouton valider
-  document.querySelector('#bt-valider-total-restau').innerHTML = `<span data-i8n="total,uppercase">TOTAL</span>  ${totalAddition} <span data-i8n="currencySymbol">€</span>`
+  document.querySelector('#bt-valider-total-restau').innerHTML = `<span data-i8n="total,uppercase">TOTAL</span>  ${totalAddition} ${getTranslate('currencySymbol', null, 'methodCurrency')}`
   translate('#bt-valider-total-restau')
   document.querySelector('#commandes-table-contenu').setAttribute('data-total-addition-en-cours', totalAddition)
 }
@@ -566,14 +566,14 @@ function dejaPayeeDansCommandes(commandes) {
         prix = Math.abs(articles[idArt].qty)
         // console.log('-> ',  article.name, '  --  quantité = ', qty, '  --  prix = ', prix)
         listFragHtml += `
-          <div class="BF-ligne-deb l100p">
+          <div class="BF-ligne-deb l100p pdep">
             <div class="addition-col-bt"></div>
             <div class="addition-col-qte">1</div>
             <div class="addition-col-produit">
               <div>${article.name}</div>
             </div>
             <div class="addition-col-prix">
-              <div>${prix}<span data-i8n="currencySymbol">€</span></div>
+              <div>${prix}${getTranslate('currencySymbol', null, 'methodCurrency')}</div>
             </div>
           </div>
         `
@@ -586,14 +586,14 @@ function dejaPayeeDansCommandes(commandes) {
         }
         // console.log('-> ',  article.name, '  --  quantité = ', qty, '  --  prix = ', prix)
         listFragHtml += `
-          <div class="BF-ligne-deb l100p">
+          <div class="BF-ligne-deb l100p pdep">
             <div class="addition-col-bt"></div>
             <div class="addition-col-qte">${qty}</div>
             <div class="addition-col-produit">
               <div>${article.name}</div>
             </div>
             <div class="addition-col-prix">
-              <div>${prix}<span data-i8n="currencySymbol">€</span></div>
+              <div>${prix} ${getTranslate('currencySymbol', null, 'methodCurrency')}</div>
             </div>
           </div>
         `
@@ -1662,11 +1662,11 @@ export function afficherCommandesTable(idTable) {
 
       let totalCommandesTable = totalPrixCommandesTable(table.commandes, idTable)
       document.querySelector('#commandes-table-contenu').setAttribute('data-total-commandes', totalCommandesTable)
-      document.querySelector('#addition-total-commandes').innerHTML = totalCommandesTable + getTranslate('currencySymbol')
+      document.querySelector('#addition-total-commandes').innerHTML = totalCommandesTable + getTranslate('currencySymbol', null, 'methodCurrency')
 
       let resteAPayer = table.reste_a_payer
       document.querySelector('#commandes-table-contenu').setAttribute('data-reste-a-payer', resteAPayer)
-      document.querySelector('#addition-reste-a-payer').innerHTML = resteAPayer + getTranslate('currencySymbol')
+      document.querySelector('#addition-reste-a-payer').innerHTML = resteAPayer + getTranslate('currencySymbol', null, 'methodCurrency')
 
       let listeArticles = []
       let commandes = table.commandes
@@ -1793,7 +1793,7 @@ export function afficherCommandesTable(idTable) {
           <div class="BF-col-deb footer-bt-text mg4px">
             <div data-i8n="validate,uppercase">VALIDER</div>
             <div id="bt-valider-total-restau">
-            <span data-i8n="total,uppercase">TOTAL</span> 0 <span data-i8n="currencySymbol">€</span>
+              <span data-i8n="total,uppercase">TOTAL</span> 0 ${getTranslate('currencySymbol', null, 'methodCurrency')}
             </div>
           </div>
         </div>

@@ -113,7 +113,7 @@ def declaration_to_discovery_server():
     config = Configuration.get_solo()
     url = settings.LABOUTIK_URL
     if not url:
-        raise Exception("Cashless server URL not specified")
+        raise Exception(_("URL serveur cashless non renseignée "))
 
     # Création s'il n'existe pas
     public_pem = config.get_public_pem()

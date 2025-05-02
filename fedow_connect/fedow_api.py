@@ -185,7 +185,6 @@ class Subscription():
 
         else:
             logger.error(response_subscription.json())
-            import ipdb; ipdb.set_trace()
             return response_subscription.status_code
 
     def retrieve(self, wallet: uuid4 = None):

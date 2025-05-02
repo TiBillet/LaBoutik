@@ -3,7 +3,9 @@ import os
 from datetime import datetime, timedelta, time
 from decimal import Decimal
 from uuid import uuid4
-
+from decimal import Decimal
+import pytz
+import requests
 import stripe
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -11,7 +13,10 @@ from dateutil import tz
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.core.cache import cache
-from django.db import models
+from django.utils.html import format_html
+
+from epsonprinter.models import Printer
+from .fontawesomeicons import FONT_ICONS_CHOICES
 from django.db.models import Q, Sum
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
@@ -19,18 +24,35 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from rest_framework_api_key.models import AbstractAPIKey, APIKey
+
+from django.db import models
+from datetime import datetime, timedelta, time
+from django.utils import timezone
+from django.dispatch import receiver
+from django.db.models.signals import post_save, pre_save
 from solo.models import SingletonModel
+from django.db.models import Q, Sum
+from django.conf import settings
+from django.contrib.postgres.fields import JSONField
+
 from stdimage import StdImageField, JPEGField
 from stdimage.validators import MaxSizeValidator, MinSizeValidator
+from django.utils.translation import gettext_lazy as _
+from rest_framework_api_key.models import AbstractAPIKey, APIKey
+from cryptography.hazmat.primitives import serialization
+from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt
 
+from cryptography.hazmat.backends import default_backend
 from epsonprinter.models import Printer
 from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt
 from .fontawesomeicons import FONT_ICONS_CHOICES
-
 # import requests, json
 # from requests.auth import HTTPBasicAuth
+
 # pour appareillement
 # from django.contrib.auth import get_user_model
+
+from dateutil import tz
 
 runZone = tz.gettz(os.getenv('TZ'))
 import logging
@@ -218,6 +240,7 @@ class Membre(models.Model):
 
     numero_carte.short_description = "Cartes liées"
 
+
     def a_jour_cotisation(self):
 
         calcul_adh = Configuration.get_solo().calcul_adhesion
@@ -344,6 +367,7 @@ class PointDeVente(models.Model):
                             null=True, choices=FONT_ICONS_CHOICES)
 
     poid_liste = models.PositiveSmallIntegerField(default=0, verbose_name=_("Poids"))
+    hidden = models.BooleanField(default=False)
 
     def __str__(self):
         return self.name
@@ -486,6 +510,7 @@ class GroupementCategorie(models.Model):
     )
 
     compteur_ticket_journee = models.PositiveSmallIntegerField(default=0, verbose_name=_("Compteur de ticket"))
+
     qty_ticket = models.PositiveSmallIntegerField(default=1, verbose_name=_("Nombre de copie à imprimer"))
 
     def __str__(self):
@@ -547,6 +572,7 @@ class Articles(models.Model):
     BADGEUSE = 'BG'
     FIDELITY = 'FD'
     CASHBACK = 'HB'
+    TRANSFERT = 'TR'
 
     METHODES_CHOICES = [
         (VENTE, _('Vente')),
@@ -563,6 +589,7 @@ class Articles(models.Model):
         (BADGEUSE, _('Badgeuse')),
         (FIDELITY, _('Fidélité')),
         (CASHBACK, _('Cashback')),
+        (TRANSFERT, _('Virement bancaire')),
     ]
 
     methode_choices = models.CharField(
@@ -650,6 +677,7 @@ class Articles(models.Model):
             if tuple[0] == self.methode_choices:
                 return tuple[1]
         return None
+
 
     def __str__(self):
         if self.methode_choices == self.RECHARGE_EUROS:
@@ -745,20 +773,31 @@ class MoyenPaiement(models.Model):
     place_origin = models.ForeignKey(Place, on_delete=models.SET_NULL, related_name='moyen_paiements', null=True,
                                      blank=True)
 
+    # Cashless
     LOCAL_EURO = 'LE'
     LOCAL_GIFT = 'LG'
-    FRACTIONNE = 'FR'
-    STRIPE_FED = 'SF'
     EXTERIEUR_FED = 'XE'
     EXTERIEUR_GIFT = 'XG'
-    FEDOW = 'FD'
-    STRIPE_NOFED = 'SN'
+
+    # Classics
     CASH = 'CA'
     CREDIT_CARD_NOFED = 'CC'
     CHEQUE = 'CH'
-    OCECO = 'OC'
-    ARDOISE = 'AR'
+    TRANSFER = 'TR'
+    FREE = 'NA'
+
+    # Methode special
+    FRACTIONNE = 'FR'
     COMMANDE = "CM"
+    ARDOISE = 'AR'
+
+    # Online
+    STRIPE_FED = 'SF' # Paimeent vers le compte stripe principal
+    STRIPE_NOFED = 'SN' # Paiement direct vers le compte stripe connect
+    FEDOW = 'FD'
+
+    # Assets with special method
+    OCECO = 'OC'
     BADGE = 'BG'
     EXTERNAL_BADGE = 'XB'
     TIME = 'TP'
@@ -770,20 +809,27 @@ class MoyenPaiement(models.Model):
     EXTERNAL_FIDELITY = 'XF'
 
     CATEGORIES = [
-        (LOCAL_EURO, _('Token local €')),
-        (LOCAL_GIFT, _('Token local cadeau')),
-        (FRACTIONNE, _('Fractionné')),
-        (STRIPE_FED, _('Stripe')),
-        (EXTERIEUR_FED, _('Token fédéré exterieur €')),
-        (EXTERIEUR_GIFT, _('Token fédéré cadeau')),
+        # Cashless
+        (LOCAL_EURO, _('Local')),
+        (LOCAL_GIFT, _('Token cadeau')),
+        (EXTERIEUR_FED, _('Externe')),
+        (EXTERIEUR_GIFT, _('Token exterieur cadeau')),
         (FEDOW, _('Fedow')),
-        (STRIPE_NOFED, _('Web (Stripe)')),
+
         (CASH, _('Espèces')),
         (CREDIT_CARD_NOFED, _('Carte bancaire')),
-        (CHEQUE, _('Cheque')),
-        (OCECO, _('Oceco')),
-        (ARDOISE, _('Ardoise')),
+        (CHEQUE, _('Chèque')),
+        (TRANSFER, _('Bank transfer')),
+        (FREE, _('Offert')),
+
+        (FRACTIONNE, _('Fractionné')),
         (COMMANDE, _('Commande')),
+        (ARDOISE, _('Ardoise')),
+
+        (STRIPE_NOFED, _('En ligne')),
+        (STRIPE_FED, _('Fédéré')),
+
+        (OCECO, _('Oceco')),
         (BADGE, _('Badgeuse')),
         (EXTERNAL_BADGE, _('Badgeuse fédérée')),
         (TIME, _('Temps')),
@@ -897,6 +943,7 @@ class MoyenPaiement(models.Model):
         elif self.name:
             return self.name
         return self.get_categorie_display()
+
 
 
 class CarteCashless(models.Model):
@@ -1486,16 +1533,25 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                             article_vendu: ArticleVendu = paiement.get('article_vendu')
                             qty: Decimal = paiement.get('qty')
 
+                            original_article = article.article
+                            categorie: Categorie = original_article.categorie
+                            tva = categorie.tva.taux if categorie.tva else 0
+
                             # Tant que l'un des deux est > 0 :
                             while qty > 0 and qty_non_comptabilisee > 0:
                                 a_encaisser = qty - total_non_comptabilisee
 
                                 if a_encaisser >= 0:
-                                    logger.info(
-                                        f"On peut piocher {qty}€ dans {article_vendu} "
-                                        f": a encaisser >= 0 : {a_encaisser}")
+                                    # logger.info(
+                                    #     f"On peut piocher {qty}€ dans {article_vendu} "
+                                    #     f": a encaisser >= 0 : {a_encaisser}")
+                                    # logger.info(
+                                    #     f"Boucle1 Original article : {original_article} - categorie : {categorie} "
+                                    #     f"tva : {tva}")
 
                                     ArticleVendu.objects.create(
+                                        prix_achat=original_article.prix_achat,
+                                        tva=tva,
                                         article=article.article,
                                         prix=article.article.prix,
                                         qty=qty_non_comptabilisee,
@@ -1519,12 +1575,17 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                 elif a_encaisser < 0:
                                     qty_a_encaisser = Decimal(float(qty) / float(article.article.prix))
 
-                                    logger.info(
-                                        f"On peut piocher {qty}€ dans {article_vendu} : "
-                                        f"a encaisser < 0 : {a_encaisser} - "
-                                        f"qty_a_encaisser = {qty_a_encaisser}")
+                                    # logger.info(
+                                    #     f"On peut piocher {qty}€ dans {article_vendu} : "
+                                    #     f"a encaisser < 0 : {a_encaisser} - "
+                                    #     f"qty_a_encaisser = {qty_a_encaisser}")
+                                    # logger.info(
+                                    #     f"Boucle2 Original article : {original_article} - categorie : {categorie} "
+                                    #     f"tva : {tva}")
 
                                     ArticleVendu.objects.create(
+                                        prix_achat=original_article.prix_achat,
+                                        tva=tva,
                                         article=article.article,
                                         prix=article.article.prix,
                                         qty=qty_a_encaisser,
@@ -1568,8 +1629,8 @@ class IpUser(models.Model):
 
 class ArticleVendu(models.Model):
     uuid_paiement = models.UUIDField(editable=False, default=uuid4)
-
     uuid = models.UUIDField(default=uuid4)
+
 
     article = models.ForeignKey(Articles, on_delete=models.PROTECT)
     categorie = models.ForeignKey(Categorie, on_delete=models.PROTECT, null=True, blank=True)
@@ -1628,6 +1689,9 @@ class ArticleVendu(models.Model):
     sync_fedow = models.BooleanField(default=False, verbose_name="Fedow")
     hash_fedow = models.CharField(max_length=64, blank=True, null=True)
 
+    # Commentaires
+    comment = models.TextField(blank=True, null=True, verbose_name=_("Commentaire"))
+
     class Meta:
         ordering = ('-date_time',)
         verbose_name = _('Vente')
@@ -1684,18 +1748,18 @@ class ArticleVendu(models.Model):
                 self.categorie, created = Categorie.objects.get_or_create(name="Autre")
 
         # On applique la TVA de la catégorie de l'article en cas de changement futur de la catégorie parent :
-        if self.tva == 0:
+        if self.tva is None:
             if self.article.categorie:
                 if self.article.categorie.tva:
                     self.tva = self.article.categorie.tva.taux
 
         # On applique le prix de l'article en cas de changement futur de l'article parent :
-        if self.prix == 0:
+        if self.prix is None:
             if self.article:
                 self.prix = self.article.prix
 
         # On applique le prix d'achat de l'article en cas de changement futur de l'article parent :
-        if self.prix_achat == 0:
+        if self.prix_achat is None:
             if self.article:
                 self.prix_achat = self.article.prix_achat
 
@@ -1794,12 +1858,8 @@ class ClotureCaisse(models.Model):
     start = models.DateTimeField(verbose_name=_("Début"))
     end = models.DateTimeField(verbose_name=_("Fin"))
 
-    # chiffre_affaire = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name="Chiffre d'affaire")
+    # Enregistrement dans le dur du tableau qui a été généré.
     ticketZ = JSONField(default=dict, max_length=50000)
-
-    # TODO: Ajouter point de vente et responsable
-    # pos = PointDeVente
-    # responsable = Membre
 
     CUSTOM, POS, CLOTURE, HEBDOMADAIRE, MENSUEL, ANNUEL = 'K', 'P', 'C', 'H', 'M', 'A'
     CAT_CHOICES = [
@@ -1814,6 +1874,9 @@ class ClotureCaisse(models.Model):
 
     def chiffre_affaire(self):
         return json.loads(self.ticketZ).get('total_TTC')
+
+    def uuid_8(self):
+        return str(self.id)[:8]
 
     class Meta:
         ordering = ('-datetime',)
@@ -1863,17 +1926,14 @@ class Configuration(SingletonModel):
     horaire_ouverture = models.TimeField(null=True, blank=True)
     horaire_fermeture = models.TimeField(null=True, blank=True)
 
-    # TODO: utiliser settings.TIME_ZONE
-    TZ_REUNION, TZ_PARIS = "Indian/Reunion", "Europe/Paris"
-    TZ_CHOICES = [
-        (TZ_REUNION, _('Indian/Reunion')),
-        (TZ_PARIS, _('Europe/Paris')),
-    ]
-
-    fuseau_horaire = models.CharField(default=TZ_REUNION,
+    TZ_CHOICES = zip(pytz.all_timezones, pytz.all_timezones)
+    fuseau_horaire = models.CharField(default="Europe/Paris",
                                       max_length=50,
                                       choices=TZ_CHOICES,
+                                      verbose_name=_("Timezone"),
                                       )
+
+    currency_code = models.CharField(max_length=3, default="EUR")
 
     def timezone(self):
         return settings.TIME_ZONE
@@ -1991,9 +2051,8 @@ class Configuration(SingletonModel):
     adhesion_suspendue = models.BooleanField(default=False,
                                              help_text="Adhésion possible sur carte sans membre. Au prix par default dès que la fiche membre est renseignée.")
 
-    void_card = models.BooleanField(default=False, verbose_name=_("Séparer l'utilisateur lors du vider carte"),
-                                    help_text=_(
-                                        "Si coché, la carte vidée redeviendra neuve. Sinon, la carte garde toujours le portefeuille de l'utilisateur pour par exemple ses adhésions."))
+    void_card = models.BooleanField(default=True, verbose_name=_("Séparer l'utilisateur lors du vider carte"),
+                                    help_text=_("Si coché, la carte vidée redeviendra neuve. Sinon, la carte garde toujours le portefeuille de l'utilisateur pour par exemple ses adhésions."))
 
     '''
     OCECO API KEY
@@ -2153,7 +2212,7 @@ class Configuration(SingletonModel):
     TicketZ
     '''
 
-    cash_float = models.IntegerField(default=0, verbose_name=_("Fond de caisse par défaut"))
+    cash_float = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name=_("Fond de caisse par défaut"))
     ticketZ_printer = models.ForeignKey(Printer, on_delete=models.SET_NULL, blank=True, null=True)
     compta_email = models.EmailField(blank=True, null=True, verbose_name=_("Email de la compta."),
                                      help_text=_(

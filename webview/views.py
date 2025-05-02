@@ -207,16 +207,15 @@ def index(request):
     if not getattr(request.user, 'appareil', None) and not mode_demo:
         return HttpResponseNotFound(_(f"Terminal non appairé ou mode demo : {mode_demo}"))
 
+    configuration = Configuration.get_solo()
     # print("----------------------------------------------")
     # print(f"-> request.method = {request.method}")
     # print("----------------------------------------------")
-
     if request.method == 'POST':
         # print("----------------------------------------------")
         # print(f"->data ={request.POST}")
         # print("----------------------------------------------")
 
-        configuration = Configuration.get_solo()
         # valider la carte primaire
         if request.POST.get('type-action') == 'valider_carte_maitresse':
             tag_id_cm = request.POST.get('tag-id-cm').upper()
@@ -249,7 +248,7 @@ def index(request):
                         data['responsable']['edit_mode'] = True
 
                     data['monnaie_principale_name'] = monnaie_principale_name
-
+                    data['currency_code'] = configuration.currency_code
                     return Response(data, status=status.HTTP_200_OK)
                 else:
                     logger.error("/wv/index Carte sans nom !")
@@ -261,7 +260,7 @@ def index(request):
         'version': '0.9.10',
         'titrePage': _('Laboutik | Tibillet'),
         'demo': mode_demo,
-        'time_zone': settings.TIME_ZONE,
+        'time_zone': configuration.fuseau_horaire,
         'demoTagIdCm': os.getenv("DEMO_TAGID_CM"),
         'demoTagIdClient1': os.getenv("DEMO_TAGID_CLIENT1"),
         'demoTagIdClient2': os.getenv("DEMO_TAGID_CLIENT2"),
@@ -809,11 +808,17 @@ class Commande:
                 total_vente_article += dround((qty * prix))
         return dround(total_vente_article)
 
-    def _to_db_article_vendu(self, article, qty, asset):
+    def _to_db_article_vendu(self, article: Articles, qty, asset):
+        tva = 0
+        if article.categorie:
+            if article.categorie.tva:
+                tva = article.categorie.tva.taux
 
         ligne_article_vendu = ArticleVendu.objects.create(
             article=article,
             prix=article.prix,
+            prix_achat=article.prix_achat,
+            tva=tva,
             qty=qty,
             pos=self.point_de_vente,
             carte=asset.carte,
@@ -829,7 +834,14 @@ class Commande:
         return ligne_article_vendu
 
     def _to_db_cash_cb(self, article, qty):
+        tva = 0
+        if article.categorie:
+            if article.categorie.tva:
+                tva = article.categorie.tva.taux
+
         ArticleVendu.objects.create(
+            prix_achat=article.prix_achat,
+            tva=tva,
             article=article,
             prix=article.prix,
             qty=qty,
@@ -985,7 +997,14 @@ class Commande:
             logger.warning(f"Article badge payant, en cours de dev.")
             raise NotAcceptable(detail=f"Pas de badge payant tout de suite :)", code=None)
 
+        tva = 0
+        if article.categorie:
+            if article.categorie.tva:
+                tva = article.categorie.tva.taux
+
         ligne_article_vendu = ArticleVendu.objects.create(
+            tva=tva,
+            prix_achat=article.prix_achat,
             article=article,
             prix=article.prix,
             qty=qty,
@@ -1102,9 +1121,9 @@ class Commande:
         self._refill_token(token, reste)
 
         ArticleVendu.objects.create(
+            qty=qty,
             article=article,
             prix=article.prix,
-            qty=qty,
             pos=self.point_de_vente,
             carte=self.carte_db,
             membre=self.carte_db.membre,
@@ -1162,6 +1181,7 @@ class Commande:
         art = ArticleVendu.objects.create(
             article=article,
             prix=article.prix,
+            prix_achat=article.prix_achat,
             qty=qty,
             pos=self.point_de_vente,
             carte=self.carte_db,
@@ -1202,53 +1222,40 @@ class Commande:
         fedowAPI = FedowAPI()
         fedow_serialized_card = fedowAPI.NFCcard.cached_retrieve(carte_db.tag_id)
 
-        # Si wallet ephemère = pas d'email
-        # if fedow_serialized_card.get('is_wallet_ephemere'):
-        #     logger.error('methode_adhesion : Pas de membre sur cette carte')
-        #     raise NotAcceptable(
-        #         detail=_("Pas d'email lié sur cette carte.\n"
-        #                "Merci de lier un email à cette carte en scannant son QRCode."),
-        #         code=None
-        #     )
+        try :
+            adh = fedowAPI.subscription.create_sub(
+                wallet=f"{fedow_serialized_card['wallet']['uuid']}",
+                amount=int(self.total_vente_article * 100),
+                article=article,
+                user_card_firstTagId=carte_db.tag_id,
+                primary_card_fisrtTagId=primary_card_fisrtTagId.tag_id
+            )
 
-        adh = fedowAPI.subscription.create_sub(
-            wallet=f"{fedow_serialized_card['wallet']['uuid']}",
-            amount=int(self.total_vente_article * 100),
-            article=article,
-            user_card_firstTagId=carte_db.tag_id,
-            primary_card_fisrtTagId=primary_card_fisrtTagId.tag_id
-        )
+            if not adh['verify_hash']:
+                raise NotAcceptable(
+                    detail="Erreur fédération.\n"
+                           "Notez la transaction et contactez un administrateur.",
+                    code=None
+                )
 
-        # On va chercher l'adhérant
-        # if carte_db.membre:
-        #     adherant: Membre = carte_db.membre
-        #
-        #     # if adherant.a_jour_cotisation():
-        #     #     raise NotAcceptable(
-        #     #         detail=f"Le membre {adherant.name} à déja adhéré le {adherant.date_derniere_cotisation} "
-        #     #                f"via l'interface : {adherant.choice_str(Membre.ORIGIN_ADHESIONS_CHOICES, adherant.adhesion_origine)}.",
-        #     #         code=None
-        #     #     )
-        #
-        #     aujourdhui = datetime.now().date()
-        #     adherant.date_derniere_cotisation = aujourdhui
-        #     adherant.cotisation = total
-        #
-        #     if not adherant.date_inscription:
-        #         adherant.date_inscription = aujourdhui
-        #
-        #     adherant.save()
-
-        if not adh['verify_hash']:
+        except Exception as e:
+            logger.error(f"methode_AD fedowAPI.subscription.create_sub : {e}")
             raise NotAcceptable(
                 detail="Erreur fédération.\n"
-                       "Contactez un administrateur.",
+                       "Notez la transaction et contactez un administrateur.",
                 code=None
             )
+
+        tva = 0
+        if article.categorie:
+            if article.categorie.tva:
+                tva = article.categorie.tva.taux
 
         ArticleVendu.objects.create(
             article=article,
             prix=total,
+            prix_achat=article.prix_achat,
+            tva=tva,
             qty=1,
             pos=self.point_de_vente,
             carte=carte_db,
@@ -1297,7 +1304,14 @@ class Commande:
             asset_principal = self.asset_principal()
             asset_principal.qty += - total
 
+            tva = 0
+            if article.categorie:
+                if article.categorie.tva:
+                    tva = article.categorie.tva.taux
+
             ArticleVendu.objects.create(
+                prix_achat=article.prix_achat,
+                tva=tva,
                 article=article,
                 prix=article.prix,
                 qty=qty,
