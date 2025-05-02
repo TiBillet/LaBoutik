@@ -138,6 +138,41 @@ class Sales(viewsets.ViewSet):
         context = {
             'ticket_today': ticket_today,
         }
+
+        destination = "print"
+        ticket = [
+            {"type": "text", "value": "--------------------------------"},
+            {"type": "align", "value": "center"},
+            {"type": "image", "value": "https://laboutik.filaos.re/static/webview/images/logoTicket.png"},
+            {"type": "font", "value": "A"},
+            {"type": "size", "value": 1},
+            {"type": "bold", "value": 1},
+            {"type": "text", "value": "Titre"},
+            {"type": "bold", "value": 0},
+            {"type": "size", "value": 0},
+            {"type": "barcode", "value": "1234567890456"},
+            {"type": "qrcode", "value": "https://tibillet.org/"},
+            {"type": "text", "value": "---- fin ----"},
+            {"type": "feed", "value": 3},
+            {"type": "cut"}
+        ]
+
+
+        # On envoi sur le canal que seul l'appareil reçoit l'ordre d'impression depuis le WS
+        logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {destination}")
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "chat_print",
+            {
+                'type': 'chat_message',
+                'message': 'sunmi_print',
+                'data': ticket,
+            }
+        )
+
+                # 'user': f"{request.user}",
+                # 'type': f'from_ws_to_printer',
+                # 'text': 'Print me !'
         return render(request, "sales/z_ticket.html", context)
 
 
