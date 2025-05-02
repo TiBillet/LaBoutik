@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import pytz
 from django.db.models import Sum, F, Avg
+from django.utils import timezone
 
 from APIcashless.models import Configuration, ArticleVendu, Articles, MoyenPaiement, Assets, Categorie, \
     Membre
@@ -716,6 +717,104 @@ class TicketZ():
         self.to_json = context_json
 
         return context_json
+
+    def to_sunmi_printer_57(self):
+        '''
+        exemple :
+        ticket = [
+            {"type": "text", "value": "--------------------------------"},
+            {"type": "align", "value": "center"},
+            {"type": "image", "value": "https://laboutik.filaos.re/static/webview/images/logoTicket.png"},
+            {"type": "font", "value": "A"},
+            {"type": "size", "value": 1},
+            {"type": "bold", "value": 1},
+            {"type": "text", "value": "Titre"},
+            {"type": "bold", "value": 0},
+            {"type": "size", "value": 0},
+            {"type": "barcode", "value": "1234567890456"},
+            {"type": "qrcode", "value": "https://tibillet.org/"},
+            {"type": "text", "value": "---- fin ----"},
+            {"type": "feed", "value": 3},
+            {"type": "cut"}
+        ]
+        '''
+
+        ### HEADER ####
+        config = self.config
+        ticket = [
+            {"type": "text", "value": "-" * 32},
+            {"type": "align", "value": "center"},
+            {"type": "text", "value": f"{config.structure}"},
+            {"type": "text", "value": f"{config.adresse}"},
+            {"type": "text", "value": f"Siret:"},
+            {"type": "text", "value": f"{config.siret}"},
+            {"type": "text", "value": "-" * 32},
+            {"type": "text", "value": f"Impression:{timezone.localtime().strftime('%d/%m/%Y %H:%M')}"},
+            {"type": "text", "value": f"Ouverture:{self.start_date.strftime('%d/%m/%Y %H:%M')}"},
+            {"type": "text", "value": f"Fermeture:{self.end_date.strftime('%d/%m/%Y %H:%M')}"},
+        ]
+        # header = remove_accents(header)
+        ### BODY ###
+        ticket = [
+            {"type": "text", "value": "-" * 32},
+            {"type": "align", "value": "left"},
+        ]
+
+        for moyen_paiement, valeur in self.dict_moyenPaiement_euros:
+            ticket.append({"type": "text", "value": f"{moyen_paiement.upper()}:{valeur} EUR"})
+
+        ticket += [
+            {"type": "text", "value": "-" * 32},
+            {"type": "text", "value": f"TOTAL HT:{self.to_dict.get('total_HT')} EUR"},
+            {"type": "text", "value": f"TOTAL TVA:{self.total_collecte_toute_tva} EUR"},
+            {"type": "text", "value": f"TOTAL TTC:{self.total_TTC} EUR"},
+            {"type": "text", "value": f"TOTAL Offert:{self.total_gift_by_mp} EUR"},
+            {"type": "text", "value": "-" * 32},
+        ]
+
+        # Ventillation TVA
+        dict_TVA = self.to_dict.get('dict_TVA')
+        for tva, total in dict_TVA.items():
+            ticket.append({"type": "text", "value": f"TVA {tva}% : {total} EUR"})
+        ticket.append({"type": "text", "value": f"TOTAL TVA:{self.total_collecte_toute_tva} EUR"})
+
+        # Cashless
+        ticket += [
+            {"type": "text", "value": "-" * 32},
+            {"type": "align", "value": "center"},
+            {"type": "text", "value": f"CASHLESS"},
+            {"type": "align", "value": "left"},
+            {"type": "text", "value": f"Recharge:{self.to_dict.get('total_recharge')} EUR\n"},
+            {"type": "text", "value": f"Recharge cadeau:{self.to_dict.get('total_recharge_cadeau')} EUR\n"},
+            {"type": "text", "value": f"Remboursement:{self.to_dict.get('total_remboursement')} EUR\n"},
+        ]
+
+        # Fond de caisse :
+        ticket += [
+            {"type": "text", "value": "-" * 32},
+            {"type": "align", "value": "center"},
+            {"type": "text", "value": f"FOND DE CAISSE ESPECE"},
+            {"type": "align", "value": "left"},
+            {"type": "text", "value": f""},
+
+            {"type": "text", "value": f"Fond caisse initial:{self.to_dict.get('fond_caisse')} EUR\n"},
+            {"type": "text", "value": f"+ cashless esp:{self.to_dict.get('recharge_cash')} EUR\n"},
+            {"type": "text", "value": f"- cashless esp:{self.to_dict.get('remboursement_espece')} EUR\n"},
+            {"type": "text", "value": f"Adhésion en esp:{self.to_dict.get('adhesion_espece')} EUR\n"},
+            {"type": "text", "value": f"Ventes en esp:{self.to_dict.get('ventes_directe_espece')} EUR\n"},
+            {"type": "text", "value": f"Fond caisse final:{self.to_dict.get('total_cash')} EUR\n"},
+        ]
+
+        ### THE END
+        ticket += [
+            {"type": "text", "value": "-" * 32},
+            {"type": "feed", "value": 3},
+            {"type": "cut"}
+        ]
+        return ticket
+
+    def to_sunmi_printer_80(self):
+        pass
 
     def calcul_valeurs(self):
 

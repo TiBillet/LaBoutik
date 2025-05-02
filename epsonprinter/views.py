@@ -335,7 +335,7 @@ class article_direct_to_printer():
             req.close()
 
 
-class TicketZPrinter():
+class TicketZ_PiEpson_Printer():
 
     def __init__(self, ticketz_json):
         self.config = Configuration.get_solo()

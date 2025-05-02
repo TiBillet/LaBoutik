@@ -6,7 +6,7 @@ from APIcashless.models import CommandeSauvegarde, GroupementCategorie, ArticleV
 from Cashless.celery import app
 import logging
 
-from .views import print_command, article_direct_to_printer, TicketZPrinter
+from .views import print_command, article_direct_to_printer, TicketZ_PiEpson_Printer
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ def direct_to_print(article_vendu_pk):
 @app.task
 def ticketZ_tasks_printer(ticketz_json):
     logger.info(f"   ticketZ_printer(ticketz_json) -> PRINT")
-    ticket_Z = TicketZPrinter(ticketz_json)
+    ticket_Z = TicketZ_PiEpson_Printer(ticketz_json)
     if ticket_Z.can_print():
         logger.info(f"   ticket_Z.can_print() -> PRINT")
         ticket_Z.to_printer()
