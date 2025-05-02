@@ -99,23 +99,34 @@ export async function enableBluetooth() {
 
 }
 
+function bluetoothSerialExist() {
+  try  {
+    bluetoothSerial = cordova.plugins.bluetoothSerial
+    return true
+   } catch (error)  {
+    return false
+   }
+}
+
 export async function bluetoothGetMacAddress(name) {
   let retour = 'unknown'
-  const list = await new Promise((resolve) => {
-    // list devices
-    bluetoothSerial.list(function (devices) {
-      resolve(devices)
-    }, (error) => {
-      console.log('error =', error);
-      resolve([])
-    });
-  })
+  if (bluetoothSerialExist()) {
+    const list = await new Promise((resolve) => {
+      // list devices
+      bluetoothSerial.list(function (devices) {
+        resolve(devices)
+      }, (error) => {
+        console.log('error =', error);
+        resolve([])
+      });
+    })
 
-  for (let i = 0; i < list.length; i++) {
-    const device = list[i];
-    if (device.name === name) {
-      retour = device.id
-      break
+    for (let i = 0; i < list.length; i++) {
+      const device = list[i];
+      if (device.name === name) {
+        retour = device.id
+        break
+      }
     }
   }
   return retour
@@ -219,7 +230,7 @@ async function bluetoothDisconnect() {
 export async function bluetoothConnection() {
   let connect = false
   console.log('-> bluetoothConnection -', new Date())
-  
+
   const macAddress = await bluetoothGetMacAddress("InnerPrinter")
   const isConnected = await bluetoothIsConnected()
 
@@ -333,7 +344,7 @@ export async function bluetoothWrite(content) {
 
 export async function bluetoothOpenCashDrawer() {
   await bluetoothConnection()
-  
+
   let data = new Uint8Array(5)
   data[0] = 0x10
   data[1] = 0x14
@@ -348,14 +359,14 @@ export async function bluetoothOpenCashDrawer() {
 
 export async function bluetoothLcd() {
   await bluetoothConnection()
-  
+
   let iniLcd = new Uint8Array(5)
   iniLcd[0] = 0x01
   iniLcd[1] = 0x1A
   iniLcd[2] = 0x1C
   iniLcd[3] = 0x01
   iniLcd[4] = 0x00
-  
+
   let test = new Uint8Array(5)
   test[0] = 0x1b
   test[1] = 0x1C

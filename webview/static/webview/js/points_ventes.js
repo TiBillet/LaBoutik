@@ -19,7 +19,7 @@ window.hasSunmiPrinter = async function () {
 
 window.openCashDrawer = async function () {
   try {
-    if (hasSunmiPrinter) {
+    if (await hasSunmiPrinter()) {
       await bluetoothOpenCashDrawer()
     }
   } catch (error) {
@@ -1474,7 +1474,7 @@ export function validerEtape1(options) {
             textColor: "#FFFFFF",
             icon: "fa-address-card",
             methods: ["fn.popupAnnuler()", "vue_pv.obtenirIdentiteClientSiBesoin('nfc')"],
-            currency: {name: "CASHLESS"},
+            currency: { name: "CASHLESS" },
             total,
             cssClass: ["test-ref-cashless"]
           })
@@ -1492,7 +1492,7 @@ export function validerEtape1(options) {
             textColor: "#FFFFFF",
             icon: "fa-coins",
             methods: ["fn.popupConfirme('espece', 'ESPECE', 'vue_pv.obtenirIdentiteClientSiBesoin')"],
-            currency: {name: "ESPECE", tradIndex: 'cash', tradOption: 'uppercase'},
+            currency: { name: "ESPECE", tradIndex: 'cash', tradOption: 'uppercase' },
             total,
             cssClass: ["test-ref-cash"]
           })
@@ -1506,7 +1506,7 @@ export function validerEtape1(options) {
             textColor: "#FFFFFF",
             icon: "fa-coins",
             methods: ["fn.popupAnnuler()", "vue_pv.obtenirIdentiteClientSiBesoin('espece')"],
-            currency: {name: "ESPECE", tradIndex: 'cash', tradOption: 'uppercase'},
+            currency: { name: "ESPECE", tradIndex: 'cash', tradOption: 'uppercase' },
             total,
             cssClass: ["test-ref-cash"]
           })
@@ -1522,7 +1522,7 @@ export function validerEtape1(options) {
           textColor: "#FFFFFF",
           icon: "fa-credit-card",
           methods: ["fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.obtenirIdentiteClientSiBesoin')"],
-          currency: {name: "CB", tradIndex: 'cb', tradOption: 'uppercase'},
+          currency: { name: "CB", tradIndex: 'cb', tradOption: 'uppercase' },
           total,
           cssClass: ["test-ref-cb"]
         })
@@ -1537,7 +1537,7 @@ export function validerEtape1(options) {
           textColor: "#FFFFFF",
           icon: "fa-money-check",
           methods: ["fn.popupConfirme('CH', 'CH', 'vue_pv.obtenirIdentiteClientSiBesoin')"],
-          currency: {name: "CH", tradIndex: 'cheque', tradOption: 'uppercase'},
+          currency: { name: "CH", tradIndex: 'cheque', tradOption: 'uppercase' },
           total,
           cssClass: ["test-ref-ch"]
         })
