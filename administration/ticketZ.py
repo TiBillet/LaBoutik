@@ -760,7 +760,7 @@ class TicketZ():
             {"type": "align", "value": "left"},
         ]
 
-        for moyen_paiement, valeur in self.dict_moyenPaiement_euros:
+        for moyen_paiement, valeur in self.dict_moyenPaiement_euros.items():
             ticket.append({"type": "text", "value": f"{moyen_paiement.upper()}:{valeur} EUR"})
 
         ticket += [
