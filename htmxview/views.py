@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import timedelta, datetime
 from channels.layers import get_channel_layer
@@ -143,7 +144,6 @@ class Sales(viewsets.ViewSet):
         ticket = [
             {"type": "text", "value": "--------------------------------"},
             {"type": "align", "value": "center"},
-            {"type": "image", "value": "https://laboutik.filaos.re/static/webview/images/logoTicket.png"},
             {"type": "font", "value": "A"},
             {"type": "size", "value": 1},
             {"type": "bold", "value": 1},
@@ -154,8 +154,8 @@ class Sales(viewsets.ViewSet):
             {"type": "qrcode", "value": "https://tibillet.org/"},
             {"type": "text", "value": "---- fin ----"},
             {"type": "feed", "value": 3},
-            {"type": "cut"}
         ]
+            # {"type": "cut"}
 
 
         # On envoi sur le canal que seul l'appareil reçoit l'ordre d'impression depuis le WS
@@ -166,7 +166,7 @@ class Sales(viewsets.ViewSet):
             {
                 'type': 'chat_message',
                 'message': 'sunmi_print',
-                'data': ticket,
+                'data': json.dumps(ticket),
             }
         )
 

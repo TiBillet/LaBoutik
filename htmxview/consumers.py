@@ -197,8 +197,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
     # Receive message from room group
     async def chat_message(self, event):
         inputContent = event['message']
-        logger.info(f"chat_message event: {event}")
+        ticket = event['data']
+        user = self.user
+        logger.info(f"chat_message \ninputContent: {inputContent} \nticket: {ticket} \nuser: {user} \nend chat_message \n")
 
+        await self.send(text_data=json.dumps({
+            'message': 'print',
+            'data': ticket,
+            'user': f"{user}"
+        }))
+
+        '''
         if inputContent == "sunmi_print":
             # Send message to WebSocket
             # dev moke data
@@ -244,6 +253,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'data': ticket,
                 'user': f"{self.user}"
             }))
+        '''
 
 # Pour TUTO HTMX
 class HtmxConsumer(AsyncWebsocketConsumer):
