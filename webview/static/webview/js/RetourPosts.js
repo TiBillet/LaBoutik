@@ -436,8 +436,8 @@ function infosPaiementRetourTable(retour, status, options) {
 }
 
 async function afficherRetourVenteDirecte(retour, status, options) {
-  // console.log(`-> fonction afficherRetourVenteDirecte !`)
-  // sys.logValeurs({ retour: retour, status: status, options: options })
+  console.log(`-> fonction afficherRetourVenteDirecte !`)
+  sys.logValeurs({ retour: retour, status: status, options: options })
   let typeMsg = 'succes', msgDefaut = '', msg = '', fonction = ''
 
 
@@ -653,6 +653,12 @@ async function afficherRetourVenteDirecte(retour, status, options) {
         msgDefaut += `</div>`
       }
 
+      // insert bt print
+      console.log('wsTerminal =', wsTerminal);
+      console.log('hasSunmiPrinter =', await hasSunmiPrinter())
+      
+
+
       msg = `
         <div class="BF-col-uniforme l100p h100p">
           <div class="BF-col">
@@ -706,7 +712,7 @@ async function afficherRetourVenteDirecte(retour, status, options) {
  * @param {Object} options = données avant le lancement de la requète
  */
 export function gererRetourPostPaiement(retour, status, options) {
-  // console.log('-> fonction gererRetourPostPaiement, options.actionAValider=', options.actionAValider)
+  console.log('-> fonction gererRetourPostPaiement, options.actionAValider=', options.actionAValider)
   // sys.logValeurs({ retour: retour, status: status, options: options })
   try {
     // sys.logValeurs({retour: retour, status: status, options: options})

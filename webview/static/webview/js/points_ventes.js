@@ -1,7 +1,7 @@
 // construction d'une partie du menu provenant des plugins
 import "./menuPlugins/addAllMenuPlugin.js"
 // import { isCordovaApp, enableBluetooth, bluetoothGetMacAddress, bluetoothWrite } from './modules/mobileDevice.js'
-import { isCordovaApp, bluetoothWrite, bluetoothGetMacAddress } from './modules/mobileDevice.js'
+import { isCordovaApp, bluetoothWrite, bluetoothGetMacAddress, bluetoothOpenCashDrawer } from './modules/mobileDevice.js'
 
 
 // ---- cordova ---
@@ -14,6 +14,16 @@ window.hasSunmiPrinter = async function () {
     return false
   } else {
     return true
+  }
+}
+
+window.openCashDrawer = async function () {
+  try {
+    if (hasSunmiPrinter) {
+      await bluetoothOpenCashDrawer()
+    }
+  } catch (error) {
+    console.log('-> openCashDrawer error infos:', error);
   }
 }
 
