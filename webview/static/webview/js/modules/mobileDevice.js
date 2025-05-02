@@ -99,13 +99,6 @@ export async function enableBluetooth() {
 
 }
 
-function bluetoothSerialAvailable() {
-  window.bluetoothSerial.available(() => {
-    return true
-   }, () => {
-    return false
-  })
-}
 
 export async function bluetoothGetMacAddress(name) {
   let retour = 'unknown'
