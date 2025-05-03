@@ -662,13 +662,13 @@ async function afficherRetourVenteDirecte(retour, status, options) {
         // prod
         // if(wsTerminal.on === true && await hasSunmiPrinter() === true) {
         const btUuid = sys.uuidV4()
-        window['xhValsAchats' + btUuid] = () => options.achats
+        window['xhValsAchats' + btUuid] = JSON.stringify(retour)
         console.log('xhValsAchats =', window['xhValsAchats' + btUuid]);
 
         msgDefaut += `<button style="width:200px;height:80px;background-color:rgb(26, 17, 141);color:#ffffff;font-size:2rem;" 
           type="button" hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
           hx-target="#print-ticket-status-${btUuid}" hx-swap="innerHTML"
-          hx-vals='js:{...${window['xhValsAchats' + btUuid]}()}' >
+          hx-vals='${window['xhValsAchats' + btUuid]}' >
           Print ticket
         </button>
         <div id="print-ticket-status-${btUuid}"></div>`
