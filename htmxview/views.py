@@ -1,19 +1,34 @@
 import logging
 from datetime import timedelta, datetime
+from channels.layers import get_channel_layer
+import stripe
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import render, get_object_or_404
+from django.utils import timezone
+from rest_framework import viewsets, permissions
+from rest_framework.authentication import SessionAuthentication
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
+from epsonprinter.tasks import ticketZ_tasks_printer
 from uuid import UUID
 
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.http import HttpRequest
 from django.shortcuts import render
-from django.utils import timezone
-from rest_framework import viewsets
-from rest_framework.authentication import SessionAuthentication
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.request import Request
-from epsonprinter.tasks import ticketZ_tasks_printer
 
+from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse, ArticleVendu, MoyenPaiement, \
+    Configuration, PointDeVente, GroupementCategorie, ClotureCaisse
+from administration.adminroot import ArticlesAdmin
+from administration.ticketZ import TicketZ, dround
+from webview.serializers import debut_fin_journee, CommandeSerializer
+from django.core.paginator import Paginator
+# nico
+from uuid import UUID
+from asgiref.sync import async_to_sync
 from APIcashless.models import ArticleVendu, MoyenPaiement, Configuration, ClotureCaisse
 from administration.ticketZ import TicketZ, dround
 from htmxview.validators import CashfloatChangeValidator
@@ -30,7 +45,7 @@ class Sales(viewsets.ViewSet):
     def list(self, request: Request):
 
         # ex : wv/allOrders?oldest_first=True
-        order = '-date_time'
+        order = '-date_time' #todo : check datetime ou date_time ?
         authorized_management_mode = False
 
         oldest_first = False
@@ -227,3 +242,118 @@ class Membership(viewsets.ViewSet):
     def retrieve(self, request: HttpRequest, pk):
         logger.info(pk)
         pass
+
+
+class Print(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+
+    @action(detail=False, methods=['GET'])
+    def test(self, request, *args, **kwargs):
+        # On se log sur le premier appareil pour entrer dans le websocket
+        User = get_user_model()
+        user = User.objects.filter(appareil__isnull=False).first()
+
+        return render(request, 'print/test.html', context={
+            'user': user,
+            'room_name': user.uuid.hex,
+            'grps': GroupementCategorie.objects.all(),
+        })
+
+    @action(detail=True, methods=['GET'])
+    def test_groupe(self, request, pk, *args, **kwargs):
+        groupe = GroupementCategorie.objects.get(pk=pk)
+        user = request.user
+
+        try :
+            destination = groupe.printer.host.user.uuid.hex
+
+            # On envoi sur le canal que seul l'appareil reçoit l'ordre d'impression depuis le WS
+            logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {destination}")
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                destination,
+                {
+                    'type': f'from_ws_to_printer',
+                    'text': 'Print me !'
+                }
+            )
+
+        except Exception as e:
+            logger.error(f"Pas d'appareil pour ce groupe ? -> {e}")
+            pass
+
+        return render(request, 'print/notification.html', context={
+            'user': user,
+            'room_name': request.user.uuid.hex,
+            'groupe': groupe,
+        })
+
+#
+# class PaymentIntentTpeViewset(viewsets.ViewSet):
+#     authentication_classes = [SessionAuthentication, ]
+#     permission_classes = [IsAuthenticated, ]
+#
+#     def check_reader_state(self, reader):
+#         pass
+#
+#     def create(self, request, *args, **kwargs):
+#         user = request.user
+#         amount = request.data['amount']
+#
+#         if not settings.DEBUG:
+#             if not request.user.is_authenticated or not hasattr(request.user, 'appareil'):
+#                 logger.error(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
+#                 raise Exception(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
+#
+#         # Lier le tpe a l'appareil/user
+#         terminal = Terminal.objects.first()
+#
+#         payment_intent = PaymentsIntent.objects.create(
+#             terminal=terminal,
+#             amount=amount,
+#         )
+#         payment_intent.send_to_terminal(terminal)
+#
+#         return render(request, 'tpe/create.html', context={
+#             'user': user,
+#             'terminal': terminal,
+#             'payment_intent': payment_intent,
+#         })
+#
+#     @action(detail=True, methods=['GET'])
+#     def retry(self, request, pk):
+#         payment_intent = get_object_or_404(PaymentsIntent, pk=pk)
+#         terminal = payment_intent.terminal
+#         stripe.terminal.Reader.cancel_action(terminal.stripe_id)
+#         payment_intent.send_to_terminal(terminal)
+#
+#         return render(request, 'tpe/create.html', context={
+#             'user': request.user,
+#             'terminal': terminal,
+#             'payment_intent': payment_intent,
+#         })
+#
+#     @action(detail=True, methods=['GET'])
+#     def cancel(self, request, pk):
+#         config = Configuration.get_solo()
+#         stripe.api_key = config.get_stripe_api()
+#         terminal = get_object_or_404(Terminal, pk=pk)
+#         stripe.terminal.Reader.cancel_action(terminal.stripe_id)
+#         return HttpResponse(status=205)
+
+
+### TUTORIEL WEBSOCKET
+
+def tuto_htmx(request):
+    # if settings.DEBUG:
+    #     pos = PointDeVente.objects.all().order_by('poid_liste').first()
+    # else :
+    pos = PointDeVente.objects.first()
+
+    context = {'pos': pos}
+    return render(request, 'websocket/tuto_htmx/index.html', context)
+
+
+def tuto_js(request, room_name):
+    return render(request, 'websocket/tuto_js/room.html', {'room_name': room_name})

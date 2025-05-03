@@ -1,16 +1,29 @@
 import json
-
-import os, random
+import os
+from datetime import datetime, timedelta, time
+from decimal import Decimal
 from uuid import uuid4
 from decimal import Decimal
-
 import pytz
 import requests
+import stripe
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
+from dateutil import tz
+from django.conf import settings
+from django.contrib.postgres.fields import JSONField
 from django.core.cache import cache
 from django.utils.html import format_html
 
 from epsonprinter.models import Printer
 from .fontawesomeicons import FONT_ICONS_CHOICES
+from django.db.models import Q, Sum
+from django.db.models.signals import post_save, pre_save
+from django.dispatch import receiver
+from django.utils import timezone
+from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
+from rest_framework_api_key.models import AbstractAPIKey, APIKey
 
 from django.db import models
 from datetime import datetime, timedelta, time
@@ -30,7 +43,9 @@ from cryptography.hazmat.primitives import serialization
 from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt
 
 from cryptography.hazmat.backends import default_backend
-
+from epsonprinter.models import Printer
+from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt
+from .fontawesomeicons import FONT_ICONS_CHOICES
 # import requests, json
 # from requests.auth import HTTPBasicAuth
 
@@ -57,7 +72,7 @@ class Appareil(models.Model):
                                            blank=True, null=True)
 
     user = models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True)
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True, related_name='appareil')
 
     ip_lan = models.GenericIPAddressField(null=True, blank=True)
     ip_wan = models.GenericIPAddressField(null=True, blank=True)
@@ -67,10 +82,11 @@ class Appareil(models.Model):
     version = models.CharField(max_length=50, null=True, blank=True)
     user_agent = models.CharField(max_length=500, null=True, blank=True)
 
-    DESKTOP, SMARTPHONE, RASPBERRY, NFC_SANS_FRONT, FRONT_SANS_NFC = 'FOR', 'FMO', 'FPI', 'SSF', 'FSN'
+    DESKTOP, SMARTPHONE, SUNMI, RASPBERRY, NFC_SANS_FRONT, FRONT_SANS_NFC = 'FOR', 'FMO','SUN', 'FPI', 'SSF', 'FSN'
     PERIPH_CHOICES = [
         (DESKTOP, _('Front ordinateur')),
         (SMARTPHONE, _('Front smartphone')),
+        (SUNMI, _('Sunmi avec imprimante')),
         (RASPBERRY, _('Front Raspberry')),
         (NFC_SANS_FRONT, _('Serveur NFC sans front')),
         (FRONT_SANS_NFC, _('Front sans lecteur NFC')),
@@ -356,6 +372,11 @@ class PointDeVente(models.Model):
     def __str__(self):
         return self.name
 
+    def channel(self):
+        # L'adresse utilisé pour les canaux websocket. Ne doit pas comporter de caractère spéciaux
+        # Pour retrouver l'uuid original : UUID(hex)
+        return self.id.hex
+
     class Meta:
         ordering = ('poid_liste', 'name')
         verbose_name = _('Point de vente')
@@ -481,6 +502,13 @@ class GroupementCategorie(models.Model):
                                 blank=True,
                                 verbose_name=_("Imprimante"))
 
+    pos = models.ManyToManyField(
+        "PointDeVente",
+        blank=True,
+        verbose_name=_("Points de vente"),
+        help_text=_("Si vide : tous les points de ventes. Si non, uniquement les selectionnés")
+    )
+
     compteur_ticket_journee = models.PositiveSmallIntegerField(default=0, verbose_name=_("Compteur de ticket"))
 
     qty_ticket = models.PositiveSmallIntegerField(default=1, verbose_name=_("Nombre de copie à imprimer"))
@@ -489,8 +517,8 @@ class GroupementCategorie(models.Model):
         return self.name
 
     class Meta:
-        verbose_name = _('Préparation & impression')
-        verbose_name_plural = _('Préparations & impressions')
+        verbose_name = _("Groupe d'impression")
+        verbose_name_plural = _("Groupes d'impression")
 
 
 class Articles(models.Model):
@@ -574,7 +602,8 @@ class Articles(models.Model):
     direct_to_printer = models.ForeignKey(Printer,
                                           null=True, blank=True,
                                           on_delete=models.SET_NULL,
-                                          help_text=_("Activez pour une impression directe après chaque vente. Utile pour vendre des billets."),
+                                          help_text=_(
+                                              "Activez pour une impression directe après chaque vente. Utile pour vendre des billets."),
                                           )
 
     decompte_ticket = models.BooleanField(default=False,
@@ -726,8 +755,6 @@ class Origin(models.Model):
         if self.place:
             return f"{self.place.name} - {self.generation}"
         return f"?? {self.generation}"
-
-
 
 
 class MoyenPaiement(models.Model):
@@ -1469,8 +1496,6 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                 'article_vendu': article_vendu
                             })
 
-
-
                 # Mise à zero du reste a payer et récupère les articles à rentrer en db
                 articles_a_rentrer_en_db = {}
                 for commande in instance.commande.table.commandes \
@@ -1484,7 +1509,6 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                             article_dans_commande.reste_a_payer = 0
                             article_dans_commande.statut = article_dans_commande.PAYES
                             article_dans_commande.save()
-
 
                 # On rentre en dB les articles qui n'ont pas été comptabilisés à cause du paiement fractionné.
                 # Dans le but de pouvoir comptabiliser les articles vendus.
@@ -1586,7 +1610,6 @@ def reste_a_check(sender, instance: ArticleCommandeSauvegarde, created, **kwargs
                                     qty = 0
                                     paiement['qty'] = qty
 
-
                 instance.commande.check_statut()
 
 
@@ -1620,6 +1643,9 @@ class ArticleVendu(models.Model):
 
     qty = models.DecimalField(max_digits=12, decimal_places=6, default=0, null=True)
     pos = models.ForeignKey(PointDeVente, null=True, on_delete=models.PROTECT)
+
+    payment_intent = models.ForeignKey('PaymentsIntent', on_delete=models.PROTECT, null=True, blank=True,
+                                       verbose_name=_("Paiement stripe"))
 
     ip_user = models.ForeignKey(IpUser, on_delete=models.PROTECT,
                                 null=True, blank=True)
@@ -2246,7 +2272,6 @@ class Configuration(SingletonModel):
 
     self_fed_apikey = models.OneToOneField(APIKey, on_delete=models.SET_NULL, blank=True, null=True, editable=False)
 
-    stripe_connect_account = models.CharField(max_length=21, blank=True, null=True, editable=False)
     stripe_connect_valid = models.BooleanField(default=False)
 
     fedow_synced = models.BooleanField(default=False, editable=False)
@@ -2261,6 +2286,37 @@ class Configuration(SingletonModel):
     badgeuse_active = models.BooleanField(default=False,
                                           verbose_name=_("Badgeuse active"),
                                           help_text=_("Création de l'article et du points de vente Badge si activé."))
+
+    '''
+    STRIPE for tpe
+    '''
+    stripe_api_key = models.CharField(max_length=110, blank=True, null=True, editable=False)
+    stripe_connect_account = models.CharField(max_length=21, blank=True, null=True)
+    stripe_payouts_enabled = models.BooleanField(default=False)
+    stripe_location = models.CharField(max_length=21, blank=True, null=True)
+
+    def set_stripe_api(self, string):
+        self.stripe_api_key = fernet_encrypt(string)
+        cache.clear()
+        self.save()
+        return True
+
+    def get_stripe_api(self):
+        if not self.stripe_api_key:
+            raise Exception(
+                "The stripe api key is not set : You have to set it mannualy with config.set_stripe_api(api_key)")
+        return fernet_decrypt(self.stripe_api_key)
+
+    # Vérifie que le compte stripe connect soit valide et accepte les paiements.
+    def check_stripe_payouts(self):
+        id_acc_connect = self.stripe_connect_account
+        if id_acc_connect:
+            stripe.api_key = self.get_stripe_api()
+            info_stripe = stripe.Account.retrieve(id_acc_connect)
+            if info_stripe and info_stripe.get('payouts_enabled'):
+                self.stripe_payouts_enabled = info_stripe.get('payouts_enabled')
+                self.save()
+        return self.stripe_payouts_enabled
 
     def can_fedow(self):
         # Peut poser des questions à fedow ?
@@ -2409,3 +2465,58 @@ class RapportTableauComptable(models.Model):
         ordering = ('-date',)
         verbose_name = _('EX Tableau comptable')
         verbose_name_plural = _('EX Tableaux comptable')
+
+
+class Terminal(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    name = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Nom"))
+    stripe_id = models.CharField(max_length=21, blank=True, null=True, verbose_name=_("Stripe ID"))
+
+    STRIPE_WISEPOS = 'W'
+    TYPE_CHOICES = [
+        (STRIPE_WISEPOS, _('bbpos_wisepos_e')),
+    ]
+    type = models.CharField(
+        max_length=2,
+        choices=TYPE_CHOICES,
+        default=STRIPE_WISEPOS,
+        verbose_name=_("Type"),
+    )
+
+    def status(self):
+        reader = stripe.terminal.Reader.retrieve(self.stripe_id)
+        return reader.status
+
+
+class PaymentsIntent(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    amount = models.PositiveSmallIntegerField()
+    payment_intent_stripe_id = models.CharField(max_length=30, blank=True, null=True,
+                                                verbose_name=_("Paiement intent stripe id"))
+    terminal = models.ForeignKey(Terminal, on_delete=models.PROTECT, verbose_name=_("TPE"))
+    pos = models.ForeignKey(PointDeVente, on_delete=models.PROTECT, verbose_name=_("Point de vente"))
+    datetime = models.DateTimeField(auto_now_add=True)
+
+    REQUIRES_PAYMENT_METHOD = 'R'
+    IN_PROGRESS = 'P'
+    REQUIRES_CAPTURE = 'A'
+    SUCCEEDED = 'S'
+    CANCELED = 'C'
+
+    STATUS_CHOICES = [
+        (REQUIRES_PAYMENT_METHOD, _('requires_payment_method')),
+        (IN_PROGRESS, _('in_progress')),
+        (REQUIRES_CAPTURE, _('Paiement autorisé, mais pas encore capturé')),
+        (SUCCEEDED, _('Succes')),
+        (CANCELED, _('Canceled')),
+    ]
+
+    status = models.CharField(
+        max_length=2,
+        choices=STATUS_CHOICES,
+        default=REQUIRES_PAYMENT_METHOD,
+        verbose_name=_("Status"),
+    )
+
+    def send_to_terminal(self, terminal):
+        pass

@@ -159,6 +159,7 @@ export const fr = {
     noNetwork: 'Connexion au serveur perdue.\nVeuillez vérifier votre réseau.',
     anonymousCard: 'Carte anonyme',
     sales: 'Ventes',
-    cashDrawer: 'tiroir-caisse'
+    cashDrawer: 'tiroir-caisse',
+    testLcd: 'test lcd'
   }
 }

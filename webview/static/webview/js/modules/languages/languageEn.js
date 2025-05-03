@@ -158,6 +158,7 @@ export const en = {
     noNetwork : 'Server connection lost.\nPlease check your network.',
     anonymousCard: 'Anonymous card',
     sales: 'Sales',
-    cashDrawer: 'cash drawer'
+    cashDrawer: 'cash drawer',
+    testLcd: 'test lcd'
   }
 }
