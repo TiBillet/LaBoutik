@@ -50,16 +50,18 @@ def send_print_order(self, ws_channel, data):
                 'data': data,
             }
         )
-        logger.info(f"send_print_order : message envoyé avec succès vers WS sur le canal {ws_channel} avec UUID {order_uuid}")
+        logger.info(
+            f"send_print_order : message envoyé avec succès vers WS sur le canal {ws_channel} avec UUID {order_uuid}")
 
-        #TODO: Checker la réponse et raise une erreur pour retry
+        # TODO: Checker la réponse et raise une erreur pour retry
         response_received = True
         return True
 
     except Exception as exc:
         # Ajoute un backoff exponentiel pour les autres erreurs
         retry_delay = min(2 ** self.request.retries, MAX_RETRY_TIME)
-        logger.error(f"WS : erreur lors de l'envoi du message vers WS sur le canal {ws_channel}: {exc}\n next retry in {retry_delay} seconds...")
+        logger.error(
+            f"WS : erreur lors de l'envoi du message vers WS sur le canal {ws_channel}: {exc}\n next retry in {retry_delay} seconds...")
         raise self.retry(exc=exc, countdown=retry_delay)
     except MaxRetriesExceededError:
         logger.error(f"send_print_order : La tâche a échoué après plusieurs tentatives pour {order_uuid}")
@@ -72,12 +74,15 @@ def print_command_sunmi(commande_pk):
 
     # Header contenant les infos générales
     base_ticket = [
+        {"type": "size", "value": 0},
         {"type": "text", "value": "-" * 32},
+        {"type": "size", "value": 1},
         {"type": "text", "value": f"{commande.datetime}"},
         {"type": "text", "value": f"TABLE : {commande.table.name}"},
         {"type": "text", "value": f"RESPONSABLE : {commande.responsable.name}"},
         {"type": "text", "value": f"ID COMMANDE : {commande.id_commande()[:3]}"},
         # {"type": "text", "value": f"SERVICE : {commande.id_service()[:3]}"},
+        {"type": "size", "value": 0},
         {"type": "text", "value": "-" * 32},
     ]
     # L'objet GroupementCategorie regroupe les catégories
@@ -99,28 +104,36 @@ def print_command_sunmi(commande_pk):
     for groupe, lignes_article in articles_groupe.items():
         if len(lignes_article) > 0 and groupe.printer:
             if groupe.printer.host:
-                if groupe.printer.host.user :
+                if groupe.printer.host.user:
                     ws_channel = groupe.printer.host.user.uuid.hex
                     # fabrication du ticket en envoi à l'imprimante
-                    ticket = []
-                    ticket.append({"type": "text", "value": f"{groupe.name}"})  # Le nom de la catégorie. ex : CUISINE
+                    ticket = [
+                        {"type": "font", "value": "A"},
+                        {"type": "size", "value": 1},
+                        {"type": "bold", "value": 1},
+                        {"type": "align", "value": "center"},
+                        {"type": "text", "value": f"{groupe.name}"},
+                        {"type": "align", "value": "left"},
+                    ]
+
                     for ligne in lignes_article:
                         ticket.append({"type": "text", "value": f"{int(ligne.qty)} x {ligne.article.name}"}, )
 
-                    ticket += [{"type": "text", "value": "-" * 32},
-                               {"type": "feed", "value": 2},
-                               {"type": "cut"},
-                               ]
-                    send_print_order.delay(ws_channel, base_ticket+ticket)
-
+                    ticket += [
+                        {"type": "size", "value": 0},
+                        {"type": "text", "value": "-" * 32},
+                        {"type": "feed", "value": 2},
+                        {"type": "cut"},
+                    ]
+                    send_print_order.delay(ws_channel, base_ticket + ticket)
 
             logger.info(ticket)
 
     return True
 
+
 @app.task
 def print_command_epson_tm20(commande_pk, groupement_solo_pk=None):
-
     commande = CommandeSauvegarde.objects.get(pk=commande_pk)
     groupement_solo = None
     if groupement_solo_pk:
@@ -132,9 +145,8 @@ def print_command_epson_tm20(commande_pk, groupement_solo_pk=None):
 
     if ticket.can_print():
         logger.info(f"   ticket.can_print() -> PRINT")
-        #TODO: Tester max retry avec le débranchage de l'imprimante
+        # TODO: Tester max retry avec le débranchage de l'imprimante
         ticket.to_printer()
-
 
 
 @app.task
@@ -148,7 +160,6 @@ def direct_to_print(article_vendu_pk):
         ticket.to_printer()
 
 
-
 @app.task
 def ticketZ_tasks_printer(ticketz_json):
     logger.info(f"   ticketZ_printer(ticketz_json) -> PRINT")
@@ -156,7 +167,7 @@ def ticketZ_tasks_printer(ticketz_json):
     if ticket_Z.can_print():
         logger.info(f"   ticket_Z.can_print() -> PRINT")
         ticket_Z.to_printer()
-    else :
+    else:
         print(ticket_Z._header())
         print(ticket_Z._body())
         print(ticket_Z._footer())
