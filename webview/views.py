@@ -770,7 +770,8 @@ class Commande:
         logger.info(f"\n")
 
         self.reponse['somme_totale'] = f"{Decimal(self.total_vente_article)}"
-
+        self.reponse['uuid_commande'] = f"{self.uuid_commande}" if self.uuid_commande else None
+        self.reponse['uuid_paiement'] = f"{self.uuid_paiement}" if self.uuid_paiement else None
         return self.reponse
 
     def _service(self):
