@@ -2,6 +2,7 @@ import uuid
 import time
 from time import sleep
 
+from celery import shared_task
 from channels.layers import get_channel_layer
 from django.utils import timezone
 
@@ -62,7 +63,7 @@ def handle_printer_response(message):
         return False
 
 
-@app.task(bind=True, max_retries=10, retry_backoff=True)
+@shared_task(bind=True, max_retries=10, retry_backoff=True)
 def send_print_order(self, ws_channel, data):
     """
     Send a print order to a websocket channel and wait for a response from the printer.

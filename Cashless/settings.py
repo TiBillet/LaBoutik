@@ -319,6 +319,7 @@ if DEBUG:
                                  "sign_utf8_string", "get_public_key", "get_private_key",
                                  "hash_hexdigest", "rsa_encrypt_string", "rsa_decrypt_string")),
         (("cryptography.hazmat.primitives"), ("serialization",)),
+        (("epsonprinter.tasks"), ("send_print_order",)),
         #     ("module2.submodule", ("func1", "func2", "class1", "etc"))
         #
     ]
