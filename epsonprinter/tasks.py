@@ -16,53 +16,6 @@ from .views import print_command, article_direct_to_printer, TicketZ_PiEpson_Pri
 
 logger = logging.getLogger(__name__)
 
-# Dictionary to store printer responses
-printer_responses = {}
-
-def handle_printer_response(message):
-    """
-    Handle a response from the printer.
-
-    This function should be called by the websocket consumer when a response is received from the printer.
-    The expected format of the response is "print ok <uuid>", where <uuid> is the UUID of the print order.
-
-    Example usage in a consumer:
-
-    ```python
-    # In the consumer's receive method
-    async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json.get('message', '')
-
-        # If the message is a printer response (starts with "print ok ")
-        if message.startswith("print ok "):
-            # Import and call the handle_printer_response function
-            from epsonprinter.tasks import handle_printer_response
-            handle_printer_response(message)
-    ```
-
-    Args:
-        message (str): The message received from the printer, expected format: "print ok <uuid>"
-
-    Returns:
-        bool: True if the response was successfully handled, False otherwise
-    """
-    try:
-        # Parse the message to extract the UUID
-        if message.startswith("print ok "):
-            uuid_str = message[9:]  # Extract the UUID part (after "print ok ")
-            logger.info(f"Received printer response for UUID: {uuid_str}")
-
-            # Store the response in the dictionary
-            printer_responses[uuid_str] = message
-            return True
-        else:
-            logger.warning(f"Received unexpected printer response format: {message}")
-            return False
-    except Exception as e:
-        logger.error(f"Error handling printer response: {e}")
-        return False
-
 
 @shared_task(bind=True, max_retries=10)
 def send_print_order(self, ws_channel, data):
