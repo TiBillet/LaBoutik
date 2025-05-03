@@ -54,7 +54,7 @@ const demande_pvs = function (data) {
     data: { "type-action": "valider_carte_maitresse", "type-post": "ajax", "tag-id-cm": tagIdCm }
   }
   sys.ajax(requete, function (retour, status) {
-    sys.logJson('accueil.js - retour = ',retour)
+    // sys.logJson('accueil.js - retour = ',retour)
     // sys.logJson('status = ',status)
 
     // icon de chargement
