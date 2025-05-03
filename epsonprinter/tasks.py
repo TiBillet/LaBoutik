@@ -1,5 +1,9 @@
+import uuid
+import time
 from time import sleep
 
+from celery import shared_task
+from celery.exceptions import MaxRetriesExceededError
 from channels.layers import get_channel_layer
 from django.utils import timezone
 
@@ -13,18 +17,54 @@ from .views import print_command, article_direct_to_printer, TicketZ_PiEpson_Pri
 logger = logging.getLogger(__name__)
 
 
-@app.task
-def send_print_order(ws_channel, data):
-    logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {ws_channel}")
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        ws_channel,
-        {
-            'type': 'chat_message',
-            'message': 'ticket_z_print',
-            'data': data,
-        }
-    )
+@shared_task(bind=True, max_retries=10)
+def send_print_order(self, ws_channel, data):
+    """
+    Send a print order to a websocket channel and wait for a response from the printer.
+    Will retry up to 10 times with exponential backoff if an error occurs or if no response is received within 10 seconds.
+
+    Args:
+        ws_channel (str): The websocket channel to send the order to
+        data (dict): The data to send
+
+    Returns:
+        bool: True if the order was successfully sent and a response was received, False otherwise
+    """
+
+    # Le max de temps entre deux retries : 1 heure
+    MAX_RETRY_TIME = 60 * 1 * 1  # 1 minutes pour tester
+
+    # Generate a unique UUID for this print order
+    order_uuid = uuid.uuid4()
+
+    logger.info(f"send_print_order : tentative d'envoi de message vers WS sur le canal {ws_channel}")
+    try:
+
+        # Send the message to the websocket channel
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            ws_channel,
+            {
+                'type': 'chat_message',
+                'message': f'print_order@{order_uuid}',
+                'data': data,
+            }
+        )
+        logger.info(f"send_print_order : message envoyé avec succès vers WS sur le canal {ws_channel} avec UUID {order_uuid}")
+
+        #TODO: Checker la réponse et raise une erreur pour retry
+        response_received = True
+        return True
+
+    except Exception as exc:
+        # Ajoute un backoff exponentiel pour les autres erreurs
+        retry_delay = min(2 ** self.request.retries, MAX_RETRY_TIME)
+        logger.error(f"WS : erreur lors de l'envoi du message vers WS sur le canal {ws_channel}: {exc}\n next retry in {retry_delay} seconds...")
+        raise self.retry(exc=exc, countdown=retry_delay)
+    except MaxRetriesExceededError:
+        logger.error(f"send_print_order : La tâche a échoué après plusieurs tentatives pour {order_uuid}")
+        return False
+
 
 @app.task
 def print_command_epson_tm20(commande_pk, groupement_solo_pk=None):

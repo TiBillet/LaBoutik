@@ -513,54 +513,6 @@ class GroupementCategorie(models.Model):
 
     qty_ticket = models.PositiveSmallIntegerField(default=1, verbose_name=_("Nombre de copie à imprimer"))
 
-    @classmethod
-    def print_sunmi_57(commande: "CommandeSauvegarde"):
-        lignes_articles = commande.articles.all()
-
-        # Header contenant les infos générales  
-        ticket = [
-            {"type": "text", "value": "-" * 32},
-            {"type": "text", "value": f"{commande.datetime}"},
-            {"type": "text", "value": f"TABLE : {commande.table.name}"},
-            {"type": "text", "value": f"RESPONSABLE : {commande.responsable.name}"},
-            {"type": "text", "value": f"ID COMMANDE : {commande.id_commande()[:3]}"},
-            # {"type": "text", "value": f"SERVICE : {commande.id_service()[:3]}"},
-            {"type": "text", "value": "-" * 32},
-        ]
-
-        import ipdb; ipdb.set_trace()
-
-        # Fonction pour classer les articles par groupement
-        article_groupee = {}
-        groupements = set()
-        for ligne_article in lignes_articles:
-            if ligne_article.article.categorie:
-                for groupement in ligne_article.article.categorie.groupements.all():
-                    groupements.add(groupement)
-        groupements = list(groupements)
-
-        groupement : GroupementCategorie
-        categories_groupee = groupement.categories.all()
-        article_groupee[groupement] = []
-
-        for ligne_article in lignes_articles:
-            if ligne_article.article.categorie in categories_groupee:
-                article_groupee[groupement].append(ligne_article)
-
-
-        # Ajouter chaque groupe d'articles au ticket
-        for groupe, articles_groupe in article_groupee.items():
-            ticket.append(
-                {"type": "text", "value": f"{groupe.name}"},
-            )
-            for article in articles_groupe:
-                article: ArticleCommandeSauvegarde
-                ticket.append({"type": "text", "value": f"{int(ligne_article.qty)} x {ligne_article.article.name}"},)
-
-        ticket.append({"type": "text", "value": "-" * 32},)
-
-        return ticket
-
     def __str__(self):
         return self.name
 
@@ -1407,6 +1359,58 @@ class CommandeSauvegarde(models.Model):
             if self.statut != CommandeSauvegarde.SERVIE:
                 self.statut = CommandeSauvegarde.SERVIE
                 self.save()
+
+
+    def print(self):
+        commande = self
+        lignes_articles = commande.articles.all()
+
+        # Header contenant les infos générales
+        ticket = [
+            {"type": "text", "value": "-" * 32},
+            {"type": "text", "value": f"{commande.datetime}"},
+            {"type": "text", "value": f"TABLE : {commande.table.name}"},
+            {"type": "text", "value": f"RESPONSABLE : {commande.responsable.name}"},
+            {"type": "text", "value": f"ID COMMANDE : {commande.id_commande()[:3]}"},
+            # {"type": "text", "value": f"SERVICE : {commande.id_service()[:3]}"},
+            {"type": "text", "value": "-" * 32},
+        ]
+
+        import ipdb; ipdb.set_trace()
+
+        # Fonction pour classer les articles par groupement
+        article_groupee = {}
+        groupements = set()
+        for ligne_article in lignes_articles:
+            if ligne_article.article.categorie:
+                for groupement in ligne_article.article.categorie.groupements.all():
+                    groupements.add(groupement)
+        groupements = list(groupements)
+
+        groupement : GroupementCategorie
+        categories_groupee = groupement.categories.all()
+        article_groupee[groupement] = []
+
+        for ligne_article in lignes_articles:
+            if ligne_article.article.categorie in categories_groupee:
+                article_groupee[groupement].append(ligne_article)
+
+
+        # Ajouter chaque groupe d'articles au ticket
+        for groupe, articles_groupe in article_groupee.items():
+            ticket.append(
+                {"type": "text", "value": f"{groupe.name}"},
+            )
+            for article in articles_groupe:
+                article: ArticleCommandeSauvegarde
+                ticket.append({"type": "text", "value": f"{int(ligne_article.qty)} x {ligne_article.article.name}"},)
+
+        ticket.append({"type": "text", "value": "-" * 32},)
+
+        return ticket
+
+
+
 
     class Meta:
         verbose_name = _("Commande")
