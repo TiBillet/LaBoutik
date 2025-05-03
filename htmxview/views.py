@@ -13,7 +13,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
-from epsonprinter.tasks import ticketZ_tasks_printer
+from epsonprinter.tasks import ticketZ_tasks_printer, send_print_order
 from uuid import UUID
 
 from django.contrib import messages
@@ -144,17 +144,19 @@ class Sales(viewsets.ViewSet):
         # On calcule les valeurs et on récupère le dictionnaire, sinon un dict vide
         ticket_today = ticketZ.to_dict if ticketZ.calcul_valeurs() else {}
         if ticket_today:
+            send_print_order(ws_channel=ws_room_appareil, data=ticketZ.to_sunmi_printer_57())
+
             # On envoie sur le canal que seul l'appareil reçoit l'ordre d'impression depuis le WS
-            logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {ws_room_appareil}")
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                ws_room_appareil,
-                {
-                    'type': 'chat_message',
-                    'message': 'ticket_z_print',
-                    'data': ticketZ.to_sunmi_printer_57(),
-                }
-            )
+            # logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {ws_room_appareil}")
+            # channel_layer = get_channel_layer()
+            # async_to_sync(channel_layer.group_send)(
+            #     ws_room_appareil,
+            #     {
+            #         'type': 'chat_message',
+            #         'message': 'ticket_z_print',
+            #         'data': ticketZ.to_sunmi_printer_57(),
+            #     }
+            # )
 
         # 'user': f"{request.user}",
         # 'type': f'from_ws_to_printer',

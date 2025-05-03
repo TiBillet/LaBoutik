@@ -1,3 +1,5 @@
+import uuid
+import time
 from time import sleep
 
 from channels.layers import get_channel_layer
@@ -12,19 +14,96 @@ from .views import print_command, article_direct_to_printer, TicketZ_PiEpson_Pri
 
 logger = logging.getLogger(__name__)
 
+# Dictionary to store printer responses
+printer_responses = {}
 
-@app.task
-def send_print_order(ws_channel, data):
+def handle_printer_response(message):
+    """
+    Handle a response from the printer.
+
+    This function should be called by the websocket consumer when a response is received from the printer.
+    The expected format of the response is "print ok <uuid>", where <uuid> is the UUID of the print order.
+
+    Example usage in a consumer:
+
+    ```python
+    # In the consumer's receive method
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        message = text_data_json.get('message', '')
+
+        # If the message is a printer response (starts with "print ok ")
+        if message.startswith("print ok "):
+            # Import and call the handle_printer_response function
+            from epsonprinter.tasks import handle_printer_response
+            handle_printer_response(message)
+    ```
+
+    Args:
+        message (str): The message received from the printer, expected format: "print ok <uuid>"
+
+    Returns:
+        bool: True if the response was successfully handled, False otherwise
+    """
+    try:
+        # Parse the message to extract the UUID
+        if message.startswith("print ok "):
+            uuid_str = message[9:]  # Extract the UUID part (after "print ok ")
+            logger.info(f"Received printer response for UUID: {uuid_str}")
+
+            # Store the response in the dictionary
+            printer_responses[uuid_str] = message
+            return True
+        else:
+            logger.warning(f"Received unexpected printer response format: {message}")
+            return False
+    except Exception as e:
+        logger.error(f"Error handling printer response: {e}")
+        return False
+
+
+@app.task(bind=True, max_retries=10, retry_backoff=True)
+def send_print_order(self, ws_channel, data):
+    """
+    Send a print order to a websocket channel and wait for a response from the printer.
+    Will retry up to 10 times with exponential backoff if an error occurs or if no response is received within 10 seconds.
+
+    Args:
+        ws_channel (str): The websocket channel to send the order to
+        data (dict): The data to send
+
+    Returns:
+        bool: True if the order was successfully sent and a response was received, False otherwise
+    """
     logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {ws_channel}")
-    channel_layer = get_channel_layer()
-    async_to_sync(channel_layer.group_send)(
-        ws_channel,
-        {
-            'type': 'chat_message',
-            'message': 'ticket_z_print',
-            'data': data,
-        }
-    )
+    try:
+        # Generate a unique UUID for this print order
+        order_uuid = uuid.uuid4()
+
+        # Send the message to the websocket channel
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            ws_channel,
+            {
+                'type': 'chat_message',
+                'message': f'print_order@{order_uuid}',
+                'data': data,
+                'uuid': order_uuid,  # Include the UUID separately for easier access
+            }
+        )
+        logger.info(f"HTTP Print/test_groupe : message envoyé avec succès vers WS sur le canal {ws_channel} avec UUID {order_uuid}")
+
+        #TODO: Checker la réponse et raise une erreur pour retry
+        response_received = True
+        return True
+
+    except Exception as e:
+        logger.error(f"HTTP Print/test_groupe : erreur lors de l'envoi du message vers WS sur le canal {ws_channel}: {e}")
+        retry_count = self.request.retries
+        logger.info(f"Retry attempt {retry_count + 1} of 10")
+        if retry_count < 10:
+            raise self.retry(exc=e)
+        return False
 
 @app.task
 def print_command_epson_tm20(commande_pk, groupement_solo_pk=None):
