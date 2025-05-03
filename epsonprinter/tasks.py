@@ -108,12 +108,25 @@ def print_command_sunmi(commande_pk):
                 if groupe.printer.host.user:
                     ws_channel = groupe.printer.host.user.uuid.hex
                     # fabrication du ticket en envoi à l'imprimante
+
+                    # Quel est le numéro ?
+                    numero = commande.numero_du_ticket_imprime.get(groupe.name)
+                    if numero:
+                        title = f"{groupe.name} {numero}"
+                    else:
+                        groupe.compteur_ticket_journee += 1
+                        commande.numero_du_ticket_imprime[groupe.name] = groupe.compteur_ticket_journee
+                        groupe.save()
+                        commande.save()
+                        title = f"{groupe.name} {groupe.compteur_ticket_journee}"
+
+
                     ticket = [
                         {"type": "font", "value": "A"},
                         {"type": "size", "value": 1},
                         {"type": "bold", "value": 1},
                         {"type": "align", "value": "center"},
-                        {"type": "text", "value": f"{groupe.name} N{commande.numero_du_ticket_imprime.get(groupe.name)}"},
+                        {"type": "text", "value": f"{title}"},
                         {"type": "align", "value": "left"},
                     ]
                     for ligne in lignes_article:
