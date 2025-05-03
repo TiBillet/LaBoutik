@@ -3,6 +3,7 @@ import time
 from time import sleep
 
 from celery import shared_task
+from celery.exceptions import MaxRetriesExceededError
 from channels.layers import get_channel_layer
 from django.utils import timezone
 
@@ -63,7 +64,7 @@ def handle_printer_response(message):
         return False
 
 
-@shared_task(bind=True, max_retries=10, retry_backoff=True)
+@shared_task(bind=True, max_retries=10)
 def send_print_order(self, ws_channel, data):
     """
     Send a print order to a websocket channel and wait for a response from the printer.
@@ -76,10 +77,15 @@ def send_print_order(self, ws_channel, data):
     Returns:
         bool: True if the order was successfully sent and a response was received, False otherwise
     """
+
+    # Le max de temps entre deux retries : 1 heure
+    MAX_RETRY_TIME = 60 * 60 * 1  # seconds
+
+    # Generate a unique UUID for this print order
+    order_uuid = uuid.uuid4()
+
     logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {ws_channel}")
     try:
-        # Generate a unique UUID for this print order
-        order_uuid = uuid.uuid4()
 
         # Send the message to the websocket channel
         channel_layer = get_channel_layer()
@@ -98,13 +104,14 @@ def send_print_order(self, ws_channel, data):
         response_received = True
         return True
 
-    except Exception as e:
-        logger.error(f"HTTP Print/test_groupe : erreur lors de l'envoi du message vers WS sur le canal {ws_channel}: {e}")
-        retry_count = self.request.retries
-        logger.info(f"Retry attempt {retry_count + 1} of 10")
-        if retry_count < 10:
-            raise self.retry(exc=e)
-        return False
+    except Exception as exc:
+        logger.error(f"WS : erreur lors de l'envoi du message vers WS sur le canal {ws_channel}: {exc}")
+        # Ajoute un backoff exponentiel pour les autres erreurs
+        retry_delay = min(2 ** self.request.retries, MAX_RETRY_TIME)
+        raise self.retry(exc=exc, countdown=retry_delay)
+    except MaxRetriesExceededError:
+        logger.error(f"send_print_order : La tâche a échoué après plusieurs tentatives pour {order_uuid}")
+
 
 @app.task
 def print_command_epson_tm20(commande_pk, groupement_solo_pk=None):
