@@ -105,9 +105,9 @@ def send_print_order(self, ws_channel, data):
         return True
 
     except Exception as exc:
-        logger.error(f"WS : erreur lors de l'envoi du message vers WS sur le canal {ws_channel}: {exc}")
         # Ajoute un backoff exponentiel pour les autres erreurs
         retry_delay = min(2 ** self.request.retries, MAX_RETRY_TIME)
+        logger.error(f"WS : erreur lors de l'envoi du message vers WS sur le canal {ws_channel}: {exc}\n next retry in {retry_delay} seconds...")
         raise self.retry(exc=exc, countdown=retry_delay)
     except MaxRetriesExceededError:
         logger.error(f"send_print_order : La tâche a échoué après plusieurs tentatives pour {order_uuid}")
