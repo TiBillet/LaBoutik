@@ -111,7 +111,7 @@ def print_command_sunmi(commande_pk):
                                {"type": "feed", "value": 2},
                                {"type": "cut"},
                                ]
-                    send_print_order.delay(ws_channel, ticket)
+                    send_print_order.delay(ws_channel, base_ticket+ticket)
 
 
             logger.info(ticket)
