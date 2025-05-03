@@ -82,8 +82,8 @@ def print_command_sunmi(commande_pk):
         {"type": "text", "value": f"TABLE : {commande.table.name}"},
         {"type": "bold", "value": 0},
         {"type": "text", "value": f"RESPONSABLE : {commande.responsable.name}"},
+        {"type": "text", "value": f"N° : {commande.numero_du_ticket_imprime}"},
         {"type": "text", "value": f"ID COMMANDE : {commande.id_commande()[:3]}"},
-        # {"type": "text", "value": f"SERVICE : {commande.id_service()[:3]}"},
         {"type": "size", "value": 0},
         {"type": "text", "value": "-" * 32},
     ]
