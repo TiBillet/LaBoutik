@@ -113,7 +113,7 @@ def print_command_sunmi(commande_pk):
                         {"type": "size", "value": 1},
                         {"type": "bold", "value": 1},
                         {"type": "align", "value": "center"},
-                        {"type": "text", "value": f"{groupe.name} N{commande.numero_du_ticket_imprime[groupe.name]}"},
+                        {"type": "text", "value": f"{groupe.name} N{commande.numero_du_ticket_imprime.get(groupe.name)}"},
                         {"type": "align", "value": "left"},
                     ]
                     for ligne in lignes_article:
