@@ -79,7 +79,7 @@ def send_print_order(self, ws_channel, data):
     """
 
     # Le max de temps entre deux retries : 1 heure
-    MAX_RETRY_TIME = 60 * 60 * 1  # seconds
+    MAX_RETRY_TIME = 60 * 1 * 1  # 1 minutes pour tester
 
     # Generate a unique UUID for this print order
     order_uuid = uuid.uuid4()
