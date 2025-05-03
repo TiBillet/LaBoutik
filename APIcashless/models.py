@@ -82,7 +82,7 @@ class Appareil(models.Model):
     version = models.CharField(max_length=50, null=True, blank=True)
     user_agent = models.CharField(max_length=500, null=True, blank=True)
 
-    DESKTOP, SMARTPHONE, SUNMI, RASPBERRY, NFC_SANS_FRONT, FRONT_SANS_NFC = 'FOR', 'FMO','SUN', 'FPI', 'SSF', 'FSN'
+    DESKTOP, SMARTPHONE, SUNMI, RASPBERRY, NFC_SANS_FRONT, FRONT_SANS_NFC = 'FOR', 'FMO', 'SUN', 'FPI', 'SSF', 'FSN'
     PERIPH_CHOICES = [
         (DESKTOP, _('Front ordinateur')),
         (SMARTPHONE, _('Front smartphone')),
@@ -239,7 +239,6 @@ class Membre(models.Model):
         return num_carte
 
     numero_carte.short_description = "Cartes liées"
-
 
     def a_jour_cotisation(self):
 
@@ -678,7 +677,6 @@ class Articles(models.Model):
                 return tuple[1]
         return None
 
-
     def __str__(self):
         if self.methode_choices == self.RECHARGE_EUROS:
             pre_name = "Refill"
@@ -792,8 +790,8 @@ class MoyenPaiement(models.Model):
     ARDOISE = 'AR'
 
     # Online
-    STRIPE_FED = 'SF' # Paimeent vers le compte stripe principal
-    STRIPE_NOFED = 'SN' # Paiement direct vers le compte stripe connect
+    STRIPE_FED = 'SF'  # Paimeent vers le compte stripe principal
+    STRIPE_NOFED = 'SN'  # Paiement direct vers le compte stripe connect
     FEDOW = 'FD'
 
     # Assets with special method
@@ -943,7 +941,6 @@ class MoyenPaiement(models.Model):
         elif self.name:
             return self.name
         return self.get_categorie_display()
-
 
 
 class CarteCashless(models.Model):
@@ -1360,13 +1357,11 @@ class CommandeSauvegarde(models.Model):
                 self.statut = CommandeSauvegarde.SERVIE
                 self.save()
 
-
     def print(self):
         commande = self
-        lignes_articles = commande.articles.all()
 
         # Header contenant les infos générales
-        ticket = [
+        base_ticket = [
             {"type": "text", "value": "-" * 32},
             {"type": "text", "value": f"{commande.datetime}"},
             {"type": "text", "value": f"TABLE : {commande.table.name}"},
@@ -1375,42 +1370,40 @@ class CommandeSauvegarde(models.Model):
             # {"type": "text", "value": f"SERVICE : {commande.id_service()[:3]}"},
             {"type": "text", "value": "-" * 32},
         ]
+        # L'objet GroupementCategorie regroupe les catégories
+        groupements = GroupementCategorie.objects.all()
 
-        import ipdb; ipdb.set_trace()
+        # Les articles possèdent des catégories :
+        lignes_articles = commande.articles.all()
 
-        # Fonction pour classer les articles par groupement
-        article_groupee = {}
-        groupements = set()
-        for ligne_article in lignes_articles:
-            if ligne_article.article.categorie:
-                for groupement in ligne_article.article.categorie.groupements.all():
-                    groupements.add(groupement)
-        groupements = list(groupements)
-
-        groupement : GroupementCategorie
-        categories_groupee = groupement.categories.all()
-        article_groupee[groupement] = []
-
-        for ligne_article in lignes_articles:
-            if ligne_article.article.categorie in categories_groupee:
-                article_groupee[groupement].append(ligne_article)
-
+        # On veut un dictionnaire avec {GROUPEMENT:[article1, articles2]}
+        articles_groupe = {}
+        for groupement in groupements:
+            articles_groupe[groupement] = []
+            categories_groupees = groupement.categories.all()
+            for ligne_article in lignes_articles:
+                if ligne_article.article.categorie in categories_groupees:
+                    articles_groupe[groupement].append(ligne_article)
 
         # Ajouter chaque groupe d'articles au ticket
-        for groupe, articles_groupe in article_groupee.items():
-            ticket.append(
-                {"type": "text", "value": f"{groupe.name}"},
-            )
-            for article in articles_groupe:
-                article: ArticleCommandeSauvegarde
-                ticket.append({"type": "text", "value": f"{int(ligne_article.qty)} x {ligne_article.article.name}"},)
+        for groupe, lignes_article in articles_groupe.items():
+            if len(lignes_article) > 0:
+                # fabrication du ticket en envoi à l'imprimante
+                ticket = []
+                ticket.append({"type": "text", "value": f"{groupe.name}"})  # Le nom de la catégorie. ex : CUISINE
+                for ligne in lignes_article:
+                    article: ArticleCommandeSauvegarde
+                    ticket.append({"type": "text", "value": f"{int(ligne.qty)} x {ligne.article.name}"}, )
 
-        ticket.append({"type": "text", "value": "-" * 32},)
+                ticket += [{"type": "text", "value": "-" * 32},
+                           {"type": "text", "value": "-" * 32},
+                           {"type": "feed", "value": 2},
+                           {"type": "cut"},
+                           ]
+                logger.info(ticket)
+                import ipdb; ipdb.set_trace()
 
-        return ticket
-
-
-
+        return True
 
     class Meta:
         verbose_name = _("Commande")
@@ -1682,7 +1675,6 @@ class IpUser(models.Model):
 class ArticleVendu(models.Model):
     uuid_paiement = models.UUIDField(editable=False, default=uuid4)
     uuid = models.UUIDField(default=uuid4)
-
 
     article = models.ForeignKey(Articles, on_delete=models.PROTECT)
     categorie = models.ForeignKey(Categorie, on_delete=models.PROTECT, null=True, blank=True)
@@ -2104,7 +2096,8 @@ class Configuration(SingletonModel):
                                              help_text="Adhésion possible sur carte sans membre. Au prix par default dès que la fiche membre est renseignée.")
 
     void_card = models.BooleanField(default=True, verbose_name=_("Séparer l'utilisateur lors du vider carte"),
-                                    help_text=_("Si coché, la carte vidée redeviendra neuve. Sinon, la carte garde toujours le portefeuille de l'utilisateur pour par exemple ses adhésions."))
+                                    help_text=_(
+                                        "Si coché, la carte vidée redeviendra neuve. Sinon, la carte garde toujours le portefeuille de l'utilisateur pour par exemple ses adhésions."))
 
     '''
     OCECO API KEY
@@ -2264,7 +2257,8 @@ class Configuration(SingletonModel):
     TicketZ
     '''
 
-    cash_float = models.DecimalField(max_digits=10, decimal_places=2, default=0, verbose_name=_("Fond de caisse par défaut"))
+    cash_float = models.DecimalField(max_digits=10, decimal_places=2, default=0,
+                                     verbose_name=_("Fond de caisse par défaut"))
     ticketZ_printer = models.ForeignKey(Printer, on_delete=models.SET_NULL, blank=True, null=True)
     compta_email = models.EmailField(blank=True, null=True, verbose_name=_("Email de la compta."),
                                      help_text=_(
