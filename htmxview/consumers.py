@@ -164,7 +164,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         logger.info(f"CONNECT ChatConsumer room_name / room_group_name: {self.room_name} / {self.room_group_name} \n"
                     f"self.user : {self.user} - authenticated : {self.user.is_authenticated}\n"
-                    f"appareil : {self.user.appareil}\n")
+                    f"appareil : {hasattr(self.user, 'appareil')}\n")
 
         # Join room group
         await self.channel_layer.group_add(

@@ -146,22 +146,7 @@ class Sales(viewsets.ViewSet):
         if ticket_today:
             send_print_order.delay(ws_channel=ws_room_appareil, data=ticketZ.to_sunmi_printer_57())
 
-            # On envoie sur le canal que seul l'appareil reçoit l'ordre d'impression depuis le WS
-            # logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {ws_room_appareil}")
-            # channel_layer = get_channel_layer()
-            # async_to_sync(channel_layer.group_send)(
-            #     ws_room_appareil,
-            #     {
-            #         'type': 'chat_message',
-            #         'message': 'ticket_z_print',
-            #         'data': ticketZ.to_sunmi_printer_57(),
-            #     }
-            # )
-
-        # 'user': f"{request.user}",
-        # 'type': f'from_ws_to_printer',
         context = {'ticket_today': ticket_today,}
-        # 'text': 'Print me !'
         return render(request, "sales/z_ticket.html", context)
 
     @action(detail=False, methods=['POST'])
