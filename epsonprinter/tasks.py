@@ -81,9 +81,9 @@ def print_command_sunmi(commande_pk):
         {"type": "bold", "value": 1},
         {"type": "text", "value": f"TABLE : {commande.table.name}"},
         {"type": "bold", "value": 0},
-        {"type": "text", "value": f"RESPONSABLE : {commande.responsable.name}"},
+        {"type": "text", "value": f"{commande.responsable.name}"},
         {"type": "text", "value": f"N° : {commande.numero_du_ticket_imprime}"},
-        {"type": "text", "value": f"ID COMMANDE : {commande.id_commande()[:3]}"},
+        {"type": "text", "value": f"ID : {commande.id_commande()[:3]}"},
         {"type": "size", "value": 0},
         {"type": "text", "value": "-" * 32},
     ]
@@ -114,7 +114,7 @@ def print_command_sunmi(commande_pk):
                         {"type": "size", "value": 1},
                         {"type": "bold", "value": 1},
                         {"type": "align", "value": "center"},
-                        {"type": "text", "value": f"{groupe.name}"},
+                        {"type": "text", "value": f"{groupe.name} : {commande.numero_du_ticket_imprime[groupe.name]}"},
                         {"type": "align", "value": "left"},
                     ]
                     for ligne in lignes_article:
