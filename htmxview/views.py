@@ -144,7 +144,7 @@ class Sales(viewsets.ViewSet):
         # On calcule les valeurs et on récupère le dictionnaire, sinon un dict vide
         ticket_today = ticketZ.to_dict if ticketZ.calcul_valeurs() else {}
         if ticket_today:
-            send_print_order(ws_channel=ws_room_appareil, data=ticketZ.to_sunmi_printer_57())
+            send_print_order.delay(ws_channel=ws_room_appareil, data=ticketZ.to_sunmi_printer_57())
 
             # On envoie sur le canal que seul l'appareil reçoit l'ordre d'impression depuis le WS
             # logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {ws_room_appareil}")
