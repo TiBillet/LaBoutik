@@ -89,7 +89,7 @@ class TriggerMethodeArticleVenduPOSTSAVE:
 
 @receiver(post_save, sender=Appareil)
 def send_mail_to_admin(sender, instance: Appareil, created, **kwargs):
-    if instance.actif:
+    if instance.actif and created:
         email_new_hardware.delay(instance.pk)
 
 
