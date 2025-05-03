@@ -36,7 +36,7 @@ function gestionTransactionFondsInsuffisants(retour, options) {
         textColor: "#FFFFFF",
         icon: "fa-coins",
         methods: ["fn.popupConfirme('espece', 'ESPECE', 'vue_pv.validerEtapeMoyenComplementaire')"],
-        currency: {name: "ESPECE", tradIndex: 'cash', tradOption: 'uppercase'},
+        currency: { name: "ESPECE", tradIndex: 'cash', tradOption: 'uppercase' },
         total: totalManque,
         cssClass: ["test-fonds-insuffisants-espece"]
       })
@@ -50,7 +50,7 @@ function gestionTransactionFondsInsuffisants(retour, options) {
         textColor: "#FFFFFF",
         icon: "fa-credit-card",
         methods: ["fn.popupConfirme('carte_bancaire', 'CB', 'vue_pv.validerEtapeMoyenComplementaire')"],
-        currency: {name: "CB", tradIndex: 'cb', tradOption: 'uppercase'},
+        currency: { name: "CB", tradIndex: 'cb', tradOption: 'uppercase' },
         total: totalManque,
         cssClass: ["test-fonds-insuffisants-cb"]
       })
@@ -65,7 +65,7 @@ function gestionTransactionFondsInsuffisants(retour, options) {
       textColor: "#FFFFFF",
       icon: "fa-address-card",
       methods: ["fn.popupAnnuler();vue_pv.validerEtapeMoyenComplementaire('nfc')"],
-      currency: [{name: "AUTRE", tradIndex: 'other', tradOption: 'uppercase'}, {name: "CARTE", tradIndex: 'card', tradOption: 'uppercase'}],
+      currency: [{ name: "AUTRE", tradIndex: 'other', tradOption: 'uppercase' }, { name: "CARTE", tradIndex: 'card', tradOption: 'uppercase' }],
       addHtmlContent: '<div style="font-size:1.2rem">(CASHLESS)</div>',
       total: totalManque,
       cssClass: ["test-fonds-insuffisants-nfc"],
@@ -656,10 +656,32 @@ async function afficherRetourVenteDirecte(retour, status, options) {
       // insert bt print
       console.log('wsTerminal =', wsTerminal);
       console.log('hasSunmiPrinter =', await hasSunmiPrinter())
-      
-      if(wsTerminal.on === true && await hasSunmiPrinter() === true) {
-        const foncPrintTicket = `onClick='wsSendMessage({message:"print-ticket", data: "${glob.appConfig.hostname}"})'`
-        msgDefaut += `<button ${foncPrintTicket} type="button">Print a ticket</button> `
+
+      // dev
+      if (glob) {
+        // prod
+        // if(wsTerminal.on === true && await hasSunmiPrinter() === true) {
+        const btUuid = sys.uuidV4()
+        const obj =    { ...options.achats }
+        obj.itself = obj
+
+        function replacer(key, value) {
+          if (key === 'itself') {
+            return null
+          }
+          return value
+      }
+
+        window['xhValsAchats' + btUuid] = JSON.stringify(obj, replacer)
+        console.log('xhValsAchats =', window['xhValsAchats' + btUuid]);
+
+        msgDefaut += `<button style="width:200px;height:80px;background-color:rgb(26, 17, 141);color:#ffffff;font-size:2rem;" 
+          type="button" hx-post="/htmx/sales/print_ticket_purchases" hx-trigger="click"
+          hx-target="#print-ticket-status-${btUuid}" hx-swap="innerHTML"
+          hx-vals='${window['xhValsAchats' + btUuid]}'>
+          Print ticket
+        </button>
+        <div id="print-ticket-status-${btUuid}"></div>`
       }
 
       msg = `

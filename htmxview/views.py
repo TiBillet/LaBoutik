@@ -165,6 +165,12 @@ class Sales(viewsets.ViewSet):
         # 'text': 'Print me !'
         return render(request, "sales/z_ticket.html", context)
 
+    @action(detail=False, methods=['POST'])
+    def print_ticket_purchases(self, request):
+        print('-> Print ticket purchases !')
+        print(request.data)
+        context = {}
+        return render(request, "sales/sales_print_ticket_purchases_status.html", context)
 
     @action(detail=False, methods=['POST'])
     def change_payment_method(self, request):

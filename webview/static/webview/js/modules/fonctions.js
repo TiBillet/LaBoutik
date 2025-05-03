@@ -147,6 +147,9 @@ export function popup(options) {
   document.querySelector('#contenu').insertAdjacentHTML('beforeend', frag)
   translate('#contenu')
   let popup = document.querySelector('#popup-cashless')
+  
+  // process dynamic htmx content
+  htmx.process(popup)
 
   // gestion des boutons non basiques
   // exemple: lance une méthode qui rajoute un bouton à la liste des boutons après une pression donnée sur la souris
