@@ -21,7 +21,7 @@ from APIcashless.models import *
 from Cashless.scripts_utiles.ip_utils import get_ip_user, get_client_ip
 from administration.email_ticket import ticket_conso_jour
 from administration.ticketZ import TicketZ
-from epsonprinter.tasks import print_command_epson_tm20, ticketZ_tasks_printer
+from epsonprinter.tasks import print_command_epson_tm20, ticketZ_tasks_printer, print_command_sunmi
 from fedow_connect.fedow_api import FedowAPI
 from tibiauth.models import TibiUser
 from webview.serializers import CarteCashlessSerializer, PointDeVenteSerializer, \
@@ -745,6 +745,7 @@ class Commande:
             # On lance l'impression de ticket.
             logger.info(f'{"*" * 30} self.nouvelle_commande_created {"*" * 30}')
             print_command_epson_tm20.delay(self.nouvelle_commande.pk)
+            print_command_sunmi.delay(self.nouvelle_commande.pk)
 
         ### ENREGISTREMENT DES ASSETS
         # Si c'est un paiement cashless

@@ -1357,53 +1357,6 @@ class CommandeSauvegarde(models.Model):
                 self.statut = CommandeSauvegarde.SERVIE
                 self.save()
 
-    def print(self):
-        commande = self
-
-        # Header contenant les infos générales
-        base_ticket = [
-            {"type": "text", "value": "-" * 32},
-            {"type": "text", "value": f"{commande.datetime}"},
-            {"type": "text", "value": f"TABLE : {commande.table.name}"},
-            {"type": "text", "value": f"RESPONSABLE : {commande.responsable.name}"},
-            {"type": "text", "value": f"ID COMMANDE : {commande.id_commande()[:3]}"},
-            # {"type": "text", "value": f"SERVICE : {commande.id_service()[:3]}"},
-            {"type": "text", "value": "-" * 32},
-        ]
-        # L'objet GroupementCategorie regroupe les catégories
-        groupements = GroupementCategorie.objects.all()
-
-        # Les articles possèdent des catégories :
-        lignes_articles = commande.articles.all()
-
-        # On veut un dictionnaire avec {GROUPEMENT:[article1, articles2]}
-        articles_groupe = {}
-        for groupement in groupements:
-            articles_groupe[groupement] = []
-            categories_groupees = groupement.categories.all()
-            for ligne_article in lignes_articles:
-                if ligne_article.article.categorie in categories_groupees:
-                    articles_groupe[groupement].append(ligne_article)
-
-        # Ajouter chaque groupe d'articles au ticket
-        for groupe, lignes_article in articles_groupe.items():
-            if len(lignes_article) > 0:
-                # fabrication du ticket en envoi à l'imprimante
-                ticket = []
-                ticket.append({"type": "text", "value": f"{groupe.name}"})  # Le nom de la catégorie. ex : CUISINE
-                for ligne in lignes_article:
-                    article: ArticleCommandeSauvegarde
-                    ticket.append({"type": "text", "value": f"{int(ligne.qty)} x {ligne.article.name}"}, )
-
-                ticket += [{"type": "text", "value": "-" * 32},
-                           {"type": "text", "value": "-" * 32},
-                           {"type": "feed", "value": 2},
-                           {"type": "cut"},
-                           ]
-                logger.info(ticket)
-                import ipdb; ipdb.set_trace()
-
-        return True
 
     class Meta:
         verbose_name = _("Commande")
