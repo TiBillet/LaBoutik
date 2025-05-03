@@ -89,9 +89,6 @@ class Sales(viewsets.ViewSet):
                 commands_today[article.commande]['total'] += (article.qty * article.prix)
                 commands_today[article.commande]['qty'] += article.qty
 
-
-        # import ipdb; ipdb.set_trace()
-
         context = {
             'commands_today': commands_today,
             'moyens_paiement': MoyenPaiement.objects.filter(
@@ -126,7 +123,7 @@ class Sales(viewsets.ViewSet):
         # Ticket Z temporaire :
         user = request.user
         # Le wscanal est celui de l'appareil
-        ws_room_appareil = user.appareil.pk.hex
+        ws_room_appareil = user.uuid.hex
         # On récupère la configuration de la DB
         config = Configuration.get_solo()
         # On récupère l'heure de clôture de caisse configurée

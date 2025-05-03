@@ -1,15 +1,30 @@
 from time import sleep
 
+from channels.layers import get_channel_layer
 from django.utils import timezone
 
 from APIcashless.models import CommandeSauvegarde, GroupementCategorie, ArticleVendu, Articles
 from Cashless.celery import app
 import logging
+from asgiref.sync import async_to_sync
 
 from .views import print_command, article_direct_to_printer, TicketZ_PiEpson_Printer
 
 logger = logging.getLogger(__name__)
 
+
+@app.task
+def send_print_order(ws_channel, data):
+    logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {ws_channel}")
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        ws_channel,
+        {
+            'type': 'chat_message',
+            'message': 'ticket_z_print',
+            'data': data,
+        }
+    )
 
 @app.task
 def print_command_epson_tm20(commande_pk, groupement_solo_pk=None):
