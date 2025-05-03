@@ -77,7 +77,7 @@ def print_command_sunmi(commande_pk):
         {"type": "size", "value": 0},
         {"type": "text", "value": "-" * 32},
         {"type": "size", "value": 1},
-        {"type": "text", "value": f"{commande.datetime.strftime('%d/%m/%Y %H:%M')}"},
+        {"type": "text", "value": f"{commande.datetime.astimezone().strftime('%d/%m/%Y %H:%M')}"},
         {"type": "bold", "value": 1},
         {"type": "text", "value": f"TABLE : {commande.table.name}"},
         {"type": "bold", "value": 0},
