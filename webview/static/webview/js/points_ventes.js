@@ -85,7 +85,7 @@ function initWebsocket(server) {
   })
 }
 
-// initWebsocket(`wss://${window.location.host}/ws/tuto_js/print/`)
+initWebsocket(`wss://${window.location.host}/ws/tuto_js/print/`)
 
 window.nomModulePrive = null
 window.pv_uuid_courant = ''
