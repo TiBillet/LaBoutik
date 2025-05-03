@@ -363,8 +363,8 @@ def reprint(request):
         groupement = get_object_or_404(GroupementCategorie, pk=str_pk_groupement)
 
         if groupement.printer:
-            task = print_command_epson_tm20.delay(commande.pk, groupement_solo_pk=str_pk_groupement)
-
+            print_command_epson_tm20.delay(commande.pk, groupement_solo_pk=str_pk_groupement)
+            print_command_sunmi.delay(commande.pk)
         return Response("reprint ok", status=status.HTTP_200_OK)
 
 
