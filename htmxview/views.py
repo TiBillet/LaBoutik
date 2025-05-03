@@ -123,7 +123,7 @@ class Sales(viewsets.ViewSet):
         # Ticket Z temporaire :
         user = request.user
         # Le wscanal est celui de l'appareil
-        ws_room_appareil = user.appareil.pk.hex
+        ws_room_appareil = user.uuid.hex
         # On récupère la configuration de la DB
         config = Configuration.get_solo()
         # On récupère l'heure de clôture de caisse configurée

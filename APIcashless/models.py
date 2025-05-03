@@ -513,60 +513,51 @@ class GroupementCategorie(models.Model):
 
     qty_ticket = models.PositiveSmallIntegerField(default=1, verbose_name=_("Nombre de copie à imprimer"))
 
-
-    def print_sunmi_57(self, commande: "CommandeSauvegarde"):
+    @classmethod
+    def print_sunmi_57(commande: "CommandeSauvegarde"):
         lignes_articles = commande.articles.all()
 
-        # Création du ticket avec le header contenant les infos générales
+        # Header contenant les infos générales  
         ticket = [
             {"type": "text", "value": "-" * 32},
-            {"type": "text", "value": f"{self.datetime}"},
-            {"type": "text", "value": f"TABLE : {self.table.name}"},
-            {"type": "text", "value": f"RESPONSABLE : {self.responsable.name}"},
-            {"type": "text", "value": f"ID COMMANDE : {self.id_commande()[:3]}"},
-            {"type": "text", "value": f"SERVICE : {self.id_service()[:3]}"},
+            {"type": "text", "value": f"{commande.datetime}"},
+            {"type": "text", "value": f"TABLE : {commande.table.name}"},
+            {"type": "text", "value": f"RESPONSABLE : {commande.responsable.name}"},
+            {"type": "text", "value": f"ID COMMANDE : {commande.id_commande()[:3]}"},
+            # {"type": "text", "value": f"SERVICE : {commande.id_service()[:3]}"},
             {"type": "text", "value": "-" * 32},
         ]
 
+        import ipdb; ipdb.set_trace()
+
         # Fonction pour classer les articles par groupement
-        def _articles_classes():
-            article_groupee = {}
-            for groupement in groupements:
-                categories_groupee = groupement.categories.all()
-                article_groupee[groupement] = []
+        article_groupee = {}
+        groupements = set()
+        for ligne_article in lignes_articles:
+            if ligne_article.article.categorie:
+                for groupement in ligne_article.article.categorie.groupements.all():
+                    groupements.add(groupement)
+        groupements = list(groupements)
 
-                for ligne_article in lignes_articles:
-                    if ligne_article.article.categorie in categories_groupee:
-                        article_groupee[groupement].append(ligne_article)
+        groupement : GroupementCategorie
+        categories_groupee = groupement.categories.all()
+        article_groupee[groupement] = []
 
-            return article_groupee
+        for ligne_article in lignes_articles:
+            if ligne_article.article.categorie in categories_groupee:
+                article_groupee[groupement].append(ligne_article)
 
-        # Fonction pour formater le texte des articles
-        def _txt_article(lignes_articles_groupe):
-            corps = f"\n"
-
-            for ligne in lignes_articles_groupe:
-                ligne: ArticleCommandeSauvegarde
-                corps += f"{int(ligne.qty)} x {ligne.article.name}\n"
-
-            corps += f"\n"
-            return corps
-
-        ticket.append(
-            {"type": "text", "value": "-" * 32},
-        )
-
-        # Obtenir les articles classés par groupement
-        articles_classes = _articles_classes()
 
         # Ajouter chaque groupe d'articles au ticket
-        for groupe, articles_groupe in articles_classes.items():
+        for groupe, articles_groupe in article_groupee.items():
             ticket.append(
                 {"type": "text", "value": f"{groupe.name}"},
             )
-            ticket.append(
-                {"type": "text", "value": f"{_txt_article(articles_groupe)}"},
-            )
+            for article in articles_groupe:
+                article: ArticleCommandeSauvegarde
+                ticket.append({"type": "text", "value": f"{int(ligne_article.qty)} x {ligne_article.article.name}"},)
+
+        ticket.append({"type": "text", "value": "-" * 32},)
 
         return ticket
 
