@@ -89,9 +89,6 @@ class Sales(viewsets.ViewSet):
                 commands_today[article.commande]['total'] += (article.qty * article.prix)
                 commands_today[article.commande]['qty'] += article.qty
 
-
-        # import ipdb; ipdb.set_trace()
-
         context = {
             'commands_today': commands_today,
             'moyens_paiement': MoyenPaiement.objects.filter(

@@ -154,7 +154,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.user = self.scope['user']
 
         # Utilisation de l'ip de l'appareil comme room name websocket
-        self.room_group_name = self.user.appareil.id.hex # hex car il ne faut pas de tiret dans le nom
+        self.room_group_name = self.user.pk.hex # hex car il ne faut pas de tiret dans le nom
 
         # Si l'user n'est pas un terminal préalablement appairé :
         if not settings.DEBUG:
