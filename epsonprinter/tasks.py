@@ -84,7 +84,7 @@ def send_print_order(self, ws_channel, data):
     # Generate a unique UUID for this print order
     order_uuid = uuid.uuid4()
 
-    logger.info(f"HTTP Print/test_groupe : tentative d'envoi de message vers WS sur le canal {ws_channel}")
+    logger.info(f"send_print_order : tentative d'envoi de message vers WS sur le canal {ws_channel}")
     try:
 
         # Send the message to the websocket channel
@@ -95,10 +95,9 @@ def send_print_order(self, ws_channel, data):
                 'type': 'chat_message',
                 'message': f'print_order@{order_uuid}',
                 'data': data,
-                'uuid': order_uuid,  # Include the UUID separately for easier access
             }
         )
-        logger.info(f"HTTP Print/test_groupe : message envoyé avec succès vers WS sur le canal {ws_channel} avec UUID {order_uuid}")
+        logger.info(f"send_print_order : message envoyé avec succès vers WS sur le canal {ws_channel} avec UUID {order_uuid}")
 
         #TODO: Checker la réponse et raise une erreur pour retry
         response_received = True
@@ -111,6 +110,7 @@ def send_print_order(self, ws_channel, data):
         raise self.retry(exc=exc, countdown=retry_delay)
     except MaxRetriesExceededError:
         logger.error(f"send_print_order : La tâche a échoué après plusieurs tentatives pour {order_uuid}")
+        return False
 
 
 @app.task
