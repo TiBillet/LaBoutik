@@ -167,7 +167,7 @@ class Sales(viewsets.ViewSet):
     @action(detail=False, methods=['POST'])
     def print_ticket_purchases(self, request):
         print('-> Print ticket purchases !')
-        print(request.data)
+        logger.info(f"-----> request.data = {request.data}")
         context = {}
         return render(request, "sales/sales_print_ticket_purchases_status.html", context)
 
