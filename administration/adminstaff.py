@@ -844,6 +844,8 @@ class PrinterAdmin(admin.ModelAdmin):
         'test_print_button',
     )
 
+    list_display_links = ('name',)
+
     readonly_fields = (
         '_api_serveur_impression',
     )
@@ -929,6 +931,12 @@ class PrinterAdmin(admin.ModelAdmin):
             instance.api_serveur_impression = None
             instance.revoquer_api_serveur_impression = False
         super().save_model(request, instance, form, change)
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        Allow deletion of printer objects.
+        """
+        return True
 
     def get_fieldsets(self, request, obj=None):
         """

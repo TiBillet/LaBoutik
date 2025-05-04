@@ -13,7 +13,7 @@ from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
-from epsonprinter.tasks import ticketZ_tasks_printer, send_print_order
+from epsonprinter.tasks import ticketZ_tasks_printer, send_print_order_inner_sunmi
 from uuid import UUID
 
 from django.contrib import messages
@@ -144,7 +144,7 @@ class Sales(viewsets.ViewSet):
         # On calcule les valeurs et on récupère le dictionnaire, sinon un dict vide
         ticket_today = ticketZ.to_dict if ticketZ.calcul_valeurs() else {}
         if ticket_today:
-            send_print_order.delay(ws_channel=ws_room_appareil, data=ticketZ.to_sunmi_printer_57())
+            send_print_order_inner_sunmi.delay(ws_channel=ws_room_appareil, data=ticketZ.to_sunmi_printer_57())
 
         context = {'ticket_today': ticket_today,}
         return render(request, "sales/z_ticket.html", context)
