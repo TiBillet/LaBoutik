@@ -264,10 +264,13 @@ def print_command_sunmi_cloud(commande_pk, groupement_solo_pk=None):
                     # Create a printer instance with 384 dots per line (standard for 80mm thermal printer)
                     printer = SunmiCloudPrinter(384, app_id=app_id, app_key=app_key, printer_sn=printer_sn)
 
+                    # Increase general font size for better visibility
+                    printer.setCharacterSize(2, 2)  # Increase both height and width
+
                     # Add header information
                     printer.lineFeed()
                     printer.setAlignment(ALIGN_CENTER)
-                    printer.setPrintModes(True, True, False)  # Bold, double height, normal width
+                    printer.setPrintModes(True, True, True)  # Bold, double height, double width
                     printer.appendText(f"{title}\n")
                     printer.setPrintModes(False, False, False)  # Reset print modes
 
@@ -279,15 +282,19 @@ def print_command_sunmi_cloud(commande_pk, groupement_solo_pk=None):
                     printer.setPrintModes(False, False, False)  # Reset print modes
                     printer.appendText(f"Serveur: {commande.responsable.name}\n")
                     printer.appendText(f"ID: {commande.id_commande()[:3]}\n")
-                    printer.appendText("-" * 32 + "\n")
+                    printer.appendText("-" * 40 + "\n")  # Increase separator width to use full 80mm
 
-                    # Add article lines
+                    # Add article lines with enhanced visibility - even larger and wider
+                    printer.setCharacterSize(3, 3)  # Increase size specifically for articles (larger than general 2x2)
+                    printer.setPrintModes(True, True, True)  # Bold, double height, AND double width for maximum visibility
                     for ligne in lignes_article:
                         printer.appendText(f"{int(ligne.qty)} x {ligne.article.name}\n")
+                    printer.setPrintModes(False, False, False)  # Reset print modes
+                    printer.setCharacterSize(2, 2)  # Reset back to general size
 
                     # Add footer and cut paper
-                    printer.appendText("-" * 32 + "\n")
-                    printer.lineFeed(3)
+                    printer.appendText("-" * 40 + "\n")  # Increase separator width to use full 80mm
+                    printer.lineFeed(6)  # Add more whitespace before cutting
                     printer.cutPaper(False)  # Partial cut
 
                     # Generate a unique trade number for this print job
