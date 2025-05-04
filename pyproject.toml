@@ -41,6 +41,7 @@ numpy = "^1.24"
 pydyf = "0.10.0"
 stripe = "^11.3.0"
 daphne = ">=3.0,<4"
+python-dotenv = "^0.21.0"
 
 [tool.poetry.group.dev.dependencies]
 ipdb = "^0.13.13"

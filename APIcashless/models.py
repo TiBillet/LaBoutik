@@ -1932,6 +1932,41 @@ class Configuration(SingletonModel):
 
     currency_code = models.CharField(max_length=3, default="EUR")
 
+    # Sunmi Cloud Printer configuration
+    sunmi_app_id = models.CharField(max_length=200,
+                                   null=True, blank=True,
+                                   verbose_name=_("Sunmi Cloud Printer APP ID"),
+                                   help_text=_("APP ID for Sunmi Cloud Printer integration"))
+
+    def set_sunmi_app_id(self, app_id):
+        self.sunmi_app_id = fernet_encrypt(app_id)
+        cache.clear()
+        self.save()
+        return True
+
+    def get_sunmi_app_id(self):
+        if not self.sunmi_app_id:
+            raise Exception(
+                "The Sunmi APP ID is not set: You have to set it manually with config.set_sunmi_app_id(app_id)")
+        return fernet_decrypt(self.sunmi_app_id)
+
+    sunmi_app_key = models.CharField(max_length=200,
+                                    null=True, blank=True,
+                                    verbose_name=_("Sunmi Cloud Printer APP KEY"),
+                                    help_text=_("APP KEY for Sunmi Cloud Printer integration"))
+
+    def set_sunmi_app_key(self, app_key):
+        self.sunmi_app_key = fernet_encrypt(app_key)
+        cache.clear()
+        self.save()
+        return True
+
+    def get_sunmi_app_key(self):
+        if not self.sunmi_app_key:
+            raise Exception(
+                "The Sunmi APP KEY is not set: You have to set it manually with config.set_sunmi_app_key(app_key)")
+        return fernet_decrypt(self.sunmi_app_key)
+
     def timezone(self):
         return settings.TIME_ZONE
 
