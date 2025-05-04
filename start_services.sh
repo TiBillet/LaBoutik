@@ -7,6 +7,7 @@ mkdir -p /DjangoFiles/logs/supervisor
 touch /DjangoFiles/logs/gunicorn.log
 touch /DjangoFiles/logs/daphne.log
 touch /DjangoFiles/logs/celery.log
+touch /DjangoFiles/logs/celerybeat.log
 touch /DjangoFiles/logs/supervisor/supervisord.log
 touch /DjangoFiles/logs/nginxAccess.log
 touch /DjangoFiles/logs/nginxError.log
@@ -40,7 +41,7 @@ sleep 2
 
 # Tail all service logs simultaneously
 echo "Tailing all service logs. Press Ctrl+C to stop viewing logs (services will continue running)."
-exec tail -f /DjangoFiles/logs/gunicorn.log /DjangoFiles/logs/daphne.log /DjangoFiles/logs/celery.log /DjangoFiles/logs/supervisor/supervisord.log
+exec tail -f /DjangoFiles/logs/gunicorn.log /DjangoFiles/logs/daphne.log /DjangoFiles/logs/celery.log /DjangoFiles/logs/celerybeat.log /DjangoFiles/logs/supervisor/supervisord.log
 
 
 # =====================================================================
@@ -51,6 +52,7 @@ exec tail -f /DjangoFiles/logs/gunicorn.log /DjangoFiles/logs/daphne.log /Django
 # - Gunicorn: HTTP server (port 8000)
 # - Daphne: WebSocket server (port 8001)
 # - Celery: Background task processor
+# - Celerybeat: Task scheduler for periodic tasks
 #
 # =====================================================================
 # VIEWING LOGS
@@ -60,6 +62,7 @@ exec tail -f /DjangoFiles/logs/gunicorn.log /DjangoFiles/logs/daphne.log /Django
 # - Gunicorn: /DjangoFiles/logs/gunicorn.log
 # - Daphne: /DjangoFiles/logs/daphne.log
 # - Celery: /DjangoFiles/logs/celery.log
+# - Celerybeat: /DjangoFiles/logs/celerybeat.log
 #
 # Supervisor itself logs to:
 # - /DjangoFiles/logs/supervisor/supervisord.log
@@ -68,6 +71,7 @@ exec tail -f /DjangoFiles/logs/gunicorn.log /DjangoFiles/logs/daphne.log /Django
 # $ tail -f /DjangoFiles/logs/gunicorn.log
 # $ tail -f /DjangoFiles/logs/daphne.log
 # $ tail -f /DjangoFiles/logs/celery.log
+# $ tail -f /DjangoFiles/logs/celerybeat.log
 #
 # =====================================================================
 # SUPERVISOR COMMANDS
@@ -80,11 +84,13 @@ exec tail -f /DjangoFiles/logs/gunicorn.log /DjangoFiles/logs/daphne.log /Django
 # $ supervisorctl status gunicorn
 # $ supervisorctl status daphne
 # $ supervisorctl status celery
+# $ supervisorctl status celerybeat
 #
 # Start/stop/restart a service:
 # $ supervisorctl start gunicorn
 # $ supervisorctl stop daphne
 # $ supervisorctl restart celery
+# $ supervisorctl restart celerybeat
 #
 # Start/stop/restart all services:
 # $ supervisorctl start all
