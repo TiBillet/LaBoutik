@@ -50,7 +50,12 @@ window.testPrint = async function () {
       console.log(`0 -> impression ${options.printUuid} lancée.`)
       sunmiPrintQueue.push(options)
       console.log(`0 -> sunmiPrintQueue =`, sunmiPrintQueue)
-      const t= await bluetoothWrite(options.printUuid)
+      await bluetoothWrite(options.printUuid)
+      setTimeout(function () {
+        console.log('... attente de 500 ms');
+
+      }, 500);
+
       console.log(`0 -> t =`, t)
     }
   }
