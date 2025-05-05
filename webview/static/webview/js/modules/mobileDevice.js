@@ -369,7 +369,7 @@ export async function bluetoothWrite(currentPrintUuid) {
 
   // 4 - boucler sur la queue d'impression si non vide
   if (sunmiPrintQueue.length > 0) {
-    bluetoothWrite(sunmiPrintQueue[0])
+    await bluetoothWrite(sunmiPrintQueue[0])
   }
 
   await bluetoothDisconnect()
