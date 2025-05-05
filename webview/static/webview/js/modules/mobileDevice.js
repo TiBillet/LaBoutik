@@ -263,8 +263,12 @@ export async function bluetoothConnection() {
  * @param {Array} content - objects array
  */
 async function convertToEscposCommandsAndPrint(currentPrintUuid, content) {
+  console.log('-> convertToEscposCommandsAndPrint');
+  
   try {
     await bluetoothConnection()
+    console.log('-> Après bluetoothConnection')
+    
     const escpos = Neodynamic.JSESCPOSBuilder
     const escposCommands = new escpos.Document()
     // fonte par défaut
