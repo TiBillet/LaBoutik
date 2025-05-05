@@ -157,7 +157,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name = self.user.uuid.hex # hex car il ne faut pas de tiret dans le nom
         except Exception as e:
             logger.error(f"consumer connect error {e}")
-            return False
+            await self.close()
 
         # Si l'user n'est pas un terminal préalablement appairé :
         if not settings.DEBUG:
@@ -178,13 +178,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        if self.room_group_name and self.channel_name:
+        try :
             logger.info(f"{self.room_name} {self.user} disconnected")
             # Leave room group
             await self.channel_layer.group_discard(
                 self.room_group_name,
                 self.channel_name
             )
+        except Exception as e:
+            logger.error(f"consumer disconnect error {e}")
+            await self.close()
 
     # Receive message from WebSocket
     async def receive(self, text_data):
