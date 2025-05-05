@@ -406,6 +406,9 @@ async function infosPaiementRetourTable(retour, status, options) {
             ${msgDefaut} ${msgRetourCarte}
           </div>`
 
+      console.log('wsTerminal.on =', wsTerminal.on);
+      console.log('hasSunmiPrinter() =', await hasSunmiPrinter());
+
       // insert bt print
       if (wsTerminal.on === true && await hasSunmiPrinter() === true) {
         const btUuid = sys.uuidV4()
