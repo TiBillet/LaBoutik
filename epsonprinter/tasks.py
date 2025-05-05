@@ -263,7 +263,7 @@ def ticketZ_tasks_printer(ticketz_json):
 
 
 @app.task
-def test_print(printer_pk, ticket_size=None):
+def test_print(printer_pk):
     """
     Print a test message using the specified printer type and ticket size.
 
@@ -283,21 +283,14 @@ def test_print(printer_pk, ticket_size=None):
     printer = Printer.objects.get(pk=printer_pk)
     printer_type = printer.printer_type
 
-    if not ticket_size:
-        ticket_size = 57
 
-    logger.info(f"Test print for printer type {printer_type} with ticket size {ticket_size}mm")
+    logger.info(f"Test print for printer type {printer_type}")
 
     try:
         # Validate printer type
         if printer_type not in [Printer.EPSON_PI, Printer.SUNMI_INTEGRATED_80, 
                                Printer.SUNMI_INTEGRATED_57, Printer.SUNMI_CLOUD]:
             logger.error(f"Invalid printer type: {printer_type}")
-            return False
-
-        # Validate ticket size
-        if ticket_size not in [80, 57]:
-            logger.error(f"Invalid ticket size: {ticket_size}. Must be 80 or 57.")
             return False
 
         # Handle Epson TM20 printer
@@ -372,9 +365,8 @@ def test_print(printer_pk, ticket_size=None):
                 printer.setPrintModes(False, False, False)  # Reset print modes
                 printer.appendText("Hello World\n")
                 printer.appendText("------------------------\n")
-                printer.appendText("-"*dots_per_line+"\n")
                 printer.setAlignment(ALIGN_LEFT)
-                printer.appendText(f"Ticket Size: {ticket_size}mm\n")
+                printer.appendText(f"Ticket Size: 80mm\n")
                 printer.appendText(f"Date: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
                 printer.lineFeed(3)
                 printer.cutPaper(False)  # Partial cut
@@ -390,7 +382,7 @@ def test_print(printer_pk, ticket_size=None):
                     media_text="Test Print"
                 )
 
-                logger.info(f"Test print sent to Sunmi Cloud Printer with {ticket_size}mm ticket")
+                logger.info(f"Test print sent to Sunmi Cloud Printer")
                 return True
 
             except Exception as e:
