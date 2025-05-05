@@ -158,6 +158,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"consumer connect error {e}")
             await self.close()
+            return False
 
         # Si l'user n'est pas un terminal préalablement appairé :
         if not settings.DEBUG:
