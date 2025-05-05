@@ -366,6 +366,7 @@ async function convertToEscposCommandsAndPrint(currentPrintUuid, content) {
  */
 export async function bluetoothWrite(currentPrintUuid) {
   // 1- imppression courante
+  console.log(`1 -> bluetoothWrite, sunmiPrintQueue =`, sunmiPrintQueue)
   const currentPrint = sunmiPrintQueue.find(queue => queue.id === currentPrintUuid)
   const content = currentPrint.content
 
