@@ -1357,53 +1357,6 @@ class CommandeSauvegarde(models.Model):
                 self.statut = CommandeSauvegarde.SERVIE
                 self.save()
 
-    def print(self):
-        commande = self
-
-        # Header contenant les infos générales
-        base_ticket = [
-            {"type": "text", "value": "-" * 32},
-            {"type": "text", "value": f"{commande.datetime}"},
-            {"type": "text", "value": f"TABLE : {commande.table.name}"},
-            {"type": "text", "value": f"RESPONSABLE : {commande.responsable.name}"},
-            {"type": "text", "value": f"ID COMMANDE : {commande.id_commande()[:3]}"},
-            # {"type": "text", "value": f"SERVICE : {commande.id_service()[:3]}"},
-            {"type": "text", "value": "-" * 32},
-        ]
-        # L'objet GroupementCategorie regroupe les catégories
-        groupements = GroupementCategorie.objects.all()
-
-        # Les articles possèdent des catégories :
-        lignes_articles = commande.articles.all()
-
-        # On veut un dictionnaire avec {GROUPEMENT:[article1, articles2]}
-        articles_groupe = {}
-        for groupement in groupements:
-            articles_groupe[groupement] = []
-            categories_groupees = groupement.categories.all()
-            for ligne_article in lignes_articles:
-                if ligne_article.article.categorie in categories_groupees:
-                    articles_groupe[groupement].append(ligne_article)
-
-        # Ajouter chaque groupe d'articles au ticket
-        for groupe, lignes_article in articles_groupe.items():
-            if len(lignes_article) > 0:
-                # fabrication du ticket en envoi à l'imprimante
-                ticket = []
-                ticket.append({"type": "text", "value": f"{groupe.name}"})  # Le nom de la catégorie. ex : CUISINE
-                for ligne in lignes_article:
-                    article: ArticleCommandeSauvegarde
-                    ticket.append({"type": "text", "value": f"{int(ligne.qty)} x {ligne.article.name}"}, )
-
-                ticket += [{"type": "text", "value": "-" * 32},
-                           {"type": "text", "value": "-" * 32},
-                           {"type": "feed", "value": 2},
-                           {"type": "cut"},
-                           ]
-                logger.info(ticket)
-                import ipdb; ipdb.set_trace()
-
-        return True
 
     class Meta:
         verbose_name = _("Commande")
@@ -1978,6 +1931,41 @@ class Configuration(SingletonModel):
                                       )
 
     currency_code = models.CharField(max_length=3, default="EUR")
+
+    # Sunmi Cloud Printer configuration
+    sunmi_app_id = models.CharField(max_length=200,
+                                   null=True, blank=True,
+                                   verbose_name=_("Sunmi Cloud Printer APP ID"),
+                                   help_text=_("APP ID for Sunmi Cloud Printer integration"))
+
+    def set_sunmi_app_id(self, app_id):
+        self.sunmi_app_id = fernet_encrypt(app_id)
+        cache.clear()
+        self.save()
+        return True
+
+    def get_sunmi_app_id(self):
+        if not self.sunmi_app_id:
+            raise Exception(
+                "The Sunmi APP ID is not set: You have to set it manually with config.set_sunmi_app_id(app_id)")
+        return fernet_decrypt(self.sunmi_app_id)
+
+    sunmi_app_key = models.CharField(max_length=200,
+                                    null=True, blank=True,
+                                    verbose_name=_("Sunmi Cloud Printer APP KEY"),
+                                    help_text=_("APP KEY for Sunmi Cloud Printer integration"))
+
+    def set_sunmi_app_key(self, app_key):
+        self.sunmi_app_key = fernet_encrypt(app_key)
+        cache.clear()
+        self.save()
+        return True
+
+    def get_sunmi_app_key(self):
+        if not self.sunmi_app_key:
+            raise Exception(
+                "The Sunmi APP KEY is not set: You have to set it manually with config.set_sunmi_app_key(app_key)")
+        return fernet_decrypt(self.sunmi_app_key)
 
     def timezone(self):
         return settings.TIME_ZONE

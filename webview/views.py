@@ -21,7 +21,7 @@ from APIcashless.models import *
 from Cashless.scripts_utiles.ip_utils import get_ip_user, get_client_ip
 from administration.email_ticket import ticket_conso_jour
 from administration.ticketZ import TicketZ
-from epsonprinter.tasks import print_command_epson_tm20, ticketZ_tasks_printer
+from epsonprinter.tasks import ticketZ_tasks_printer, print_command
 from fedow_connect.fedow_api import FedowAPI
 from tibiauth.models import TibiUser
 from webview.serializers import CarteCashlessSerializer, PointDeVenteSerializer, \
@@ -363,8 +363,7 @@ def reprint(request):
         groupement = get_object_or_404(GroupementCategorie, pk=str_pk_groupement)
 
         if groupement.printer:
-            task = print_command_epson_tm20.delay(commande.pk, groupement_solo_pk=str_pk_groupement)
-
+            print_command.delay(commande.pk, groupement_solo_pk=str_pk_groupement)
         return Response("reprint ok", status=status.HTTP_200_OK)
 
 
@@ -744,7 +743,7 @@ class Commande:
             # Une nouvelle commande a été créée,
             # On lance l'impression de ticket.
             logger.info(f'{"*" * 30} self.nouvelle_commande_created {"*" * 30}')
-            print_command_epson_tm20.delay(self.nouvelle_commande.pk)
+            print_command.delay(self.nouvelle_commande.pk)
 
         ### ENREGISTREMENT DES ASSETS
         # Si c'est un paiement cashless
@@ -1532,6 +1531,3 @@ def paiement(request):
         return Response(validator.errors, status=status.HTTP_406_NOT_ACCEPTABLE)
 
     return HttpResponseNotFound()
-
-
-

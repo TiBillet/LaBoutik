@@ -12,6 +12,8 @@ from django.contrib.auth.admin import UserAdmin
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db.models import Q
+from django.http import HttpResponseRedirect
+from django.urls import reverse
 from django.utils import translation
 from django.utils.html import format_html
 from django.utils.translation import gettext as _
@@ -837,61 +839,149 @@ staff_admin_site.register(Appareil, AppareilAdmin)
 class PrinterAdmin(admin.ModelAdmin):
     list_display = (
         'name',
-        'thermal_printer_adress',
-        'serveur_impression',
-        'revoquer_odoo_api_serveur_impression',
-        'host',
+        'printer_type',
+        'can_print_status',
+        'test_print_button',
     )
+
+    list_display_links = ('name',)
 
     readonly_fields = (
         '_api_serveur_impression',
     )
 
     fieldsets = (
-        (None, {
+        (_('Informations générales'), {
             'fields': (
                 'name',
-                'host',
+                'printer_type',
+            )
+        }),
+        (_('Epson via Pi (réseau ou USB, 80mm)'), {
+            'fields': (
                 'thermal_printer_adress',
                 'serveur_impression',
                 'api_serveur_impression',
-                'revoquer_odoo_api_serveur_impression',
-            )
+                'revoquer_api_serveur_impression',
+            ),
+            'classes': ('collapse',),
+            'description': _('Configuration pour les imprimantes Epson connectées via un Raspberry Pi')
+        }),
+        (_('Imprimante intégrée aux Sunmi'), {
+            'fields': (
+                'host',
+            ),
+            'classes': ('collapse',),
+            'description': _('Configuration pour les imprimantes intégrées aux terminaux Sunmi')
+        }),
+        (_('NT311 Sunmi cloud printer'), {
+            'fields': (
+                'sunmi_serial_number',
+            ),
+            'classes': ('collapse',),
+            'description': _('Configuration pour les imprimantes Sunmi Cloud NT311')
         }),
     )
 
+    def can_print_status(self, obj):
+        """
+        Display whether the printer can print based on the can_print() method.
+        """
+        can_print, error_msg = obj.can_print()
+        if can_print:
+            return format_html('<span style="color: green;">✓</span>')
+        else:
+            return format_html('<span style="color: red;">✗</span> <span title="{}">[?]</span>', error_msg)
+
+    can_print_status.short_description = _('Peut imprimer')
+
+    def test_print_button(self, obj):
+        """
+        Add a button to send a test print.
+        """
+        return format_html(
+            '<a class="button" href="{}?test_print={}">Test Print</a>',
+            reverse('adminstaff:epsonprinter_printer_changelist'),
+            obj.pk
+        )
+
+    test_print_button.short_description = _('Test d\'impression')
+
+    def changelist_view(self, request, extra_context=None):
+        """
+        Override changelist_view to handle test print requests.
+        """
+        if 'test_print' in request.GET:
+            printer_id = request.GET.get('test_print')
+            try:
+                printer = Printer.objects.get(pk=printer_id)
+                from epsonprinter.tasks import test_print
+                test_print.delay(printer.pk)
+                messages.info(request, _('Test d\'impression envoyé'))
+            except Printer.DoesNotExist:
+                messages.error(request, _('Imprimante non trouvée'))
+            return HttpResponseRedirect(reverse('adminstaff:epsonprinter_printer_changelist'))
+
+        return super().changelist_view(request, extra_context)
+
     def save_model(self, request, instance, form, change):
-        if instance.revoquer_odoo_api_serveur_impression:
+        if instance.revoquer_api_serveur_impression:
             instance.api_serveur_impression = None
-            instance.revoquer_odoo_api_serveur_impression = False
+            instance.revoquer_api_serveur_impression = False
         super().save_model(request, instance, form, change)
 
+    def has_delete_permission(self, request, obj=None):
+        """
+        Allow deletion of printer objects.
+        """
+        return True
+
     def get_fieldsets(self, request, obj=None):
+        """
+        Override get_fieldsets to handle the api_serveur_impression field replacement
+        and to show only relevant fieldsets based on the printer type.
+        """
+        if obj is None:
+            # For new objects, show all fieldsets
+            return super().get_fieldsets(request, obj)
 
-        # Append replace here instead of using self.exclude.
-        # When fieldsets are defined for the user admin, so self.exclude is ignored.
-        if obj:
-            fieldsets = deepcopy(super().get_fieldsets(request, obj))
-            replace = {}
-            if obj.api_serveur_impression:
-                replace = {'api_serveur_impression': '_api_serveur_impression'}
+        # Get the base fieldsets
+        fieldsets = deepcopy(super().get_fieldsets(request, obj))
 
-            # Iterate fieldsets
-            for fieldset in fieldsets:
+        # Replace api_serveur_impression with _api_serveur_impression if needed
+        replace = {}
+        if obj.api_serveur_impression:
+            replace = {'api_serveur_impression': '_api_serveur_impression'}
+
+        # Iterate fieldsets and apply replacements
+        for fieldset in fieldsets:
+            if 'fields' in fieldset[1]:
                 fieldset_fields = fieldset[1]['fields']
 
-                # Remove excluded fields from the fieldset
-                for value, key in enumerate(replace):
+                # Apply replacements
+                for key in replace:
                     if key in fieldset_fields:
-                        # import ipdb; ipdb.set_trace()
-                        fieldset_fields_list = [field for field in fieldset_fields if field != key]  # Filter
+                        fieldset_fields_list = [field for field in fieldset_fields if field != key]
                         fieldset_fields_list.append(replace[key])
-                        fieldset_fields = tuple(fieldset_fields_list)
-                        fieldset[1]['fields'] = fieldset_fields  # Store new tuple
+                        fieldset[1]['fields'] = tuple(fieldset_fields_list)
 
-            return fieldsets
+        # Filter fieldsets based on printer type
+        filtered_fieldsets = []
+        for fieldset in fieldsets:
+            # Always include the general information fieldset
+            if fieldset[0] == _('Informations générales'):
+                filtered_fieldsets.append(fieldset)
+                continue
 
-        return [(None, {'fields': self.get_fields(request, obj)})]
+            # Include fieldsets based on printer type
+            if obj.printer_type == obj.EPSON_PI and fieldset[0] == _('Epson via Pi (réseau ou USB, 80mm)'):
+                filtered_fieldsets.append(fieldset)
+            elif obj.printer_type in [obj.SUNMI_INTEGRATED_80, obj.SUNMI_INTEGRATED_57] and fieldset[0] == _('Imprimante intégrée aux Sunmi'):
+                filtered_fieldsets.append(fieldset)
+            elif obj.printer_type == obj.SUNMI_CLOUD and fieldset[0] == _('NT311 Sunmi cloud printer'):
+                filtered_fieldsets.append(fieldset)
+
+        return filtered_fieldsets
 
 
 staff_admin_site.register(Printer, PrinterAdmin)

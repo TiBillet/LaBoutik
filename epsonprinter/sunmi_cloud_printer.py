@@ -5,11 +5,16 @@ import hmac
 import json
 import numpy as np
 import numpy.typing as npt
+import os
 import random
 import requests
 import time
 from typing import Any, Dict, List, Tuple
 from PIL import Image
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 ALIGN_LEFT  : int = 0
 ALIGN_CENTER: int = 1
@@ -49,17 +54,27 @@ def unicode_to_utf8(unicode: int) -> bytes:
 
 class SunmiCloudPrinter:
 
-    # 替换为您申请的APPID&APPKEY Replace the applied APPID&APPKEY
-    APP_ID: str = '154b0530286044779df5554b51623940'
-    APP_KEY: str = '7036da4938c546c59e7773e90bf41956'
-
-    def __init__(self, dots_per_line: int) -> None:
+    def __init__(self, dots_per_line: int, app_id: str = None, app_key: str = None, printer_sn: str = None) -> None:
         self._DOTS_PER_LINE: int = dots_per_line
         self._charHSize: int = 1
         self._asciiCharWidth: int = 12
         self._cjkCharWidth: int = 24
         self._orderData: bytes = b''
         self._columnSettings: List[Tuple[int, ...]] = []
+
+        # Get APPID & APPKEY from parameters or environment variables
+        self._app_id = app_id or os.getenv('APP_ID')
+        self._app_key = app_key or os.getenv('APP_KEY')
+        self._printer_sn = printer_sn or os.getenv('PRINTER_SN')
+
+        # Raise error if APP_ID or APP_KEY is not provided
+        if not self._app_id or not self._app_key:
+            raise ValueError("APP_ID and APP_KEY must be provided either as parameters or in the .env file")
+
+        # Raise error if PRINTER_SN is not provided
+        if not self._printer_sn:
+            raise ValueError("PRINTER_SN must be provided either as a parameter or in the .env file")
+
         random.seed()
 
     @property
@@ -105,8 +120,8 @@ class SunmiCloudPrinter:
         return self._asciiCharWidth
 
     def generateSign(self, body: str, timestamp: str, nonce: str) -> str:
-        msg: str = body + SunmiCloudPrinter.APP_ID + timestamp + nonce
-        return hmac.new(key=SunmiCloudPrinter.APP_KEY.encode('utf-8'), msg=msg.encode('utf-8'), digestmod=hashlib.sha256).hexdigest()
+        msg: str = body + self._app_id + timestamp + nonce
+        return hmac.new(key=self._app_key.encode('utf-8'), msg=msg.encode('utf-8'), digestmod=hashlib.sha256).hexdigest()
 
     def httpPost(self, path: str, body: Dict[str, Any]) -> str:
         url: str = 'https://openapi.sunmi.com' + path
@@ -115,7 +130,7 @@ class SunmiCloudPrinter:
         body_data: str = json.dumps(obj=body, ensure_ascii=False)
 
         headers: Dict[str, str] = {}
-        headers['Sunmi-Appid'] = SunmiCloudPrinter.APP_ID
+        headers['Sunmi-Appid'] = self._app_id
         headers['Sunmi-Timestamp'] = timestamp
         headers['Sunmi-Nonce'] = nonce
         headers['Sunmi-Sign'] = self.generateSign(body_data, timestamp, nonce)
@@ -733,7 +748,17 @@ class SunmiCloudPrinter:
         self._orderData += b'\x1b\x53'
 
 if __name__ == '__main__':
-    printer = SunmiCloudPrinter(384)
+    # Get APP_ID, APP_KEY, and PRINTER_SN from environment variables
+    app_id = os.getenv('APP_ID')
+    app_key = os.getenv('APP_KEY')
+    printer_sn = os.getenv('PRINTER_SN')
+
+    try:
+        printer = SunmiCloudPrinter(384, app_id=app_id, app_key=app_key, printer_sn=printer_sn)
+    except ValueError as e:
+        print(f"Error: {e}")
+        print("Please make sure APP_ID, APP_KEY, and PRINTER_SN are set in the .env file.")
+        exit(1)
 
     printer.lineFeed()
 
@@ -792,9 +817,8 @@ if __name__ == '__main__':
     printer.lineFeed(4)
     printer.cutPaper(False)
 
-    sn = 'N411245U00527'
     printer.pushContent(
-        trade_no='{}_{:010d}'.format(sn, int(time.time())),
-        sn=sn,
+        trade_no=f"{printer._printer_sn}_{int(time.time())}",
+        sn=printer._printer_sn,
         count=1,
         media_text='您有新的订单')
