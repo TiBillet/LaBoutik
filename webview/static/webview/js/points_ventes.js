@@ -31,6 +31,10 @@ window.openCashDrawer = async function () {
 // dev
 window.testPrint = async function () {
   if (wsTerminal.on) {
+    // create print sunmi queue
+    if (window.sunmiPrintQueue === undefined) {
+      window.sunmiPrintQueue = []
+    }
     for (let i = 0; i < array.length; i++) {
       const element = array[i];
 
