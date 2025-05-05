@@ -37,8 +37,6 @@ window.testPrint = async function () {
     }
 
     for (let i = 0; i < 4; i++) {
-      const element = array[i];
-
       const mokePrint = [
         { type: "text", value: "--------------------------------" },
         { type: "align", value: "center" },
