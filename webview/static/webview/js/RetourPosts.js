@@ -351,8 +351,8 @@ function aiguillagePagePaiementCommande(retour, status, options) {
  * @param {Object} options = données avant le lancement de la requète
  */
 function infosPaiementRetourTable(retour, status, options) {
-  // console.log(`-> fonction infosPaiementRetourTable !`)
-  // sys.logValeurs({ retour: retour, status: status, options: options })
+  console.log(`-> fonction infosPaiementRetourTable !`)
+  sys.logValeurs({ retour: retour, status: status, options: options })
   let typeMsg = 'succes', msg = '', fonction = ''
   if (status.code === 200) {
     if (retour.message === undefined) {
@@ -404,8 +404,22 @@ function infosPaiementRetourTable(retour, status, options) {
               <span data-i8n="transaction,capitalize">Transaction</span> <span data-i8n="ok">Ok</span>
             </div>
             ${msgDefaut} ${msgRetourCarte}
-          </div>
-          <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
+          </div>`
+
+      // insert bt print
+      if (wsTerminal.on === true && await hasSunmiPrinter() === true) {
+        const btUuid = sys.uuidV4()
+        window['xhValsAchats' + btUuid] = JSON.stringify(retour)
+        // bt print
+        msgDefaut += `<bouton-basique id="popup-retour" traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="200px" height="86px" 
+    hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
+    hx-target="#print-ticket-status-${btUuid}" hx-swap="innerHTML"
+    hx-vals='${window['xhValsAchats' + btUuid]}' style="margin-top:8px;">
+  </bouton-basique>
+  <div id="print-ticket-status-${btUuid}"></div>`
+      }
+
+      msg += `<bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
         </div>
       `
       // affichage du popup
@@ -436,8 +450,8 @@ function infosPaiementRetourTable(retour, status, options) {
 }
 
 async function afficherRetourVenteDirecte(retour, status, options) {
-  console.log(`-> fonction afficherRetourVenteDirecte !`)
-  sys.logValeurs({ retour: retour, status: status, options: options })
+  // console.log(`-> fonction afficherRetourVenteDirecte !`)
+  // sys.logValeurs({ retour: retour, status: status, options: options })
   let typeMsg = 'succes', msgDefaut = '', msg = '', fonction = ''
 
 
@@ -654,17 +668,9 @@ async function afficherRetourVenteDirecte(retour, status, options) {
       }
 
       // insert bt print
-      console.log('wsTerminal =', wsTerminal);
-      console.log('hasSunmiPrinter =', await hasSunmiPrinter())
-
-      // dev
-      if (glob) {
-        // prod
-        // if(wsTerminal.on === true && await hasSunmiPrinter() === true) {
+      if (wsTerminal.on === true && await hasSunmiPrinter() === true) {
         const btUuid = sys.uuidV4()
         window['xhValsAchats' + btUuid] = JSON.stringify(retour)
-        console.log('xhValsAchats =', window['xhValsAchats' + btUuid]);
-
         // bt print
         msgDefaut += `<bouton-basique id="popup-retour" traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="200px" height="86px" 
           hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
@@ -750,6 +756,7 @@ export function gererRetourPostPaiement(retour, status, options) {
       infosPaiementRetourTable(retour, status, options)
     }
 
+    // ok print
     if (options.actionAValider === "vente_directe") {
       afficherRetourVenteDirecte(retour, status, options)
     }

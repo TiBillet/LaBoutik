@@ -368,6 +368,7 @@ export async function bluetoothWrite(currentPrintUuid) {
     await bluetoothWrite(sunmiPrintQueue[0])
   }
 
+  // pour la gestion d'une queue d'impression, il est indispenssable de déconneté le bluetooth à la fin
   await bluetoothDisconnect()
 }
 
