@@ -189,6 +189,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         except Exception as e:
             logger.error(f"consumer disconnect error {e}")
             await self.close()
+            return False
 
     # Receive message from WebSocket
     async def receive(self, text_data):
