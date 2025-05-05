@@ -354,6 +354,8 @@ async function convertToEscposCommandsAndPrint(currentPrintUuid, content) {
     }
 
     const result = escposCommands.generateUInt8Array()
+    console.log('-> generateUInt8Array, result =', result);
+    
     const rPrint = await bluetoothSerialWrite(result)
     console.log('-> impression de la demande ', currentPrintUuid)
     console.log('-> rPrint =', rPrint)
