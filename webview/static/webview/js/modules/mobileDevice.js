@@ -257,114 +257,6 @@ export async function bluetoothConnection() {
   }
 }
 
-/**
- * convert to Escpos commands and print
- * @param {String} currentPrintUuid 
- * @param {Array} content - objects array
- */
-async function convertToEscposCommandsAndPrint(currentPrintUuid, content) {
-  console.log('-> convertToEscposCommandsAndPrint');
-  
-  try {
-    await bluetoothConnection()
-    console.log('-> Après bluetoothConnection')
-    
-    const escpos = Neodynamic.JSESCPOSBuilder
-    const escposCommands = new escpos.Document()
-    // fonte par défaut
-    escposCommands.font(escpos.FontFamily.A)
-    window.escpos = escpos  // dev
-    // process data
-    for (let i = 0; i < content.length; i++) {
-      const line = content[i]
-
-      // image
-      if (line.type === 'image') {
-        const image = await escPosImageLoad(line.value)
-        escposCommands.image(image, escpos.BitmapDensity.D24)
-      }
-
-      // text
-      if (line.type === 'text') {
-        escposCommands.text(line.value)
-      }
-
-      // barcode
-      if (line.type === 'barcode') {
-        escposCommands.linearBarcode(line.value, escpos.Barcode1DType.EAN13, new escpos.Barcode1DOptions(2, 100, true, escpos.BarcodeTextPosition.Below, escpos.BarcodeFont.A))
-      }
-
-      // qrcode
-      if (line.type === 'qrcode') {
-        escposCommands.qrCode(line.value, new escpos.BarcodeQROptions(escpos.QRLevel.L, 6))
-      }
-
-      // size
-      if (line.type === 'size') {
-        escposCommands.size(line.value, line.value)
-      }
-
-      // align
-      if (line.type === 'align') {
-        let result = escpos.TextAlignment.Center
-        if (line.value === "left") {
-          result = escpos.TextAlignment.LeftJustification
-        }
-        if (line.value === "right") {
-          result = escpos.TextAlignment.RightJustification
-        }
-        escposCommands.align(result)
-      }
-
-      // font
-      if (line.type === 'font') {
-        if (line.value === "A") {
-          escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.A)
-        }
-        if (line.value === "B") {
-          escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.B)
-        }
-        if (line.value === "C") {
-          escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.C)
-        }
-      }
-
-      // ne fonctionne pas
-      // bold
-      //  if (line.type === 'bold') {
-      //   if (line.value === 1) {
-      //     console.log('-> bold =', escpos.FontStyle.Bold)
-
-      //     escposCommands.style([escpos.FontStyle.Bold])
-      //   } else {
-      //     escposCommands.style([])
-      //   }
-      // }
-      //
-
-      // feed
-      if (line.type === 'feed') {
-        escposCommands.feed(line.value)
-      }
-
-      // cut
-      if (line.type === 'cut') {
-        escposCommands.cut()
-      }
-    }
-
-    const result = escposCommands.generateUInt8Array()
-    console.log('-> generateUInt8Array, result =', result);
-    
-    const rPrint = await bluetoothSerialWrite(result)
-    console.log('-> impression de la demande ', currentPrintUuid)
-    console.log('-> rPrint =', rPrint)
-    await bluetoothDisconnect()
-    return true
-  } catch (error) {
-    return false
-  }
-}
 
 /**
  * Print command
@@ -374,8 +266,8 @@ export async function bluetoothWrite(currentPrintUuid) {
   // 1- imppression courante
   console.log(`1 -> bluetoothWrite, sunmiPrintQueue =`, sunmiPrintQueue)
   const currentPrint = sunmiPrintQueue.find(queue => queue.printUuid === currentPrintUuid)
-  console.log( '1  -> currentPrint  =', currentPrint)
-  
+  console.log('1  -> currentPrint  =', currentPrint)
+
   const content = currentPrint.content
 
   console.log("1 - sunmiPrintQueue ", sunmiPrintQueue)
@@ -383,12 +275,109 @@ export async function bluetoothWrite(currentPrintUuid) {
   // 
 
   // 2 - interprets and print
-  const result = await convertToEscposCommandsAndPrint(currentPrintUuid, content)
+  await bluetoothConnection()
+  console.log('-> Après bluetoothConnection')
+
+  const escpos = Neodynamic.JSESCPOSBuilder
+  const escposCommands = new escpos.Document()
+  // fonte par défaut
+  escposCommands.font(escpos.FontFamily.A)
+  window.escpos = escpos  // dev
+  // process data
+  for (let i = 0; i < content.length; i++) {
+    const line = content[i]
+
+    // image
+    if (line.type === 'image') {
+      const image = await escPosImageLoad(line.value)
+      escposCommands.image(image, escpos.BitmapDensity.D24)
+    }
+
+    // text
+    if (line.type === 'text') {
+      escposCommands.text(line.value)
+    }
+
+    // barcode
+    if (line.type === 'barcode') {
+      escposCommands.linearBarcode(line.value, escpos.Barcode1DType.EAN13, new escpos.Barcode1DOptions(2, 100, true, escpos.BarcodeTextPosition.Below, escpos.BarcodeFont.A))
+    }
+
+    // qrcode
+    if (line.type === 'qrcode') {
+      escposCommands.qrCode(line.value, new escpos.BarcodeQROptions(escpos.QRLevel.L, 6))
+    }
+
+    // size
+    if (line.type === 'size') {
+      escposCommands.size(line.value, line.value)
+    }
+
+    // align
+    if (line.type === 'align') {
+      let result = escpos.TextAlignment.Center
+      if (line.value === "left") {
+        result = escpos.TextAlignment.LeftJustification
+      }
+      if (line.value === "right") {
+        result = escpos.TextAlignment.RightJustification
+      }
+      escposCommands.align(result)
+    }
+
+    // font
+    if (line.type === 'font') {
+      if (line.value === "A") {
+        escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.A)
+      }
+      if (line.value === "B") {
+        escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.B)
+      }
+      if (line.value === "C") {
+        escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.C)
+      }
+    }
+
+    // ne fonctionne pas
+    // bold
+    //  if (line.type === 'bold') {
+    //   if (line.value === 1) {
+    //     console.log('-> bold =', escpos.FontStyle.Bold)
+
+    //     escposCommands.style([escpos.FontStyle.Bold])
+    //   } else {
+    //     escposCommands.style([])
+    //   }
+    // }
+    //
+
+    // feed
+    if (line.type === 'feed') {
+      escposCommands.feed(line.value)
+    }
+
+    // cut
+    if (line.type === 'cut') {
+      escposCommands.cut()
+    }
+  }
+
+  const result = escposCommands.generateUInt8Array()
+  console.log('-> generateUInt8Array, result =', result);
+
+  const rPrint = await bluetoothSerialWrite(result)
+  console.log('-> impression de la demande ', currentPrintUuid)
+  console.log('-> rPrint =', rPrint)
+  await bluetoothDisconnect()
+
+
+
+
+
+
 
   // 3 - enlever l'impression faite de la queue d'impression
-  if (result) {
-    sunmiPrintQueue = sunmiPrintQueue.filter(queue => queue.id !== currentPrintUuid)
-  }
+  sunmiPrintQueue = sunmiPrintQueue.filter(queue => queue.id !== currentPrintUuid)
 
   console.log("2 - sunmiPrintQueue ", sunmiPrintQueue)
 
