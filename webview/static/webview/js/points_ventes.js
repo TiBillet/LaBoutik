@@ -31,7 +31,6 @@ window.openCashDrawer = async function () {
 // dev
 window.testPrint = async function () {
   if (wsTerminal.on) {
-
     for (let i = 0; i < array.length; i++) {
       const element = array[i];
 
