@@ -665,12 +665,12 @@ async function afficherRetourVenteDirecte(retour, status, options) {
         window['xhValsAchats' + btUuid] = JSON.stringify(retour)
         console.log('xhValsAchats =', window['xhValsAchats' + btUuid]);
 
-        msgDefaut += `<button style="width:200px;height:80px;background-color:rgb(26, 17, 141);color:#ffffff;font-size:2rem;" 
-          type="button" hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
+        // bt print
+        msgDefaut += `<bouton-basique id="popup-retour" traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="200px" height="86px" 
+          hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
           hx-target="#print-ticket-status-${btUuid}" hx-swap="innerHTML"
-          hx-vals='${window['xhValsAchats' + btUuid]}' >
-          Print ticket
-        </button>
+          hx-vals='${window['xhValsAchats' + btUuid]}' style="margin-top:8px;">
+        </bouton-basique>
         <div id="print-ticket-status-${btUuid}"></div>`
       }
 

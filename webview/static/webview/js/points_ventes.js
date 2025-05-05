@@ -28,13 +28,36 @@ window.openCashDrawer = async function () {
   }
 }
 
-window.wsSendMessage = function (data) {
+// dev
+window.testPrint = async function () {
   if (wsTerminal.on) {
-    wsTerminal.socket.send(JSON.stringify(data))
+
+    for (let i = 0; i < array.length; i++) {
+      const element = array[i];
+
+      const mokePrint = [
+        { type: "text", value: "--------------------------------" },
+        { type: "align", value: "center" },
+        { type: "image", value: '--> message' + i },
+        { type: "text", value: "---- fin ----" },
+        { type: "feed", value: 3 },
+        { type: "cut" }
+      ]
+
+      const options = { printUuid: sys.uuidV4(), content: data.data }
+      console.log(`-> impression ${options.printUuid} lancée.`)
+      sunmiPrintQueue.push(options)
+      await bluetoothWrite(options.printUuid)
+    }
   }
 }
 
 function initWebsocket(server) {
+  // create print sunmi queue
+  if (window.sunmiPrintQueue === undefined) {
+    window.sunmiPrintQueue = []
+  }
+
   // ---- websocket handler ----
   async function wsHandlerMessag(dataString) {
     // console.log('-> ws, dataString =', dataString)
@@ -45,7 +68,10 @@ function initWebsocket(server) {
       // cordova bluetooth print
       const testHasSunmiPrinter = await hasSunmiPrinter()
       if (data.message === 'print' && testHasSunmiPrinter === true) {
-        await bluetoothWrite(data.data)
+        const options = { printUuid: sys.uuidV4(), content: data.data }
+        console.log(`-> impression ${options.printUuid} lancée.`)
+        sunmiPrintQueue.push(options)
+        await bluetoothWrite(options.printUuid)
       }
 
     } catch (error) {
