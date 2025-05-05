@@ -360,19 +360,19 @@ export async function bluetoothWrite(currentPrintUuid) {
   const result = escposCommands.generateUInt8Array()
   const rPrint = await bluetoothSerialWrite(result)
   console.log('-> bluetoothSerialWrite =', rPrint)
-  await bluetoothDisconnect()
 
   // 3 - enlever l'impression faite de la queue d'impression
-  if(rPrint) {
+  if (rPrint) {
     sunmiPrintQueue = sunmiPrintQueue.filter(queue => queue.id !== currentPrintUuid)
   }
-  
   console.log("2 - sunmiPrintQueue ", sunmiPrintQueue)
 
-  // 3 - boucler sur la queue d'impression si non vide
+  // 4 - boucler sur la queue d'impression si non vide
   if (sunmiPrintQueue.length > 0) {
     bluetoothWrite(sunmiPrintQueue[0])
   }
+
+  await bluetoothDisconnect()
 }
 
 export async function bluetoothOpenCashDrawer() {
