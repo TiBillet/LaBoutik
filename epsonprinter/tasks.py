@@ -319,7 +319,7 @@ def test_print(printer_pk, ticket_size=None):
         elif printer_type in [Printer.SUNMI_INTEGRATED_80, Printer.SUNMI_INTEGRATED_57]:
             # For testing purposes, we need a WebSocket channel
             # In a real scenario, this would come from a Printer instance
-            ws_channel = printer.user.uuid.hex
+            ws_channel = printer.host.user.uuid.hex
 
             # Create a simple test ticket
             ticket = [
@@ -359,7 +359,7 @@ def test_print(printer_pk, ticket_size=None):
                 printer_sn = printer.sunmi_serial_number
 
                 # Set dots_per_line based on ticket size
-                dots_per_line = 384 if ticket_size == 80 else 274
+                dots_per_line = 384
 
                 # Create a printer instance
                 printer = SunmiCloudPrinter(dots_per_line, app_id=app_id, app_key=app_key, printer_sn=printer_sn)
@@ -368,10 +368,11 @@ def test_print(printer_pk, ticket_size=None):
                 printer.lineFeed()
                 printer.setAlignment(ALIGN_CENTER)
                 printer.setPrintModes(True, True, False)  # Bold, double height, normal width
-                printer.appendText("*** TEST PRINT ***\n")
+                printer.appendText("*** TEST PRINT FROM ADMIN ***\n")
                 printer.setPrintModes(False, False, False)  # Reset print modes
                 printer.appendText("Hello World\n")
                 printer.appendText("------------------------\n")
+                printer.appendText("-"*dots_per_line+"\n")
                 printer.setAlignment(ALIGN_LEFT)
                 printer.appendText(f"Ticket Size: {ticket_size}mm\n")
                 printer.appendText(f"Date: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
