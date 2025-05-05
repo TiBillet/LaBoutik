@@ -264,15 +264,10 @@ export async function bluetoothConnection() {
  */
 export async function bluetoothWrite(currentPrintUuid) {
   // 1- imppression courante
+  console.log(`--------------------------  ${currentPrintUuid}  -----------------------------`);
   console.log(`1 -> bluetoothWrite, sunmiPrintQueue =`, sunmiPrintQueue)
   const currentPrint = sunmiPrintQueue.find(queue => queue.printUuid === currentPrintUuid)
-  console.log('1  -> currentPrint  =', currentPrint)
-
   const content = currentPrint.content
-
-  console.log("1 - sunmiPrintQueue ", sunmiPrintQueue)
-  console.log("-> l'ancement de l'impression de la demande ", currentPrintUuid)
-  // 
 
   // 2 - interprets and print
   await bluetoothConnection()
@@ -363,22 +358,15 @@ export async function bluetoothWrite(currentPrintUuid) {
   }
 
   const result = escposCommands.generateUInt8Array()
-  console.log('-> generateUInt8Array, result =', result);
-
   const rPrint = await bluetoothSerialWrite(result)
-  console.log('-> impression de la demande ', currentPrintUuid)
-  console.log('-> rPrint =', rPrint)
+  console.log('-> bluetoothSerialWrite =', rPrint)
   await bluetoothDisconnect()
 
-
-
-
-
-
-
   // 3 - enlever l'impression faite de la queue d'impression
-  sunmiPrintQueue = sunmiPrintQueue.filter(queue => queue.id !== currentPrintUuid)
-
+  if(rPrint) {
+    sunmiPrintQueue = sunmiPrintQueue.filter(queue => queue.id !== currentPrintUuid)
+  }
+  
   console.log("2 - sunmiPrintQueue ", sunmiPrintQueue)
 
   // 3 - boucler sur la queue d'impression si non vide
