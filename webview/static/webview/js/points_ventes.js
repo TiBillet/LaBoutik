@@ -67,14 +67,16 @@ function initWebsocket(server) {
     // console.log('-> ws, dataString =', dataString)
     try {
       const data = JSON.parse(dataString)
-      // console.log('-> ws, data =', data)
+      console.log('-> ws, data =', data)
 
       // cordova bluetooth print
       const testHasSunmiPrinter = await hasSunmiPrinter()
       if (data.message === 'print' && testHasSunmiPrinter === true) {
         const options = { printUuid: sys.uuidV4(), content: data.data }
-        console.log(`-> impression ${options.printUuid} lancée.`)
+
+        console.log(`0 -> impression ${options.printUuid} lancée.`)
         sunmiPrintQueue.push(options)
+        console.log(`0 -> impression ${options.printUuid} lancée.`)
         await bluetoothWrite(options.printUuid)
       }
 
