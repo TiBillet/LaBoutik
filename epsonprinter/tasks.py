@@ -263,7 +263,7 @@ def ticketZ_tasks_printer(ticketz_json):
 
 
 @app.task
-def test_print(printer_pk, ticket_size=80):
+def test_print(printer_pk, ticket_size=None):
     """
     Print a test message using the specified printer type and ticket size.
 
@@ -282,6 +282,9 @@ def test_print(printer_pk, ticket_size=80):
     from .models import Printer
     printer = Printer.objects.get(pk=printer_pk)
     printer_type = printer.printer_type
+
+    if not ticket_size:
+        ticket_size = 57
 
     logger.info(f"Test print for printer type {printer_type} with ticket size {ticket_size}mm")
 

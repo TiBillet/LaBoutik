@@ -915,11 +915,9 @@ class PrinterAdmin(admin.ModelAdmin):
             printer_id = request.GET.get('test_print')
             try:
                 printer = Printer.objects.get(pk=printer_id)
-                success, message = printer.test_print()
-                if success:
-                    messages.success(request, _('Test d\'impression envoyé avec succès: {}').format(message))
-                else:
-                    messages.error(request, _('Erreur lors de l\'envoi du test d\'impression: {}').format(message))
+                from epsonprinter.tasks import test_print
+                test_print.delay(printer.pk)
+                messages.info(request, _('Test d\'impression envoyé'))
             except Printer.DoesNotExist:
                 messages.error(request, _('Imprimante non trouvée'))
             return HttpResponseRedirect(reverse('adminstaff:epsonprinter_printer_changelist'))
