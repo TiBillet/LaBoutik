@@ -35,6 +35,7 @@ window.testPrint = async function () {
     if (window.sunmiPrintQueue === undefined) {
       window.sunmiPrintQueue = []
     }
+    
     for (let i = 0; i < array.length; i++) {
       const element = array[i];
 
