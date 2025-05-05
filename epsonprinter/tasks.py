@@ -395,7 +395,6 @@ def test_print(printer_pk):
         logger.error(f"Error in test_print: {e}")
         return False
 
-
 @app.task
 def print_command_sunmi_cloud(commande, groupe, lignes_article):
     """
