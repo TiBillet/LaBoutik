@@ -363,7 +363,7 @@ export async function bluetoothWrite(currentPrintUuid) {
 
   // 3 - enlever l'impression faite de la queue d'impression
   if (rPrint) {
-    sunmiPrintQueue = sunmiPrintQueue.filter(queue => queue.id !== currentPrintUuid)
+    sunmiPrintQueue = sunmiPrintQueue.filter(queue => queue.printUuid !== currentPrintUuid)
   }
   console.log("2 - sunmiPrintQueue ", sunmiPrintQueue)
 
