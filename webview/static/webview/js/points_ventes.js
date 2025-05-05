@@ -28,39 +28,6 @@ window.openCashDrawer = async function () {
   }
 }
 
-// dev
-window.testPrint = async function () {
-  if (wsTerminal.on) {
-    // create print sunmi queue
-    if (window.sunmiPrintQueue === undefined) {
-      window.sunmiPrintQueue = []
-    }
-
-    for (let i = 0; i < 4; i++) {
-      const mokePrint = [
-        { type: "text", value: "--------------------------------" },
-        { type: "align", value: "center" },
-        { type: "image", value: '--> message' + i },
-        { type: "text", value: "---- fin ----" },
-        { type: "feed", value: 3 },
-        { type: "cut" }
-      ]
-
-      const options = { printUuid: sys.uuidV4(), content: mokePrint }
-      console.log(`0 -> impression ${options.printUuid} lancée.`)
-      sunmiPrintQueue.push(options)
-      console.log(`0 -> sunmiPrintQueue =`, sunmiPrintQueue)
-      await bluetoothWrite(options.printUuid)
-      setTimeout(function () {
-        console.log('... attente de 500 ms');
-
-      }, 500);
-
-      console.log(`0 -> t =`, t)
-    }
-  }
-}
-
 function initWebsocket(server) {
   // create print sunmi queue
   if (window.sunmiPrintQueue === undefined) {
