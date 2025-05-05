@@ -50,7 +50,8 @@ window.testPrint = async function () {
       console.log(`0 -> impression ${options.printUuid} lancée.`)
       sunmiPrintQueue.push(options)
       console.log(`0 -> sunmiPrintQueue =`, sunmiPrintQueue)
-      await bluetoothWrite(options.printUuid)
+      const t= await bluetoothWrite(options.printUuid)
+      console.log(`0 -> t =`, t)
     }
   }
 }
