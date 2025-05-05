@@ -36,7 +36,7 @@ window.testPrint = async function () {
       window.sunmiPrintQueue = []
     }
 
-    for (let i = 0; i < array.length; i++) {
+    for (let i = 0; i < 4; i++) {
       const element = array[i];
 
       const mokePrint = [
