@@ -263,6 +263,144 @@ def ticketZ_tasks_printer(ticketz_json):
 
 
 @app.task
+def test_print(printer_pk, ticket_size=80):
+    """
+    Print a test message using the specified printer type and ticket size.
+
+    Args:
+        printer_type (str): The type of printer to use. Must be one of:
+            - 'EP' for Epson via Serveur sur Pi (réseau ou USB)
+            - 'S8' for Sunmi integrated 80mm
+            - 'S5' for Sunmi integrated 57mm
+            - 'SC' for Sunmi Cloud printer
+        ticket_size (int): The size of the ticket in mm. Default is 80.
+            Only used for Sunmi Cloud printer. Valid values are 80 and 57.
+
+    Returns:
+        bool: True if the test print was successful, False otherwise
+    """
+    from .models import Printer
+    printer = Printer.objects.get(pk=printer_pk)
+    printer_type = printer.printer_type
+
+    logger.info(f"Test print for printer type {printer_type} with ticket size {ticket_size}mm")
+
+    try:
+        # Validate printer type
+        if printer_type not in [Printer.EPSON_PI, Printer.SUNMI_INTEGRATED_80, 
+                               Printer.SUNMI_INTEGRATED_57, Printer.SUNMI_CLOUD]:
+            logger.error(f"Invalid printer type: {printer_type}")
+            return False
+
+        # Validate ticket size
+        if ticket_size not in [80, 57]:
+            logger.error(f"Invalid ticket size: {ticket_size}. Must be 80 or 57.")
+            return False
+
+        # Handle Epson TM20 printer
+        if printer_type == Printer.EPSON_PI:
+            from .views import print_command
+
+            # Create a simple test ticket
+            test_ticket = print_command(None)
+            test_ticket.header = ["*** TEST PRINT ***", "Hello World"]
+            test_ticket.body = []
+            test_ticket.footer = [f"Test completed at {time.strftime('%Y-%m-%d %H:%M:%S')}"]
+
+            # Print the ticket
+            test_ticket.to_printer()
+            logger.info("Test print sent to Epson TM20 printer")
+            return True
+
+        # Handle Sunmi integrated printers
+        elif printer_type in [Printer.SUNMI_INTEGRATED_80, Printer.SUNMI_INTEGRATED_57]:
+            # For testing purposes, we need a WebSocket channel
+            # In a real scenario, this would come from a Printer instance
+            ws_channel = printer.user.uuid.hex
+
+            # Create a simple test ticket
+            ticket = [
+                {"type": "font", "value": "A"},
+                {"type": "size", "value": 1},
+                {"type": "bold", "value": 1},
+                {"type": "align", "value": "center"},
+                {"type": "text", "value": "*** TEST PRINT ***"},
+                {"type": "bold", "value": 0},
+                {"type": "text", "value": "Hello World"},
+                {"type": "align", "value": "left"},
+                {"type": "size", "value": 0},
+                {"type": "text", "value": "-" * 32},
+                {"type": "text", "value": f"Test completed at {time.strftime('%Y-%m-%d %H:%M:%S')}"},
+                {"type": "feed", "value": 2},
+                {"type": "cut"},
+            ]
+
+            # Send the print job
+            send_print_order_inner_sunmi.delay(ws_channel, ticket)
+            logger.info("Test print sent to Sunmi integrated printer")
+            return True
+
+        # Handle Sunmi Cloud printer
+        elif printer_type == Printer.SUNMI_CLOUD:
+            # For testing purposes, we need app_id, app_key, and printer_sn
+            # In a real scenario, these would come from a Printer instance and Configuration
+            try:
+                from APIcashless.models import Configuration
+                config = Configuration.objects.get()
+                app_id = config.get_sunmi_app_id()
+                app_key = config.get_sunmi_app_key()
+
+                # For testing, we need a printer serial number
+                # In a real scenario, this would come from a Printer instance
+                # Here we'll use a placeholder
+                printer_sn = printer.sunmi_serial_number
+
+                # Set dots_per_line based on ticket size
+                dots_per_line = 384 if ticket_size == 80 else 274
+
+                # Create a printer instance
+                printer = SunmiCloudPrinter(dots_per_line, app_id=app_id, app_key=app_key, printer_sn=printer_sn)
+
+                # Create a simple test receipt
+                printer.lineFeed()
+                printer.setAlignment(ALIGN_CENTER)
+                printer.setPrintModes(True, True, False)  # Bold, double height, normal width
+                printer.appendText("*** TEST PRINT ***\n")
+                printer.setPrintModes(False, False, False)  # Reset print modes
+                printer.appendText("Hello World\n")
+                printer.appendText("------------------------\n")
+                printer.setAlignment(ALIGN_LEFT)
+                printer.appendText(f"Ticket Size: {ticket_size}mm\n")
+                printer.appendText(f"Date: {time.strftime('%Y-%m-%d %H:%M:%S')}\n")
+                printer.lineFeed(3)
+                printer.cutPaper(False)  # Partial cut
+
+                # Generate a unique trade number for this print job
+                trade_no = f"test_{int(time.time())}"
+
+                # Send the print job to the printer
+                printer.pushContent(
+                    trade_no=trade_no,
+                    sn=printer_sn,
+                    count=1,
+                    media_text="Test Print"
+                )
+
+                logger.info(f"Test print sent to Sunmi Cloud Printer with {ticket_size}mm ticket")
+                return True
+
+            except Exception as e:
+                traceback.print_exc()
+                logger.error(f"Error in test_print for Sunmi Cloud Printer: {e}")
+                return False
+
+    except Exception as e:
+        traceback.print_exc()
+        logger.error(f"Error in test_print: {e}")
+        return False
+
+
+@app.task
 def print_command_sunmi_cloud(commande, groupe, lignes_article):
     """
     Print a command ticket using the Sunmi Cloud Printer.

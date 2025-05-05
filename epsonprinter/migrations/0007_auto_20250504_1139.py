@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='printer',
             name='printer_type',
-            field=models.CharField(choices=[('EP', 'Epson via Serveur sur Pi (réseau ou USB, 80mm)'), ('S8', 'Imprimante intégrée aux Sunmi 80mm de large'), ('S5', 'Imprimante intégrée aux Sunmi 57mm de large)'), ('SC', 'NT311 Sunmi cloud printer 80mm')], default='EP', max_length=2, verbose_name="Type d'imprimante"),
+            field=models.CharField(choices=[('EP', 'Epson via Serveur sur Pi (réseau ou USB, 80mm)'), ('S8', 'Imprimante intégrée aux Sunmi 80mm de large'), ('S5', 'Imprimante intégrée aux Sunmi 57mm de large'), ('SC', 'NT311 Sunmi cloud printer 80mm')], default='EP', max_length=2, verbose_name="Type d'imprimante"),
         ),
         migrations.AddField(
             model_name='printer',

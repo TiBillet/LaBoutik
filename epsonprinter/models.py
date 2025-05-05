@@ -17,10 +17,10 @@ class Printer(models.Model):
     SUNMI_CLOUD = 'SC'
 
     PRINTER_TYPE_CHOICES = [
-        (EPSON_PI, _('Epson via Serveur sur Pi (réseau ou USB, 80mm)')),
-        (SUNMI_INTEGRATED_80, _('Imprimante intégrée aux Sunmi 80mm de large')),
-        (SUNMI_INTEGRATED_57, _('Imprimante intégrée aux Sunmi 57mm de large)')),
-        (SUNMI_CLOUD, _('NT311 Sunmi cloud printer 80mm')),
+        (EPSON_PI, _('Epson via Serveur sur Pi (réseau ou USB) 80mm)')),
+        (SUNMI_INTEGRATED_80, _('Imprimante intégrée aux Sunmi 80mm')),
+        (SUNMI_INTEGRATED_57, _('Imprimante intégrée aux Sunmi 57mm')),
+        (SUNMI_CLOUD, _('Sunmi Cloud printer 80mm')),
     ]
 
     printer_type = models.CharField(
