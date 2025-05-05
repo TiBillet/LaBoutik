@@ -411,12 +411,12 @@ function infosPaiementRetourTable(retour, status, options) {
         const btUuid = sys.uuidV4()
         window['xhValsAchats' + btUuid] = JSON.stringify(retour)
         // bt print
-        msgDefaut += `<bouton-basique id="popup-retour" traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="200px" height="86px" 
-    hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
-    hx-target="#print-ticket-status-${btUuid}" hx-swap="innerHTML"
-    hx-vals='${window['xhValsAchats' + btUuid]}' style="margin-top:8px;">
-  </bouton-basique>
-  <div id="print-ticket-status-${btUuid}"></div>`
+        msg += `<bouton-basique id="popup-retour" traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="200px" height="86px" 
+          hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
+          hx-target="#print-ticket-status-${btUuid}" hx-swap="innerHTML"
+          hx-vals='${window['xhValsAchats' + btUuid]}' style="margin-top:8px;">
+        </bouton-basique>
+        <div id="print-ticket-status-${btUuid}"></div>`
       }
 
       msg += `<bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
