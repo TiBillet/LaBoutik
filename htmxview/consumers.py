@@ -151,10 +151,14 @@ class TerminalConsumer(AsyncWebsocketConsumer):
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.user = self.scope['user']
-
-        # Utilisation de l'ip de l'appareil comme room name websocket
-        self.room_group_name = self.user.uuid.hex # hex car il ne faut pas de tiret dans le nom
+        try :
+            self.user = self.scope['user']
+            # Utilisation de l'ip de l'appareil comme room name websocket
+            self.room_group_name = self.user.uuid.hex # hex car il ne faut pas de tiret dans le nom
+        except Exception as e:
+            logger.error(f"consumer connect error {e}")
+            await self.close()
+            return False
 
         # Si l'user n'est pas un terminal préalablement appairé :
         if not settings.DEBUG:
@@ -175,12 +179,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        logger.info(f"{self.room_name} {self.room_group_name} {self.user} disconnected")
-        # Leave room group
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        try :
+            logger.info(f"{self.room_name} {self.user} disconnected")
+            # Leave room group
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
+        except Exception as e:
+            logger.error(f"consumer disconnect error {e}")
+            await self.close()
+            return False
 
     # Receive message from WebSocket
     async def receive(self, text_data):
