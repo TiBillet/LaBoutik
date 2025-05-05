@@ -35,7 +35,7 @@ window.testPrint = async function () {
     if (window.sunmiPrintQueue === undefined) {
       window.sunmiPrintQueue = []
     }
-    
+
     for (let i = 0; i < array.length; i++) {
       const element = array[i];
 
@@ -48,7 +48,7 @@ window.testPrint = async function () {
         { type: "cut" }
       ]
 
-      const options = { printUuid: sys.uuidV4(), content: data.data }
+      const options = { printUuid: sys.uuidV4(), content: mokePrint }
       console.log(`-> impression ${options.printUuid} lancée.`)
       sunmiPrintQueue.push(options)
       await bluetoothWrite(options.printUuid)
