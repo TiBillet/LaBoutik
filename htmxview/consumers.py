@@ -178,12 +178,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
-        logger.info(f"{self.room_name} {self.user} disconnected")
-        # Leave room group
-        await self.channel_layer.group_discard(
-            self.room_group_name,
-            self.channel_name
-        )
+        if self.room_group_name and self.channel_name:
+            logger.info(f"{self.room_name} {self.user} disconnected")
+            # Leave room group
+            await self.channel_layer.group_discard(
+                self.room_group_name,
+                self.channel_name
+            )
 
     # Receive message from WebSocket
     async def receive(self, text_data):
