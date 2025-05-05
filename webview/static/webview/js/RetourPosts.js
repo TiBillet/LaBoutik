@@ -350,7 +350,7 @@ function aiguillagePagePaiementCommande(retour, status, options) {
  * @param {Object} status = etat de la requète
  * @param {Object} options = données avant le lancement de la requète
  */
-function infosPaiementRetourTable(retour, status, options) {
+async function infosPaiementRetourTable(retour, status, options) {
   console.log(`-> fonction infosPaiementRetourTable !`)
   sys.logValeurs({ retour: retour, status: status, options: options })
   let typeMsg = 'succes', msg = '', fonction = ''
