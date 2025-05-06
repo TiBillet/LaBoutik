@@ -31,4 +31,4 @@ COPY --chown=tibillet:tibillet ./bashrc /home/tibillet/.bashrc
 WORKDIR /DjangoFiles
 RUN poetry install
 
-CMD ["bash", "start.sh"]
+CMD ["bash", "start_services.sh"]
