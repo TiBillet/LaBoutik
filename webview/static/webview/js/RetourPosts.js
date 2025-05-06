@@ -5,6 +5,20 @@ window.orthoPaiement = {
   CH: 'cheque'
 }
 
+async function showButtonPrintTicket(retour) {
+  if (await websocketOnAndhasSunmiPrinter) {
+    const btUuid = sys.uuidV4()
+    window['xhValsAchats' + btUuid] = JSON.stringify(retour)
+    // bt print
+    return `<bouton-basique id="popup-retour" traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="200px" height="86px" 
+      hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
+      hx-target="#print-ticket-status-${btUuid}" hx-swap="innerHTML"
+      hx-vals='${window['xhValsAchats' + btUuid]}' style="margin-top:8px;">
+    </bouton-basique>
+    <div id="print-ticket-status-${btUuid}"></div>`
+  }
+}
+
 function gestionTransactionFondsInsuffisants(retour, options) {
   // console.log('--- fonction gestionTransactionFondsInsuffisants :')
   // sys.logValeurs({ retour, options })
@@ -182,7 +196,7 @@ function messageRetourCarte(retour, options) {
  * @param {Object} status = etat de la requète
  * @param {Object} options = données avant le lancement de la requète
  */
-function afficherRetourEnvoyerPreparation(retour, status, options) {
+async function afficherRetourEnvoyerPreparation(retour, status, options) {
   console.log('-> fonc afficherRetourEnvoyerPreparation !')
   sys.logValeurs({ retour: retour, status: status, options: options })
   let msg = '', msgPaye = '', msgDifErreur = '', typeMsg = 'succes', fonction = '', msgAssets = '', msgTotalCarteApresAchats = '',
@@ -265,10 +279,10 @@ function afficherRetourEnvoyerPreparation(retour, status, options) {
             ${msgTotalCarteApresAchats}
             ${msgAssets}
             ${msgEspece}
+            ${await showButtonPrintTicket(retour)}
           </div>
           <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" onclick="fn.popupAnnuler();vue_pv.initMode();"></bouton-basique>
-        </div>
-      `
+        </div>`
       // affichage du popup
       fn.popup({ message: msg, type: typeMsg })
     }
@@ -398,33 +412,19 @@ async function infosPaiementRetourTable(retour, status, options) {
       }
 
       msg = `
-        <div class="BF-col-uniforme l100p h100p">
+      <div class="BF-col-uniforme l100p h100p">
+        <div class="BF-col">
+          <div class="popup-titre1 test-return-title-content">
+            <span data-i8n="transaction,capitalize">Transaction</span> <span data-i8n="ok">Ok</span>
+          </div>
           <div class="BF-col">
-            <div class="popup-titre1 test-return-title-content">
-              <span data-i8n="transaction,capitalize">Transaction</span> <span data-i8n="ok">Ok</span>
-            </div>
             ${msgDefaut} ${msgRetourCarte}
-          </div>`
-
-      console.log('wsTerminal.on =', wsTerminal.on);
-      console.log('hasSunmiPrinter() =', await hasSunmiPrinter());
-
-      // insert bt print
-      if (wsTerminal.on === true && await hasSunmiPrinter() === true) {
-        const btUuid = sys.uuidV4()
-        window['xhValsAchats' + btUuid] = JSON.stringify(retour)
-        // bt print
-        msg += `<bouton-basique id="popup-retour" traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="200px" height="86px" 
-          hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
-          hx-target="#print-ticket-status-${btUuid}" hx-swap="innerHTML"
-          hx-vals='${window['xhValsAchats' + btUuid]}' style="margin-top:8px;">
-        </bouton-basique>
-        <div id="print-ticket-status-${btUuid}"></div>`
-      }
-
-      msg += `<bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
+            ${await showButtonPrintTicket(retour)}
+          </div>
         </div>
-      `
+        <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
+      </div>`
+
       // affichage du popup
       fn.popup({ message: msg, type: typeMsg })
       glob.dataCarte1 = null
@@ -670,23 +670,10 @@ async function afficherRetourVenteDirecte(retour, status, options) {
         msgDefaut += `</div>`
       }
 
-      // insert bt print
-      if (wsTerminal.on === true && await hasSunmiPrinter() === true) {
-        const btUuid = sys.uuidV4()
-        window['xhValsAchats' + btUuid] = JSON.stringify(retour)
-        // bt print
-        msgDefaut += `<bouton-basique id="popup-retour" traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="200px" height="86px" 
-          hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
-          hx-target="#print-ticket-status-${btUuid}" hx-swap="innerHTML"
-          hx-vals='${window['xhValsAchats' + btUuid]}' style="margin-top:8px;">
-        </bouton-basique>
-        <div id="print-ticket-status-${btUuid}"></div>`
-      }
-
-      msg = `
-        <div class="BF-col-uniforme l100p h100p">
+      msg = `<div class="BF-col-uniforme l100p h100p">
           <div class="BF-col">
             ${msgDefaut}
+            ${await showButtonPrintTicket(retour)}
           </div>
           <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
         </div>`
@@ -759,7 +746,6 @@ export function gererRetourPostPaiement(retour, status, options) {
       infosPaiementRetourTable(retour, status, options)
     }
 
-    // ok print
     if (options.actionAValider === "vente_directe") {
       afficherRetourVenteDirecte(retour, status, options)
     }

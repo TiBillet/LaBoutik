@@ -1901,8 +1901,8 @@ export function afficherTables(mode, nomTable) {
     data: {}
   }
   sys.ajax(requete, (retour, status) => {
-    sys.logJson('retour = ',retour)
-    sys.logJson('status = ',status)
+    // sys.logJson('retour = ',retour)
+    // sys.logJson('status = ',status)
     if (status.code === 200) {
       glob.tables = retour.tables
 

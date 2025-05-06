@@ -8,7 +8,7 @@ import { isCordovaApp, bluetoothWrite, bluetoothGetMacAddress, bluetoothOpenCash
 window.mobile = isCordovaApp()
 
 
-// sunmi printer condition
+// condition has sunmi printer
 window.hasSunmiPrinter = async function () {
   const macAddress = await bluetoothGetMacAddress("InnerPrinter")
   if (macAddress === 'unknown') {
@@ -16,6 +16,11 @@ window.hasSunmiPrinter = async function () {
   } else {
     return true
   }
+}
+
+// conditions websocket on and has sunmi printer
+window.websocketOnAndhasSunmiPrinter = async function () {
+  return wsTerminal.on === true && await hasSunmiPrinter() === true
 }
 
 window.openCashDrawer = async function () {
