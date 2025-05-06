@@ -1,6 +1,5 @@
 import threading
 from typing import List
-from uuid import UUID
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model

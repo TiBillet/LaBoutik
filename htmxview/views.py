@@ -1,40 +1,33 @@
-import json
 import logging
 from datetime import timedelta, datetime
-from channels.layers import get_channel_layer
+# nico
+from uuid import UUID
+
 import stripe
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.core.paginator import Paginator
+from django.http import HttpRequest
+from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
+from django.shortcuts import render
 from django.utils import timezone
-from rest_framework import viewsets, permissions
+from django.utils.translation import gettext_lazy as _
+from rest_framework import viewsets
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
-from epsonprinter.tasks import ticketZ_tasks_printer, send_print_order_inner_sunmi
-from uuid import UUID
 
-from django.contrib import messages
-from django.core.paginator import Paginator
-from django.http import HttpRequest
-from django.shortcuts import render
-
-from APIcashless.models import CommandeSauvegarde, CarteCashless, CarteMaitresse, ArticleVendu, MoyenPaiement, \
-    Configuration, PointDeVente, Terminal, PaymentsIntent, GroupementCategorie, ClotureCaisse
-from administration.adminroot import ArticlesAdmin
-from administration.ticketZ import TicketZ, dround
-from webview.serializers import debut_fin_journee, CommandeSerializer
-from django.core.paginator import Paginator
-# nico
-from uuid import UUID
-from asgiref.sync import async_to_sync
 from APIcashless.models import ArticleVendu, MoyenPaiement, Configuration, ClotureCaisse
+from APIcashless.models import PointDeVente, Terminal, PaymentsIntent, GroupementCategorie
 from administration.ticketZ import TicketZ, dround
+from epsonprinter.tasks import ticketZ_tasks_printer, send_print_order_inner_sunmi
 from htmxview.validators import CashfloatChangeValidator
 from webview.serializers import debut_fin_journee
-from django.utils.translation import gettext_lazy as _
 
 logger = logging.getLogger(__name__)
 
