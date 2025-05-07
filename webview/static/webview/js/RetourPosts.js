@@ -5,8 +5,10 @@ window.orthoPaiement = {
   CH: 'cheque'
 }
 
-async function showButtonPrintTicket(retour) {
-  if (await websocketOnAndhasSunmiPrinter) {
+async function showButtonPrintTicket(retour, options) {
+  // ne pas afficher ce bouton dans ce context
+  const noShowInThisAction = ["envoyer_preparation"]
+  if (await websocketOnAndhasSunmiPrinter && !noShowInThisAction.includes(options.actionAValider)) {
     const btUuid = sys.uuidV4()
     window['xhValsAchats' + btUuid] = JSON.stringify(retour)
     // bt print
@@ -279,7 +281,7 @@ async function afficherRetourEnvoyerPreparation(retour, status, options) {
             ${msgTotalCarteApresAchats}
             ${msgAssets}
             ${msgEspece}
-            ${await showButtonPrintTicket(retour)}
+            ${ await showButtonPrintTicket(retour, options) }
           </div>
           <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" onclick="fn.popupAnnuler();vue_pv.initMode();"></bouton-basique>
         </div>`
@@ -419,7 +421,7 @@ async function infosPaiementRetourTable(retour, status, options) {
           </div>
           <div class="BF-col">
             ${msgDefaut} ${msgRetourCarte}
-            ${await showButtonPrintTicket(retour)}
+            ${await showButtonPrintTicket(retour, options)}
           </div>
         </div>
         <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
@@ -673,7 +675,7 @@ async function afficherRetourVenteDirecte(retour, status, options) {
       msg = `<div class="BF-col-uniforme l100p h100p">
           <div class="BF-col">
             ${msgDefaut}
-            ${await showButtonPrintTicket(retour)}
+            ${await showButtonPrintTicket(retour, options)}
           </div>
           <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
         </div>`
