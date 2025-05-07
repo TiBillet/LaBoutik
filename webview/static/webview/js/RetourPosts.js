@@ -19,6 +19,8 @@ async function showButtonPrintTicket(retour, options) {
       hx-vals='${window['xhValsAchats' + btUuid]}' style="margin-top:8px;">
     </bouton-basique>
     <div id="print-ticket-status-${btUuid}"></div>`
+  } else {
+    return ''
   }
 }
 
