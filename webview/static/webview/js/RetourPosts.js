@@ -16,7 +16,7 @@ async function showButtonPrintTicket(retour, options) {
     return `<bouton-basique traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="200px" height="86px" 
       hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
       hx-target="#print-ticket-status-${btUuid}" hx-swap="innerHTML"
-      hx-vals='${window['xhValsAchats' + btUuid]}' style="margin-top:8px;">
+      hx-vals='${window['xhValsAchats' + btUuid]}' style="margin-top:8px;min-width:200px;">
     </bouton-basique>
     <div id="print-ticket-status-${btUuid}"></div>`
   } else {
