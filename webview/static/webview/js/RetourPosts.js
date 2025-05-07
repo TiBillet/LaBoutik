@@ -7,8 +7,9 @@ window.orthoPaiement = {
 
 async function showButtonPrintTicket(retour, options) {
   // ne pas afficher ce bouton dans ce context
+  const action = options.actionAValider !== undefined ? options.actionAValider : 'unknown'
   const noShowInThisAction = ["envoyer_preparation"]
-  if (await websocketOnAndhasSunmiPrinter && !noShowInThisAction.includes(options.actionAValider)) {
+  if (await websocketOnAndhasSunmiPrinter && !noShowInThisAction.includes(action)) {
     const btUuid = sys.uuidV4()
     window['xhValsAchats' + btUuid] = JSON.stringify(retour)
     // bt print
