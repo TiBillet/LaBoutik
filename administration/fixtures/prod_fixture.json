@@ -1,0 +1,381 @@
+[
+  {
+    "model": "APIcashless.configuration",
+    "pk": 1,
+    "fields": {
+      "email": "",
+      "structure": "",
+      "siret": "",
+      "adresse": "",
+      "telephone": "",
+      "numero_tva": "",
+      "domaine_cashless": "",
+      "billetterie_url": "",
+      "billetterie_ip_white_list": "",
+      "ip_cashless": "",
+      "fedow_domain": "",
+      "validation_service_ecran": false,
+      "remboursement_auto_annulation": false
+    }
+  },
+  {
+    "model": "APIcashless.moyenpaiement",
+    "pk": 1,
+    "fields": {
+      "name": "",
+      "blockchain": true,
+      "categorie": "local_euro",
+      "cadeau": false
+    }
+  },
+  {
+    "model": "APIcashless.moyenpaiement",
+    "pk": 2,
+    "fields": {
+      "name": "",
+      "blockchain": true,
+      "categorie": "local_gift",
+      "cadeau": true
+    }
+  },
+  {
+    "model": "APIcashless.moyenpaiement",
+    "pk": 3,
+    "fields": {
+      "name": "Espece",
+      "blockchain": false,
+      "categorie": "cash",
+      "cadeau": false
+    }
+  },
+  {
+    "model": "APIcashless.moyenpaiement",
+    "pk": 4,
+    "fields": {
+      "name": "Carte bancaire",
+      "blockchain": false,
+      "categorie": "credit_card_nofed",
+      "cadeau": false
+    }
+  },
+  {
+    "model": "APIcashless.moyenpaiement",
+    "pk": 5,
+    "fields": {
+      "name": "Commande",
+      "blockchain": false,
+      "categorie": "commande",
+      "cadeau": false
+    }
+  },
+  {
+    "model": "APIcashless.moyenpaiement",
+    "pk": 6,
+    "fields": {
+      "name": "Web (Stripe)",
+      "blockchain": false,
+      "categorie": "stripe_nofed",
+      "cadeau": false
+    }
+  },
+  {
+    "model": "APIcashless.moyenpaiement",
+    "pk": 7,
+    "fields": {
+      "name": "Web (Oceco)",
+      "blockchain": false,
+      "categorie": "oceco",
+      "cadeau": false
+    }
+  },
+  {
+    "model": "APIcashless.methode",
+    "pk": 1,
+    "fields": {
+      "name": "VenteArticle"
+    }
+  },
+  {
+    "model": "APIcashless.methode",
+    "pk": 2,
+    "fields": {
+      "name": "ViderCarte"
+    }
+  },
+  {
+    "model": "APIcashless.methode",
+    "pk": 3,
+    "fields": {
+      "name": "AjoutMonnaieVirtuelle"
+    }
+  },
+  {
+    "model": "APIcashless.methode",
+    "pk": 4,
+    "fields": {
+      "name": "AjoutMonnaieVirtuelleCadeau"
+    }
+  },
+  {
+    "model": "APIcashless.methode",
+    "pk": 5,
+    "fields": {
+      "name": "RetourConsigne"
+    }
+  },
+  {
+    "model": "APIcashless.methode",
+    "pk": 6,
+    "fields": {
+      "name": "PaiementFractionne"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 1,
+    "fields": {
+      "name": "Aqua",
+      "name_fr": "Aqua",
+      "hexa": "#00FFFF"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 2,
+    "fields": {
+      "name": "Black",
+      "name_fr": "Noir",
+      "hexa": "#000000"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 3,
+    "fields": {
+      "name": "Blue",
+      "name_fr": "Bleu",
+      "hexa": "#337ab7"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 4,
+    "fields": {
+      "name": "Fuchsia",
+      "name_fr": "Fuchsia",
+      "hexa": "#FF00FF"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 5,
+    "fields": {
+      "name": "Gray",
+      "name_fr": "Gris",
+      "hexa": "#808080"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 6,
+    "fields": {
+      "name": "Green",
+      "name_fr": "Vert",
+      "hexa": "#4caf50"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 7,
+    "fields": {
+      "name": "Lime",
+      "name_fr": "Citron",
+      "hexa": "#00FF00"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 8,
+    "fields": {
+      "name": "Maroon",
+      "name_fr": "Marron",
+      "hexa": "#800000"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 9,
+    "fields": {
+      "name": "Navy",
+      "name_fr": "Marine",
+      "hexa": "#000080"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 10,
+    "fields": {
+      "name": "Olive",
+      "name_fr": "Olive",
+      "hexa": "#808000"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 11,
+    "fields": {
+      "name": "Purple",
+      "name_fr": "Mauve",
+      "hexa": "#800080"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 12,
+    "fields": {
+      "name": "Red",
+      "name_fr": "Rouge",
+      "hexa": "#FF0000"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 13,
+    "fields": {
+      "name": "Silver",
+      "name_fr": "Argent",
+      "hexa": "#C0C0C0"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 14,
+    "fields": {
+      "name": "Teal",
+      "name_fr": "Turquoise",
+      "hexa": "#0e9aa7"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 15,
+    "fields": {
+      "name": "White",
+      "name_fr": "Blanc",
+      "hexa": "#FFFFFF"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 16,
+    "fields": {
+      "name": "Yellow",
+      "name_fr": "Jaune",
+      "hexa": "#f6cd61"
+    }
+  },
+  {
+    "model": "APIcashless.couleur",
+    "pk": 17,
+    "fields": {
+      "name": "Orange",
+      "name_fr": "Orange",
+      "hexa": "#E64A19"
+    }
+  },
+  {
+    "model": "APIcashless.categorie",
+    "pk": 1,
+    "fields": {
+      "name": "Cashless",
+      "icon": "fa-euro-sign",
+      "cashless": true,
+      "couleur_backgr": 17,
+      "couleur_texte": 15
+    }
+  },
+  {
+    "model": "APIcashless.categorie",
+    "pk": 2,
+    "fields": {
+      "name": "Consigne",
+      "icon": "fa-recycle",
+      "cashless": false,
+      "couleur_backgr": 15,
+      "couleur_texte": 2
+    }
+  },
+  {
+    "model": "APIcashless.categorie",
+    "pk": 3,
+    "fields": {
+      "name": "Cadeau",
+      "icon": "fa-gift",
+      "cashless": true,
+      "couleur_backgr": 4,
+      "couleur_texte": 15
+    }
+  },
+  {
+    "model": "APIcashless.categorie",
+    "pk": 4,
+    "fields": {
+      "name": "Danger",
+      "icon": "fa-radiation",
+      "cashless": true,
+      "couleur_backgr": 12,
+      "couleur_texte": 15
+    }
+  },
+  {
+    "model": "APIcashless.categorie",
+    "pk": 5,
+    "fields": {
+      "name": "Boisson chaude",
+      "icon": "fa-coffee",
+      "cashless": false,
+      "couleur_backgr": 3,
+      "couleur_texte": 15
+    }
+  },
+  {
+    "model": "auth.group",
+    "pk": 1,
+    "fields": {
+      "name": "staff",
+      "permissions": []
+    }
+  },
+  {
+    "model": "APIcashless.tauxTVA",
+    "pk": 1,
+    "fields": {
+      "taux": 20.0,
+      "name": "Alcool"
+    }
+  },
+  {
+    "model": "APIcashless.tauxTVA",
+    "pk": 2,
+    "fields": {
+      "taux": 10.0,
+      "name": "Restauration"
+    }
+  },
+  {
+    "model": "APIcashless.tauxTVA",
+    "pk": 3,
+    "fields": {
+      "taux": 8.5,
+      "name": "Run Alcool"
+    }
+  },
+  {
+    "model": "APIcashless.tauxTVA",
+    "pk": 4,
+    "fields": {
+      "taux": 2.1,
+      "name": "Run Resto"
+    }
+  }
+]
