@@ -70,6 +70,7 @@ class Command(BaseCommand):
                 self.couleur = self._couleur()
 
                 self.articles_generiques = self._articles_generiques_cashless()
+                self.point_de_vente_et_articles_generiques = self._point_de_vente_et_articles_generiques()
                 self.pdv_cashless = self._point_de_vente_cashless()
 
                 self.admin = self._create_admin_from_env_email()
@@ -399,6 +400,28 @@ class Command(BaseCommand):
 
                 return article_generiques
 
+            def _point_de_vente_et_articles_generiques(self):
+                bar1, created = PointDeVente.objects.get_or_create(
+                    name="BAR",
+                    poid_liste=1,
+                    icon='fa-beer',
+                )
+
+                Resto, created = PointDeVente.objects.get_or_create(
+                    name="RESTO",
+                    service_direct=False,
+                    poid_liste=2,
+                    icon='fa-hamburger',
+                )
+
+                cafe, created = Articles.objects.get_or_create(name="Café", prix=1, prix_achat=0.5,
+                                                               methode_choices=Articles.VENTE,
+                                                               categorie=Categorie.objects.get(name="Soft"))
+
+                bar1.articles.add(cafe)
+                return (bar1, Resto)
+
+
             def _point_de_vente_cashless(self):
                 cashless_pdv = PointDeVente.objects.create(
                     name="Cashless",
@@ -413,6 +436,8 @@ class Command(BaseCommand):
                     cashless_pdv.articles.add(art) if art not in cashless_pdv.articles.all() else art
 
                 return cashless_pdv
+
+
 
             def _couleur(self):
                 couleurs = [

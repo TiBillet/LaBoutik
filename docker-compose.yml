@@ -95,8 +95,8 @@ services:
     volumes:
       - ./www:/DjangoFiles/www
       - ./logs:/DjangoFiles/logs
-      # - ./nginx:/etc/nginx/conf.d
-      - ./nginx_prod:/etc/nginx/conf.d
+      - ./nginx:/etc/nginx/conf.d
+#      - ./nginx_prod:/etc/nginx/conf.d
     labels:
       - traefik.enable=true
       - traefik.docker.network=frontend
