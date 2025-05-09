@@ -22,7 +22,7 @@ echo "Check logs files"
 mkdir -p /DjangoFiles/logs
 touch /DjangoFiles/logs/nginxAccess.log
 touch /DjangoFiles/logs/nginxError.log
-touch /DjangoFiles/logs/gunicorn.logs
+touch /DjangoFiles/logs/gunicorn.log
 
 ## UPDATE and INSTALL if needed
 echo "Django MIGRATE and INSTALL if needed"
@@ -35,4 +35,4 @@ echo "Run GUNICORN"
 echo "You should be able to see your instance at :"
 echo "https://$DOMAIN/"
 
-poetry run gunicorn Cashless.wsgi --log-level=info --access-logfile /DjangoFiles/logs/gunicorn.logs --log-file /DjangoFiles/logs/gunicorn.logs --error-logfile /DjangoFiles/logs/gunicorn.logs --log-level debug --capture-output --reload -w 3 -b 0.0.0.0:8000
+poetry run gunicorn Cashless.wsgi --log-level=info --access-logfile /DjangoFiles/logs/gunicorn.log --log-file /DjangoFiles/logs/gunicorn.logs --error-logfile /DjangoFiles/logs/gunicorn.logs --log-level debug --capture-output --reload -w 3 -b 0.0.0.0:8000

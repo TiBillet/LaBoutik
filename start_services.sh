@@ -7,11 +7,9 @@ mkdir -p /DjangoFiles/logs/supervisor
 touch /DjangoFiles/logs/gunicorn.log
 touch /DjangoFiles/logs/daphne.log
 touch /DjangoFiles/logs/celery.log
-touch /DjangoFiles/logs/celerybeat.log
 touch /DjangoFiles/logs/supervisor/supervisord.log
 touch /DjangoFiles/logs/nginxAccess.log
 touch /DjangoFiles/logs/nginxError.log
-touch /DjangoFiles/logs/gunicorn.logs
 
 ### BACKUPS FOLDER && cron
 echo "Check dump backup folder"
@@ -41,7 +39,7 @@ sleep 2
 
 # Tail all service logs simultaneously
 echo "Tailing all service logs. Press Ctrl+C to stop viewing logs (services will continue running)."
-exec tail -f /DjangoFiles/logs/gunicorn.log /DjangoFiles/logs/daphne.log /DjangoFiles/logs/celery.log /DjangoFiles/logs/celerybeat.log /DjangoFiles/logs/supervisor/supervisord.log
+exec tail -f /DjangoFiles/logs/*
 
 
 # =====================================================================
