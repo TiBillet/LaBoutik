@@ -263,6 +263,492 @@ def ticketZ_tasks_printer(ticketz_json):
 
 
 @app.task
+def print_ticket_purchases_task(ticket_data):
+    """
+    Print a purchase receipt to all available printers.
+
+    Args:
+        ticket_data (dict): A dictionary containing all the information needed for the receipt.
+            The dictionary should include:
+            - business_name: Name of the business
+            - business_address: Address of the business
+            - business_siret: SIRET number
+            - business_vat_number: VAT number
+            - business_phone: Phone number
+            - business_email: Email address
+            - date_time: Date and time of the purchase
+            - receipt_id: Receipt ID
+            - table: Table name
+            - server: Server name
+            - articles: List of articles with name, quantity, unit_price, total_price, vat_rate
+            - total_ttc: Total TTC
+            - total_ht: Total HT
+            - total_tva: Total TVA
+            - payment_method: Payment method
+            - footer: Footer text
+
+    Returns:
+        bool: True if the print job was successfully sent to at least one printer, False otherwise
+    """
+    from .views import remove_accents
+
+    logger.info(f"Printing purchase receipt: {ticket_data['receipt_id']}")
+
+    # Get all printers
+    from .models import Printer
+    printers = Printer.objects.filter(enabled=True)
+
+    if not printers.exists():
+        logger.error("No enabled printers found")
+        return False
+
+    success = False
+
+    # Print to each printer
+    for printer in printers:
+        try:
+            printer_type = printer.printer_type
+
+            # Handle Epson printers
+            if printer_type == Printer.EPSON_PI:
+                success = print_ticket_purchases_epson(ticket_data, printer) or success
+
+            # Handle Sunmi integrated printers (57mm)
+            elif printer_type == Printer.SUNMI_INTEGRATED_57:
+                success = print_ticket_purchases_sunmi_57(ticket_data, printer) or success
+
+            # Handle Sunmi integrated printers (80mm)
+            elif printer_type == Printer.SUNMI_INTEGRATED_80:
+                success = print_ticket_purchases_sunmi_80(ticket_data, printer) or success
+
+            # Handle Sunmi Cloud printers
+            elif printer_type == Printer.SUNMI_CLOUD:
+                # Determine the printer size (57mm or 80mm)
+                if printer.sunmi_printer_size == 57:
+                    success = print_ticket_purchases_sunmi_cloud(ticket_data, printer, 57) or success
+                else:
+                    success = print_ticket_purchases_sunmi_cloud(ticket_data, printer, 80) or success
+
+            else:
+                logger.error(f"Unknown printer type: {printer_type}")
+
+        except Exception as e:
+            logger.error(f"Error printing to {printer.name}: {e}")
+            traceback.print_exc()
+
+    return success
+
+def print_ticket_purchases_epson(ticket_data, printer):
+    """
+    Print a purchase receipt to an Epson printer.
+
+    Args:
+        ticket_data (dict): The ticket data dictionary
+        printer (Printer): The printer object
+
+    Returns:
+        bool: True if the print job was successfully sent, False otherwise
+    """
+    from .views import remove_accents
+
+    try:
+        # Create header
+        header = []
+        header.append("-" * 32)
+        header.append(remove_accents(ticket_data['business_name'].upper()))
+        if ticket_data['business_address']:
+            header.append(remove_accents(ticket_data['business_address']))
+        if ticket_data['business_siret']:
+            header.append(f"SIRET: {ticket_data['business_siret']}")
+        if ticket_data['business_vat_number']:
+            header.append(f"TVA: {ticket_data['business_vat_number']}")
+        header.append("-" * 32)
+        header.append(f"DATE: {ticket_data['date_time']}")
+        header.append(f"TICKET: {ticket_data['receipt_id']}")
+        if ticket_data['table']:
+            header.append(f"TABLE: {remove_accents(ticket_data['table'])}")
+        if ticket_data['server']:
+            header.append(f"SERVEUR: {remove_accents(ticket_data['server'])}")
+        header.append("-" * 32)
+
+        # Create body with articles
+        body = []
+        for article in ticket_data['articles']:
+            name = remove_accents(article['name'])
+            qty = article['quantity']
+            price = article['unit_price']
+            total = article['total_price']
+
+            # Format: NAME QTY x PRICE = TOTAL
+            body.append(f"{name} {qty} x {price:.2f} = {total:.2f}")
+
+        body.append("-" * 32)
+        body.append(f"TOTAL HT: {ticket_data['total_ht']:.2f}")
+        body.append(f"TVA: {ticket_data['total_tva']:.2f}")
+        body.append(f"TOTAL TTC: {ticket_data['total_ttc']:.2f}")
+        body.append(f"PAIEMENT: {remove_accents(ticket_data['payment_method'])}")
+
+        # Create footer
+        footer = []
+        footer.append("-" * 32)
+        if ticket_data['footer']:
+            footer.append(remove_accents(ticket_data['footer']))
+        footer.append("\n\n\n")  # Add some space at the end
+
+        # Create a ticket object
+        from .views import print_command
+        ticket = print_command(None)
+        ticket.header = header
+        ticket.body = body
+        ticket.footer = footer
+
+        # Print the ticket
+        if ticket.can_print():
+            ticket.to_printer()
+            logger.info(f"Receipt printed to Epson printer: {printer.name}")
+            return True
+        else:
+            logger.error(f"Cannot print to Epson printer: {printer.name}")
+            return False
+
+    except Exception as e:
+        logger.error(f"Error printing to Epson printer {printer.name}: {e}")
+        traceback.print_exc()
+        return False
+
+def print_ticket_purchases_sunmi_57(ticket_data, printer):
+    """
+    Print a purchase receipt to a Sunmi integrated 57mm printer.
+
+    Args:
+        ticket_data (dict): The ticket data dictionary
+        printer (Printer): The printer object
+
+    Returns:
+        bool: True if the print job was successfully sent, False otherwise
+    """
+    from .views import remove_accents
+
+    try:
+        if not printer.host or not printer.host.user:
+            logger.error(f"Printer configuration incomplete for {printer.name}")
+            return False
+
+        ws_channel = printer.host.user.uuid.hex
+
+        # Create the ticket
+        ticket = [
+            {"type": "size", "value": 0},
+            {"type": "align", "value": "center"},
+            {"type": "bold", "value": 1},
+            {"type": "text", "value": remove_accents(ticket_data['business_name'].upper())},
+            {"type": "bold", "value": 0},
+        ]
+
+        # Add business information
+        if ticket_data['business_address']:
+            ticket.append({"type": "text", "value": remove_accents(ticket_data['business_address'])})
+        if ticket_data['business_siret']:
+            ticket.append({"type": "text", "value": f"SIRET: {ticket_data['business_siret']}"})
+        if ticket_data['business_vat_number']:
+            ticket.append({"type": "text", "value": f"TVA: {ticket_data['business_vat_number']}"})
+
+        ticket.extend([
+            {"type": "text", "value": "-" * 32},
+            {"type": "align", "value": "left"},
+            {"type": "text", "value": f"DATE: {ticket_data['date_time']}"},
+            {"type": "text", "value": f"TICKET: {ticket_data['receipt_id']}"},
+        ])
+
+        if ticket_data['table']:
+            ticket.append({"type": "text", "value": f"TABLE: {remove_accents(ticket_data['table'])}"})
+        if ticket_data['server']:
+            ticket.append({"type": "text", "value": f"SERVEUR: {remove_accents(ticket_data['server'])}"})
+
+        ticket.append({"type": "text", "value": "-" * 32})
+
+        # Add articles
+        for article in ticket_data['articles']:
+            name = remove_accents(article['name'])
+            qty = article['quantity']
+            price = article['unit_price']
+            total = article['total_price']
+
+            ticket.append({"type": "text", "value": name})
+            ticket.append({"type": "text", "value": f"{qty} x {price:.2f} = {total:.2f}"})
+
+        # Add totals
+        ticket.extend([
+            {"type": "text", "value": "-" * 32},
+            {"type": "text", "value": f"TOTAL HT: {ticket_data['total_ht']:.2f}"},
+            {"type": "text", "value": f"TVA: {ticket_data['total_tva']:.2f}"},
+            {"type": "bold", "value": 1},
+            {"type": "text", "value": f"TOTAL TTC: {ticket_data['total_ttc']:.2f}"},
+            {"type": "bold", "value": 0},
+            {"type": "text", "value": f"PAIEMENT: {remove_accents(ticket_data['payment_method'])}"},
+        ])
+
+        # Add footer
+        ticket.extend([
+            {"type": "text", "value": "-" * 32},
+            {"type": "align", "value": "center"},
+        ])
+
+        if ticket_data['footer']:
+            ticket.append({"type": "text", "value": remove_accents(ticket_data['footer'])})
+
+        # Add final commands
+        ticket.extend([
+            {"type": "feed", "value": 3},
+            {"type": "cut"},
+        ])
+
+        # Send the ticket to the printer
+        send_print_order_inner_sunmi.delay(ws_channel, ticket)
+        logger.info(f"Receipt printed to Sunmi 57mm printer: {printer.name}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Error printing to Sunmi 57mm printer {printer.name}: {e}")
+        traceback.print_exc()
+        return False
+
+def print_ticket_purchases_sunmi_80(ticket_data, printer):
+    """
+    Print a purchase receipt to a Sunmi integrated 80mm printer.
+
+    Args:
+        ticket_data (dict): The ticket data dictionary
+        printer (Printer): The printer object
+
+    Returns:
+        bool: True if the print job was successfully sent, False otherwise
+    """
+    from .views import remove_accents
+
+    try:
+        if not printer.host or not printer.host.user:
+            logger.error(f"Printer configuration incomplete for {printer.name}")
+            return False
+
+        ws_channel = printer.host.user.uuid.hex
+
+        # Create the ticket - similar to 57mm but with more space
+        ticket = [
+            {"type": "size", "value": 0},
+            {"type": "align", "value": "center"},
+            {"type": "bold", "value": 1},
+            {"type": "text", "value": remove_accents(ticket_data['business_name'].upper())},
+            {"type": "bold", "value": 0},
+        ]
+
+        # Add business information
+        if ticket_data['business_address']:
+            ticket.append({"type": "text", "value": remove_accents(ticket_data['business_address'])})
+        if ticket_data['business_siret']:
+            ticket.append({"type": "text", "value": f"SIRET: {ticket_data['business_siret']}"})
+        if ticket_data['business_vat_number']:
+            ticket.append({"type": "text", "value": f"TVA: {ticket_data['business_vat_number']}"})
+
+        ticket.extend([
+            {"type": "text", "value": "-" * 48},  # Wider separator for 80mm
+            {"type": "align", "value": "left"},
+            {"type": "text", "value": f"DATE: {ticket_data['date_time']}"},
+            {"type": "text", "value": f"TICKET: {ticket_data['receipt_id']}"},
+        ])
+
+        if ticket_data['table']:
+            ticket.append({"type": "text", "value": f"TABLE: {remove_accents(ticket_data['table'])}"})
+        if ticket_data['server']:
+            ticket.append({"type": "text", "value": f"SERVEUR: {remove_accents(ticket_data['server'])}"})
+
+        ticket.append({"type": "text", "value": "-" * 48})
+
+        # Add articles with more detailed formatting
+        ticket.append({"type": "text", "value": "ARTICLE                  QTE    PRIX    TOTAL"})
+        ticket.append({"type": "text", "value": "-" * 48})
+
+        for article in ticket_data['articles']:
+            name = remove_accents(article['name'])
+            qty = article['quantity']
+            price = article['unit_price']
+            total = article['total_price']
+
+            # Truncate name if too long
+            if len(name) > 20:
+                name = name[:17] + "..."
+
+            # Format with fixed width columns
+            ticket.append({"type": "text", "value": f"{name.ljust(20)} {str(qty).ljust(6)} {price:.2f}  {total:.2f}"})
+
+        # Add totals
+        ticket.extend([
+            {"type": "text", "value": "-" * 48},
+            {"type": "align", "value": "right"},
+            {"type": "text", "value": f"TOTAL HT: {ticket_data['total_ht']:.2f}"},
+            {"type": "text", "value": f"TVA: {ticket_data['total_tva']:.2f}"},
+            {"type": "bold", "value": 1},
+            {"type": "text", "value": f"TOTAL TTC: {ticket_data['total_ttc']:.2f}"},
+            {"type": "bold", "value": 0},
+            {"type": "align", "value": "left"},
+            {"type": "text", "value": f"PAIEMENT: {remove_accents(ticket_data['payment_method'])}"},
+        ])
+
+        # Add footer
+        ticket.extend([
+            {"type": "text", "value": "-" * 48},
+            {"type": "align", "value": "center"},
+        ])
+
+        if ticket_data['footer']:
+            ticket.append({"type": "text", "value": remove_accents(ticket_data['footer'])})
+
+        # Add final commands
+        ticket.extend([
+            {"type": "feed", "value": 3},
+            {"type": "cut"},
+        ])
+
+        # Send the ticket to the printer
+        send_print_order_inner_sunmi.delay(ws_channel, ticket)
+        logger.info(f"Receipt printed to Sunmi 80mm printer: {printer.name}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Error printing to Sunmi 80mm printer {printer.name}: {e}")
+        traceback.print_exc()
+        return False
+
+def print_ticket_purchases_sunmi_cloud(ticket_data, printer, size=80):
+    """
+    Print a purchase receipt to a Sunmi Cloud printer.
+
+    Args:
+        ticket_data (dict): The ticket data dictionary
+        printer (Printer): The printer object
+        size (int): The printer size in mm (57 or 80)
+
+    Returns:
+        bool: True if the print job was successfully sent, False otherwise
+    """
+    from .views import remove_accents
+
+    try:
+        # Get the printer's serial number
+        printer_sn = printer.sunmi_serial_number
+        if not printer_sn:
+            logger.error(f"Printer {printer.name} has no serial number")
+            return False
+
+        # Get the Sunmi Cloud Printer credentials from the Configuration
+        try:
+            config = Configuration.get_solo()
+            app_id = config.get_sunmi_app_id()
+            app_key = config.get_sunmi_app_key()
+        except Exception as e:
+            logger.error(f"Failed to get Sunmi Cloud Printer credentials: {e}")
+            return False
+
+        # Create a printer instance with dots per line based on size
+        dots_per_line = 384 if size == 80 else 240  # 384 for 80mm, 240 for 57mm
+        from .sunmi_cloud_printer import SunmiCloudPrinter, ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT
+        printer = SunmiCloudPrinter(dots_per_line, app_id=app_id, app_key=app_key, printer_sn=printer_sn)
+
+        # Add header
+        printer.lineFeed()
+        printer.setAlignment(ALIGN_CENTER)
+        printer.setPrintModes(True, True, True)  # Bold, double height, double width
+        printer.appendText(remove_accents(ticket_data['business_name'].upper()) + "\n")
+        printer.setPrintModes(False, False, False)  # Reset print modes
+
+        # Add business information
+        if ticket_data['business_address']:
+            printer.appendText(remove_accents(ticket_data['business_address']) + "\n")
+        if ticket_data['business_siret']:
+            printer.appendText(f"SIRET: {ticket_data['business_siret']}\n")
+        if ticket_data['business_vat_number']:
+            printer.appendText(f"TVA: {ticket_data['business_vat_number']}\n")
+
+        # Add separator
+        printer.appendText("-" * (48 if size == 80 else 32) + "\n")
+
+        # Add receipt information
+        printer.setAlignment(ALIGN_LEFT)
+        printer.appendText(f"DATE: {ticket_data['date_time']}\n")
+        printer.appendText(f"TICKET: {ticket_data['receipt_id']}\n")
+
+        if ticket_data['table']:
+            printer.appendText(f"TABLE: {remove_accents(ticket_data['table'])}\n")
+        if ticket_data['server']:
+            printer.appendText(f"SERVEUR: {remove_accents(ticket_data['server'])}\n")
+
+        # Add separator
+        printer.appendText("-" * (48 if size == 80 else 32) + "\n")
+
+        # Add articles
+        if size == 80:
+            printer.appendText("ARTICLE                  QTE    PRIX    TOTAL\n")
+            printer.appendText("-" * 48 + "\n")
+
+            for article in ticket_data['articles']:
+                name = remove_accents(article['name'])
+                qty = article['quantity']
+                price = article['unit_price']
+                total = article['total_price']
+
+                # Truncate name if too long
+                if len(name) > 20:
+                    name = name[:17] + "..."
+
+                # Format with fixed width columns
+                printer.appendText(f"{name.ljust(20)} {str(qty).ljust(6)} {price:.2f}  {total:.2f}\n")
+        else:
+            # For 57mm, use a simpler format
+            for article in ticket_data['articles']:
+                name = remove_accents(article['name'])
+                qty = article['quantity']
+                price = article['unit_price']
+                total = article['total_price']
+
+                printer.appendText(name + "\n")
+                printer.appendText(f"{qty} x {price:.2f} = {total:.2f}\n")
+
+        # Add separator
+        printer.appendText("-" * (48 if size == 80 else 32) + "\n")
+
+        # Add totals
+        printer.setAlignment(ALIGN_RIGHT)
+        printer.appendText(f"TOTAL HT: {ticket_data['total_ht']:.2f}\n")
+        printer.appendText(f"TVA: {ticket_data['total_tva']:.2f}\n")
+        printer.setPrintModes(True, False, False)  # Bold
+        printer.appendText(f"TOTAL TTC: {ticket_data['total_ttc']:.2f}\n")
+        printer.setPrintModes(False, False, False)  # Reset print modes
+
+        printer.setAlignment(ALIGN_LEFT)
+        printer.appendText(f"PAIEMENT: {remove_accents(ticket_data['payment_method'])}\n")
+
+        # Add footer
+        printer.appendText("-" * (48 if size == 80 else 32) + "\n")
+        printer.setAlignment(ALIGN_CENTER)
+
+        if ticket_data['footer']:
+            printer.appendText(remove_accents(ticket_data['footer']) + "\n")
+
+        # Add final commands
+        printer.lineFeed(3)
+        printer.cut()
+
+        # Send the print job
+        printer.printData()
+        logger.info(f"Receipt printed to Sunmi Cloud {size}mm printer: {printer.name}")
+        return True
+
+    except Exception as e:
+        logger.error(f"Error printing to Sunmi Cloud printer {printer.name}: {e}")
+        traceback.print_exc()
+        return False
+
+@app.task
 def test_print(printer_pk):
     """
     Print a test message using the specified printer type and ticket size.

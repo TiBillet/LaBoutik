@@ -148,8 +148,67 @@ class Sales(viewsets.ViewSet):
         logger.info(f"-----> request.data = {request.data}")
         uuid_paiement = request.data['uuid_paiement']
         articles = ArticleVendu.objects.filter(commande=uuid_paiement)
-        
-        context = {}
+
+        if not articles.exists():
+            logger.error(f"No articles found for uuid_paiement: {uuid_paiement}")
+            context = {'error': 'No articles found'}
+            return render(request, "sales/sales_print_ticket_purchases_status.html", context)
+
+        # Get business information from Configuration
+        config = Configuration.get_solo()
+
+        # Get the first article to extract common information
+        first_article = articles.first()
+
+        # Calculate totals
+        total_ttc = sum(article.prix * article.qty for article in articles)
+        total_ht = sum(article.ht_from_ttc() * article.qty for article in articles)
+        total_tva = total_ttc - total_ht
+
+        # Create the ticket data dictionary
+        ticket_data = {
+            # Business information
+            'business_name': config.structure,
+            'business_address': config.adresse,
+            'business_siret': config.siret,
+            'business_vat_number': config.numero_tva,
+            'business_phone': config.telephone,
+            'business_email': config.email,
+
+            # Receipt information
+            'date_time': first_article.date_time.astimezone().strftime('%d/%m/%Y %H:%M'),
+            'receipt_id': str(uuid_paiement)[:8],
+            'table': first_article.table.name if first_article.table else '',
+            'server': first_article.responsable.name if first_article.responsable else '',
+
+            # Articles information
+            'articles': [{
+                'name': article.article.name,
+                'quantity': float(article.qty),
+                'unit_price': float(article.prix),
+                'total_price': float(article.prix * article.qty),
+                'vat_rate': float(article.tva),
+            } for article in articles],
+
+            # Totals
+            'total_ttc': float(total_ttc),
+            'total_ht': float(total_ht),
+            'total_tva': float(total_tva),
+
+            # Payment information
+            'payment_method': first_article.moyen_paiement.name if first_article.moyen_paiement else '',
+
+            # Footer
+            'footer': config.pied_ticket,
+        }
+
+        # Import here to avoid circular imports
+        from epsonprinter.tasks import print_ticket_purchases_task
+
+        # Send the ticket to the printer
+        print_ticket_purchases_task.delay(ticket_data)
+
+        context = {'success': True}
         return render(request, "sales/sales_print_ticket_purchases_status.html", context)
 
     @action(detail=False, methods=['POST'])
