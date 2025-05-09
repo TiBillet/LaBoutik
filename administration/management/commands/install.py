@@ -416,7 +416,7 @@ class Command(BaseCommand):
 
                 cafe, created = Articles.objects.get_or_create(name="Café", prix=1, prix_achat=0.5,
                                                                methode_choices=Articles.VENTE,
-                                                               categorie=Categorie.objects.get(name="Soft"))
+                                                               categorie=Categorie.objects.create(name="Boisson chaude"))
 
                 bar1.articles.add(cafe)
                 return (bar1, Resto)
