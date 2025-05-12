@@ -296,47 +296,35 @@ def print_ticket_purchases_task(ticket_data):
 
     # Get all printers
     from .models import Printer
-    printers = Printer.objects.filter(enabled=True)
+    printer = Printer.objects.get(id=ticket_data['printer_id'])
 
-    if not printers.exists():
-        logger.error("No enabled printers found")
-        return False
+    try:
+        printer_type = printer.printer_type
 
-    success = False
+        # Handle Epson printers
+        if printer_type == Printer.EPSON_PI:
+            success = print_ticket_purchases_epson(ticket_data, printer)
 
-    # Print to each printer
-    for printer in printers:
-        try:
-            printer_type = printer.printer_type
+        # Handle Sunmi integrated printers (57mm)
+        elif printer_type == Printer.SUNMI_INTEGRATED_57:
+            success = print_ticket_purchases_sunmi_57(ticket_data, printer)
 
-            # Handle Epson printers
-            if printer_type == Printer.EPSON_PI:
-                success = print_ticket_purchases_epson(ticket_data, printer) or success
+        # Handle Sunmi integrated printers (80mm)
+        elif printer_type == Printer.SUNMI_INTEGRATED_80:
+            success = print_ticket_purchases_sunmi_80(ticket_data, printer)
 
-            # Handle Sunmi integrated printers (57mm)
-            elif printer_type == Printer.SUNMI_INTEGRATED_57:
-                success = print_ticket_purchases_sunmi_57(ticket_data, printer) or success
+        # Handle Sunmi Cloud printers
+        elif printer_type == Printer.SUNMI_CLOUD:
+            success = print_ticket_purchases_sunmi_cloud(ticket_data, printer, 57)
 
-            # Handle Sunmi integrated printers (80mm)
-            elif printer_type == Printer.SUNMI_INTEGRATED_80:
-                success = print_ticket_purchases_sunmi_80(ticket_data, printer) or success
+        else:
+            logger.error(f"Unknown printer type: {printer_type}")
 
-            # Handle Sunmi Cloud printers
-            elif printer_type == Printer.SUNMI_CLOUD:
-                # Determine the printer size (57mm or 80mm)
-                if printer.sunmi_printer_size == 57:
-                    success = print_ticket_purchases_sunmi_cloud(ticket_data, printer, 57) or success
-                else:
-                    success = print_ticket_purchases_sunmi_cloud(ticket_data, printer, 80) or success
+    except Exception as e:
+        logger.error(f"Error printing to {printer.name}: {e}")
+        traceback.print_exc()
 
-            else:
-                logger.error(f"Unknown printer type: {printer_type}")
-
-        except Exception as e:
-            logger.error(f"Error printing to {printer.name}: {e}")
-            traceback.print_exc()
-
-    return success
+    return True
 
 def print_ticket_purchases_epson(ticket_data, printer):
     """

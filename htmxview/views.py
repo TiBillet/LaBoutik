@@ -149,13 +149,28 @@ class Sales(viewsets.ViewSet):
         uuid_paiement = request.data['uuid_paiement']
         articles = ArticleVendu.objects.filter(uuid_paiement=uuid_paiement)
 
+        # Get business information from Configuration
+        config = Configuration.get_solo()
+
+        printer = None
+        if not hasattr(request.user, "appareil"):
+            printer = config.ticketZ_printer
+        elif not hasattr(request.user.appreil, 'printer'):
+            printer = config.ticketZ_printer
+        else:
+            printer = request.user.appareil.printer
+
+        if not printer:
+            context = {'message': _("No printer configured for this terminal.")}
+            return render(request, "sales/sales_print_ticket_purchases_status.html", context)
+
+
         if not articles.exists():
             logger.error(f"No articles found for uuid_paiement: {uuid_paiement}")
             context = {'error': 'No articles found'}
             return render(request, "sales/sales_print_ticket_purchases_status.html", context)
 
-        # Get business information from Configuration
-        config = Configuration.get_solo()
+
 
         # Get the first article to extract common information
         first_article = articles.first()
@@ -167,6 +182,7 @@ class Sales(viewsets.ViewSet):
 
         # Create the ticket data dictionary
         ticket_data = {
+            'printer_id': str(printer.id),
             # Business information
             'business_name': config.structure,
             'business_address': config.adresse,
@@ -184,16 +200,16 @@ class Sales(viewsets.ViewSet):
             # Articles information
             'articles': [{
                 'name': article.article.name,
-                'quantity': float(article.qty),
-                'unit_price': float(article.prix),
-                'total_price': float(article.prix * article.qty),
-                'vat_rate': float(article.tva),
+                'quantity': dround(article.qty),
+                'unit_price': dround(article.prix),
+                'total_price': dround(article.prix * article.qty),
+                'vat_rate': dround(article.tva),
             } for article in articles],
 
             # Totals
-            'total_ttc': float(total_ttc),
-            'total_ht': float(total_ht),
-            'total_tva': float(total_tva),
+            'total_ttc': dround(total_ttc),
+            'total_ht': dround(total_ht),
+            'total_tva': dround(total_tva),
 
             # Payment information
             'payment_method': first_article.moyen_paiement.name if first_article.moyen_paiement else '',
