@@ -207,15 +207,15 @@ class Sales(viewsets.ViewSet):
             'articles': [{
                 'name': article.article.name,
                 'quantity': dround(article.qty),
-                'unit_price': f"{dround(article.prix)}{currency}",
-                'total_price': f"{dround(article.prix * article.qty)}{currency}",
+                'unit_price': f"{dround(article.prix)} {currency}",
+                'total_price': f"{dround(article.prix * article.qty)} {currency}",
                 'vat_rate': dround(article.tva),
             } for article in articles],
 
             # Totals
-            'total_ttc': f"{dround(total_ttc)}{currency}",
-            'total_ht': f"{dround(total_ht)}{currency}",
-            'total_tva': f"{dround(total_tva)}{currency}",
+            'total_ttc': f"{dround(total_ttc)} {currency}",
+            'total_ht': f"{dround(total_ht)} {currency}",
+            'total_tva': f"{dround(total_tva)} {currency}",
 
             # Payment information
             'payment_method': first_article.moyen_paiement.name if first_article.moyen_paiement else '',
