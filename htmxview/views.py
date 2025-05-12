@@ -158,12 +158,12 @@ class Sales(viewsets.ViewSet):
         if not hasattr(request.user, "appareil"):
             logger.info(f"No appareil found for user {request.user}")
             printer = config.ticketZ_printer
-        elif not hasattr(request.user.appareil, 'printer'):
+        elif not request.user.appareil.printers.exists():
             logger.info(f"No printer found for appareil {request.user.appareil}")
             printer = config.ticketZ_printer
         else:
             logger.info(f"Found printer for appareil {request.user.appareil.printer}")
-            printer = request.user.appareil.printer
+            printer = request.user.appareil.printers.first()
 
         if not printer:
             context = {'message': _("No printer configured for this terminal.")}
