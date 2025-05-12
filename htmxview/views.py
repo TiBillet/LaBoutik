@@ -162,8 +162,8 @@ class Sales(viewsets.ViewSet):
             logger.info(f"No printer found for appareil {request.user.appareil}")
             printer = config.ticketZ_printer
         else:
-            logger.info(f"Found printer for appareil {request.user.appareil.printer}")
             printer = request.user.appareil.printers.first()
+            logger.info(f"Found printer for appareil {printer}")
 
         if not printer:
             context = {'message': _("No printer configured for this terminal.")}
