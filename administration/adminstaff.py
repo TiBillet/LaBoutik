@@ -698,6 +698,7 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'carte',
         'comment',
         'depuis_fractionne',
+        'uuid_paiement',
         # 'comptabilise',
     )
 
@@ -708,6 +709,7 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'carte',
         'tva',
         'depuis_fractionne',
+        'uuid_paiement',
     )
 
     # list_editable = ('moyen_paiement',)

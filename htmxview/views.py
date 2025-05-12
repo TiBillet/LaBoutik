@@ -147,7 +147,7 @@ class Sales(viewsets.ViewSet):
         print('-> Print ticket purchases !')
         logger.info(f"-----> request.data = {request.data}")
         uuid_paiement = request.data['uuid_paiement']
-        articles = ArticleVendu.objects.filter(commande=uuid_paiement)
+        articles = ArticleVendu.objects.filter(uuid_paiement=uuid_paiement)
 
         if not articles.exists():
             logger.error(f"No articles found for uuid_paiement: {uuid_paiement}")
