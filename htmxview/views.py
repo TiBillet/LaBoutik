@@ -146,7 +146,7 @@ class Sales(viewsets.ViewSet):
     def print_ticket_purchases(self, request):
         print('-> Print ticket purchases !')
         logger.info(f"-----> request.data = {request.data}")
-        logger.info(f"-----> request.data = {request.user}")
+        logger.info(f"-----> request.user = {request.user}")
 
         uuid_paiement = request.data['uuid_paiement']
         articles = ArticleVendu.objects.filter(uuid_paiement=uuid_paiement)
@@ -156,10 +156,13 @@ class Sales(viewsets.ViewSet):
 
         printer = None
         if not hasattr(request.user, "appareil"):
+            logger.info(f"No appareil found for user {request.user}")
             printer = config.ticketZ_printer
         elif not hasattr(request.user.appareil, 'printer'):
+            logger.info(f"No printer found for appareil {request.user.appareil}")
             printer = config.ticketZ_printer
         else:
+            logger.info(f"Found printer for appareil {request.user.appareil.printer}")
             printer = request.user.appareil.printer
 
         if not printer:
