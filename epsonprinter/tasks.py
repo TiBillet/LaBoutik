@@ -368,12 +368,12 @@ def print_ticket_purchases_epson(ticket_data, printer):
             total = article['total_price']
 
             # Format: NAME QTY x PRICE = TOTAL
-            body.append(f"{name} {qty} x {price:.2f} = {total:.2f}")
+            body.append(f"{name} {qty} x {price} = {total}")
 
         body.append("-" * 32)
-        body.append(f"TOTAL HT: {ticket_data['total_ht']:.2f}")
-        body.append(f"TVA: {ticket_data['total_tva']:.2f}")
-        body.append(f"TOTAL TTC: {ticket_data['total_ttc']:.2f}")
+        body.append(f"TOTAL HT: {ticket_data['total_ht']}")
+        body.append(f"TVA: {ticket_data['total_tva']}")
+        body.append(f"TOTAL TTC: {ticket_data['total_ttc']}")
         body.append(f"PAIEMENT: {remove_accents(ticket_data['payment_method'])}")
 
         # Create footer
@@ -463,15 +463,15 @@ def print_ticket_purchases_sunmi_57(ticket_data, printer):
             total = article['total_price']
 
             ticket.append({"type": "text", "value": name})
-            ticket.append({"type": "text", "value": f"{qty} x {price:.2f} = {total:.2f}"})
+            ticket.append({"type": "text", "value": f"{qty} x {price} = {total}"})
 
         # Add totals
         ticket.extend([
             {"type": "text", "value": "-" * 32},
-            {"type": "text", "value": f"TOTAL HT: {ticket_data['total_ht']:.2f}"},
-            {"type": "text", "value": f"TVA: {ticket_data['total_tva']:.2f}"},
+            {"type": "text", "value": f"TOTAL HT: {ticket_data['total_ht']}"},
+            {"type": "text", "value": f"TVA: {ticket_data['total_tva']}"},
             {"type": "bold", "value": 1},
-            {"type": "text", "value": f"TOTAL TTC: {ticket_data['total_ttc']:.2f}"},
+            {"type": "text", "value": f"TOTAL TTC: {ticket_data['total_ttc']}"},
             {"type": "bold", "value": 0},
             {"type": "text", "value": f"PAIEMENT: {remove_accents(ticket_data['payment_method'])}"},
         ])
@@ -567,16 +567,16 @@ def print_ticket_purchases_sunmi_80(ticket_data, printer):
                 name = name[:17] + "..."
 
             # Format with fixed width columns
-            ticket.append({"type": "text", "value": f"{name.ljust(20)} {str(qty).ljust(6)} {price:.2f}  {total:.2f}"})
+            ticket.append({"type": "text", "value": f"{name.ljust(20)} {str(qty).ljust(6)} {price}  {total}"})
 
         # Add totals
         ticket.extend([
             {"type": "text", "value": "-" * 48},
             {"type": "align", "value": "right"},
-            {"type": "text", "value": f"TOTAL HT: {ticket_data['total_ht']:.2f}"},
-            {"type": "text", "value": f"TVA: {ticket_data['total_tva']:.2f}"},
+            {"type": "text", "value": f"TOTAL HT: {ticket_data['total_ht']}"},
+            {"type": "text", "value": f"TVA: {ticket_data['total_tva']}"},
             {"type": "bold", "value": 1},
-            {"type": "text", "value": f"TOTAL TTC: {ticket_data['total_ttc']:.2f}"},
+            {"type": "text", "value": f"TOTAL TTC: {ticket_data['total_ttc']}"},
             {"type": "bold", "value": 0},
             {"type": "align", "value": "left"},
             {"type": "text", "value": f"PAIEMENT: {remove_accents(ticket_data['payment_method'])}"},
@@ -689,7 +689,7 @@ def print_ticket_purchases_sunmi_cloud(ticket_data, printer, size=80):
                     name = name[:17] + "..."
 
                 # Format with fixed width columns
-                printer.appendText(f"{name.ljust(20)} {str(qty).ljust(6)} {price:.2f}  {total:.2f}\n")
+                printer.appendText(f"{name.ljust(20)} {str(qty).ljust(6)} {price}  {total}\n")
         else:
             # For 57mm, use a simpler format
             for article in ticket_data['articles']:
@@ -699,17 +699,17 @@ def print_ticket_purchases_sunmi_cloud(ticket_data, printer, size=80):
                 total = article['total_price']
 
                 printer.appendText(name + "\n")
-                printer.appendText(f"{qty} x {price:.2f} = {total:.2f}\n")
+                printer.appendText(f"{qty} x {price} = {total}\n")
 
         # Add separator
         printer.appendText("-" * (48 if size == 80 else 32) + "\n")
 
         # Add totals
         printer.setAlignment(ALIGN_RIGHT)
-        printer.appendText(f"TOTAL HT: {ticket_data['total_ht']:.2f}\n")
-        printer.appendText(f"TVA: {ticket_data['total_tva']:.2f}\n")
+        printer.appendText(f"TOTAL HT: {ticket_data['total_ht']}\n")
+        printer.appendText(f"TVA: {ticket_data['total_tva']}\n")
         printer.setPrintModes(True, False, False)  # Bold
-        printer.appendText(f"TOTAL TTC: {ticket_data['total_ttc']:.2f}\n")
+        printer.appendText(f"TOTAL TTC: {ticket_data['total_ttc']}\n")
         printer.setPrintModes(False, False, False)  # Reset print modes
 
         printer.setAlignment(ALIGN_LEFT)
