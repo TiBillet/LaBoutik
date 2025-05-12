@@ -155,7 +155,7 @@ class Sales(viewsets.ViewSet):
         printer = None
         if not hasattr(request.user, "appareil"):
             printer = config.ticketZ_printer
-        elif not hasattr(request.user.appreil, 'printer'):
+        elif not hasattr(request.user.appareil, 'printer'):
             printer = config.ticketZ_printer
         else:
             printer = request.user.appareil.printer

@@ -699,7 +699,6 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'comment',
         'depuis_fractionne',
         'uuid_paiement',
-        # 'comptabilise',
     )
 
     readonly_fields = (
@@ -711,8 +710,6 @@ class ArticlesVendusAdmin(admin.ModelAdmin):
         'depuis_fractionne',
         'uuid_paiement',
     )
-
-    # list_editable = ('moyen_paiement',)
 
     list_per_page = 50
     list_filter = [
