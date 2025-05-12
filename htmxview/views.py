@@ -146,6 +146,8 @@ class Sales(viewsets.ViewSet):
     def print_ticket_purchases(self, request):
         print('-> Print ticket purchases !')
         logger.info(f"-----> request.data = {request.data}")
+        logger.info(f"-----> request.data = {request.user}")
+
         uuid_paiement = request.data['uuid_paiement']
         articles = ArticleVendu.objects.filter(uuid_paiement=uuid_paiement)
 
