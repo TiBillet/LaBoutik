@@ -153,6 +153,7 @@ class Sales(viewsets.ViewSet):
 
         # Get business information from Configuration
         config = Configuration.get_solo()
+        currency = config.currency_code
 
         printer = None
         if not hasattr(request.user, "appareil"):
@@ -206,15 +207,15 @@ class Sales(viewsets.ViewSet):
             'articles': [{
                 'name': article.article.name,
                 'quantity': dround(article.qty),
-                'unit_price': dround(article.prix),
-                'total_price': dround(article.prix * article.qty),
+                'unit_price': f"{dround(article.prix)}{currency}",
+                'total_price': f"{dround(article.prix * article.qty)}{currency}",
                 'vat_rate': dround(article.tva),
             } for article in articles],
 
             # Totals
-            'total_ttc': dround(total_ttc),
-            'total_ht': dround(total_ht),
-            'total_tva': dround(total_tva),
+            'total_ttc': f"{dround(total_ttc)}{currency}",
+            'total_ht': f"{dround(total_ht)}{currency}",
+            'total_tva': f"{dround(total_tva)}{currency}",
 
             # Payment information
             'payment_method': first_article.moyen_paiement.name if first_article.moyen_paiement else '',
