@@ -142,13 +142,9 @@ class Sales(viewsets.ViewSet):
         context = {'ticket_today': ticket_today,}
         return render(request, "sales/z_ticket.html", context)
 
-    @action(detail=False, methods=['POST'])
-    def print_ticket_purchases(self, request):
-        print('-> Print ticket purchases !')
-        logger.info(f"-----> request.data = {request.data}")
-        logger.info(f"-----> request.user = {request.user}")
-
-        uuid_paiement = request.data['uuid_paiement']
+    @action(detail=True, methods=['GET'])
+    def print_ticket_purchases_get(self, request, pk):
+        uuid_paiement = pk
         articles = ArticleVendu.objects.filter(uuid_paiement=uuid_paiement)
 
         # Get business information from Configuration
@@ -170,13 +166,10 @@ class Sales(viewsets.ViewSet):
             context = {'message': _("No printer configured for this terminal.")}
             return render(request, "sales/sales_print_ticket_purchases_status.html", context)
 
-
         if not articles.exists():
             logger.error(f"No articles found for uuid_paiement: {uuid_paiement}")
             context = {'error': 'No articles found'}
             return render(request, "sales/sales_print_ticket_purchases_status.html", context)
-
-
 
         # Get the first article to extract common information
         first_article = articles.first()
@@ -232,6 +225,16 @@ class Sales(viewsets.ViewSet):
 
         context = {'success': True}
         return render(request, "sales/sales_print_ticket_purchases_status.html", context)
+
+    @action(detail=False, methods=['POST'])
+    def print_ticket_purchases(self, request):
+        print('-> Print ticket purchases !')
+        logger.info(f"-----> request.data = {request.data}")
+        logger.info(f"-----> request.user = {request.user}")
+        uuid_paiement = request.data['uuid_paiement']
+
+        return self.print_ticket_purchases_get(request, uuid_paiement)
+
 
     @action(detail=False, methods=['POST'])
     def change_payment_method(self, request):
