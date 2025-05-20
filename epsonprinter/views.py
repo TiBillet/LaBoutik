@@ -78,7 +78,9 @@ class print_billet_qrcode():
 
 
 class print_command():
-
+    """
+    Pour EPSON printer uniquement
+    """
     def __init__(self,
                  commande,
                  groupement_solo=None

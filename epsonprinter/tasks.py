@@ -396,9 +396,9 @@ def print_ticket_purchases_epson(ticket_data, printer):
                                    'adresse_printer': printer.thermal_printer_adress,
                                    'copy': '1',
                                    'title': "*** TEST PRINT ***",
-                                   'header': header,
-                                   'body': body,
-                                   'footer': footer,
+                                   'header': "\n".join(header),
+                                   'body': "\n".join(body),
+                                   'footer': "\n".join(footer),
                                })
             logger.info(f"REPONSE Serveur impression : {reponse.status_code} - {reponse.text}")
         except ConnectionError:
