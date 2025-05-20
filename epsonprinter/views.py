@@ -92,10 +92,15 @@ class print_command():
         self.config = Configuration.get_solo()
 
         self.commande: CommandeSauvegarde = commande
-        self.date = commande.datetime.astimezone().strftime("%H:%M %d-%m-%Y")
+        self.date = timezone.localtime().strftime("%H:%M %d-%m-%Y")
+        if self.commande:
+            self.date = commande.datetime.astimezone().strftime("%H:%M %d-%m-%Y")
+
         self.table = commande.table
 
-        self.lignes_article = commande.articles.all()
+        self.lignes_article, self.articles = [], []
+        if commande:
+            self.lignes_article = commande.articles.all()
         self.articles = [ligne_article.article for ligne_article in self.lignes_article]
 
         if groupement_solo:
