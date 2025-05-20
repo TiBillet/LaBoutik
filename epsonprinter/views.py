@@ -98,9 +98,7 @@ class print_command():
 
         self.table = commande.table
 
-        self.lignes_article, self.articles = [], []
-        if commande:
-            self.lignes_article = commande.articles.all()
+        self.lignes_article = commande.articles.all()
         self.articles = [ligne_article.article for ligne_article in self.lignes_article]
 
         if groupement_solo:

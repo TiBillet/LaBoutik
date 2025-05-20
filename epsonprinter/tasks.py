@@ -3,6 +3,7 @@ import time
 import traceback
 from time import sleep
 
+import requests
 from celery import shared_task
 from celery.exceptions import MaxRetriesExceededError
 from channels.layers import get_channel_layer
@@ -769,17 +770,27 @@ def test_print(printer_pk):
 
         # Handle Epson TM20 printer
         if printer_type == Printer.EPSON_PI:
-            from .views import print_command
 
-            # Create a simple test ticket
-            test_ticket = print_command(None)
-            test_ticket.header = ["*** TEST PRINT ***", "Hello World"]
-            test_ticket.body = []
-            test_ticket.footer = [f"Test completed at {time.strftime('%Y-%m-%d %H:%M:%S')}"]
+            req = requests.session()
+            try:
+                # Pour serveur sous flask :
+                reponse = req.post(f'{printer.serveur_impression}',
+                                   data={
+                                       'coucouapi': printer.api_serveur_impression,
+                                       'adresse_printer': printer.thermal_printer_adress,
+                                       'copy': '1',
+                                       'title': "*** TEST PRINT ***",
+                                       'header': "Hello World",
+                                       'body': "",
+                                       'footer': f"Test completed at {time.strftime('%Y-%m-%d %H:%M:%S')}",
+                                   })
+                logger.info(f"REPONSE Serveur impression : {reponse.status_code} - {reponse.text}")
+            except ConnectionError:
+                logger.error(f"print_command ConnectionError for {printer.thermal_printer_adress} ")
+            except Exception as e:
+                logger.error(f"print_command Exception for {printer.thermal_printer_adress} : {e}")
 
-            # Print the ticket
-            test_ticket.to_printer()
-            logger.info("Test print sent to Epson TM20 printer")
+            req.close()
             return True
 
         # Handle Sunmi integrated printers
