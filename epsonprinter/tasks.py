@@ -14,7 +14,8 @@ from Cashless.celery import app
 import logging
 from asgiref.sync import async_to_sync
 
-from .views import print_command, article_direct_to_printer, TicketZ_PiEpson_Printer
+from .views import print_command as print_command_epson
+from .views import article_direct_to_printer, TicketZ_PiEpson_Printer
 from .sunmi_cloud_printer import SunmiCloudPrinter, ALIGN_CENTER, ALIGN_LEFT
 
 logger = logging.getLogger(__name__)
@@ -228,7 +229,7 @@ def print_command_epson_tm20(commande, groupement_solo=None):
     """
     logger.info(f"PRINT : Celery print_command_epsonTM20 : {commande} - {groupement_solo}")
 
-    ticket = print_command(commande, groupement_solo)
+    ticket = print_command_epson(commande, groupement_solo)
 
     if ticket.can_print():
         logger.info(f"   ticket.can_print() -> PRINT")
@@ -385,20 +386,28 @@ def print_ticket_purchases_epson(ticket_data, printer):
         footer.append("\n\n\n")  # Add some space at the end
 
         # Create a ticket object
-        from .views import print_command
-        ticket = print_command(None)
-        ticket.header = header
-        ticket.body = body
-        ticket.footer = footer
 
-        # Print the ticket
-        if ticket.can_print():
-            ticket.to_printer()
-            logger.info(f"Receipt printed to Epson printer: {printer.name}")
-            return True
-        else:
-            logger.error(f"Cannot print to Epson printer: {printer.name}")
-            return False
+        req = requests.session()
+        try:
+            # Pour serveur sous flask :
+            reponse = req.post(f'{printer.serveur_impression}',
+                               data={
+                                   'coucouapi': printer.api_serveur_impression,
+                                   'adresse_printer': printer.thermal_printer_adress,
+                                   'copy': '1',
+                                   'title': "*** TEST PRINT ***",
+                                   'header': header,
+                                   'body': body,
+                                   'footer': footer,
+                               })
+            logger.info(f"REPONSE Serveur impression : {reponse.status_code} - {reponse.text}")
+        except ConnectionError:
+            logger.error(f"print_command ConnectionError for {printer.thermal_printer_adress} ")
+        except Exception as e:
+            logger.error(f"print_command Exception for {printer.thermal_printer_adress} : {e}")
+
+        req.close()
+        return True
 
     except Exception as e:
         logger.error(f"Error printing to Epson printer {printer.name}: {e}")
