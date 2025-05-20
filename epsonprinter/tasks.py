@@ -394,8 +394,8 @@ def print_ticket_purchases_epson(ticket_data, printer):
                                data={
                                    'coucouapi': printer.api_serveur_impression,
                                    'adresse_printer': printer.thermal_printer_adress,
-                                   'copy': '',
-                                   'title': '',
+                                   'copy': '1',
+                                   'title': "",
                                    'header': "\n".join(header),
                                    'body': "\n".join(body),
                                    'footer': "\n".join(footer),
