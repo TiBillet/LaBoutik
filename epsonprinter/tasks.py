@@ -345,7 +345,6 @@ def print_ticket_purchases_epson(ticket_data, printer):
         # Create header
         header = []
         header.append("-" * 32)
-        header.append(remove_accents(ticket_data['business_name'].upper()))
         if ticket_data['business_address']:
             header.append(remove_accents(ticket_data['business_address']))
         if ticket_data['business_siret']:
@@ -395,7 +394,7 @@ def print_ticket_purchases_epson(ticket_data, printer):
                                    'coucouapi': printer.api_serveur_impression,
                                    'adresse_printer': printer.thermal_printer_adress,
                                    'copy': '1',
-                                   'title': "",
+                                   'title': f"{ticket_data['business_name'].upper()}",
                                    'header': "\n".join(header),
                                    'body': "\n".join(body),
                                    'footer': "\n".join(footer),
