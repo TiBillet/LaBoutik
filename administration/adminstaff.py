@@ -588,13 +588,12 @@ class CategorieFilter(admin.SimpleListFilter):
             return queryset.filter(article__methode_choices=Articles.VENTE)
 '''
 
-
 class CarteCashlessAdmin(admin.ModelAdmin):
     list_display = (
         "number",
         "tag_id",
         "membre",
-        "url_qrcode",
+        # "url_qrcode",
     )
 
     fields = (
