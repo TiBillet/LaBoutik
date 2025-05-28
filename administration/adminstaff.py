@@ -78,7 +78,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = TibiUser
-        fields = ('email', 'is_staff',)
+        fields = ('email', )
         help_texts = {
             'email': _(
                 'Un email valide est nécessaire pour la connexion. Un formulaire de création de mot de passe sera envoyé.'),
@@ -88,6 +88,7 @@ class UserCreationForm(forms.ModelForm):
         # Save the provided password in hashed format
         user = super().save(commit=False)
         user.is_active = False
+        user.is_staff = True
         user.save()
         email_activation(user.uuid)
         return user
@@ -97,10 +98,9 @@ class UserCreationForm(forms.ModelForm):
 class CustomUserAdmin(UserAdmin):
     add_form = UserCreationForm
 
-    list_display = ('username', 'email', 'is_staff', 'is_active')
-    list_editable = ('is_staff', 'is_active',)
+    list_display = ('username', 'email', 'is_active')
     fieldsets = (
-        (None, {'fields': ('email', 'username', 'is_staff', 'is_active')}),
+        (None, {'fields': ('email', 'username')}),
     )
     actions = [send_password_reset_email]
     # add_fieldsets is not a standard ModelAdmin attribute. UserAdmin
@@ -108,7 +108,7 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'is_staff',)}
+            'fields': ('username', 'email', )}
          ),
     )
 
