@@ -127,10 +127,10 @@ JET_SIDE_MENU_ITEMS = {
             {'name': 'appareil'},
         ]},
         {'app_label': 'epsonprinter', 'label': "Imprimantes", 'items': [
-            {'name': 'printer'},
+            {'name': 'printer', 'label':'Imprimantes'},
         ]},
-        {'app_label': 'auth', 'items': [
-            {'name': 'tibiauth.tibiuser'},
+        {'app_label': 'auth', 'label': "Admin", 'items': [
+            {'name': 'tibiauth.tibiuser', 'label':'Administrateur.ices'},
         ]},
     ],
     'adminmembre': [
