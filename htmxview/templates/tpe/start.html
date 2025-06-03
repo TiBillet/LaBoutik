@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+{% load static %}
+
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{% static 'webview/css/bootstrap.min.css' %}">
+    <script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
+    <script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
+    <title>TPE</title>
+    <style>
+        body {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+        .terminal-button {
+            margin-bottom: 15px;
+            height: 100px;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .amount-input {
+            margin-bottom: 20px;
+        }
+    </style>
+    <script>
+        function validateAmount() {
+            const amountInput = document.getElementById('amount');
+            if (!amountInput.value || amountInput.value <= 0) {
+                alert('Veuillez entrer un montant valide');
+                amountInput.focus();
+                return false;
+            }
+            return true;
+        }
+    </script>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-12 text-center mb-4">
+            <h2>Sélection du terminal de paiement</h2>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="form-group amount-input">
+                <label for="amount">Montant à payer (€)</label>
+                <input type="number" class="form-control form-control-lg" id="amount" step="0.01" min="0.01" required>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for terminal in terminals %}
+            <div class="col-12">
+                <div class="card mb-3">
+                    <div class="card-body p-0">
+                        <button 
+                            class="btn btn-primary btn-block terminal-button"
+                            hx-post="{% url 'htmxview:payment_intent_tpe-create' %}"
+                            hx-vals='{"amount": document.getElementById("amount").value, "terminal_pk": "{{ terminal.id }}"}'
+                            hx-trigger="click"
+                            hx-target="body"
+                            hx-swap="innerHTML"
+                            onclick="return validateAmount()"
+                        >
+                            <div>
+                                <div class="mb-2">{{ terminal.name }}</div>
+                                <small class="text-light">ID: {{ terminal.id }}</small>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center">
+                <p class="alert alert-warning">Aucun terminal disponible</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+</body>
+</html>

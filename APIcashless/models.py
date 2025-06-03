@@ -1338,7 +1338,6 @@ class CommandeSauvegarde(models.Model):
                 self.statut = CommandeSauvegarde.SERVIE
                 self.save()
 
-
     class Meta:
         verbose_name = _("Commande")
         verbose_name_plural = _("Commandes")
@@ -1876,6 +1875,12 @@ class Configuration(SingletonModel):
 
     adresse = models.CharField(max_length=500,
                                null=True, blank=True)
+    city = models.CharField(max_length=50,
+                            null=True, blank=True)
+    country = models.CharField(max_length=50,
+                               null=True, blank=True)
+    postal_code = models.CharField(max_length=10,
+                                   null=True, blank=True)
 
     pied_ticket = models.TextField(null=True, blank=True)
 
@@ -1915,9 +1920,9 @@ class Configuration(SingletonModel):
 
     # Sunmi Cloud Printer configuration
     sunmi_app_id = models.CharField(max_length=200,
-                                   null=True, blank=True,
-                                   verbose_name=_("Sunmi Cloud Printer APP ID"),
-                                   help_text=_("APP ID for Sunmi Cloud Printer integration"))
+                                    null=True, blank=True,
+                                    verbose_name=_("Sunmi Cloud Printer APP ID"),
+                                    help_text=_("APP ID for Sunmi Cloud Printer integration"))
 
     def set_sunmi_app_id(self, app_id):
         self.sunmi_app_id = fernet_encrypt(app_id)
@@ -1932,9 +1937,9 @@ class Configuration(SingletonModel):
         return fernet_decrypt(self.sunmi_app_id)
 
     sunmi_app_key = models.CharField(max_length=200,
-                                    null=True, blank=True,
-                                    verbose_name=_("Sunmi Cloud Printer APP KEY"),
-                                    help_text=_("APP KEY for Sunmi Cloud Printer integration"))
+                                     null=True, blank=True,
+                                     verbose_name=_("Sunmi Cloud Printer APP KEY"),
+                                     help_text=_("APP KEY for Sunmi Cloud Printer integration"))
 
     def set_sunmi_app_key(self, app_key):
         self.sunmi_app_key = fernet_encrypt(app_key)
@@ -2482,10 +2487,9 @@ class RapportTableauComptable(models.Model):
         verbose_name_plural = _('EX Tableaux comptable')
 
 
-
 ### TPE
 
-class ConfigurationStripe(models.Model):
+class ConfigurationStripe(SingletonModel):
     stripe_mode_test = models.BooleanField(default=True)
 
     stripe_api_key = models.CharField(max_length=250, blank=True, null=True)
@@ -2512,26 +2516,68 @@ class Location(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Nom"))
     stripe_id = models.CharField(max_length=21, blank=True, null=True, verbose_name=_("Stripe ID"))
+    is_primary_location = models.BooleanField(default=False, verbose_name=_("Primary Asset Location"))
 
-    def get_location(self):
-        if not self.stripe_id:
+    def __str__(self):
+        return self.name
+
+    @classmethod
+    def get_place_location(cls):
+        if not cls.objects.filter(is_primary_location=False).exists():
+            config_stripe = ConfigurationStripe.get_solo()
             import stripe
+            stripe.api_key = config_stripe.get_stripe_api()
+            config = Configuration.get_solo()  # pour le nom de la structure
             location = stripe.terminal.Location.create(
-                display_name="HQ",
+                display_name=f"{config.structure}",
                 address={
-                    "line1": "1272 Valencia Street",
-                    "city": "San Francisco",
-                    "state": "CA",
-                    "country": "US",
-                    "postal_code": "94110",
+                    "line1": f"{config.adresse}",
+                    "city": f"{config.city}",
+                    "country": f"{config.country}",
+                    "postal_code": f"{config.postal_code}",
                 },
+                stripe_account=config_stripe.get_stripe_connect_account(),
             )
+            place_location = cls.objects.create(
+                stripe_id=location.id,
+                name=f"{config.structure}",
+                is_primary_location=False,
+            )
+            return place_location
+        return cls.objects.get(is_primary_location=False)
+
+    @classmethod
+    def get_primary_location(cls):
+        # La location pour les recharges de monnaie fédérée
+        if not cls.objects.filter(is_primary_location=True).exists():
+            import stripe
+            config_stripe = ConfigurationStripe.get_solo()
+            stripe.api_key = config_stripe.get_stripe_api()
+            config_stripe = ConfigurationStripe.get_solo()
+            location = stripe.terminal.Location.create(
+                display_name=f"Primary Asset Location",
+                address={
+                    "line1": f"Primary Asset Location",
+                    "country": f"FR",
+                    "city": f"Villeurbanne",
+                    "postal_code": f"69100",
+                }
+            )
+            primary_location = cls.objects.create(
+                stripe_id=location.id,
+                name="Primary Asset Location",
+                is_primary_location=True,
+            )
+            return primary_location
+        return cls.objects.get(is_primary_location=True)
+
 
 class Terminal(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Nom"))
 
     # Pour les TPE Stripe :
+    registration_code = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Code d'enregistrement du lecteur"))
     stripe_id = models.CharField(max_length=21, blank=True, null=True, verbose_name=_("Stripe ID"))
 
     STRIPE_WISEPOS = 'W'
@@ -2545,11 +2591,33 @@ class Terminal(models.Model):
         verbose_name=_("Type"),
     )
 
-
     def status(self):
-        reader = stripe.terminal.Reader.retrieve(self.stripe_id)
-        return reader.status
+        if self.stripe_id:
+            import stripe
+            config_stripe = ConfigurationStripe.get_solo()
+            stripe.api_key = config_stripe.get_stripe_api()
+            reader = stripe.terminal.Reader.retrieve(self.stripe_id)
+            return reader.status
+        return "Unknown"
 
+    def get_stripe_id(self):
+        if not self.stripe_id:
+            if self.type == Terminal.STRIPE_WISEPOS:
+                import stripe
+                config_stripe = ConfigurationStripe.get_solo()
+                stripe.api_key = config_stripe.get_stripe_api()
+                location = Location.get_place_location()
+                import ipdb; ipdb.set_trace()
+                reader = stripe.terminal.Reader.create(
+                    registration_code=self.registration_code,
+                    label=self.name,
+                    location=location.stripe_id,
+                )
+                self.stripe_id = reader.id
+        return self.stripe_id
+
+    def __str__(self):
+        return f"{self.get_type_display()} {self.name}"
 
 class PaymentsIntent(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
