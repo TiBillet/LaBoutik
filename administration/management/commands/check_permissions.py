@@ -101,6 +101,11 @@ class Command(BaseCommand):
             'delete_appareil',
             'view_appareil',
 
+            'add_terminal',
+            'change_terminal',
+            'delete_terminal',
+            'view_terminal',
+
             'add_printer',
             'change_printer',
             'view_printer',

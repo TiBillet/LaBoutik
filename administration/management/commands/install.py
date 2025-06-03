@@ -541,9 +541,12 @@ class Command(BaseCommand):
                 config.structure = handshake_lespass_data.get('organisation_name')
 
                 config.siret = handshake_lespass_data.get('siren')
-                config.adresse = (f"{handshake_lespass_data.get('adress')} "
-                                  f"{handshake_lespass_data.get('postal_code')} "
-                                  f"{handshake_lespass_data.get('city')}")
+
+                config.adresse = f"{handshake_lespass_data.get('adress')}"
+                config.city = f"{handshake_lespass_data.get('city')}"
+                config.country = f"{handshake_lespass_data.get('country')}"
+                config.postal_code = f"{handshake_lespass_data.get('postal_code')}"
+
                 config.telephone = handshake_lespass_data.get('phone')
                 config.numero_tva = handshake_lespass_data.get('tva_number')
 

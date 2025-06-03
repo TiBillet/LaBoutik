@@ -11,6 +11,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django import forms
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -22,7 +23,7 @@ from solo.admin import SingletonModelAdmin
 
 from APIcashless.custom_utils import declaration_to_discovery_server, get_pin_on_appareillage
 from APIcashless.models import Categorie, CarteMaitresse, CommandeSauvegarde, Appareil, \
-    Couleur, TauxTVA, ClotureCaisse, PointDeVente, Articles
+    Couleur, TauxTVA, ClotureCaisse, PointDeVente, Articles, Terminal
 from APIcashless.models import GroupementCategorie, Table, MoyenPaiement
 from APIcashless.tasks import email_activation
 from administration.admin_commun import *
@@ -78,7 +79,7 @@ class UserCreationForm(forms.ModelForm):
 
     class Meta:
         model = TibiUser
-        fields = ('email', )
+        fields = ('email',)
         help_texts = {
             'email': _(
                 'Un email valide est nécessaire pour la connexion. Un formulaire de création de mot de passe sera envoyé.'),
@@ -108,7 +109,7 @@ class CustomUserAdmin(UserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', )}
+            'fields': ('username', 'email',)}
          ),
     )
 
@@ -588,6 +589,7 @@ class CategorieFilter(admin.SimpleListFilter):
             return queryset.filter(article__methode_choices=Articles.VENTE)
 '''
 
+
 class CarteCashlessAdmin(admin.ModelAdmin):
     list_display = (
         "number",
@@ -834,6 +836,45 @@ class AppareilAdmin(admin.ModelAdmin):
 staff_admin_site.register(Appareil, AppareilAdmin)
 
 
+### TPE STRIPE
+class TerminalForm(forms.ModelForm):
+    class Meta:
+        model = Terminal
+        fields = ['name', 'type', 'registration_code']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        terminal_type = cleaned_data.get('type')
+        registration_code = cleaned_data.get('registration_code')
+        # stripe_id is not in the form, but we can get it from the instance if this is an edit
+        stripe_id = self.instance.stripe_id if self.instance and self.instance.pk else None
+
+        if terminal_type == Terminal.STRIPE_WISEPOS and not registration_code and not stripe_id:
+            raise ValidationError({
+                'registration_code': _("Le code d'enregistrement ne peut pas être vide pour un terminal de type STRIPE_WISEPOS non appairé.")
+            })
+
+        return cleaned_data
+
+class TPEAdmin(admin.ModelAdmin):
+    # Pour les terminaux bancaire
+    form = TerminalForm
+    list_display = ('name', 'type')
+    fieldsets = (
+        (None, {'fields': ('name', 'type', 'registration_code')}),
+    )
+
+    def save_model(self, request, instance, form, change, *args, **kwargs):
+        # Appairage :
+        self.stripe_id = instance.get_stripe_id()
+        super().save_model(request, instance, form, change)
+
+
+# staff_admin_site.register(Terminal, TPEAdmin) # Pas activé tout de suite, on commence d'abord par le mode Kiosk
+
+
+### PRINTER
+
 class PrinterAdmin(admin.ModelAdmin):
     list_display = (
         'name',
@@ -974,7 +1015,8 @@ class PrinterAdmin(admin.ModelAdmin):
             # Include fieldsets based on printer type
             if obj.printer_type == obj.EPSON_PI and fieldset[0] == _('Epson via Pi (réseau ou USB, 80mm)'):
                 filtered_fieldsets.append(fieldset)
-            elif obj.printer_type in [obj.SUNMI_INTEGRATED_80, obj.SUNMI_INTEGRATED_57] and fieldset[0] == _('Imprimante intégrée aux Sunmi'):
+            elif obj.printer_type in [obj.SUNMI_INTEGRATED_80, obj.SUNMI_INTEGRATED_57] and fieldset[0] == _(
+                    'Imprimante intégrée aux Sunmi'):
                 filtered_fieldsets.append(fieldset)
             elif obj.printer_type == obj.SUNMI_CLOUD and fieldset[0] == _('NT311 Sunmi cloud printer'):
                 filtered_fieldsets.append(fieldset)
