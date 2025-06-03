@@ -411,27 +411,40 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
 
+    @action(detail=False, methods=['GET'])
+    def start(self, request, *args, **kwargs):
+        user = request.user
+        terminals = Terminal.objects.filter(type=Terminal.STRIPE_WISEPOS)
+
+        return render(request, 'tpe/start.html', context={
+            'user': user,
+            'terminals': terminals,
+        })
+
     def check_reader_state(self, reader):
         pass
 
     def create(self, request, *args, **kwargs):
         user = request.user
-        amount = request.data['amount']
 
         if not settings.DEBUG:
             if not request.user.is_authenticated or not hasattr(request.user, 'appareil'):
                 logger.error(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
                 raise Exception(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
 
-        # Lier le tpe a l'appareil/user
-        terminal = Terminal.objects.first()
+        amount = request.data['amount']
+        terminal_pk = request.data['terminal_pk']
+        terminal = Terminal.objects.get(pk=terminal_pk)
 
+        # Création de l'intention de paiement
         payment_intent = PaymentsIntent.objects.create(
             terminal=terminal,
             amount=amount,
         )
+        # Envoi de l'intention de paiement au terminal
         payment_intent.send_to_terminal(terminal)
 
+        # Renvoie la partie websocket pour le suivi de l'intention de paiement
         return render(request, 'tpe/create.html', context={
             'user': user,
             'terminal': terminal,

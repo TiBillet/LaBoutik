@@ -3,9 +3,8 @@ import os
 from datetime import datetime, timedelta, time
 from decimal import Decimal
 from uuid import uuid4
-from decimal import Decimal
+
 import pytz
-import requests
 import stripe
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import serialization
@@ -13,10 +12,7 @@ from dateutil import tz
 from django.conf import settings
 from django.contrib.postgres.fields import JSONField
 from django.core.cache import cache
-from django.utils.html import format_html
-
-from epsonprinter.models import Printer
-from .fontawesomeicons import FONT_ICONS_CHOICES
+from django.db import models
 from django.db.models import Q, Sum
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
@@ -24,35 +20,20 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from rest_framework_api_key.models import AbstractAPIKey, APIKey
-
-from django.db import models
-from datetime import datetime, timedelta, time
-from django.utils import timezone
-from django.dispatch import receiver
-from django.db.models.signals import post_save, pre_save
+from rest_framework_api_key.models import AbstractAPIKey, APIKey
 from solo.models import SingletonModel
-from django.db.models import Q, Sum
-from django.conf import settings
-from django.contrib.postgres.fields import JSONField
-
 from stdimage import StdImageField, JPEGField
 from stdimage.validators import MaxSizeValidator, MinSizeValidator
-from django.utils.translation import gettext_lazy as _
-from rest_framework_api_key.models import AbstractAPIKey, APIKey
-from cryptography.hazmat.primitives import serialization
-from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt
 
-from cryptography.hazmat.backends import default_backend
+from epsonprinter.models import Printer
 from epsonprinter.models import Printer
 from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt
 from .fontawesomeicons import FONT_ICONS_CHOICES
+
 # import requests, json
 # from requests.auth import HTTPBasicAuth
-
 # pour appareillement
 # from django.contrib.auth import get_user_model
-
-from dateutil import tz
 
 runZone = tz.gettz(os.getenv('TZ'))
 import logging
@@ -2501,9 +2482,56 @@ class RapportTableauComptable(models.Model):
         verbose_name_plural = _('EX Tableaux comptable')
 
 
+
+### TPE
+
+class ConfigurationStripe(models.Model):
+    stripe_mode_test = models.BooleanField(default=True)
+
+    stripe_api_key = models.CharField(max_length=250, blank=True, null=True)
+    stripe_connect_account = models.CharField(max_length=21, blank=True, null=True)
+
+    def get_stripe_connect_account(self):
+        if self.stripe_mode_test:
+            return os.environ.get('STRIPE_TEST_CONNECT_ACCOUNT_ID')
+        return self.stripe_connect_account
+
+    def get_stripe_api(self):
+        if self.stripe_mode_test:
+            return os.environ.get('STRIPE_TEST_API_KEY')
+        return fernet_decrypt(self.stripe_api_key)
+
+    def set_stripe_api(self, string):
+        self.stripe_api_key = fernet_encrypt(string)
+        cache.clear()
+        self.save()
+        return True
+
+
+class Location(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
+    name = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Nom"))
+    stripe_id = models.CharField(max_length=21, blank=True, null=True, verbose_name=_("Stripe ID"))
+
+    def get_location(self):
+        if not self.stripe_id:
+            import stripe
+            location = stripe.terminal.Location.create(
+                display_name="HQ",
+                address={
+                    "line1": "1272 Valencia Street",
+                    "city": "San Francisco",
+                    "state": "CA",
+                    "country": "US",
+                    "postal_code": "94110",
+                },
+            )
+
 class Terminal(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Nom"))
+
+    # Pour les TPE Stripe :
     stripe_id = models.CharField(max_length=21, blank=True, null=True, verbose_name=_("Stripe ID"))
 
     STRIPE_WISEPOS = 'W'
@@ -2516,6 +2544,7 @@ class Terminal(models.Model):
         default=STRIPE_WISEPOS,
         verbose_name=_("Type"),
     )
+
 
     def status(self):
         reader = stripe.terminal.Reader.retrieve(self.stripe_id)
