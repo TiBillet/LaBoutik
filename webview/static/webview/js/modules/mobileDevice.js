@@ -275,6 +275,7 @@ export async function bluetoothWrite(currentPrintUuid) {
   // fonte par défaut
   escposCommands.font(escpos.FontFamily.A)
   window.escpos = escpos  // dev
+
   // process data
   for (let i = 0; i < content.length; i++) {
     const line = content[i]
@@ -307,7 +308,10 @@ export async function bluetoothWrite(currentPrintUuid) {
 
     // align
     if (line.type === 'align') {
-      let result = escpos.TextAlignment.Center
+      let result = escpos.TextAlignment.LeftJustification
+      if (line.value === "center") {
+        result = escpos.TextAlignment.Center
+      }
       if (line.value === "left") {
         result = escpos.TextAlignment.LeftJustification
       }
@@ -330,19 +334,38 @@ export async function bluetoothWrite(currentPrintUuid) {
       }
     }
 
-    // ne fonctionne pas
+    // background color black, text color white
+    if (line.type === 'reverse') {
+      escposCommands.reverseColors(true)
+    }
+
+    // background color white, text color black 
+    if (line.type === 'unreverse') {
+      escposCommands.reverseColors(false)
+    }
+
+    /*
+     ne fonctionne pas
+    // unbold
+    if (line.type === 'unbold') {
+      console.log('--> unbold')
+      let data = new Uint8Array(3)
+      data[0] = 0x1B
+      data[1] = 0x45
+      data[2] = 0x0
+      escposCommands.style([[27, 69, 0]])
+    }
+
     // bold
-    //  if (line.type === 'bold') {
-    //   if (line.value === 1) {
-    //     console.log('-> bold =', escpos.FontStyle.Bold)
-
-    //     escposCommands.style([escpos.FontStyle.Bold])
-    //   } else {
-    //     escposCommands.style([])
-    //   }
-    // }
-    //
-
+    if (line.type === 'bold') {
+      let data = new Uint8Array(3)
+      data[0] = 0x1B
+      data[1] = 0x45
+      data[2] = 0x1
+      escposCommands.raw(data)
+    }
+    */
+   
     // feed
     if (line.type === 'feed') {
       escposCommands.feed(line.value)
