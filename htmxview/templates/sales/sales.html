@@ -1,0 +1,160 @@
+{% load i18n humanize static %}
+<style>
+    .order__line:nth-child(odd) {
+        background-color: #ffffff22;
+    }
+
+    .order__table-head {
+        display: flex;
+        justify-content: space-between;
+        padding: .5rem 1rem;
+
+        .order__method {
+            display: none;
+        }
+    }
+
+    .order__tabs {
+        display: flex;
+        justify-content: space-around;
+        margin: 1rem;
+    }
+
+    .order__btn {
+        background: #ccc;
+        border: none;
+        border-radius: .5rem;
+        cursor: pointer;
+        font-size: larger;
+        padding: 1rem;
+    }
+
+    @media screen and (min-width: 960px) {
+        .order__table-head .order__method {
+            display: unset;
+        }
+
+        .order__tabs {
+            justify-content: space-evenly;
+        }
+    }
+
+    .order__tabs {
+        display: flex;
+        justify-content: space-around;
+        margin: 1rem;
+    }
+
+    .order__btn {
+        background: #ccc;
+        border: none;
+        border-radius: .5rem;
+        cursor: pointer;
+        font-size: larger;
+        padding: 1rem;
+    }
+
+    .ticket {
+        border-collapse: collapse;
+        margin: 1rem auto;
+        max-width: 800px;
+        width: 90%;
+
+        tr + tr {
+            border: none;
+            border-top: 1px solid;
+        }
+
+        th, td {
+            padding-block: 1.5rem;
+        }
+
+        th {
+            text-align: left;
+        }
+
+        td {
+            text-align: right;
+        }
+    }
+
+    .ticket__field {
+        display: flex;
+        margin: 2rem auto 0;
+        max-width: 800px;
+        width: 90%;
+    }
+
+    .ticket__input {
+        padding: .5rem .8rem;
+        margin-inline-end: 1rem;
+    }
+
+    .ticket__btn {
+        background: #ccc;
+        border: none;
+        border-radius: .5rem;
+        cursor: pointer;
+        padding: 1rem;
+    }
+
+    .ticket__btn--danger {
+        background-color: darkred;
+        color: white;
+    }
+
+    .ticket__btn--secondary {
+        background-color: #28a644;
+        color: white;
+    }
+
+    .order__btn--active {
+        background-color: #007bff;
+        color: white;
+    }
+
+    @media screen and (min-width: 960px) {
+        .order__tabs {
+            justify-content: space-evenly;
+        }
+    }
+</style>
+
+<h1 id="responsable-title" style="text-align: center">{% trans 'Responsable : ' %}<span id="responsable-name"></span></h1>
+
+
+
+
+<nav class="order__tabs">
+    <input type="hidden" id="tagIdCm_input_hidden" name="tagIdCm" value="">
+    <button id="sales-btn" class="order__btn" type="menu" hx-post="/htmx/sales/sales_list/"
+            hx-target="#sale_content" hx-include="#tagIdCm_input_hidden">{% trans 'Sales' %}</button>
+    <button id="z-ticket-btn" class="order__btn" type="menu" hx-post="/htmx/sales/z_ticket/"
+            hx-target="#sale_content" hx-include="#tagIdCm_input_hidden">{% trans 'Z-Ticket' %}
+    </button>
+</nav>
+
+<script>
+    console.log(window.glob);
+    if (window.glob && window.glob.responsable) {
+
+        // Handle the case where nom is an array
+        if (window.glob.responsable.nom && Array.isArray(window.glob.responsable.nom) && window.glob.responsable.nom.length > 0) {
+            document.getElementById('responsable-name').textContent = window.glob.responsable.nom[0];
+            console.log(window.glob.responsable.nom[0]);
+        } else {
+            document.getElementById('responsable-name').textContent = window.glob.responsable.nom || window.glob.responsable;
+            console.log(window.glob.responsable.nom);
+        }
+
+        // Set responsable.uuid in the hidden input field
+        if (window.glob.tagIdCm) {
+            console.log(window.glob.tagIdCm);
+            document.getElementById('tagIdCm_input_hidden').value = window.glob.tagIdCm;
+        }
+    }
+</script>
+
+<div id="sale_content">
+
+</div>
