@@ -133,6 +133,33 @@ class Sales(viewsets.ViewSet):
         # on pourrait envoyer le query_context, mais avec le json.loads on s'assure que le json stoqué en DB est OK
         return render(request, "sales/z_ticket.html", context=context)
 
+    @action(detail=False, methods=['POST'])
+    def articles_list(self, request):
+        tagid_carte_primaire = request.data.get('tagIdCm')
+        logger.info(f"tagid_carte_primaire = {tagid_carte_primaire}")
+        carte_primaire = CarteMaitresse.objects.get(carte__tag_id=tagid_carte_primaire)
+        points_de_vente = carte_primaire.points_de_vente.all()
+
+        logger.info(f"points_de_vente = {points_de_vente}")
+
+        config = Configuration.get_solo()
+        heure_cloture = config.cloture_de_caisse_auto
+
+        start = timezone.localtime()
+        if start.time() < heure_cloture:
+            # Alors on est au petit matin, on prend la date de la veille
+            start = start - timedelta(days=1)
+        matin = timezone.make_aware(datetime.combine(start, heure_cloture))
+
+        ticketZ = TicketZV4(start_date=matin, end_date=timezone.localtime(), points_de_vente=points_de_vente)
+        # Le context json lance le calcul et s'assure qu'il est serialisable.
+        json_context = ticketZ.json_context()
+        context = json.loads(json_context)
+        context['carte_primaire'] = carte_primaire
+
+        # on pourrait envoyer le query_context, mais avec le json.loads on s'assure que le json stoqué en DB est OK
+        return render(request, "sales/articles_list.html", context=context)
+
 
 
     @action(detail=False, methods=['GET'])

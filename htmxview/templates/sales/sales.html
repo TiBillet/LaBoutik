@@ -127,8 +127,11 @@
 
 <nav class="order__tabs">
     <input type="hidden" id="tagIdCm_input_hidden" name="tagIdCm" value="">
+    <button id="articles-btn" class="order__btn" type="menu" hx-post="/htmx/sales/articles_list/"
+            hx-target="#sale_content" hx-include="#tagIdCm_input_hidden">{% trans 'Ventes' %}
+    </button>
     <button id="sales-btn" class="order__btn" type="menu" hx-post="/htmx/sales/sales_list/"
-            hx-target="#sale_content" hx-include="#tagIdCm_input_hidden">{% trans 'Sales' %}</button>
+            hx-target="#sale_content" hx-include="#tagIdCm_input_hidden">{% trans 'Détail' %}</button>
     <button id="z-ticket-btn" class="order__btn" type="menu" hx-post="/htmx/sales/z_ticket/"
             hx-target="#sale_content" hx-include="#tagIdCm_input_hidden">{% trans 'Z-Ticket' %}
     </button>
