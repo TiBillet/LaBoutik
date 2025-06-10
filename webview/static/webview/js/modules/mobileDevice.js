@@ -344,28 +344,6 @@ export async function bluetoothWrite(currentPrintUuid) {
       escposCommands.reverseColors(false)
     }
 
-    /*
-     ne fonctionne pas
-    // unbold
-    if (line.type === 'unbold') {
-      console.log('--> unbold')
-      let data = new Uint8Array(3)
-      data[0] = 0x1B
-      data[1] = 0x45
-      data[2] = 0x0
-      escposCommands.style([[27, 69, 0]])
-    }
-
-    // bold
-    if (line.type === 'bold') {
-      let data = new Uint8Array(3)
-      data[0] = 0x1B
-      data[1] = 0x45
-      data[2] = 0x1
-      escposCommands.raw(data)
-    }
-    */
-   
     // feed
     if (line.type === 'feed') {
       escposCommands.feed(line.value)
@@ -376,10 +354,12 @@ export async function bluetoothWrite(currentPrintUuid) {
       escposCommands.cut()
     }
   }
+  console.log('-> escposCommands =', escposCommands)
 
   const result = escposCommands.generateUInt8Array()
+
   const rPrint = await bluetoothSerialWrite(result)
-  console.log('-> bluetoothSerialWrite =', rPrint)
+  console.log('-> bluetoothSerialWrite rPrint =', rPrint)
 
   // 3 - enlever l'impression faite de la queue d'impression
   if (rPrint) {

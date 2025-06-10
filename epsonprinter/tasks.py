@@ -443,7 +443,7 @@ def print_ticket_purchases_sunmi_57(ticket_data, printer):
         ]
 
         # Add business information
-        if ticket_data['business_address']:
+        if ticket_data['business_address'] and ticket_data['business_address'] != 'None':
             ticket.append({"type": "text", "value": remove_accents(ticket_data['business_address'])})
         if ticket_data['business_siret']:
             ticket.append({"type": "text", "value": f"SIRET: {ticket_data['business_siret']}"})
@@ -540,7 +540,7 @@ def print_ticket_purchases_sunmi_80(ticket_data, printer):
         ]
 
         # Add business information
-        if ticket_data['business_address']:
+        if ticket_data['business_address'] and ticket_data['business_address'] != 'None':
             ticket.append({"type": "text", "value": remove_accents(ticket_data['business_address'])})
         if ticket_data['business_siret']:
             ticket.append({"type": "text", "value": f"SIRET: {ticket_data['business_siret']}"})
@@ -659,7 +659,7 @@ def print_ticket_purchases_sunmi_cloud(ticket_data, printer, size=80):
         printer.setPrintModes(False, False, False)  # Reset print modes
 
         # Add business information
-        if ticket_data['business_address']:
+        if ticket_data['business_address'] and ticket_data['business_address'] != 'None':
             printer.appendText(remove_accents(ticket_data['business_address']) + "\n")
         if ticket_data['business_siret']:
             printer.appendText(f"SIRET: {ticket_data['business_siret']}\n")
