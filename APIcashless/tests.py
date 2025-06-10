@@ -1,6 +1,7 @@
 from io import StringIO
 from uuid import UUID
 
+import requests
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.serializers.json import DjangoJSONEncoder
