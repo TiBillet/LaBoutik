@@ -1,5 +1,5 @@
 // source : https://github.com/don/BluetoothSerial?tab=readme-ov-file
-// source : https://github.com/neodynamic/js-escpos-builder
+// source : https://github.com/NielsLeenheer/ReceiptPrinterEncoder/tree/main
 
 /**
  * Cordova add
@@ -144,6 +144,22 @@ export async function bluetoothGetMacAddress(name) {
   return retour
 }
 
+async function loadImage(url) {
+  const load = await new Promise((resolve) => {
+    try {
+      let img = new Image()
+      img.src = url
+      img.onload = () => {
+        resolve(img)
+      }
+    } catch (error) {
+      console.log('-> loadAndConvertImageToB64,', error)
+      resolve(null)
+    }
+  })
+  return load
+}
+
 async function loadAndConvertImageToB64(url) {
   const load = await new Promise((resolve) => {
     try {
@@ -257,7 +273,6 @@ export async function bluetoothConnection() {
   }
 }
 
-
 /**
  * Print command
  * @param {String} currentPrintUuid 
@@ -270,11 +285,13 @@ export async function bluetoothWrite(currentPrintUuid) {
   await bluetoothConnection()
   console.log('-> Après bluetoothConnection')
 
-  const escpos = Neodynamic.JSESCPOSBuilder
-  const escposCommands = new escpos.Document()
-  // fonte par défaut
-  escposCommands.font(escpos.FontFamily.A)
-  window.escpos = escpos  // dev
+  // columns: 48
+  let encoder = new ReceiptPrinterEncoder({
+    imageMode: 'raster',
+    columns: 48
+  })
+
+  let result = encoder.initialize().font('A')
 
   // process data
   for (let i = 0; i < content.length; i++) {
@@ -282,84 +299,83 @@ export async function bluetoothWrite(currentPrintUuid) {
 
     // image
     if (line.type === 'image') {
-      const image = await escPosImageLoad(line.value)
-      escposCommands.image(image, escpos.BitmapDensity.D24)
+      const image = await loadImage(line.value)
+      result.image(image, 64, 64, 'atkinson')
     }
 
     // text
     if (line.type === 'text') {
-      escposCommands.text(line.value)
+      result.line(line.value)
     }
+
+    // ligne horizontale
+    if (line.type === 'line') {
+      result.rule(line.value)
+    }
+
 
     // barcode
     if (line.type === 'barcode') {
-      escposCommands.linearBarcode(line.value, escpos.Barcode1DType.EAN13, new escpos.Barcode1DOptions(2, 100, true, escpos.BarcodeTextPosition.Below, escpos.BarcodeFont.A))
+      result.barcode(line.value, 'EAN13', {
+        height: 100,
+        text: true
+      })
     }
 
     // qrcode
     if (line.type === 'qrcode') {
-      escposCommands.qrCode(line.value, new escpos.BarcodeQROptions(escpos.QRLevel.L, 6))
+      result.qrcode(line.value)
     }
 
-    // size
+    // size: 1 - 8
     if (line.type === 'size') {
-      escposCommands.size(line.value, line.value)
+      result.size(line.value + 1)
     }
 
-    // align
+    // align left/center/right
     if (line.type === 'align') {
-      let result = escpos.TextAlignment.LeftJustification
-      if (line.value === "center") {
-        result = escpos.TextAlignment.Center
-      }
-      if (line.value === "left") {
-        result = escpos.TextAlignment.LeftJustification
-      }
-      if (line.value === "right") {
-        result = escpos.TextAlignment.RightJustification
-      }
-      escposCommands.align(result)
+      result.align(line.value)
     }
 
-    // font
+    // font A/B/C
     if (line.type === 'font') {
-      if (line.value === "A") {
-        escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.A)
+      result.font(line.value)
+    }
+
+    // bold 0/1 
+    if (line.type === 'bold') {
+      if (line.value === 0) {
+        result.bold(false)
       }
-      if (line.value === "B") {
-        escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.B)
-      }
-      if (line.value === "C") {
-        escposCommands.font(Neodynamic.JSESCPOSBuilder.FontFamily.C)
+      if (line.value === 1) {
+        result.bold(true)
       }
     }
 
-    // background color black, text color white
-    if (line.type === 'reverse') {
-      escposCommands.reverseColors(true)
+    if (line.type === 'invert') {
+      if (line.value === 0) {
+        result.invert(false)
+      }
+      if (line.value === 1) {
+        result.invert(true)
+      }
     }
 
-    // background color white, text color black 
-    if (line.type === 'unreverse') {
-      escposCommands.reverseColors(false)
-    }
-
-    // feed
+    // feed number
     if (line.type === 'feed') {
-      escposCommands.feed(line.value)
+      for (let i = 0; i < line.value; i++) {
+        result.line('')
+      }
     }
 
     // cut
     if (line.type === 'cut') {
-      escposCommands.cut()
+      result.cut()
     }
   }
-  console.log('-> escposCommands =', escposCommands)
 
-  const result = escposCommands.generateUInt8Array()
-
-  const rPrint = await bluetoothSerialWrite(result)
-  console.log('-> bluetoothSerialWrite rPrint =', rPrint)
+  const rPrint = await bluetoothSerialWrite(result.encode())
+  console.log('-> bluetoothSerialWrite status print =', rPrint)
 
   // 3 - enlever l'impression faite de la queue d'impression
   if (rPrint) {
@@ -378,41 +394,10 @@ export async function bluetoothWrite(currentPrintUuid) {
 export async function bluetoothOpenCashDrawer() {
   await bluetoothConnection()
 
-  let data = new Uint8Array(5)
-  data[0] = 0x10
-  data[1] = 0x14
-  data[2] = 0x00
-  data[3] = 0x00
-  data[4] = 0x00
+  let encoder = new ReceiptPrinterEncoder()
+  const data = encoder.raw([0x10, 0x14, 0x00, 0x00, 0x00]).encode()
 
   const state = await bluetoothSerialWrite(data)
-  await bluetoothDisconnect()
-  return state
-}
-
-export async function bluetoothLcd() {
-  await bluetoothConnection()
-
-  let iniLcd = new Uint8Array(5)
-  iniLcd[0] = 0x01
-  iniLcd[1] = 0x1A
-  iniLcd[2] = 0x1C
-  iniLcd[3] = 0x01
-  iniLcd[4] = 0x00
-
-  let test = new Uint8Array(5)
-  test[0] = 0x1b
-  test[1] = 0x1C
-  test[2] = 0x1C
-  test[3] = 0x04
-  test[4] = 0x00
-  // console.log('data =', data)
-
-  // [1BH][51H][41H]d1d2d3…dn[0DH]
-  // 31 32 33 34 35 36 0a
-
-  // await bluetoothSerialWrite(iniLcd)
-  const state = await bluetoothSerialWrite(test)
   await bluetoothDisconnect()
   return state
 }

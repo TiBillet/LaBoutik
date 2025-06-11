@@ -202,8 +202,8 @@ function messageRetourCarte(retour, options) {
  * @param {Object} options = données avant le lancement de la requète
  */
 async function afficherRetourEnvoyerPreparation(retour, status, options) {
-  console.log('-> fonc afficherRetourEnvoyerPreparation !')
-  sys.logValeurs({ retour: retour, status: status, options: options })
+  // console.log('-> fonc afficherRetourEnvoyerPreparation !')
+  // sys.logValeurs({ retour: retour, status: status, options: options })
   let msg = '', msgPaye = '', msgDifErreur = '', typeMsg = 'succes', fonction = '', msgAssets = '', msgTotalCarteApresAchats = '',
     msgTotalCartesAvantAchats = '', msgEspece = ''
 

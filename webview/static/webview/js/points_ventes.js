@@ -41,7 +41,7 @@ function initWebsocket(server) {
 
   // ---- websocket handler ----
   async function wsHandlerMessag(dataString) {
-    // console.log('-> ws, dataString =', dataString)
+    console.log('-> ws, dataString =', dataString)
     try {
       const data = JSON.parse(dataString)
       // cordova bluetooth print

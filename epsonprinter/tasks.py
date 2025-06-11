@@ -168,7 +168,7 @@ def print_command_inner_sunmi(commande, groupe, lignes_article):
     # Header contenant les infos générales
     base_ticket = [
         {"type": "size", "value": 0},
-        {"type": "text", "value": "-" * 32},
+        {"type": "text", "value": "--------------------------------"},
         {"type": "size", "value": 1},
         {"type": "text", "value": f"{commande.datetime.astimezone().strftime('%d/%m/%Y %H:%M')}"},
         {"type": "bold", "value": 1},
@@ -177,7 +177,7 @@ def print_command_inner_sunmi(commande, groupe, lignes_article):
         {"type": "text", "value": f"{commande.responsable.name}"},
         {"type": "text", "value": f"ID : {commande.id_commande()[:3]}"},
         {"type": "size", "value": 0},
-        {"type": "text", "value": "-" * 32},
+        {"type": "text", "value": "--------------------------------"},
     ]
 
     # Quel est le numéro ?
@@ -204,7 +204,7 @@ def print_command_inner_sunmi(commande, groupe, lignes_article):
 
     ticket += [
         {"type": "size", "value": 0},
-        {"type": "text", "value": "-" * 32},
+        {"type": "text", "value": "--------------------------------"},
         {"type": "feed", "value": 2},
         {"type": "cut"},
     ]
@@ -436,8 +436,8 @@ def print_ticket_purchases_sunmi_57(ticket_data, printer):
         # Create the ticket
         ticket = [
             {"type": "size", "value": 0},
-            {"type": "align", "value": "center"},
             {"type": "bold", "value": 1},
+            {"type": "align", "value": "left"},
             {"type": "text", "value": remove_accents(ticket_data['business_name'].upper())},
             {"type": "bold", "value": 0},
         ]
@@ -451,7 +451,7 @@ def print_ticket_purchases_sunmi_57(ticket_data, printer):
             ticket.append({"type": "text", "value": f"TVA: {ticket_data['business_vat_number']}"})
 
         ticket.extend([
-            {"type": "text", "value": "-" * 32},
+            {"type": "text", "value": "--------------------------------"},
             {"type": "align", "value": "left"},
             {"type": "text", "value": f"DATE: {ticket_data['date_time']}"},
             {"type": "text", "value": f"TICKET: {ticket_data['receipt_id']}"},
@@ -462,7 +462,7 @@ def print_ticket_purchases_sunmi_57(ticket_data, printer):
         if ticket_data['server']:
             ticket.append({"type": "text", "value": f"SERVEUR: {remove_accents(ticket_data['server'])}"})
 
-        ticket.append({"type": "text", "value": "-" * 32})
+        ticket.append({"type": "text", "value": "--------------------------------" })
 
         # Add articles
         for article in ticket_data['articles']:
@@ -476,7 +476,7 @@ def print_ticket_purchases_sunmi_57(ticket_data, printer):
 
         # Add totals
         ticket.extend([
-            {"type": "text", "value": "-" * 32},
+            {"type": "text", "value": "--------------------------------"},
             {"type": "text", "value": f"TOTAL HT: {ticket_data['total_ht']}"},
             {"type": "text", "value": f"TVA: {ticket_data['total_tva']}"},
             {"type": "bold", "value": 1},
@@ -487,7 +487,7 @@ def print_ticket_purchases_sunmi_57(ticket_data, printer):
 
         # Add footer
         ticket.extend([
-            {"type": "text", "value": "-" * 32},
+            {"type": "text", "value": "--------------------------------"},
             {"type": "align", "value": "center"},
         ])
 
@@ -533,8 +533,9 @@ def print_ticket_purchases_sunmi_80(ticket_data, printer):
         # Create the ticket - similar to 57mm but with more space
         ticket = [
             {"type": "size", "value": 0},
-            {"type": "align", "value": "center"},
             {"type": "bold", "value": 1},
+            {"type": "align", "value": "center"},
+            {"type": "text", "value": ""},
             {"type": "text", "value": remove_accents(ticket_data['business_name'].upper())},
             {"type": "bold", "value": 0},
         ]
@@ -548,7 +549,7 @@ def print_ticket_purchases_sunmi_80(ticket_data, printer):
             ticket.append({"type": "text", "value": f"TVA: {ticket_data['business_vat_number']}"})
 
         ticket.extend([
-            {"type": "text", "value": "-" * 48},  # Wider separator for 80mm
+            {"type": "line", "value": "single"},  # Wider separator for 80mm
             {"type": "align", "value": "left"},
             {"type": "text", "value": f"DATE: {ticket_data['date_time']}"},
             {"type": "text", "value": f"TICKET: {ticket_data['receipt_id']}"},
@@ -559,11 +560,11 @@ def print_ticket_purchases_sunmi_80(ticket_data, printer):
         if ticket_data['server']:
             ticket.append({"type": "text", "value": f"SERVEUR: {remove_accents(ticket_data['server'])}"})
 
-        ticket.append({"type": "text", "value": "-" * 48})
+        ticket.append({"type": "line", "value": "single"})
 
         # Add articles with more detailed formatting
-        ticket.append({"type": "text", "value": "ARTICLE                  QTE    PRIX    TOTAL"})
-        ticket.append({"type": "text", "value": "-" * 48})
+        ticket.append({"type": "text", "value": "ARTICLE               QTE       PRIX    TOTAL"})
+        ticket.append({"type": "line", "value": "single"})
 
         for article in ticket_data['articles']:
             name = remove_accents(article['name'])
@@ -580,7 +581,7 @@ def print_ticket_purchases_sunmi_80(ticket_data, printer):
 
         # Add totals
         ticket.extend([
-            {"type": "text", "value": "-" * 48},
+            {"type": "line", "value": "single"},
             {"type": "align", "value": "right"},
             {"type": "text", "value": f"TOTAL HT: {ticket_data['total_ht']}"},
             {"type": "text", "value": f"TVA: {ticket_data['total_tva']}"},
@@ -593,7 +594,7 @@ def print_ticket_purchases_sunmi_80(ticket_data, printer):
 
         # Add footer
         ticket.extend([
-            {"type": "text", "value": "-" * 48},
+            {"type": "line", "value": "single"},
             {"type": "align", "value": "center"},
         ])
 
@@ -812,13 +813,12 @@ def test_print(printer_pk):
                 {"type": "font", "value": "A"},
                 {"type": "size", "value": 1},
                 {"type": "bold", "value": 1},
-                {"type": "align", "value": "center"},
-                {"type": "text", "value": "*** TEST PRINT ***"},
+                {"type": "align", "value": "left"},
+                {"type": "text", "value": "** TEST PRINT **"},
                 {"type": "bold", "value": 0},
                 {"type": "text", "value": "Hello World"},
-                {"type": "align", "value": "left"},
                 {"type": "size", "value": 0},
-                {"type": "text", "value": "-" * 32},
+                {"type": "text", "value": "--------------------------------"},
                 {"type": "text", "value": f"Test completed at {time.strftime('%Y-%m-%d %H:%M:%S')}"},
                 {"type": "feed", "value": 2},
                 {"type": "cut"},
