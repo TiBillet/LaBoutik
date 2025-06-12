@@ -199,7 +199,7 @@ def print_command_inner_sunmi(commande, groupe, lignes_article):
         {"type": "font", "value": "A"},
         {"type": "size", "value": 1},
         {"type": "bold", "value": 1},
-        {"type": "align", "value": "center"},
+        {"type": "align", "value": "left"},
         {"type": "text", "value": f"{title}"},
         {"type": "align", "value": "left"},
     ]

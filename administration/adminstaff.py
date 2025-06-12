@@ -1451,12 +1451,14 @@ class TablesAdmin(SortableAdminMixin, admin.ModelAdmin):
     )
     ordering = ('poids',)
     actions = [liberer_la_table, ]
-    list_editable = ('archive', 'statut')
+    list_editable = ('archive', )
+    readonly_fields = ('statut', )
     list_display_links = ('name',)
     list_filter = ('archive',)
 
     def has_delete_permission(self, request, obj=None):
         return False
+
     # def get_queryset(self, request):
     #     qs = super(TablesAdmin, self).get_queryset(request)
     #     return qs.filter(archive=False)
