@@ -47,7 +47,7 @@
                 <td>
                     <form id="change_cash_float" class="order__line"
                           hx-post="/htmx/sales/change_cash_float/"
-                          hx-target="#service-commandes" hx-swap="innerHTML"> {# the query returns the table z-ticket#}
+                          hx-target="#sale_content" hx-swap="innerHTML"> {# the query returns the table z-ticket#}
 
                         <input name="cashfloat" class="ticket__input" type="number" step="0.01" size="6"
                                value="{{ fond_caisse }}"/>
@@ -75,7 +75,7 @@
                     <button class="ticket__btn ticket__btn--secondary" type="button"
                             hx-get="/htmx/sales/print_temp_ticket"
                             hx-trigger='confirmed'
-                            hx-target="#service-commandes" hx-swap="innerHTML" {# the query returns the table z-ticket#}
+                            hx-target="#sale_content" hx-swap="innerHTML" {# the query returns the table z-ticket#}
                             onClick="Swal.fire({title: `{{ print_temp_title }}`, text:`De ce matin jusqu'a maintenant`}).then((result)=>{
                                     if(result.isConfirmed){
                                     htmx.trigger(this, 'confirmed');
@@ -91,7 +91,7 @@
                     <button class="ticket__btn ticket__btn--danger" type="button"
                             hx-get="/htmx/sales/close_all_pos"
                             hx-trigger='confirmed'
-                            hx-target="#service-commandes" hx-swap="innerHTML" {# the query returns the table z-ticket#}
+                            hx-target="#sale_content" hx-swap="innerHTML" {# the query returns the table z-ticket#}
                             onClick="Swal.fire({title: `{{ confirm_title }}`, text:`Do or do not, there is no try, young padawan.`}).then((result)=>{
                                     if(result.isConfirmed){
                                     htmx.trigger(this, 'confirmed');
