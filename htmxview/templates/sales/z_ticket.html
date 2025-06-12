@@ -67,7 +67,7 @@
 
             </table>
 
-
+            <div id="ok_200"></div>
             <div class="order-sup-overflow-y">
                 <div class="ticket__field">
                     {% trans "Imprimer un ticket temporaire" as print_temp_title %}
@@ -75,7 +75,7 @@
                     <button class="ticket__btn ticket__btn--secondary" type="button"
                             hx-get="/htmx/sales/print_temp_ticket"
                             hx-trigger='confirmed'
-                            hx-target="#sale_content" hx-swap="innerHTML" {# the query returns the table z-ticket#}
+                            hx-target="#ok_200" hx-swap="innerHTML" {# the query returns the table z-ticket#}
                             onClick="Swal.fire({title: `{{ print_temp_title }}`, text:`De ce matin jusqu'a maintenant`}).then((result)=>{
                                     if(result.isConfirmed){
                                     htmx.trigger(this, 'confirmed');

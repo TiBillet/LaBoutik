@@ -184,14 +184,16 @@ class Sales(viewsets.ViewSet):
         print('-> url = z_ticket !')
 
         # On crée le ticket Z entre le matin et maintenant
-        ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
+        ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())  #TODO : PASSER en TicketV4
         # On calcule les valeurs et on récupère le dictionnaire, sinon un dict vide
         ticket_today = ticketZ.to_dict if ticketZ.calcul_valeurs() else {}
         if ticket_today:
             send_print_order_inner_sunmi.delay(ws_channel=ws_room_appareil, data=ticketZ.to_sunmi_printer_57())
 
         context = {'ticket_today': ticket_today,}
-        return render(request, "sales/z_ticket.html", context)
+
+        return HttpResponse(status=200)
+
 
     @action(detail=True, methods=['GET'])
     def print_ticket_purchases_get(self, request, pk):
