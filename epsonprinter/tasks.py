@@ -165,10 +165,14 @@ def print_command_inner_sunmi(commande, groupe, lignes_article):
     ws_channel = groupe.printer.host.user.uuid.hex
     # fabrication du ticket en envoi à l'imprimante
 
+    # Les imrpimantes 57mm des Sunmi ne prennent pas l'ordre "line"n on fabrique le texte avec ----
+    printer_type = groupe.printer.printer_type # SUNMI_INTEGRATED_80 = 'S8' ou SUNMI_INTEGRATED_57 = 'S5'
+    line = {"type": "line", "value": "single"} if printer_type == 'S8' else {"type": "text", "value": "-"*32}
+
     # Header contenant les infos générales
     base_ticket = [
         {"type": "size", "value": 0},
-        {"type": "text", "value": "--------------------------------"},
+        line,
         {"type": "size", "value": 1},
         {"type": "text", "value": f"{commande.datetime.astimezone().strftime('%d/%m/%Y %H:%M')}"},
         {"type": "bold", "value": 1},
@@ -177,7 +181,7 @@ def print_command_inner_sunmi(commande, groupe, lignes_article):
         {"type": "text", "value": f"{commande.responsable.name}"},
         {"type": "text", "value": f"ID : {commande.id_commande()[:3]}"},
         {"type": "size", "value": 0},
-        {"type": "text", "value": "--------------------------------"},
+        line,
     ]
 
     # Quel est le numéro ?
@@ -204,7 +208,7 @@ def print_command_inner_sunmi(commande, groupe, lignes_article):
 
     ticket += [
         {"type": "size", "value": 0},
-        {"type": "text", "value": "--------------------------------"},
+        line,
         {"type": "feed", "value": 2},
         {"type": "cut"},
     ]
