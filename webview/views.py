@@ -130,7 +130,7 @@ def new_hardware(request):
         Printer.objects.get_or_create(
             printer_type=Printer.SUNMI_INTEGRATED_80 if appareil.periph == Appareil.SUNMI_80 else Printer.SUNMI_INTEGRATED_57,
             name=f"{appareil.name} inner printer",
-            host=appareil.hostname,
+            host=appareil,
         )
 
     # Le code pin a été validé, on renvoie vers la page de login
