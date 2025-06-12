@@ -2609,7 +2609,7 @@ class Terminal(models.Model):
                 config_stripe = ConfigurationStripe.get_solo()
                 stripe.api_key = config_stripe.get_stripe_api()
                 location = Location.get_place_location()
-                import ipdb; ipdb.set_trace()
+                # import ipdb; ipdb.set_trace()
                 reader = stripe.terminal.Reader.create(
                     registration_code=self.registration_code,
                     label=self.name,
