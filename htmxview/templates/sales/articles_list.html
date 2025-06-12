@@ -1,0 +1,110 @@
+{% load i18n humanize static ticketZtag %}
+
+<style>
+    .articles-table {
+        border-collapse: collapse;
+        margin: 1rem auto;
+        max-width: 800px;
+        width: 90%;
+        table-layout: fixed;
+    }
+
+    .articles-table th, 
+    .articles-table td {
+        padding: 1rem;
+        text-align: center;
+        width: 25%;
+    }
+
+    .articles-table th {
+        background-color: #11202b;
+        color: white;
+    }
+
+    .articles-table tr:nth-child(even) {
+        background-color: #34404a;
+    }
+
+    .articles-table tr:hover {
+        background-color: #34404a;
+    }
+
+    .category-header {
+        background-color: #11202b !important;
+        color: white;
+        font-weight: bold;
+    }
+
+    .subtotal-row {
+        background-color: #34404a !important;
+        font-weight: bold;
+        color: white;
+    }
+
+    .separator-row {
+        height: 20px;
+        background-color: transparent !important;
+        border: none;
+    }
+
+    .separator-row td {
+        border: none;
+        padding: 0;
+    }
+
+    .total-row {
+        background-color: #11202b !important;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+
+<div class="order-sup-overflow-y">
+    <h2 id="article-title" style="text-align: center; margin: 1rem 0;">{% trans "Articles vendus" %}</h2>
+
+    <table class="articles-table">
+        <thead>
+            <tr>
+                <th>{% trans 'Name' %}</th>
+                <th>{% trans 'Total Quantity' %}</th>
+                <th>{% trans 'Unit Price' %}</th>
+                <th>{% trans 'Total TTC' %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category, articles in table_detail_ventes.items %}
+                {% if category != "TOTAL" %}
+                    <tr class="category-header">
+                        <th colspan="4">{{ category }}</th>
+                    </tr>
+                    {% for article_key, article in articles.items %}
+                        {% if article_key != "SUBTOTAL" %}
+                            <tr>
+                                <td>{{ article.name }}</td>
+                                <td>{{ article.qty_totale | floatformat:2 }}</td>
+                                <td>{{ article.prix_ttc | floatformat:2 }}&nbsp;€</td>
+                                <td>{{ article.chiffre_affaire_ttc | floatformat:2 }}&nbsp;€</td>
+                            </tr>
+                        {% endif %}
+                    {% endfor %}
+                    <tr class="subtotal-row">
+                        <td>{% trans "Subtotal" %}</td>
+                        <td>{{ articles.SUBTOTAL.qty_totale | floatformat:2 }}</td>
+                        <td>-</td>
+                        <td>{{ articles.SUBTOTAL.chiffre_affaire_ttc | floatformat:2 }}&nbsp;€</td>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+            <!-- Empty row for separation -->
+            <tr class="separator-row">
+                <td colspan="4"></td>
+            </tr>
+            <tr class="total-row">
+                <td>{% trans "TOTAL" %}</td>
+                <td>{{ table_detail_ventes.TOTAL.qty_totale | floatformat:2 }}</td>
+                <td>-</td>
+                <td>{{ table_detail_ventes.TOTAL.chiffre_affaire_ttc | floatformat:2 }}&nbsp;€</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

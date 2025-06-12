@@ -3,6 +3,7 @@ import logging
 import statistics
 from _decimal import Decimal
 from datetime import datetime, timedelta
+from typing import List
 
 import dateutil.parser
 import pytz
@@ -112,8 +113,8 @@ class TicketZ():
 
                  cloture: ClotureCaisse = None,
                  responsable: Membre = None,
-                 point_de_vente: PointDeVente = None,
-
+                 point_de_vente: PointDeVente = None, # singulier
+                 points_de_vente: List[PointDeVente] = None, # plusieurs pos
                  start_date=None,
                  end_date=None,
                  *args, **kwargs):
@@ -130,6 +131,7 @@ class TicketZ():
         self.cloture = cloture
         self.responsable = responsable
         self.point_de_vente = point_de_vente
+        self.points_de_vente = points_de_vente
 
         self.config = Configuration.get_solo()
         self.start_date, self.end_date = self.set_start_end_date(start_date, end_date, cloture)
@@ -177,8 +179,10 @@ class TicketZ():
         )
         if self.responsable:
             return all_articles.filter(responsable=self.responsable)
-        elif self.point_de_vente:
+        elif self.point_de_vente: # au singulier
             return all_articles.filter(pos=self.point_de_vente)
+        elif self.points_de_vente: # au pluriel
+            return all_articles.filter(pos__in=self.points_de_vente)
         return all_articles
 
     def table_vente(self):
