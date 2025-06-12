@@ -129,7 +129,7 @@ def new_hardware(request):
     if appareil.periph in [Appareil.SUNMI_57, Appareil.SUNMI_80]:
         Printer.objects.get_or_create(
             printer_type=Printer.SUNMI_INTEGRATED_80 if appareil.periph == Appareil.SUNMI_80 else Printer.SUNMI_INTEGRATED_57,
-            name=valid_data['username'],
+            name=f"{appareil.name} inner printer",
             host=appareil.hostname,
         )
 
