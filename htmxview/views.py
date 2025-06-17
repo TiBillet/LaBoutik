@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import timedelta, datetime
 # nico
@@ -22,9 +23,10 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 
-from APIcashless.models import ArticleVendu, MoyenPaiement, Configuration, ClotureCaisse
+from APIcashless.models import ArticleVendu, MoyenPaiement, Configuration, ClotureCaisse, Membre, CarteMaitresse
 from APIcashless.models import PointDeVente, Terminal, PaymentsIntent, GroupementCategorie
 from administration.ticketZ import TicketZ, dround
+from administration.ticketZ_V4 import TicketZ as TicketZV4
 from epsonprinter.tasks import ticketZ_tasks_printer, send_print_order_inner_sunmi
 from htmxview.validators import CashfloatChangeValidator
 from webview.serializers import debut_fin_journee
@@ -36,11 +38,23 @@ class Sales(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
 
-    def list(self, request: Request):
+    def list(self, request):
+        context = {}
+        return render(request, "sales/sales.html", context)
 
+    @action(detail=False, methods=['POST'])
+    def sales_list(self, request: Request):
         # ex : wv/allOrders?oldest_first=True
         order = '-date_time'
         authorized_management_mode = False
+
+        tagid_carte_primaire = request.data.get('tagIdCm')
+        logger.info(f"tagid_carte_primaire = {tagid_carte_primaire}")
+        carte_primaire = CarteMaitresse.objects.get(carte__tag_id=tagid_carte_primaire)
+        points_de_vente = carte_primaire.points_de_vente.all()
+
+        logger.info(f"points_de_vente = {points_de_vente}")
+
 
         oldest_first = False
         if request.GET.get('oldest_first'):
@@ -63,7 +77,8 @@ class Sales(viewsets.ViewSet):
 
         commands_today = {}
         articles_vendus = ArticleVendu.objects.filter(
-            date_time__gte=debut_journee
+            date_time__gte=debut_journee,
+            pos__in=points_de_vente,
         ).order_by(order).distinct()
 
         paginator = Paginator(articles_vendus, 20)
@@ -90,9 +105,16 @@ class Sales(viewsets.ViewSet):
 
         return render(request, "sales/sales_list.html", context)
 
-    @action(detail=False, methods=['GET'])
+
+    @action(detail=False, methods=['POST'])
     def z_ticket(self, request):
-        # Ticket Z temporaire :
+        tagid_carte_primaire = request.data.get('tagIdCm')
+        logger.info(f"tagid_carte_primaire = {tagid_carte_primaire}")
+        carte_primaire = CarteMaitresse.objects.get(carte__tag_id=tagid_carte_primaire)
+        points_de_vente = carte_primaire.points_de_vente.all()
+
+        logger.info(f"points_de_vente = {points_de_vente}")
+
         config = Configuration.get_solo()
         heure_cloture = config.cloture_de_caisse_auto
 
@@ -101,14 +123,43 @@ class Sales(viewsets.ViewSet):
             # Alors on est au petit matin, on prend la date de la veille
             start = start - timedelta(days=1)
         matin = timezone.make_aware(datetime.combine(start, heure_cloture))
-        print('-> url = z_ticket !')
 
-        ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
-        ticket_today = ticketZ.to_dict if ticketZ.calcul_valeurs() else {}
-        context = {
-            'ticket_today': ticket_today,
-        }
-        return render(request, "sales/z_ticket.html", context)
+        ticketZ = TicketZV4(start_date=matin, end_date=timezone.localtime(), points_de_vente=points_de_vente)
+        # Le context json lance le calcul et s'assure qu'il est serialisable.
+        json_context = ticketZ.json_context()
+        context = json.loads(json_context)
+        context['carte_primaire'] = carte_primaire
+
+        # on pourrait envoyer le query_context, mais avec le json.loads on s'assure que le json stoqué en DB est OK
+        return render(request, "sales/z_ticket.html", context=context)
+
+    @action(detail=False, methods=['POST'])
+    def articles_list(self, request):
+        tagid_carte_primaire = request.data.get('tagIdCm')
+        logger.info(f"tagid_carte_primaire = {tagid_carte_primaire}")
+        carte_primaire = CarteMaitresse.objects.get(carte__tag_id=tagid_carte_primaire)
+        points_de_vente = carte_primaire.points_de_vente.all()
+
+        logger.info(f"points_de_vente = {points_de_vente}")
+
+        config = Configuration.get_solo()
+        heure_cloture = config.cloture_de_caisse_auto
+
+        start = timezone.localtime()
+        if start.time() < heure_cloture:
+            # Alors on est au petit matin, on prend la date de la veille
+            start = start - timedelta(days=1)
+        matin = timezone.make_aware(datetime.combine(start, heure_cloture))
+
+        ticketZ = TicketZV4(start_date=matin, end_date=timezone.localtime(), points_de_vente=points_de_vente)
+        # Le context json lance le calcul et s'assure qu'il est serialisable.
+        json_context = ticketZ.json_context()
+        context = json.loads(json_context)
+        context['carte_primaire'] = carte_primaire
+
+        # on pourrait envoyer le query_context, mais avec le json.loads on s'assure que le json stoqué en DB est OK
+        return render(request, "sales/articles_list.html", context=context)
+
 
 
     @action(detail=False, methods=['GET'])
@@ -133,14 +184,16 @@ class Sales(viewsets.ViewSet):
         print('-> url = z_ticket !')
 
         # On crée le ticket Z entre le matin et maintenant
-        ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())
+        ticketZ = TicketZ(start_date=matin, end_date=timezone.localtime())  #TODO : PASSER en TicketV4
         # On calcule les valeurs et on récupère le dictionnaire, sinon un dict vide
         ticket_today = ticketZ.to_dict if ticketZ.calcul_valeurs() else {}
         if ticket_today:
             send_print_order_inner_sunmi.delay(ws_channel=ws_room_appareil, data=ticketZ.to_sunmi_printer_57())
 
         context = {'ticket_today': ticket_today,}
-        return render(request, "sales/z_ticket.html", context)
+
+        return HttpResponse(status=200)
+
 
     @action(detail=True, methods=['GET'])
     def print_ticket_purchases_get(self, request, pk):

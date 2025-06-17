@@ -63,11 +63,13 @@ class Appareil(models.Model):
     version = models.CharField(max_length=50, null=True, blank=True)
     user_agent = models.CharField(max_length=500, null=True, blank=True)
 
-    DESKTOP, SMARTPHONE, SUNMI, RASPBERRY, NFC_SANS_FRONT, FRONT_SANS_NFC = 'FOR', 'FMO', 'SUN', 'FPI', 'SSF', 'FSN'
+    DESKTOP, SMARTPHONE, SUNMI, SUNMI_57, SUNMI_80, RASPBERRY, NFC_SANS_FRONT, FRONT_SANS_NFC = 'FOR', 'FMO', 'SUN', 'SU5', 'SU8', 'FPI', 'SSF', 'FSN'
     PERIPH_CHOICES = [
         (DESKTOP, _('Front ordinateur')),
         (SMARTPHONE, _('Front smartphone')),
-        (SUNMI, _('Sunmi avec imprimante')),
+        (SUNMI, _('Sunmi sans imprimante')),
+        (SUNMI_57, _('Sunmi avec imprimante 57mm')),
+        (SUNMI_80, _('Sunmi avec imprimante 80mm')),
         (RASPBERRY, _('Front Raspberry')),
         (NFC_SANS_FRONT, _('Serveur NFC sans front')),
         (FRONT_SANS_NFC, _('Front sans lecteur NFC')),
@@ -2607,7 +2609,7 @@ class Terminal(models.Model):
                 config_stripe = ConfigurationStripe.get_solo()
                 stripe.api_key = config_stripe.get_stripe_api()
                 location = Location.get_place_location()
-                import ipdb; ipdb.set_trace()
+                # import ipdb; ipdb.set_trace()
                 reader = stripe.terminal.Reader.create(
                     registration_code=self.registration_code,
                     label=self.name,

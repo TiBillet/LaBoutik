@@ -745,7 +745,7 @@ class TicketZ():
         ticket = [
             {"type": "size", "value": 0},
             {"type": "text", "value": "-" * 32},
-            {"type": "align", "value": "center"},
+            {"type": "align", "value": "left"},
             {"type": "text", "value": f"{config.structure}"},
             {"type": "text", "value": f"{config.adresse}"},
             {"type": "text", "value": f"Siret:"},

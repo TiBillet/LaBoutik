@@ -111,13 +111,27 @@ def new_hardware(request):
     appareil.user_agent = request.META.get('HTTP_USER_AGENT')
     appareil.claimed_at = timezone.now()
     appareil.periph = valid_data['periph']
-    appareil.hostname = valid_data['hostname']
     appareil.version = valid_data['version']
 
     # Tache celery pour envoyer un mail de vérification à l'admin
     # via le signal.py si actif = True en post_save
     appareil.actif = True
+
+    # Création de l'imprimante si l'appareil est un Sunmi
+    appareil.hostname = valid_data['hostname']
+    if 'SUNMI-V2s' in appareil.hostname:
+        appareil.periph = Appareil.SUNMI_57
+    elif 'SUNMI-V3_MIX' in appareil.hostname:
+        appareil.periph = Appareil.SUNMI_80
+
     appareil.save()
+
+    if appareil.periph in [Appareil.SUNMI_57, Appareil.SUNMI_80]:
+        Printer.objects.get_or_create(
+            printer_type=Printer.SUNMI_INTEGRATED_80 if appareil.periph == Appareil.SUNMI_80 else Printer.SUNMI_INTEGRATED_57,
+            name=f"{appareil.name} inner printer",
+            host=appareil,
+        )
 
     # Le code pin a été validé, on renvoie vers la page de login
     return JsonResponse({"msg": "ok"}, status=status.HTTP_201_CREATED)
