@@ -4,6 +4,32 @@ import { getCurrentCurrency } from '/static/webview/js/modules/currencysList.js'
 import { translate, getTranslate, getLanguages } from '/static/webview/js/modules/i8n.js'
 import * as Fn from "/static/webview/js/modules/fonctions.js"
 
+// --- logs ---
+// sauvegarder l'ancienne fonction console.log
+window.oldLogFunc = console.log
+
+/**
+ * Etend la fonction de log
+ */
+window.settingsStartLogs = function () {
+  // init contenu settingsLogsContent
+  window.settingsLogsContent = []
+
+  // modifier fonction log - utilise le store
+  window.console.log = function (message) {
+    // enregistre le message de log
+    window.settingsLogsContent.push(message)
+    // lance la fonction de log original
+    window.oldLogFunc.apply(console, arguments)
+  }
+}
+
+// active les logs si activés
+if (localStorage.getItem("activatedLogs") === "true" && oldLogFunc === console.log) {
+  settingsStartLogs()
+}
+// --- fin logs ---
+
 // scope global
 window.sys = Sys
 window.translate = translate

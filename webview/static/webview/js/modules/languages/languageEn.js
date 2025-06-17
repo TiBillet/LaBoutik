@@ -164,6 +164,7 @@ export const en = {
     infos: 'infos',
     logs: 'logs',
     functionSettingsNotExist: 'The "{replace}" function of the settings menu does not exist.',
-    appWillBeRecharged: 'The application will be recharged.'
+    appWillBeRecharged: 'The application will be recharged.',
+    activateLogs: 'activate the logs'
   }
 }

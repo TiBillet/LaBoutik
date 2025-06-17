@@ -165,6 +165,7 @@ export const fr = {
     infos: 'infos',
     logs: 'logs',
     functionSettingsNotExist:`La fonction "{replace}" du menu paramêtres n'existe pas.`,
-    appWillBeRecharged: "L'application sera rechargée."
+    appWillBeRecharged: "L'application sera rechargée.",
+    activateLogs: 'activer les logs'
   }
 }
