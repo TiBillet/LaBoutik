@@ -1,16 +1,11 @@
+@import "palette.css";
+
 /* http://luciole-vision.com/#top */
 @font-face {
     font-family: "Luciole-regular";
     src: url("./fonts/Luciole-Regular.ttf") format("truetype");
     font-weight: normal;
 }
-
-
-/* @font-face {
-    font-family: "Luciole-bold";
-    src: url("./fonts/Luciole-Bold.ttf") format("truetype");
-    font-weight: bold;
-} */
 
 * {
     box-sizing: border-box;
@@ -72,7 +67,7 @@ body {
 .BF-col-deb {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: start;
 }
 
 .BF-col-uniforme {
@@ -971,7 +966,6 @@ footer {
     font-weight: bold;
     background-color: #252622;
     color: #FFFFFF;
-
 }
 
 .com-titre-conteneur-plus {
