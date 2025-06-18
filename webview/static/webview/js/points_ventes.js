@@ -7,7 +7,6 @@ import { isCordovaApp, bluetoothWrite, bluetoothGetMacAddress, bluetoothOpenCash
 // ---- cordova ---
 window.mobile = isCordovaApp()
 
-
 // condition has sunmi printer
 window.hasSunmiPrinter = async function () {
   const macAddress = await bluetoothGetMacAddress("InnerPrinter")
@@ -34,19 +33,17 @@ window.openCashDrawer = async function () {
 }
 
 function initWebsocket(server) {
-  // create print sunmi queue
-  if (window.sunmiPrintQueue === undefined) {
-    window.sunmiPrintQueue = []
-  }
-
   // ---- websocket handler ----
   async function wsHandlerMessag(dataString) {
     console.log('-> ws, dataString =', dataString)
     try {
       const data = JSON.parse(dataString)
-      // cordova bluetooth print
-      const testHasSunmiPrinter = await hasSunmiPrinter()
       if (data.message === 'print' && testHasSunmiPrinter === true) {
+        // create print sunmi queue
+        if (window.sunmiPrintQueue === undefined) {
+          window.sunmiPrintQueue = []
+        }
+
         const options = { printUuid: sys.uuidV4(), content: data.data }
         sunmiPrintQueue.push(options)
         await bluetoothWrite(options.printUuid)

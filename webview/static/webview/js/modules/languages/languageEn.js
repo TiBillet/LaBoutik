@@ -165,6 +165,7 @@ export const en = {
     logs: 'logs',
     functionSettingsNotExist: 'The "{replace}" function of the settings menu does not exist.',
     appWillBeRecharged: 'The application will be recharged.',
-    activateLogs: 'activate the logs'
+    activateLogs: 'activate the logs',
+    printer: 'printer'
   }
 }

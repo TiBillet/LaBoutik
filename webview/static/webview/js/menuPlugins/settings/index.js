@@ -1,17 +1,42 @@
-import './showInfos.js'
-import './changeLanguage.js'
-import './showLogs.js'
+/**
+ * List of the modules configuration of the settings item menu 
+ * @type {Array<object>}
+ */
+window.settingsActions = [
+	{ i8nIndex: 'infos', icon: 'fa-info', func: 'settingsShowInfos', moduleName: 'infos' },
+	{ i8nIndex: 'language', icon: 'fa-language', func: 'settingsChangeLanguage', moduleName: 'language' },
+	{ i8nIndex: 'logs', icon: 'fa-stethoscope', func: 'settingsShowLogs', moduleName: 'logs' },
+	{ i8nIndex: 'printer', icon: 'fa-print', func: 'settingsShowPrinter', moduleName: 'printer', conditions: ['hasSunmiPrinter'] }
+]
 
-window.settingsLaunchAction = function (ev) {
+window.settinsLoadModule = async function (name) {
+	await import("./" + name + '.js')
+}
+
+window.settingsLaunchAction = async function (ev) {
 	const cible = ev.target
 	const action = cible.classList.contains("target-settings") === true ? cible.getAttribute('action') : null
 
-	if (action !== null && window[action] !== undefined) {
-		window[action]()
-	}
+	if (action !== null) {
+		try {
+			// charge le module
+			const actionConf = settingsActions.find(item => item.func === action)
 
-	if (window[action] === undefined) {
-		console.log(getTranslate('functionSettingsNotExist').replace('{replace}', action))
+			if (actionConf.moduleName && actionConf.load === undefined) {
+				await settinsLoadModule(actionConf.moduleName)
+				actionConf['load'] = true
+			}
+
+			if (window[action] !== undefined) {
+				window[action]()
+			}
+
+			if (window[action] === undefined) {
+				console.log(getTranslate('functionSettingsNotExist').replace('{replace}', action))
+			}
+		} catch (error) {
+			console.log('-> settingsLaunchAction : no module or no function.')
+		}
 	}
 }
 
@@ -19,16 +44,7 @@ window.settingsLaunchAction = function (ev) {
  * Show settings UI
  * @returns {void}
  */
-window.showSettingsInterface = function () {
-	/**
-	 * @type {Array<object>}
-	 */
-	const settingsActions = [
-		{ title: 'infos', icon: 'fa-info', func: 'settingsShowInfos' },
-		{ title: 'language', icon: 'fa-language', func: 'settingsChangeLanguage' },
-		{ title: 'logs', icon: 'fa-stethoscope', func: 'settingsShowLogs' }
-	]
-
+window.showSettingsInterface = async function () {
 	// efface le menu
 	document.querySelector('#menu-burger-conteneur').classList.remove('burger-show')
 	// éfface les autres élément(pages)
@@ -87,13 +103,23 @@ window.showSettingsInterface = function () {
 		<div class="BF-col-deb nav-settings">`
 
 	// settings navigation
-	settingsActions.forEach(action => {
-		template += `<div class="BF-col bt-settings">
-		<i class="fas ${action.icon} mb4px"></i>
-		<span>${action.title}</span>
-		<div class="target-settings" action="${action.func}"></div>
-		</div>`
-	})
+	for (let i = 0; i < settingsActions.length; i++) {
+		const action = settingsActions[i];
+		let permission = true
+		
+		// permissions
+		if (action.conditions !== undefined) {
+			permission = await sys.testArrayPermissions(action.conditions)
+		}
+
+		if (permission === true) {
+			template += `<div class="BF-col bt-settings">
+			<i class="fas ${action.icon} mb4px"></i>
+			<span>${getTranslate(action.i8nIndex, 'uppercase')}</span>
+			<div class="target-settings" action="${action.func}"></div>
+			</div>`
+		}
+	}
 
 	template += `
 		</div>
@@ -104,6 +130,8 @@ window.showSettingsInterface = function () {
 
 	// event listener
 	document.querySelector('.nav-settings').addEventListener('click', settingsLaunchAction)
+
+	await settinsLoadModule('infos')
 
 	// show infos
 	settingsShowInfos()

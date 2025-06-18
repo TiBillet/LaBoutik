@@ -746,3 +746,17 @@ export function effacerElements(liste) {
 		}
 	}
 }
+
+/**
+ * Test array permissions
+ * @param {Array<string>} list global function names list
+ * @return {Boolean} true or false
+ */
+export async function testArrayPermissions(list) {
+	let retour = true
+	for (let i = 0; i < list.length; i++) {
+		const func = list[i];
+		retour = await window[func]()
+	}
+	return retour
+}
