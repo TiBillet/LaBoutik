@@ -4,6 +4,8 @@ import requests
 from decimal import Decimal
 from uuid import uuid4, UUID
 
+from rest_framework.exceptions import NotAcceptable
+
 from fedow_connect.serializers import CardSerializer
 from fedow_connect.utils import sign_message, verify_signature, data_to_b64
 from fedow_connect.validators import AssetValidator, CardValidator, \
@@ -458,11 +460,16 @@ class Transaction():
                 return validated_data
 
             logger.error(serialized_transaction.errors)
-            return serialized_transaction.errors
+            raise NotAcceptable(detail=f"{serialized_transaction.errors}", code=response_refill.status_code)
 
         else:
-            logger.error(response_refill.json())
-            return response_refill.status_code
+            response_content = response_refill.json()
+            if 'primary_card_fisrtTagId' in response_content:
+                raise NotAcceptable(detail=f"Carte primaire non valide", code=response_refill.status_code)
+            raise NotAcceptable(detail=f"{response_content}", code=response_refill.status_code)
+
+            # logger.error(response_refill.json())
+            # return response_refill.json()
 
     def to_place(self,
                  amount: int = None,
@@ -493,11 +500,13 @@ class Transaction():
                 return serialized_transaction.validated_data
 
             logger.error(serialized_transaction.errors)
-            return serialized_transaction.errors
+            raise NotAcceptable(detail=f"{serialized_transaction.errors}", code=response_w2w.status_code)
 
         else:
+            response_content = response_w2w.json()
             logger.error(response_w2w.json())
-            return response_w2w.json()
+            raise NotAcceptable(detail=f"{response_content}", code=response_w2w.status_code)
+
 
 
 class PlaceFedow():

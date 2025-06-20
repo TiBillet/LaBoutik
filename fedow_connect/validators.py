@@ -206,6 +206,7 @@ class CardValidator(serializers.Serializer):
     first_tag_id = serializers.CharField(min_length=8, max_length=8)
     number_printed = serializers.CharField()
     is_wallet_ephemere = serializers.BooleanField()
+    is_primary = serializers.BooleanField()
 
     def validate(self, attrs):
         try:
