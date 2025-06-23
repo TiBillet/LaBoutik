@@ -5,6 +5,7 @@ from django.contrib.auth import authenticate, login
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core import signing
+from django.db import transaction
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseNotAllowed
 from django.shortcuts import render, redirect
 from django.utils.translation import ugettext_lazy as _
@@ -236,13 +237,21 @@ def index(request):
             try:
                 # CardValidator. Si la carte n'a jamais été renseignée, elle sera visible dans l'admin :
                 fedowApi = FedowAPI()
-                fedowApi.NFCcard.retrieve(tag_id_cm)
+                cm = fedowApi.NFCcard.retrieve(tag_id_cm) # tester la carte primaire coté fedow
+                if not cm.get('is_primary'):
+                    # En cas de carte perdu : vérification que la carte ne soit pas toujours primary dans LaBoutik
+                    if CarteMaitresse.objects.filter(carte__tag_id=tag_id_cm).exists():
+                        CarteMaitresse.objects.get(carte__tag_id=tag_id_cm).delete()
+                    return JsonResponse({"erreur": 1, "msg": "Carte perdue ? On passe en non primaire"})
+
                 carte_m = CarteMaitresse.objects.get(carte__tag_id=tag_id_cm)
             except Exception as e:
                 return JsonResponse({"erreur": 1, "msg": "Carte non primaire"})
 
             else:
                 responsable = carte_m.carte.membre
+                # import ipdb; ipdb.set_trace()
+
                 if responsable:
                     monnaie_principale_name = Configuration.objects.get().monnaie_principale.name
                     article_paiement_fractionne = Articles.objects.get(methode_choices=Articles.FRACTIONNE)
@@ -675,6 +684,7 @@ class Commande:
 
         return None
 
+    @transaction.atomic
     def validation(self):
         """
         Fonction appellée par la vue paiement une fois que l'instance de classe commande a été générée.

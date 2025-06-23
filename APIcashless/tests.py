@@ -2,6 +2,7 @@ from io import StringIO
 from uuid import UUID
 
 import requests
+import rest_framework
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.core.serializers.json import DjangoJSONEncoder
@@ -1251,13 +1252,14 @@ class CashlessTest(TiBilletTestCase):
         # Création d'un nouveau wallet tout neuf en une ligne !
         new_wallet = self.check_carte_total_WV(self.create_one_card_db(), 0).wallet
 
-        serialized_transaction = fedowAPI.transaction.refill_wallet(
-            amount=4242,
-            wallet=f"{new_wallet.uuid}",
-            asset=f"{asset_local_euro.pk}",
-        )
+        with self.assertRaises(rest_framework.exceptions.NotAcceptable) as context:
+            fedowAPI.transaction.refill_wallet(
+                amount=4242,
+                wallet=f"{new_wallet.uuid}",
+                asset=f"{asset_local_euro.pk}",
+            )
         # Pas de carte ni de carte primaire : Indispensable pour un refill
-        self.assertEqual(serialized_transaction, 400)
+        self.assertEqual(str(context.exception), "Carte primaire non valide")
 
     def card_to_place_transaction_with_api_fedow(self):
         fedowAPI = FedowAPI()
