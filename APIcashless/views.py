@@ -1,12 +1,11 @@
-# #! /usr/bin/env python
+#! /usr/bin/env python
 
 import decimal
 import json
 import logging
 from datetime import timedelta, datetime
 from decimal import Decimal
-from urllib.parse import urlparse
-from uuid import uuid4, UUID
+from uuid import UUID
 
 import requests
 from django.contrib import messages
@@ -24,9 +23,8 @@ from rest_framework_api_key.permissions import HasAPIKey
 from APIcashless.custom_utils import dict_to_b64
 from APIcashless.models import Configuration, CarteCashless, Assets, Membre, PointDeVente, Articles, Table, \
     ArticleVendu, MoyenPaiement, CarteMaitresse
-from APIcashless.serializers import MembreSerializer, CarteCashlessSerializerForQrCode
-from APIcashless.validator import DataOcecoValidator, BilletterieValidator, AdhesionValidator, \
-    EmailMembreValidator, RechargeCardValidator, MembreshipValidator, SaleFromLespassValidator, \
+from APIcashless.serializers import CarteCashlessSerializerForQrCode
+from APIcashless.validator import DataOcecoValidator, SaleFromLespassValidator, \
     ProductFromLespassValidator
 from Cashless import settings
 from fedow_connect.fedow_api import FedowAPI
@@ -68,28 +66,6 @@ def get_client_ip(request):
 
     return ip
 
-
-# def same_domaine_origin(request, config: Configuration):
-#     try:
-#         origin = request.build_absolute_uri()
-#         parse_origin = urlparse(origin)
-#         hostname_origin: str = f"{parse_origin.hostname}"
-#         domain_origin = '.'.join(hostname_origin.split('.')[-2:])
-#
-#         url_bill_config = config.billetterie_url
-#         parse_url_bill_config = urlparse(url_bill_config)
-#         hostname_url_bill_config: str = f"{parse_url_bill_config.hostname}"
-#         domain_url_bill_config = '.'.join(hostname_url_bill_config.split('.')[-2:])
-#
-#         if domain_origin == domain_url_bill_config:
-#             return True
-#
-#     except Exception as e:
-#         logger.error(e)
-#         raise e
-#
-#     logger.error(f"check api key : same_domaine_origin : {domain_origin} != {domain_url_bill_config}")
-#     return False
 
 
 def billetterie_white_list(request):
@@ -207,100 +183,6 @@ class oceco_endpoint(APIView):
             return Response(f"Not valid", status=status.HTTP_401_UNAUTHORIZED)
 
 
-# ex api pre fedow
-"""
-class membre_check(APIView):
-    permission_classes = [HasAPIKey]
-    # permission_classes = [AllowAny]
-    def post(self, request):
-        if not billetterie_white_list(request):
-            return Response('no no no', status=status.HTTP_401_UNAUTHORIZED)
-
-        validator = EmailMembreValidator(data=request.data)
-
-        if validator.is_valid():
-            serializer = MembreSerializer(validator.data.get('membre'))
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        logger.error(
-            f"{timezone.now()} /api/membre_check POST validator.errors : {validator.errors}")
-        return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
-"""
-
-
-# ex api pre fedow
-"""
-class ChargeCard(APIView):
-    permission_classes = [HasAPIKey]
-
-    def post(self, request):
-        if not billetterie_white_list(request):
-            return Response('no no no', status=status.HTTP_401_UNAUTHORIZED)
-
-        validator = RechargeCardValidator(data=request.data)
-        if validator.is_valid():
-            card: CarteCashless = validator.data.get('card')
-            qty: int = validator.validated_data.get('qty')
-            uuid_commande: int = validator.validated_data.get('uuid_commande')
-
-            if not card.membre:
-                email = validator.validated_data.get('email')
-                if email:
-                    membre, created = Membre.objects.get_or_create(email=email.lower())
-                    if created:
-                        membre.date_inscription = timezone.now().date()
-                        membre.adhesion_origine = Membre.QRCODE
-                        membre.save()
-
-                    config = Configuration.get_solo()
-                    if config.can_fedow():
-                        fedowAPI = FedowAPI(config=config)
-                        fedowAPI.NFCcard.link_user(email=email, card=card)
-
-                    card.membre = membre
-                    card.save()
-
-            else:
-                # Il existe un membre, on vérifie qu'il a un email
-                if not card.membre.email:
-                    email = validator.validated_data.get('email')
-                    if email:
-                        card.membre.email = email.lower()
-                        card.membre.save()
-
-            pos_cashless = PointDeVente.objects.filter(comportement=PointDeVente.CASHLESS)[0]
-
-            # Bien mettre en majuscule, sinon get_or_create va créer un nouveau responsable avec le nom en Capitalisé
-            responsable_web = Membre.objects.get_or_create(name="WEB STRIPE")[0]
-
-            logger.info(
-                f"{timezone.now()} ChargeCard {card.number} x {qty} - paiement stripe {uuid_commande}")
-
-            data_ext = {
-                "pk_responsable": responsable_web.pk,
-                "pk_pdv": pos_cashless.pk,
-                "tag_id": card.tag_id,
-                "moyen_paiement": 'Web (Stripe)',
-                "total": qty,
-                "uuid_commande": uuid_commande,
-                "articles": [{
-                    'pk': Articles.objects.get(name="+1", methode_choices=Articles.RECHARGE_EUROS).pk,
-                    'qty': qty,
-                }],
-            }
-            validator = DataAchatDepuisClientValidator(data=data_ext)
-
-            if validator.is_valid():
-                data = validator.validated_data
-                commande = Commande(data)
-                commande_valide = commande.validation()
-                return Response(f'{commande.reponse}', status=status.HTTP_202_ACCEPTED)
-
-        logger.error(
-            f"{timezone.now()} ChargeCard POST validator.errors : {validator.errors}")
-        return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
-"""
-
 class OnboardStripeReturn(APIView):
     permission_classes = [AllowAny]
 
@@ -372,49 +254,6 @@ class OnboardStripeReturn(APIView):
 
         return HttpResponseRedirect('/adminstaff/APIcashless/configuration/#/tab/module_8/')
 
-
-"""
-class Membership(APIView):
-    permission_classes = [HasAPIKey]
-
-    def post(self, request):
-        if not billetterie_white_list(request):
-            return Response('ip not in white list', status=status.HTTP_401_UNAUTHORIZED)
-
-        validator = MembreshipValidator(data=request.data)
-        if validator.is_valid():
-            configuration = Configuration.get_solo()
-
-            tarif_adhesion: int = validator.validated_data.get('adhesion')
-            uuid_commande: uuid4 = validator.validated_data.get('uuid_commande')
-            pos_cashless = PointDeVente.objects.filter(comportement=PointDeVente.CASHLESS)[0]
-            responsable_web = Membre.objects.get_or_create(name="WEB STRIPE")[0]
-            membre: Membre = validator.data.get('membre')
-
-            carte = None
-            if membre.CarteCashless_Membre.count() > 0:
-                carte = membre.CarteCashless_Membre.all()[0]
-
-            logger.info(f"{timezone.now()} paiement d'adhésion API pour {membre}")
-
-            membre.date_derniere_cotisation = timezone.now().date()
-            membre.save()
-
-            ArticleVendu.objects.create(
-                article=Articles.objects.get(name='Adhésion'),
-                prix=tarif_adhesion,
-                qty=1,
-                pos=pos_cashless,
-                membre=membre,
-                responsable=responsable_web,
-                carte=carte,
-                moyen_paiement=configuration.moyen_paiement_mollie,
-                commande=uuid_commande,
-            )
-
-            return Response(validator.validated_data, status=status.HTTP_200_OK)
-        return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
-"""
 
 
 class CheckCarteQrUuid(viewsets.ViewSet):
@@ -555,213 +394,6 @@ class SaleFromLespass(APIView):
                 {"error": f"Failed to create ArticleVendu SaleFromLespass: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-# ex api pre fedow
-"""
-class billetterie_endpoint(APIView):
-    permission_classes = [HasAPIKey]
-
-    def post(self, request):
-        if not billetterie_white_list(request):
-            logger.warning('not billetterie white list')
-            return Response('no no no', status=status.HTTP_401_UNAUTHORIZED)
-
-        start = timezone.now()
-        validator_data_billetterie = BilletterieValidator(data=request.data)
-
-        if not validator_data_billetterie.is_valid():
-            logger.error(
-                f"{timezone.now()} {timezone.now() - start} /APIcashless/billetterie_endpoint validator_data_billetterie.errors : {validator_data_billetterie.errors}")
-            return Response(validator_data_billetterie.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        configuration = Configuration.get_solo()
-        carte = validator_data_billetterie.carte
-        data = validator_data_billetterie.validated_data
-
-        recharge_qty = data.get('recharge_qty')
-        uuid_commande = data.get('uuid_commande')
-        tarif_adhesion = data.get('tarif_adhesion')
-        days_historique = int(data.get('days_historique', 1))
-
-        pos_cashless = PointDeVente.objects.filter(comportement=PointDeVente.CASHLESS)[0]
-        responsable_web = Membre.objects.get_or_create(name="WEB STRIPE")[0]
-
-        json_reponse = {}
-
-        if carte.membre:
-            if carte.membre.email:
-                json_reponse['email'] = carte.membre.email
-                json_reponse['a_jour_cotisation'] = carte.membre.a_jour_cotisation()
-
-        assets = [{
-            "nom": f"{asset.monnaie.name}",
-            "qty": f"{asset.qty}",
-            "categorie_mp": f"{asset.monnaie.categorie}"
-        } for asset in carte.assets.all()]
-
-        json_reponse['assets'] = assets
-        json_reponse['total_monnaie'] = carte.total_monnaie()
-
-        # Historique des achats
-        history = [{
-            'date': f"{article_vendu.date_time}",
-            'qty': f"{article_vendu.qty}",
-            'article': f"{article_vendu.article}",
-            'total': f"{article_vendu.total()}",
-        } for article_vendu in
-            ArticleVendu.objects.filter(
-                carte=carte,
-                date_time__gte=(timezone.now() - timedelta(days=days_historique))
-            ).exclude(article__methode_choices__in=[Articles.FRACTIONNE, ])]
-
-        json_reponse['history'] = history
-
-        # c'est juste un check carte
-        if not recharge_qty and not uuid_commande:
-            logger.info(
-                f"{timezone.now()} {timezone.now() - start} /APIcashless/billetterie_endpoint POST checkcarte: {carte}")
-            return Response(json.dumps(json_reponse, cls=DecimalEncoder), status=status.HTTP_200_OK)
-
-        # Adhésion par le web
-        if tarif_adhesion and uuid_commande and carte.membre:
-            logger.info(f"{timezone.now()} paiement d'adhésion billetterie_endpoint pour {carte.membre}")
-
-            carte.membre.date_derniere_cotisation = timezone.now().date()
-            carte.membre.save()
-
-            ArticleVendu.objects.create(
-                article=Articles.objects.get(name='Adhésion'),
-                prix=float(tarif_adhesion),
-                qty=1,
-                pos=pos_cashless,
-                membre=carte.membre,
-                responsable=responsable_web,
-                carte=carte,
-                moyen_paiement=configuration.moyen_paiement_mollie,
-                commande=uuid_commande,
-            )
-
-        # c'est une recharge de monnaie :
-        # TODO: Sela ne semble plus utilisé ? La billetterie passe par chargecard lors d'une recharge ?
-        if recharge_qty and uuid_commande:
-            data_ext = {
-                "pk_responsable": responsable_web.pk,
-                "pk_pdv": pos_cashless.pk,
-                "tag_id": carte.tag_id,
-                "moyen_paiement": 'Web (Stripe)',
-                "total": recharge_qty,
-                "uuid_commande": uuid_commande,
-                "articles": [{
-                    'pk': Articles.objects.get(name="+1", methode_choices=Articles.RECHARGE_EUROS).pk,
-                    'qty': recharge_qty,
-                }],
-            }
-
-            logger.info(
-                f"{timezone.now()} paiement de recharge monnaie billetterie_endpoint pour {carte.number}")
-
-            validator = DataAchatDepuisClientValidator(data=data_ext)
-
-            if validator.is_valid():
-                data = validator.validated_data
-                commande = Commande(data)
-                commande_valide = commande.validation()
-
-            else:
-                logger.error(
-                    f"{timezone.now()} {timezone.now() - start} /wv/billetterie_endpoint POST validator.errors : {validator.errors}")
-                return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
-
-        logger.info(
-            f"{timezone.now()} {timezone.now() - start} /APIcashless/billetterie_endpoint POST paiement: {data}")
-        return Response(json.dumps(json_reponse, cls=DecimalEncoder), status=status.HTTP_200_OK)
-"""
-
-
-# ex api pre fedow
-"""
-
-class billetterie_qrcode_adhesion(APIView):
-    '''
-    curl -H "Authorization: Api-Key gDXvlupm.laoE5Oy1YQdhAWYznXReMB2id8zjZ1iD" -X POST --data "card=01E31CBB&amount=10" http://localhost:8001/api/billetterie_endpoint
-    '''
-    permission_classes = [HasAPIKey]
-
-    def post(self, request):
-        start = timezone.now()
-        key = request.META["HTTP_AUTHORIZATION"].split()[1]
-        api_key = APIKey.objects.get_from_key(key)
-        configuration = Configuration.get_solo()
-
-        ip = get_client_ip(request)
-        logger.info(
-            f"{timezone.now()} {timezone.now() - start} /api/billetterie_qrcode_adhesion POST depuis {ip} data : {request.data}")
-
-        if not billetterie_white_list(request):
-            return Response('no no no', status=status.HTTP_401_UNAUTHORIZED)
-
-        # on check si on a toute les infos
-        validator_adhesionValidator = AdhesionValidator(data=request.data)
-        if validator_adhesionValidator.is_valid():
-            carte_cashless: CarteCashless = validator_adhesionValidator.carte
-            data = validator_adhesionValidator.validated_data
-            if carte_cashless.membre:
-                if not carte_cashless.membre.email and data.get('email'):
-                    # Le membre n'a pas son email de renseigné, on le met à jour
-                    carte_cashless.membre.email = data.get('email').lower()
-                    carte_cashless.membre.save()
-                elif carte_cashless.membre.email != data.get('email'):
-                    return Response(_('La carte est déja liée a une autre adresse email.'),
-                                    status=status.HTTP_409_CONFLICT)
-
-            membre, created = Membre.objects.get_or_create(email=data.get('email').lower())
-
-            if created:
-                membre.date_inscription = timezone.now().date()
-                membre.adhesion_origine = Membre.QRCODE
-                membre.save()
-                return Response('nouveau membre créé, envoyez la suite', status=status.HTTP_201_CREATED)
-
-            if not membre.name and data.get('name'):
-                membre.name = data.get('name').upper()
-            if not membre.prenom and data.get('prenom'):
-                membre.prenom = data.get('prenom').capitalize()
-            if not membre.tel and data.get('tel'):
-                membre.tel = data.get('tel')
-
-            # import ipdb; ipdb.set_trace()
-            if not carte_cashless.membre:
-                carte_cashless.membre = membre
-                carte_cashless.save()
-
-                if configuration.can_fedow():
-                    fedowAPI = FedowAPI(config=configuration)
-                    fedowAPI.NFCcard.link_user(email=membre.email, card=carte_cashless)
-
-            membre.save()
-
-
-            if not membre.name and not membre.prenom and not membre.tel:
-                return Response('Membre existant mais zero informations', status=status.HTTP_204_NO_CONTENT)
-
-            # Membre existant, mais information manquante
-            if not membre.name or not membre.prenom or not membre.tel:
-                info_membre = {
-                    'name': membre.name,
-                    'prenom': membre.prenom,
-                    'tel': membre.tel
-                }
-
-                return Response(info_membre, status=status.HTTP_206_PARTIAL_CONTENT)
-
-            if membre.name and membre.prenom and membre.tel:
-                return Response('Membre existant, carte liée', status=status.HTTP_202_ACCEPTED)
-
-
-        else:
-            logger.error(f'{validator_adhesionValidator.errors}')
-            return Response(validator_adhesionValidator.errors, status=status.HTTP_400_BAD_REQUEST)
-"""
 
 
 class preparations(APIView):
