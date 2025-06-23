@@ -1,7 +1,6 @@
 import json
 import logging
 from datetime import timedelta, datetime
-# nico
 from uuid import UUID
 
 import stripe
@@ -11,24 +10,26 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
-from django.http import HttpRequest
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
+from rest_framework.response import Response
 
-from APIcashless.models import ArticleVendu, MoyenPaiement, Configuration, ClotureCaisse, Membre, CarteMaitresse
+from APIcashless.models import ArticleVendu, MoyenPaiement, Configuration, ClotureCaisse, CarteMaitresse, \
+    ConfigurationStripe
 from APIcashless.models import PointDeVente, Terminal, PaymentsIntent, GroupementCategorie
 from administration.ticketZ import TicketZ, dround
 from administration.ticketZ_V4 import TicketZ as TicketZV4
 from epsonprinter.tasks import ticketZ_tasks_printer, send_print_order_inner_sunmi
-from htmxview.validators import CashfloatChangeValidator
+from htmxview.validators import CashfloatChangeValidator, PaymentIntentTpeValidator
 from webview.serializers import debut_fin_journee
 
 logger = logging.getLogger(__name__)
@@ -405,15 +406,6 @@ class Sales(viewsets.ViewSet):
         return self.z_ticket(request)
 
 
-class Membership(viewsets.ViewSet):
-    authentication_classes = [SessionAuthentication, ]
-    permission_classes = [IsAuthenticated, ]
-
-    def retrieve(self, request: HttpRequest, pk):
-        logger.info(pk)
-        pass
-
-
 class Print(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
@@ -467,16 +459,19 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
     @action(detail=False, methods=['GET'])
     def start(self, request, *args, **kwargs):
         user = request.user
-        terminals = Terminal.objects.filter(type=Terminal.STRIPE_WISEPOS)
+        logger.info(user)
+
+        terminal = Terminal.objects.filter(type=Terminal.STRIPE_WISEPOS, archived=False).first()
 
         return render(request, 'tpe/start.html', context={
             'user': user,
-            'terminals': terminals,
+            'terminal': terminal,
         })
 
     def check_reader_state(self, reader):
         pass
 
+    @transaction.atomic
     def create(self, request, *args, **kwargs):
         user = request.user
 
@@ -485,15 +480,33 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
                 logger.error(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
                 raise Exception(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
 
-        amount = request.data['amount']
-        terminal_pk = request.data['terminal_pk']
-        terminal = Terminal.objects.get(pk=terminal_pk)
+        # Validate the request data
+        logger.info(f"request.data = {request.data}")
+        validator = PaymentIntentTpeValidator(data=request.data)
+        if not validator.is_valid():
+            logger.error(f"ERROR VALIDATION : {validator.errors}")
+            return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get validated data
+        validated_data = validator.validated_data
+        amount = validated_data['amount']
+        terminal = validated_data['terminal_pk']
+
+        try :
+            kiosk = PointDeVente.objects.get(comportement=PointDeVente.KIOSK)
+        except PointDeVente.DoesNotExist:
+            kiosk = PointDeVente.objects.create(
+                name="Kiosque",
+                comportement=PointDeVente.KIOSK,
+            )
 
         # Création de l'intention de paiement
         payment_intent = PaymentsIntent.objects.create(
             terminal=terminal,
             amount=amount,
+            pos=kiosk,
         )
+
         # Envoi de l'intention de paiement au terminal
         payment_intent.send_to_terminal(terminal)
 
@@ -504,8 +517,11 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
             'payment_intent': payment_intent,
         })
 
+
     @action(detail=True, methods=['GET'])
     def retry(self, request, pk):
+        config_stripe = ConfigurationStripe.get_solo()
+        stripe.api_key = config_stripe.get_stripe_api()
         payment_intent = get_object_or_404(PaymentsIntent, pk=pk)
         terminal = payment_intent.terminal
         stripe.terminal.Reader.cancel_action(terminal.stripe_id)
@@ -519,8 +535,8 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
 
     @action(detail=True, methods=['GET'])
     def cancel(self, request, pk):
-        config = Configuration.get_solo()
-        stripe.api_key = config.get_stripe_api()
+        config_stripe = ConfigurationStripe.get_solo()
+        stripe.api_key = config_stripe.get_stripe_api()
         terminal = get_object_or_404(Terminal, pk=pk)
         stripe.terminal.Reader.cancel_action(terminal.stripe_id)
         return HttpResponse(status=205)

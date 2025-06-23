@@ -336,10 +336,11 @@ class PointDeVente(models.Model):
     accepte_commandes = models.BooleanField(default=True)
     service_direct = models.BooleanField(default=True, verbose_name=_("Service direct ( vente au comptoir )"))
 
-    VENTE, CASHLESS = 'A', 'C'
+    VENTE, CASHLESS, KIOSK = 'A', 'C', 'K'
     TYPE_CHOICES = [
         (VENTE, _('Vente')),
         (CASHLESS, _('Rechargement')),
+        (KIOSK, _('Kiosque')),
     ]
 
     comportement = models.CharField(
@@ -2523,30 +2524,30 @@ class Location(models.Model):
     def __str__(self):
         return self.name
 
-    @classmethod
-    def get_place_location(cls):
-        if not cls.objects.filter(is_primary_location=False).exists():
-            config_stripe = ConfigurationStripe.get_solo()
-            import stripe
-            stripe.api_key = config_stripe.get_stripe_api()
-            config = Configuration.get_solo()  # pour le nom de la structure
-            location = stripe.terminal.Location.create(
-                display_name=f"{config.structure}",
-                address={
-                    "line1": f"{config.adresse}",
-                    "city": f"{config.city}",
-                    "country": f"{config.country}",
-                    "postal_code": f"{config.postal_code}",
-                },
-                stripe_account=config_stripe.get_stripe_connect_account(),
-            )
-            place_location = cls.objects.create(
-                stripe_id=location.id,
-                name=f"{config.structure}",
-                is_primary_location=False,
-            )
-            return place_location
-        return cls.objects.get(is_primary_location=False)
+    # @classmethod
+    # def get_place_location(cls):
+    #     if not cls.objects.filter(is_primary_location=False).exists():
+    #         config_stripe = ConfigurationStripe.get_solo()
+    #         import stripe
+    #         stripe.api_key = config_stripe.get_stripe_api()
+    #         config = Configuration.get_solo()  # pour le nom de la structure
+    #         location = stripe.terminal.Location.create(
+    #             display_name=f"{config.structure}",
+    #             address={
+    #                 "line1": f"{config.adresse}",
+    #                 "city": f"{config.city}",
+    #                 "country": f"{config.country}",
+    #                 "postal_code": f"{config.postal_code}",
+    #             },
+    #             stripe_account=config_stripe.get_stripe_connect_account(),
+    #         )
+    #         place_location = cls.objects.create(
+    #             stripe_id=location.id,
+    #             name=f"{config.structure}",
+    #             is_primary_location=False,
+    #         )
+    #         return place_location
+    #     return cls.objects.get(is_primary_location=False)
 
     @classmethod
     def get_primary_location(cls):
@@ -2555,7 +2556,6 @@ class Location(models.Model):
             import stripe
             config_stripe = ConfigurationStripe.get_solo()
             stripe.api_key = config_stripe.get_stripe_api()
-            config_stripe = ConfigurationStripe.get_solo()
             location = stripe.terminal.Location.create(
                 display_name=f"Primary Asset Location",
                 address={
@@ -2593,6 +2593,8 @@ class Terminal(models.Model):
         verbose_name=_("Type"),
     )
 
+    archived = models.BooleanField(default=False)
+
     def status(self):
         if self.stripe_id:
             import stripe
@@ -2604,18 +2606,24 @@ class Terminal(models.Model):
 
     def get_stripe_id(self):
         if not self.stripe_id:
-            if self.type == Terminal.STRIPE_WISEPOS:
-                import stripe
-                config_stripe = ConfigurationStripe.get_solo()
-                stripe.api_key = config_stripe.get_stripe_api()
-                location = Location.get_place_location()
-                # import ipdb; ipdb.set_trace()
-                reader = stripe.terminal.Reader.create(
-                    registration_code=self.registration_code,
-                    label=self.name,
-                    location=location.stripe_id,
-                )
-                self.stripe_id = reader.id
+            if self.type == Terminal.STRIPE_WISEPOS and self.registration_code:
+                try:
+                    import stripe
+                    config_stripe = ConfigurationStripe.get_solo()
+                    stripe.api_key = config_stripe.get_stripe_api()
+                    location = Location.get_primary_location()
+                    # location = Location.get_place_location() # place location pour les TPE lié uniquement au lieu et non pas au recharge cashless
+                    reader = stripe.terminal.Reader.create(
+                        registration_code=self.registration_code,
+                        label=self.name,
+                        location=location.stripe_id,
+                        # stripe_account=config_stripe.get_stripe_connect_account(),
+                    )
+                    self.stripe_id = reader.id
+                except Exception as e:
+                    raise Exception(f"Error while creating stripe reader : {e}")
+            else :
+                raise Exception(f"The registration code is not set.")
         return self.stripe_id
 
     def __str__(self):
@@ -2623,7 +2631,7 @@ class Terminal(models.Model):
 
 class PaymentsIntent(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    amount = models.PositiveSmallIntegerField()
+    amount = models.PositiveIntegerField()
     payment_intent_stripe_id = models.CharField(max_length=30, blank=True, null=True,
                                                 verbose_name=_("Paiement intent stripe id"))
     terminal = models.ForeignKey(Terminal, on_delete=models.PROTECT, verbose_name=_("TPE"))
@@ -2651,5 +2659,28 @@ class PaymentsIntent(models.Model):
         verbose_name=_("Status"),
     )
 
-    def send_to_terminal(self, terminal):
-        pass
+    def send_to_terminal(self, terminal: Terminal):
+        import stripe
+        config = Configuration.get_solo()
+        # C'est au moment du payment intent qu'on ajoute le stripe account si l'articl n'est pas une recharge fédéré
+        config_stripe = ConfigurationStripe.get_solo()
+        stripe.api_key = config_stripe.get_stripe_api()
+        stripe_account=config_stripe.get_stripe_connect_account()
+
+        payment_intent = stripe.PaymentIntent.create(
+            amount=self.amount,
+            currency=config.currency_code.lower(),
+            payment_method_types=["card_present"],
+            capture_method="manual",
+            # stripe_account=stripe_account,
+        )
+        self.payment_intent_stripe_id = payment_intent.id
+        self.save()
+
+        reader = stripe.terminal.Reader.process_payment_intent(
+            terminal.stripe_id,
+            payment_intent=payment_intent.id
+        )
+
+        self.status = self.IN_PROGRESS
+        self.save()

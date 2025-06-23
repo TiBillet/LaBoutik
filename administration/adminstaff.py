@@ -12,6 +12,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django import forms
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -861,16 +862,21 @@ class TPEAdmin(admin.ModelAdmin):
     form = TerminalForm
     list_display = ('name', 'type')
     fieldsets = (
-        (None, {'fields': ('name', 'type', 'registration_code')}),
+        (None, {'fields': ('name', 'type', 'registration_code', 'archived')}),
     )
 
+    def get_queryset(self, request):
+        return super(TPEAdmin, self).get_queryset(request).exclude(archived=True)
+
+
+    @transaction.atomic
     def save_model(self, request, instance, form, change, *args, **kwargs):
         # Appairage :
         self.stripe_id = instance.get_stripe_id()
         super().save_model(request, instance, form, change)
 
 
-# staff_admin_site.register(Terminal, TPEAdmin) # Pas activé tout de suite, on commence d'abord par le mode Kiosk
+staff_admin_site.register(Terminal, TPEAdmin) # Pas activé tout de suite, on commence d'abord par le mode Kiosk
 
 
 ### PRINTER

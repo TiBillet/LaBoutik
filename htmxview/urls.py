@@ -2,12 +2,14 @@ from django.urls import path
 from rest_framework import routers
 from htmxview import views
 
+app_name = 'htmxview'
+
 router = routers.DefaultRouter()
 
 router.register(r'sales', views.Sales, basename='sales')
-router.register(r'membership', views.Membership, basename='membership')
 
 router.register(r'payment_intent_tpe', views.PaymentIntentTpeViewset, basename='payment_intent_tpe')
+
 router.register(r'print', views.Print, basename='print')
 
 # Wire up our API using automatic URL routing.

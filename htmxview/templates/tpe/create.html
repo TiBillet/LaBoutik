@@ -1,24 +1,28 @@
 {% load static %}
-<script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
-<script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
 
-<div class="container">
+<div id="stripe_pos_page">
+
     <div id="tpe">
-        Appareil : {{ tpe.name }} {{ tpe.id.hex }}
+        Appareil : {{ terminal.name }}
     </div>
 
-    <div hx-ext="ws" ws-connect="/ws/terminal/{{ tpe.id.hex }}/">
+    <div hx-ext="ws" ws-connect="/ws/terminal/{{ payment_intent.payment_intent_stripe_id }}/">
         <div id="notification">
-            Status Tpe : {{ tpe.status }}
             Status Paiement : {{ payment_intent.status }}
         </div>
 
         <div id="message">
         </div>
-
-        <form id="form" ws-send>
-            <input name="amount" type="number" step="0.01">
-            <button type="submit">Envoyer</button>
-        </form>
     </div>
+
+    <button id="cancel"
+            hx-get="/htmx/payment_intent_tpe/{{ terminal.pk }}/cancel/"
+            hx-target="#stripe_pos_page">
+        Annuler
+    </button>
+    <button id="retry"
+            hx-get="/htmx/payment_intent_tpe/{{ payment_intent.pk }}/retry/"
+            hx-target="#stripe_pos_page">
+        Retry
+    </button>
 </div>
