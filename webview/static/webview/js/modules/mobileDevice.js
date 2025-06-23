@@ -218,7 +218,7 @@ async function bluetoothConnect(macAddress) {
 /**
  * async bluetooth is connected
  */
-async function bluetoothIsConnected() {
+export async function bluetoothIsConnected() {
   const test = await new Promise((resolve) => {
     window.bluetoothSerial.isConnected(() => {
       resolve(true)
@@ -255,23 +255,31 @@ async function bluetoothDisconnect() {
 }
 
 export async function bluetoothConnection() {
-  let connect = false
-  console.log('-> bluetoothConnection -', new Date())
+  const connection = await new Promise((resolve) => {
+    async function tryConnection () {
+      let connect = false
+      console.log('-> bluetoothConnection -', new Date())
 
-  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
-  const isConnected = await bluetoothIsConnected()
+      const macAddress = await bluetoothGetMacAddress("InnerPrinter")
+      const isConnected = await bluetoothIsConnected()
 
-  if (isConnected === false) {
-    connect = await bluetoothConnect(macAddress)
-  } else {
-    connect = true
-  }
-
-  // tentative de reconnexion après 2 secondes
-  if (connect === false) {
-    setTimeout(bluetoothConnection, 2 * 1000)
-  }
+      if (isConnected === false) {
+        connect = await bluetoothConnect(macAddress)
+        resolve(connect)
+      } else {
+        connect = true
+        resolve(connect)
+      }
+      // tentative de reconnexion après 2 secondes
+      if (connect === false) {
+        setTimeout(tryConnection, 2 * 1000)
+      }
+    }
+    tryConnection()
+  })
+  return connection
 }
+
 
 /**
  * Print command

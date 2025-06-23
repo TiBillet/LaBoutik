@@ -167,6 +167,11 @@ export const fr = {
     functionSettingsNotExist:`La fonction "{replace}" du menu paramêtres n'existe pas.`,
     appWillBeRecharged: "L'application sera rechargée.",
     activateLogs: 'activer les logs',
-    printer: 'imprimante'
+    printer: 'imprimante',
+    testPrinting: 'test impression',
+    available: 'disponible',
+    enable: 'activé',
+    connection: 'connexion',
+    printing: 'impression'
   }
 }

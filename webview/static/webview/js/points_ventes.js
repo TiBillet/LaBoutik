@@ -32,17 +32,21 @@ window.openCashDrawer = async function () {
   }
 }
 
-function initWebsocket(server) {
+function initWebsocket() {
+  const server = `wss://${window.location.host}/ws/tuto_js/print/`
   // ---- websocket handler ----
   async function wsHandlerMessag(dataString) {
-    console.log('-> ws, dataString =', dataString)
+    // console.log('-> ws, dataString =', dataString)
     try {
       const data = JSON.parse(dataString)
+      const testHasSunmiPrinter = await hasSunmiPrinter()
       if (data.message === 'print' && testHasSunmiPrinter === true) {
         // create print sunmi queue
         if (window.sunmiPrintQueue === undefined) {
           window.sunmiPrintQueue = []
         }
+
+        console.log('data.data =', data.data);
 
         const options = { printUuid: sys.uuidV4(), content: data.data }
         sunmiPrintQueue.push(options)
@@ -62,10 +66,13 @@ function initWebsocket(server) {
 
   // Connection ws ok
   wsTerminal.socket.addEventListener("open", (event) => {
-    console.log("-> connection ws -", new Date())
+    // get color from  palette.css
+    const vert01 = '#00FF00'
+
+    // console.log("-> connection ws -", new Date())
     wsTerminal.on = true
-    if (document.querySelector('#temps-charge-valeur') !== undefined && document.querySelector('#temps-charge-valeur') !== null) {
-      document.querySelector('#temps-charge-valeur').innerHTML = '<div style="color: green;">ws</div>'
+    if (document.querySelector('#temps-charge-visuel') !== undefined && document.querySelector('#temps-charge-visuel') !== null) {
+      document.querySelector('#temps-charge-visuel').innerHTML = `<div style="color: ${vert01};">ws</div>`
     }
   })
 
@@ -77,16 +84,27 @@ function initWebsocket(server) {
 
   // connection hs
   wsTerminal.socket.addEventListener("close", (event) => {
+    // get color from  palette.css
+    const rouge01 = '#FF0000'
     console.log("The connection has been closed successfully.");
-    document.querySelector('#temps-charge-valeur').innerHTML = '<div style="color: red;">ws</div>'
+    document.querySelector('#temps-charge-visuel').innerHTML = `<div style="color: ${rouge01};">ws</div>`
     // supprime le WebSocket
     wsTerminal = null
     // relance le websocket après 3 secondes
     setTimeout(initWebsocket(server), 3000)
+    // test network
+    if (window.navigator.onLine === false) {
+      document.dispatchEvent(new CustomEvent('netWorkOffLine', {}))
+    }
   })
 }
 
-initWebsocket(`wss://${window.location.host}/ws/tuto_js/print/`)
+navigator.connection.addEventListener('change', () => {
+  console.log('-> network change' + new Date());
+  if (navigator.onLine === false) {
+    document.dispatchEvent(new CustomEvent('netWorkOffLine', {}))
+  }
+});
 
 window.nomModulePrive = null
 window.pv_uuid_courant = ''
@@ -197,6 +215,8 @@ function showNetworkOff() {
     }
   }, 5000)
 }
+
+// event 'netWorkOffLine' send by sys.ajax
 document.addEventListener('netWorkOffLine', showNetworkOff, false)
 
 // les boutons contenant le total des achats
@@ -269,7 +289,7 @@ export function main(nom_module, contexte) {
   }
 
   // window.methods_after_render[0] = { method: initMode }
-  window.methods_after_render = [{ method: initMode }]
+  window.methods_after_render = [{ method: initMode }, { method: initWebsocket }]
 
   // lance le rendu de la page html
   fn.template_render_file('/static/webview/templates/points_ventes.html', params, window.methods_after_render)

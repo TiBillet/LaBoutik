@@ -70,6 +70,13 @@ body {
     justify-content: start;
 }
 
+.BF-col-deb-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+}
+
 .BF-col-uniforme {
     display: flex;
     flex-direction: column;
@@ -1316,8 +1323,20 @@ footer {
     bottom: 4px;
     overflow-y: auto;
 }
-
 /* fin cordova */
+
+.led-green {
+    border-radius: 50%;
+    color: var(--vert04);
+    background-color: var(--vert01);
+}
+
+.led-red {
+    border-radius: 50%;
+    color: var(rouge04);
+    background-color: var(--rouge01);
+}
+
 
 @media only screen and (max-width: 360px) {
     .titre-vue {

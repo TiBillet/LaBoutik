@@ -9,7 +9,7 @@ window.settingsActions = [
 	{ i8nIndex: 'printer', icon: 'fa-print', func: 'settingsShowPrinter', moduleName: 'printer', conditions: ['hasSunmiPrinter'] }
 ]
 
-window.settinsLoadModule = async function (name) {
+window.settingsLoadModule = async function (name) {
 	await import("./" + name + '.js')
 }
 
@@ -23,7 +23,7 @@ window.settingsLaunchAction = async function (ev) {
 			const actionConf = settingsActions.find(item => item.func === action)
 
 			if (actionConf.moduleName && actionConf.load === undefined) {
-				await settinsLoadModule(actionConf.moduleName)
+				await settingsLoadModule(actionConf.moduleName)
 				actionConf['load'] = true
 			}
 
@@ -131,7 +131,7 @@ window.showSettingsInterface = async function () {
 	// event listener
 	document.querySelector('.nav-settings').addEventListener('click', settingsLaunchAction)
 
-	await settinsLoadModule('infos')
+	await settingsLoadModule('infos')
 
 	// show infos
 	settingsShowInfos()
