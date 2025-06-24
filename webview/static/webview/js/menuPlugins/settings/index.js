@@ -9,6 +9,10 @@ window.settingsActions = [
 	{ i8nIndex: 'printer', icon: 'fa-print', func: 'settingsShowPrinter', moduleName: 'printer', conditions: ['hasSunmiPrinter'] }
 ]
 
+/**
+ * Async download module
+ * @param {String} name module name
+ */
 window.settingsLoadModule = async function (name) {
 	await import("./" + name + '.js')
 }
