@@ -6,13 +6,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="{% static 'webview/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
     <script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
-    <title>TPE</title>
+    <title>Terminal de Paiement Électronique</title>
     <style>
         body {
             padding-top: 20px;
             padding-bottom: 20px;
+            background-color: #f8f9fa;
         }
 
         .terminal-button {
@@ -22,63 +24,117 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .terminal-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
         .amount-input {
             margin-bottom: 20px;
         }
+
+        .card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+
+        .page-header {
+            border-bottom: 2px solid #007bff;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+        }
+
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
     </style>
-    <script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
-    <script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
+    <script>
+        function validateAmount() {
+            const amount = document.getElementById('amount').value;
+            if (!amount || amount <= 0) {
+                alert('Veuillez entrer un montant valide');
+                return false;
+            }
+            return true;
+        }
+    </script>
 </head>
 
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
 
 <div class="container">
     <div id="stripe_pos_page">
-
+        <!-- Payment process will be displayed here -->
     </div>
-    <div class="row">
-        <div class="col-12 text-center mb-4">
-            <h2>Sélection du terminal de paiement</h2>
+
+    <div class="row page-header">
+        <div class="col-12 text-center">
+            <h2><i class="fas fa-credit-card"></i> Terminal de Paiement</h2>
         </div>
     </div>
 
-
-    <form hx-post="/htmx/payment_intent_tpe/"
-          hx-trigger="click"
-          hx-target="#stripe_pos_page"
-          hx-swap="innerHTML">
-
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="form-group amount-input">
-                    <label for="amount">Montant de la recharge (€)</label>
-                    <input type="number" class="form-control form-control-lg" name="amount" id="amount" step="0.01"
-                           min="0.01" required>
-                    <input type="hidden" name='terminal_pk' id="terminal_pk" value="{{ terminal.id }}">
-                </div>
-            </div>
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Nouvelle Transaction</h4>
         </div>
+        <div class="card-body">
+            <form hx-post="/htmx/payment_intent_tpe/"
+                  hx-trigger="click"
+                  hx-target="#stripe_pos_page"
+                  hx-swap="innerHTML"
+                  onsubmit="return validateAmount()">
 
-        <div class="row">
-            {% if terminal %}
-                <div class="col-12">
-                    <div class="card mb-3">
-                        <div class="card-body p-0">
-                            <button class="btn btn-primary btn-block terminal-button" type="submit">
-                                <div class="mb-2">{{ terminal.name }}</div>
-                            </button>
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="form-group amount-input">
+                            <label for="amount"><i class="fas fa-euro-sign"></i> Montant de la recharge</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control form-control-lg" name="amount" id="amount" step="0.01"
+                                       min="0.01" required placeholder="0.00">
+                                <div class="input-group-append">
+                                    <span class="input-group-text">€</span>
+                                </div>
+                            </div>
+                            <input type="hidden" name='terminal_pk' id="terminal_pk" value="{{ terminal.id }}">
                         </div>
                     </div>
                 </div>
-            {% else %}
-                <div class="col-12 text-center">
-                    <p class="alert alert-warning">Aucun terminal disponible</p>
+
+                <div class="row">
+                    {% if terminal %}
+                        <div class="col-12">
+                            <div class="card mb-3">
+                                <div class="card-header bg-light">
+                                    <h5 class="mb-0">Terminal Sélectionné</h5>
+                                </div>
+                                <div class="card-body">
+                                    <button class="btn btn-primary btn-block terminal-button" type="submit">
+                                        <i class="fas fa-terminal fa-lg mr-2"></i>
+                                        <span>{{ terminal.name }}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-12 text-center">
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i> Aucun terminal disponible
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
-            {% endif %}
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 </body>
 </html>

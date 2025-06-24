@@ -541,6 +541,70 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
         stripe.terminal.Reader.cancel_action(terminal.stripe_id)
         return HttpResponse(status=205)
 
+    @action(detail=True, methods=['GET'])
+    def valid_and_continue(self, request, pk):
+        config_stripe = ConfigurationStripe.get_solo()
+        stripe.api_key = config_stripe.get_stripe_api()
+
+        # Get the payment intent
+        payment_intent = get_object_or_404(PaymentsIntent, pk=pk)
+        terminal = payment_intent.terminal
+        # Capture the payment
+        stripe_payment = stripe.PaymentIntent.capture(
+            payment_intent.payment_intent_stripe_id
+        )
+
+        # Log the action
+        logger.info(f"Testing payment for payment intent {payment_intent.pk} on terminal {terminal.name}")
+
+        try:
+            # Check if the payment intent is in the REQUIRES_CAPTURE status
+            if payment_intent.status == PaymentsIntent.REQUIRES_CAPTURE:
+                # Update the status to SUCCEEDED
+                payment_intent.status = PaymentsIntent.SUCCEEDED
+                payment_intent.save()
+
+                # Return to the create template with success message
+                return render(request, 'tpe/create.html', context={
+                    'user': request.user,
+                    'terminal': terminal,
+                    'payment_intent': payment_intent,
+                    'message': 'Paiement capturé avec succès!'
+                })
+            elif payment_intent.status == PaymentsIntent.SUCCEEDED:
+                # Payment already succeeded
+                return render(request, 'tpe/create.html', context={
+                    'user': request.user,
+                    'terminal': terminal,
+                    'payment_intent': payment_intent,
+                    'message': 'Paiement déjà validé!'
+                })
+            elif payment_intent.status == PaymentsIntent.IN_PROGRESS:
+                # Payment is still in progress
+                return render(request, 'tpe/create.html', context={
+                    'user': request.user,
+                    'terminal': terminal,
+                    'payment_intent': payment_intent,
+                    'message': 'Paiement en cours de traitement. Veuillez attendre.'
+                })
+            else:
+                # Payment is in another status
+                return render(request, 'tpe/create.html', context={
+                    'user': request.user,
+                    'terminal': terminal,
+                    'payment_intent': payment_intent,
+                    'error': f"Le paiement n'est pas prêt à être capturé. Statut actuel: {payment_intent.get_status_display()}"
+                })
+        except Exception as e:
+            logger.error(f"Error processing payment: {e}")
+
+            # Return to the create template with error message
+            return render(request, 'tpe/create.html', context={
+                'user': request.user,
+                'terminal': terminal,
+                'payment_intent': payment_intent,
+                'error': f"Erreur lors du traitement du paiement: {str(e)}"
+            })
 
 ### TUTORIEL WEBSOCKET
 
