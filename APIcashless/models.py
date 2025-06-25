@@ -2659,6 +2659,24 @@ class PaymentsIntent(models.Model):
         verbose_name=_("Status"),
     )
 
+    def get_from_stripe(self):
+        config_stripe = ConfigurationStripe.get_solo()
+        stripe.api_key = config_stripe.get_stripe_api()
+        # Capture the payment
+        stripe_payment = stripe.PaymentIntent.retrieve(self.payment_intent_stripe_id)
+        if stripe_payment.status == 'requires_payment_method':
+            self.status = PaymentsIntent.REQUIRES_PAYMENT_METHOD
+        elif stripe_payment.status == 'requires_capture':
+            self.status = PaymentsIntent.REQUIRES_CAPTURE
+        elif stripe_payment.status == 'canceled':
+            self.status = PaymentsIntent.CANCELED
+        elif stripe_payment.status == 'processing':
+            self.status = PaymentsIntent.IN_PROGRESS
+        elif stripe_payment.status == 'succeeded':
+            self.status = PaymentsIntent.SUCCEEDED
+        self.save()
+        return self.status
+
     def send_to_terminal(self, terminal: Terminal):
         import stripe
         config = Configuration.get_solo()

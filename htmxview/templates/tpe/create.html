@@ -9,6 +9,7 @@
             <div class="row mb-3">
                 <div class="col-12">
                     <h5 class="card-title">Appareil : <span class="badge bg-info">{{ terminal.name }}</span></h5>
+                    <h4 class="card-title"><span class="badge bg-info">{{ terminal.pk }}</span></h4>
                 </div>
             </div>
 
@@ -16,6 +17,7 @@
                 <div class="col-12">
                     <div class="alert alert-info" id="notification">
                         <strong>Status Paiement :</strong> {{ payment_intent.status }}
+                        <strong>{{ payment_intent.pk }}</strong>
                     </div>
 
                     {% if message %}

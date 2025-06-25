@@ -954,7 +954,7 @@ def print_command_sunmi_cloud(commande, groupe, lignes_article):
         # Add command information
         printer.setAlignment(ALIGN_LEFT)
         printer.appendText(f"Date: {commande.datetime.astimezone().strftime('%d/%m/%Y %H:%M')}\n")
-        printer.setPrintModes(True, False, False)  # Bold
+        printer.setPrintModes(True, True, True)  # Bold
         printer.appendText(f"TABLE: {commande.table.name}\n")
         printer.setPrintModes(False, False, False)  # Reset print modes
         printer.appendText(f"Serveur: {commande.responsable.name}\n")
