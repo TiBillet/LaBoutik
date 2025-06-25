@@ -50,7 +50,16 @@ class AppSettings(viewsets.ViewSet):
             "language" : config.language(),
         }
 
-        return render(request, "appsettings/list.html", context)
+        return render(request, "appsettings/nav.html", context)
+    
+    @action(detail=False, methods=['GET'])
+    def infos(self, request):
+        context = {
+            "timezone" : config.timezone(),
+            "language" : config.language(),
+        }
+
+        return render(request, "appsettings/infos.html", context)
 
 
 class Sales(viewsets.ViewSet):
