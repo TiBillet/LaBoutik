@@ -36,36 +36,121 @@
 
 		<div class="BF-col bt-settings">
 			<i class="fas fa-info mb4px"></i>
-			<span>Infos</span>
-			<div class="target-settings" hx-get="/htmx/appsettings/infos" hx-trigger="click" hx-swap="#container-settings"></div>
+			<span>Infos <!-- TODO: traduction Infos --></span>
+			<div class="target-settings" hx-get="/htmx/appsettings/infos" hx-trigger="click" hx-target="#container-settings"
+				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>Infos</span>')">
+				<!-- TODO: traduction Paramètres et Infos -->
+			</div>
 		</div>
 
 		<div class="BF-col bt-settings">
 			<i class="fas fa-language mb4px"></i>
-			<span>Language</span>
-			<div class="target-settings" action="language"></div>
+			<span>Language <!-- TODO: traduction Language --></span>
+			<div class="target-settings" hx-get="/htmx/appsettings/language" hx-trigger="click"
+				hx-target="#container-settings"
+				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>Language</span>')">
+				<!-- TODO: traduction Paramètres et Language -->
+			</div>
 		</div>
 
 		<div class="BF-col bt-settings">
 			<i class="fas fa-stethoscope mb4px"></i>
-			<span>Logs</span>
-			<div class="target-settings" action="logs"></div>
+			<span>Logs <!-- TODO: traduction Logs --></span>
+			<div class="target-settings" action="logs"
+				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>Logs</span>')">
+				<!-- TODO: traduction Paramètres et Logs -->
+			</div>
 		</div>
 
 		<div id="nav-settings-bt-print-" class="BF-col bt-settings">
 			<i class="fas fa-print mb4px"></i>
-			<span>Printer</span>
-			<div class="target-settings" action="printer"></div>
+			<span>Printer <!-- TODO: traduction Printer --></span>
+			<div class="target-settings" action="printer"
+				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>Printer</span>')">
+				<!-- TODO: traduction  Paramètres et Printer -->
+			</div>
 		</div>
 
 		<div class="BF-col bt-settings">
 			<i class="fas fa-times mb4px"></i>
-			<span>Exit</span>
-			<div class="target-settings" onclick="navigator.app.exitApp()"></div>
+			<span>Exit<!-- TODO: traduction --> </span>
+			<div class="target-settings" hx-get="/htmx/appsettings/printer" hx-trigger="click" hx-target="#container-settings"
+				hx-on:click="navigator.app.exitApp()">
+			</div>
 		</div>
 	</div>
-	<div id="container-settings" class="BF-col-deb content-settings"></div>
+
+	<div id="container-settings" class="BF-col-deb content-settings">
+		{% include "appsettings/infos.html" %}
+	</div>
 </div>
+
+<script>
+	/**
+	 * Gère le changement de langue du côté javascript (TODO: gestion côté back, une fois htmx installé partout)
+	 */
+	function manageLanguageSelectFromFront() {
+		console.log('-> manageLanguageSelectFromFront')
+		const local = localStorage.getItem("language")
+		const data = getLanguages()
+		console.log('data =', data)
+
+		let htmlFragment = ''
+		for (let i = 0; i < data.length; i++) {
+			const langue = data[i].language
+			const label = data[i].infos
+
+			if (langue === local) {
+				htmlFragment += `<div style="margin-bottom: 3rem;">
+        <input type="radio" id="language-${i}" name="select-language" value="${langue}" checked />
+        <label for="language-${i}" style="font-size: 1.5rem;">${label}</label>
+      </div>`
+			} else {
+				htmlFragment += `<div style="margin-bottom: 3rem;">
+        <input type="radio" id="language-${i}" name="select-language" value="${langue}" />
+        <label for="language-${i}" style="font-size: 1.5rem;">${label}</label>
+      </div>`
+			}
+		}
+		document.querySelector('#settings-language-list').innerHTML = htmlFragment
+	}
+
+	/**
+	 * Méthode du bouton de validation du changement de lague
+	 */
+	async function changeLanguageAction() {
+		console.log("-> changeLanguageAction !")
+		// récupération de la valeur entrée
+		const selectLanguage = document.querySelector('input[type="radio"][name="select-language"]:checked').value
+		// console.log('selectLanguage =', selectLanguage)
+		localStorage.setItem("language", selectLanguage)
+		// POST le changement de langue au serveur et recharge la page
+		try {
+			const body = new URLSearchParams()
+			body.append('csrfmiddlewaretoken', glob.csrf_token)
+			body.append('language', selectLanguage)
+			const response = await fetch(`/i18n/setlang/`, { method: 'post', body })
+			if (response.status === 200) {
+				window.location.reload()
+			} else {
+				throw Error(data.message)
+			}
+		} catch (error) {
+			console.log('-> fetcht  =', error)
+		}
+
+	}
+
+	document.body.addEventListener('htmx:afterSwap', function (evt) {
+		const idLanguageList = evt.target.querySelector('#settings-language-list')
+
+		// container language afficher => launch method after swap
+		if (idLanguageList !== null) {
+			manageLanguageSelectFromFront()
+		}
+	})
+
+</script>
 
 <style>
 	#service-commandes {

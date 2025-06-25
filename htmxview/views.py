@@ -51,16 +51,28 @@ class AppSettings(viewsets.ViewSet):
         }
 
         return render(request, "appsettings/nav.html", context)
-    
+
     @action(detail=False, methods=['GET'])
     def infos(self, request):
+        context = {}
+
+        return render(request, "appsettings/infos.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def language(self, request):
         config = Configuration.get_solo()
         context = {
             "timezone" : config.timezone(),
             "language" : config.language(),
         }
 
-        return render(request, "appsettings/infos.html", context)
+        return render(request, "appsettings/language.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def printer(self, request):
+        context = {}
+
+        return render(request, "appsettings/printer.html", context)
 
 
 class Sales(viewsets.ViewSet):

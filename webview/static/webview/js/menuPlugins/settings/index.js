@@ -6,15 +6,14 @@ window.showSettingsInterface = function () {
   sys.effacerElements(['#page-commandes', '#tables', '#commandes-table'])
   // rend visible l'élément(page) '#service-commandes'
   sys.afficherElements(['#service-commandes,block'])
-
-  // changer titre
+ 
   // changer titre
   vue_pv.asignerTitreVue(`<span data-i8n="settings,capitalize">Paramètres</span> - <span data-i8n="infos",capitalize">Infos</span>`)
 
   // ci-dessous <=> <button hx-get="allOrders/null" hx-target="#service-commandes">clique</button>
   htmx.ajax('GET', '/htmx/appsettings/', '#service-commandes')
-}
 
+}
 
 
 /**
