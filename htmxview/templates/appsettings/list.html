@@ -1,0 +1,30 @@
+{% load i18n humanize static %}
+
+<div>
+    <h1>Settings</h1>
+    <h2>Coucou, voici ce qu'envoi le contexte ( htmxview.views.AppSettings.list )</h2>
+    <ul>
+        <li>currency_code : {{ currency_code }}</li>
+        <li>validation_service_ecran : {{ validation_service_ecran }}</li>
+        <li>remboursement_auto_annulation : {{ remboursement_auto_annulation }}</li>
+        <li>void_card : {{ void_card }}</li>
+        <li>cash_float : {{ cash_float }}</li>
+        <li>timezone : {{ timezone }}</li>
+        <li>language : {{ language }}</li>
+    </ul>
+</div>
+
+<script>
+    // pour récupérer ces valeurs en js :
+
+    let currency_code = "{{ currency_code | safe }}"
+    let validation_service_ecran = "{{ validation_service_ecran | safe }}"
+    let remboursement_auto_annulation = "{{ remboursement_auto_annulation | safe }}"
+    let void_card = "{{ void_card | safe }}"
+    let cash_float = "{{ cash_float | safe }}"
+    let timezone = "{{ timezone | safe }}"
+    let language = "{{ language | safe }}"
+
+    console.log('currency_code = ', currency_code)
+    console.log('validation_service_ecran = ', validation_service_ecran)
+</script>

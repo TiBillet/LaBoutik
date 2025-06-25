@@ -34,6 +34,25 @@ from webview.serializers import debut_fin_journee
 logger = logging.getLogger(__name__)
 
 
+class AppSettings(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+
+    def list(self, request): # le get /
+        config = Configuration.get_solo()
+        context = {
+            "currency_code": config.currency_code,
+            "validation_service_ecran": config.validation_service_ecran,
+            "remboursement_auto_annulation": config.remboursement_auto_annulation,
+            "void_card": config.void_card,
+            "cash_float": config.cash_float,
+            "timezone" : config.timezone(),
+            "language" : config.language(),
+        }
+
+        return render(request, "appsettings/list.html", context)
+
+
 class Sales(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
