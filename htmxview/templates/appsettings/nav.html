@@ -37,7 +37,7 @@
 		<div class="BF-col bt-settings">
 			<i class="fas fa-info mb4px"></i>
 			<span>Infos</span>
-			<div class="target-settings" action="infos"></div>
+			<div class="target-settings" hx-get="/htmx/appsettings/infos" hx-trigger="click" hx-swap="#container-settings"></div>
 		</div>
 
 		<div class="BF-col bt-settings">
@@ -64,7 +64,7 @@
 			<div class="target-settings" onclick="navigator.app.exitApp()"></div>
 		</div>
 	</div>
-	<div class="BF-col-deb content-settings"></div>
+	<div id="container-settings" class="BF-col-deb content-settings"></div>
 </div>
 
 <style>

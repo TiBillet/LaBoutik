@@ -54,6 +54,7 @@ class AppSettings(viewsets.ViewSet):
     
     @action(detail=False, methods=['GET'])
     def infos(self, request):
+        config = Configuration.get_solo()
         context = {
             "timezone" : config.timezone(),
             "language" : config.language(),
