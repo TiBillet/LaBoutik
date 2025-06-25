@@ -14,24 +14,26 @@
     margin: 0;
     padding: .5rem 0;
 }
-    .popup-row:nth-child(odd) {
-        background: none;
-        color: white;
-    }
+
+.popup-row:nth-child(odd) {
+    background: none;
+    color: white;
+}
 
 .membership-row {
     grid-template-areas: "name start" "name origin";
 }
 
-.popup-row-header, .popup-row-start {
+.popup-row-header,
+.popup-row-start {
     padding: 0 1rem;
 }
 
 .popup-row-header {
     align-items: center;
     border-bottom: 2px solid;
-	display: flex;
-	justify-content: space-between;
+    display: flex;
+    justify-content: space-between;
     margin-bottom: .5rem;
 }
 
@@ -67,7 +69,8 @@
         justify-content: space-around;
     }
 
-    .popup-row-value, .popup-row-name {
+    .popup-row-value,
+    .popup-row-name {
         flex: 0 0 auto;
         padding: .3rem 0 0 1rem;
     }
@@ -77,22 +80,25 @@
         max-width: 50%;
     }
 
-    .popup-row-origin, .popup-row-start {
+    .popup-row-origin,
+    .popup-row-start {
         flex: 1 0 auto;
         padding: 1rem;
         position: relative;
         text-align: end;
         top: .5rem;
     }
-        .popup-row-origin::before, .popup-row-start::before {
-            content: attr(title);
-            display: inline-flex;
-            font-size: small;
-            margin-right: 1rem;
-            padding: .2rem;
-            position: absolute;
-            right: 0;
-            top: -.3rem;
-        }
 
+    .popup-row-origin::before,
+    .popup-row-start::before {
+        content: attr(title);
+        display: inline-flex;
+        font-size: small;
+        margin-right: 1rem;
+        padding: .2rem;
+        position: absolute;
+        right: 0;
+        top: -.3rem;
     }
+
+}

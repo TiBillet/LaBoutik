@@ -159,6 +159,18 @@ export const en = {
     anonymousCard: 'Anonymous card',
     sales: 'Sales',
     cashDrawer: 'cash drawer',
-    testLcd: 'test lcd'
+    testLcd: 'test lcd',
+    settings: 'settings',
+    infos: 'infos',
+    logs: 'logs',
+    functionSettingsNotExist: 'The "{replace}" function of the settings menu does not exist.',
+    appWillBeRecharged: 'The application will be recharged.',
+    activateLogs: 'activate the logs',
+    printer: 'printer',
+    testPrinting: 'test printing',
+    available: 'available',
+    enable: 'enable',
+    connection: 'connection',
+    printing: 'printing'
   }
 }

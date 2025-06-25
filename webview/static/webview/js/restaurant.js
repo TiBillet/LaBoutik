@@ -1559,7 +1559,7 @@ export function serviceAfficherCommandesTable(groupementCategories, idTable, pro
     // sys.logJson('retour = ', retour)
     if (status.code === 200) {
       // visuel enlever "signal en rouge"
-      document.querySelector('#temps-charge-visuel').innerHTML = ``
+      // document.querySelector('#temps-charge-visuel').innerHTML = ``
       // retour interval initial
       attenteLancerVerifierEtatCommandes.interval = intervalActualisationVuePreparations
 
@@ -1593,7 +1593,7 @@ export function serviceAfficherCommandesTable(groupementCategories, idTable, pro
       // console.log('->  après une erreur réseau:')
       // console.log('->  attenteLancerVerifierEtatCommandes.etat = ', attenteLancerVerifierEtatCommandes.etat)
       // visuel etat de la connexion
-      document.querySelector('#temps-charge-visuel').innerHTML = `<i class="fas fa-wifi" style="color:#FF0000;"></i>`
+      // document.querySelector('#temps-charge-visuel').innerHTML = `<i class="fas fa-wifi" style="color:#FF0000;"></i>`
       relancePreparationApresDefaut()
     }
   })
