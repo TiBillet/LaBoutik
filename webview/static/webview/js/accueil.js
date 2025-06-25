@@ -16,9 +16,12 @@ window.settingsStartLogs = function () {
   window.settingsLogsContent = []
 
   // modifier fonction log - utilise le store
-  window.console.log = function (message) {
+  window.console.log = function (message, plus) {
+    if (plus === undefined) {
+      plus = ''
+    }
     // enregistre le message de log
-    window.settingsLogsContent.push(message)
+    window.settingsLogsContent.push(message + ' ' +plus)
     // lance la fonction de log original
     window.oldLogFunc.apply(console, arguments)
   }
