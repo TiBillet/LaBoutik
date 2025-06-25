@@ -2689,7 +2689,7 @@ class PaymentsIntent(models.Model):
             amount=self.amount,
             currency=config.currency_code.lower(),
             payment_method_types=["card_present"],
-            capture_method="manual",
+            capture_method="automatic", # manual si on veut capturer pour payer plus tard. A tester automatic_async pour aller plus vite ?
             # stripe_account=stripe_account,
         )
         self.payment_intent_stripe_id = payment_intent.id
