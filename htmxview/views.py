@@ -74,6 +74,18 @@ class AppSettings(viewsets.ViewSet):
 
         return render(request, "appsettings/printer.html", context)
 
+    @action(detail=False, methods=['GET'])
+    def nfc(self, request):
+        context = {}
+
+        return render(request, "appsettings/nfc.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def logs(self, request):
+        context = {}
+
+        return render(request, "appsettings/logs.html", context)
+
 
 class Sales(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]

@@ -1,25 +1,27 @@
 <div class="settings-fond">
-  <bouton-basique traiter-texte="1" texte="TEST IMPRESSION|1.5rem||testPrinting-uppercase" couleur-fond="#0335b8"
-    width="240px" height="100px" onclick="SettingsTestPrint();" style="margin: 30px 0;"></bouton-basique>
+  <!-- TODO: traduire "TEST IMPRESSION" -->
+  <bouton-basique traiter-texte="1" texte="TEST IMPRESSION|1.5rem" couleur-fond="#0335b8"
+    width="240px" height="100px" onclick="settingsTestPrint();" style="margin: 30px 0;"></bouton-basique>
 
   <div class="settings-state-content-step">
     <div class="settings-state">
-      <div class="${bluetoothAvailable} settings-led-size"></div>
+      <div id="settings-bluetooth-available-led"></div> <!-- led -->
     </div>
     <div class="settings-state-line"></div>
-    <label class="settings-label">Bluetooth ${getTranslate('available')}</label>
+    <label class="settings-label">Bluetooth available</label> <!-- TODO: traduire 'available' -->
   </div>
 
   <div class="BF-ligne l100p">
     <div class="settings-state-connexion-line"></div>
   </div>
 
+  <!--
   <div class="settings-state-content-step">
     <div class="settings-state">
-      <div class="${bluetoothEnable} settings-led-size"></div>
+      <div id="settings-bluetooth-enable-led"></div>
     </div>
     <div class="settings-state-line"></div>
-    <label class="settings-label">Bluetooth ${getTranslate('enable')}</label>
+    <label class="settings-label">Bluetooth enable</label> // TODO: traduire 'enable'
   </div>
 
   <div class="BF-ligne l100p">
@@ -28,11 +30,12 @@
 
   <div class="settings-state-content-step mb8px">
     <div class="settings-state">
-      <div class="${bluetoothConnected} settings-led-size"></div>
+      <div id="settings-bluetooth-connection-led"></div>
     </div>
     <div class="settings-state-line"></div>
-    <label class="settings-label">Bluetooth ${getTranslate('connection')}</label>
+    <label class="settings-label">Bluetooth connection</label> // TODO: traduire 'connection'
   </div>
+-->
 
   <div class="BF-ligne l100p">
     <div class="settings-state-connexion-line"></div>
@@ -43,7 +46,7 @@
       <div id="Bluetooth-write-result" class="led-red settings-led-size"></div>
     </div>
     <div class="settings-state-line"></div>
-    <label class="settings-label">Bluetooth ${getTranslate('printing')}</label>
+    <label class="settings-label">Printing</label> <!-- TODO: traduire 'Printing' -->
   </div>
 </div>
 

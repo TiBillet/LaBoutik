@@ -56,18 +56,30 @@
 		<div class="BF-col bt-settings">
 			<i class="fas fa-stethoscope mb4px"></i>
 			<span>Logs <!-- TODO: traduction Logs --></span>
-			<div class="target-settings" action="logs"
+			<div class="target-settings" action="logs" hx-get="/htmx/appsettings/logs" hx-trigger="click"
+				hx-target="#container-settings"
 				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>Logs</span>')">
 				<!-- TODO: traduction Paramètres et Logs -->
 			</div>
 		</div>
 
-		<div id="nav-settings-bt-print-" class="BF-col bt-settings">
+		<div id="nav-settings-bt-print" class="BF-col bt-settings">
 			<i class="fas fa-print mb4px"></i>
 			<span>Printer <!-- TODO: traduction Printer --></span>
-			<div class="target-settings" action="printer"
+			<div class="target-settings" action="printer" hx-get="/htmx/appsettings/printer" hx-trigger="click"
+				hx-target="#container-settings"
 				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>Printer</span>')">
 				<!-- TODO: traduction  Paramètres et Printer -->
+			</div>
+		</div>
+
+		<div class="BF-col bt-settings">
+			<!-- <i class="fas fa-nfc mb4px"></i> n'existe pas en 5.1 -->
+			<span>NFC</span>
+			<div class="target-settings" action="nfc" hx-get="/htmx/appsettings/nfc" hx-trigger="click"
+				hx-target="#container-settings"
+				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>NFC</span>')">
+				<!-- TODO: traduction  Paramètres -->
 			</div>
 		</div>
 
@@ -116,7 +128,7 @@
 	}
 
 	/**
-	 * Méthode du bouton de validation du changement de lague
+	 * Méthode du bouton de validation du changement de langue
 	 */
 	async function changeLanguageAction() {
 		console.log("-> changeLanguageAction !")
@@ -141,15 +153,171 @@
 
 	}
 
-	document.body.addEventListener('htmx:afterSwap', function (evt) {
-		const idLanguageList = evt.target.querySelector('#settings-language-list')
+	// --- printer --
+	// launch printing
+	async function settingsTestPrint() {
+		try {
+			// init led
+			document.querySelector("#Bluetooth-write-result").setAttribute("class", "led-red settings-led-size")
 
-		// container language afficher => launch method after swap
-		if (idLanguageList !== null) {
+			// create print sunmi queue
+			if (window.sunmiPrintQueue === undefined) {
+				window.sunmiPrintQueue = [];
+			}
+
+			// load function bluetoothWrite
+			const { bluetoothWrite } = await import("{% static 'webview/js/modules/mobileDevice.js' %}")
+
+			// date
+			const date = new Date();
+			const formattedDatePart1 = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")} `
+			const formattedDatePart2 = `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")} `
+			const formattedDate = formattedDatePart1 + " " + formattedDatePart2;
+
+			// print
+			const content = [
+				{ type: "font", value: "A" },
+				{ type: "size", value: 1 },
+				{ type: "bold", value: 1 },
+				{ type: "align", value: "left" },
+				{ type: "text", value: "** TEST PRINT **" },
+				{ type: "bold", value: 0 },
+				{ type: "text", value: "Hello World" },
+				{ type: "size", value: 0 },
+				{ type: "text", value: "--------------------------------" },
+				{ type: "text", value: `Test completed at ${formattedDate}` },
+				{ type: "feed", value: 2 },
+				{ type: "cut" },
+			]
+
+			const options = { printUuid: sys.uuidV4(), content }
+			sunmiPrintQueue.push(options)
+			const result = await bluetoothWrite(options.printUuid)
+
+			if (result) {
+				document.querySelector("#Bluetooth-write-result").setAttribute("class", "led-green settings-led-size");
+			} else {
+				document.querySelector("#Bluetooth-write-result").setAttribute("class", "led-red settings-led-size");
+			}
+		} catch (error) {
+			console.log("-> SettingsTestPrint,", error);
+		}
+	}
+
+	async function testPrinterSunmi() {
+		try {
+
+			// load modules bluetooth
+			const { bluetoothSerialAvailable, enableBluetooth, bluetoothConnection, bluetoothDisconnect } = await import("{% static 'webview/js/modules/mobileDevice.js' %}")
+
+			// bluetooth available ?
+			const availableLed = document.querySelector('#settings-bluetooth-available-led')
+			if (await bluetoothSerialAvailable()) {
+				availableLed.setAttribute('class', 'led-green settings-led-size')
+			} else {
+				eavailableLed.setAttribute('class', 'led-red settings-led-size')
+			}
+
+			/*
+			// bluetooth enable ?
+			const enableLed = document.querySelector('#settings-bluetooth-enable-led')
+			const enableBluetoothResult = await enableBluetooth()
+			console.log('enableBluetoothResult =', enableBluetoothResult)
+			if (enableBluetoothResult) {
+				enableLed.setAttribute('class', 'led-green settings-led-size')
+			} else {
+				enableLed.setAttribute('class', 'led-red settings-led-size')
+			}
+
+			// bluetooth connection ?
+			const connectionLed = document.querySelector('#settings-bluetooth-connection-led')
+			if (await bluetoothConnection()) {
+				connectionLed.setAttribute('class', 'led-green settings-led-size')
+			} else {
+				connectionLed.setAttribute('class', 'led-red settings-led-size')
+			}
+*/
+		} catch (error) {
+			console.log("-> SettingsTestPrint,", error);
+		}
+	}
+
+	// --- logs ---
+	// etat d'activation des logs
+	function showLogsState() {
+		let template = '<label class="md16px">activer les logs</label>' // TODO: traduire "activer les logs" 
+		if (localStorage.getItem("activatedLogs") === "true") {
+			template += '<input type="checkbox" id="settings-start-record-logs" checked />'
+			// modifie la fonction de log
+			if (oldLogFunc === console.log) {
+				settingsStartLogs()
+			}
+		} else {
+			template += '<input type="checkbox" id="settings-start-record-logs" />'
+		}
+		document.querySelector('#settings-logs-state').innerHTML = template
+	}
+
+	settingsActivedLogs = function (event) {
+		const element = event.target
+		if (element.checked) {
+			localStorage.setItem("activatedLogs", "true")
+			settingsStartLogs()
+		} else {
+			localStorage.setItem("activatedLogs", "false")
+			if (window.settingsLogsContent !== undefined) {
+				window.settingsLogsContent = []
+				// active fonction  de log originale
+				console.log = window.oldLogFunc
+				document.querySelector('#settings-logs-content').innerHTML = ''
+			}
+		}
+
+	}
+
+	function showListLogs() {
+		let logsHtml = ''
+		if (window.settingsLogsContent !== undefined && window.settingsLogsContent.length > 0) {
+			for (let i = window.settingsLogsContent.length - 1; i >= 0; i--) {
+				const msg = window.settingsLogsContent[i]
+				// console.log('msg =', msg);
+				logsHtml += `<div>${msg}</div>`
+			}
+		}
+		document.querySelector('#settings-logs-content').innerHTML = logsHtml
+	}
+
+	// --- listen htmx:afterSwap and launch methods --
+	document.body.addEventListener('htmx:afterSwap', async function (evt) {
+		const eleLanguageList = evt.target.querySelector('#settings-language-list')
+		const eleVersionApk = evt.target.querySelector('#settings-info-version-apk')
+		const elePrinter = evt.target.querySelector('#settings-bluetooth-available-led')
+		const eleLogState = evt.target.querySelector('#settings-logs-state')
+
+		// language - launch method after swap
+		if (eleLanguageList !== null) {
 			manageLanguageSelectFromFront()
 		}
-	})
 
+		// infos - version apk
+		if (eleVersionApk !== null) {
+			document.querySelector('#settings-info-version-apk').innerText = glob.appConfig.versionApk
+		}
+
+		// printer
+		if (elePrinter !== null && await hasSunmiPrinter()) {
+			console.log('-> printer', new Date())
+			
+			testPrinterSunmi()
+		}
+
+		// logs
+		if (eleLogState !== null) {
+			showLogsState()
+			document.querySelector('#settings-start-record-logs').addEventListener('change', settingsActivedLogs)
+			showListLogs()
+		}
+	})
 </script>
 
 <style>
