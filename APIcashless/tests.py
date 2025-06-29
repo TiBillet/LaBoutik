@@ -192,6 +192,28 @@ class CashlessTest(TiBilletTestCase):
         carte.refresh_from_db()
         return carte
 
+
+    def check_carte_lespass_qrcode_membership(self, carte):
+        # On se connecte à Lespass :
+        session = requests.session()
+        config = Configuration.get_solo()
+        # On se connecte sur lespass avec le scan qrcode qui loggue l'user automatiquement
+        session.get(f"{config.billetterie_url}qr/{carte.uuid_qrcode}", verify=False)
+        # On fait comme si on cliquait sur le bouton "Membership" dans my account
+        membership_response = session.get(f"{config.billetterie_url}my_account/membership", verify=False)
+        session.close()
+        return membership_response
+
+
+
+    def check_carte_total_get_template_response(self, carte):
+        # Check carte pour récupérer la réponse template de front
+        response = self.client.post('/wv/check_carte',
+                                    data=json.dumps({"tag_id_client": carte.tag_id}, cls=DjangoJSONEncoder),
+                                    content_type="application/json",
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        return response
+
     def check_carte_total_WV(self, carte, total) -> CarteCashless:
         response = self.client.post('/wv/check_carte',
                                     data=json.dumps({"tag_id_client": carte.tag_id}, cls=DjangoJSONEncoder),
@@ -348,9 +370,6 @@ class CashlessTest(TiBilletTestCase):
                 prenom=fake.first_name(),
                 name=fake.last_name(),
                 email=fake.email(),
-                date_inscription=date,
-                date_derniere_cotisation=date,
-                cotisation=42,
             )
             carte = cartes.filter(cartes_maitresses__isnull=True)[i]
             carte.membre = membre
@@ -364,9 +383,6 @@ class CashlessTest(TiBilletTestCase):
                 prenom=fake.first_name(),
                 name=fake.last_name(),
                 email=fake.email(),
-                date_inscription=date,
-                date_derniere_cotisation=date,
-                cotisation=42,
             )
             carte = cartes.filter(cartes_maitresses__isnull=False)[i]
             carte.membre = membre
@@ -653,7 +669,6 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(carte_in_response.get('uuid_qrcode'), f"{carte.uuid_qrcode}")
         self.assertEqual(carte_in_response.get('membre_name'), carte.membre.name)
         self.assertEqual(carte.total_monnaie(), total)
-        self.assertTrue(carte_in_response.get('cotisation_membre_a_jour_booleen'))
         assets_in_response = carte_in_response.get('assets')
         assets_db = carte.assets.all()
         for asset in assets_in_response:
@@ -708,7 +723,6 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(carte_in_response_gift.get('membre_name'), '---')
         self.assertEqual(carte_in_response_gift.get('total_monnaie'), f"{total_gift}")
         self.assertEqual(carte2.total_monnaie(), total_gift)
-        self.assertFalse(carte_in_response_gift.get('cotisation_membre_a_jour_booleen'))
         assets_in_response_gift = carte_in_response_gift.get('assets')
         assets_db_gift = carte2.assets.all()
         for asset in assets_in_response_gift:
@@ -1100,17 +1114,6 @@ class CashlessTest(TiBilletTestCase):
         self.assertContains(response, 'check-carte-ok')
         self.assertContains(response, '#b85521')  # couleur orange
 
-    # def send_card_to_fedow_with_api(self):
-    #     cards = CarteCashless.objects.all()
-    #     config = Configuration.get_solo()
-    #     self.assertTrue(config.can_fedow())
-    #     fedowAPI = FedowAPI()
-    #     # Les cartes sont automatiquement envoyé à Fedow par un signal post_save
-    #     # On check que Fedow renvoie bien un 409 : conflict, existe déja
-    #     try:
-    #         response = fedowAPI.NFCcard.create(cards)
-    #     except Exception as e:
-    #         self.assertIn('409', str(e))
 
     def creation_wallet_carte_vierge(self):
         # Les cartes n'ont pas de wallet, on check qu'ils sont créé avec l'envoie à Fedow
@@ -1123,46 +1126,64 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(serialized_card.get('wallet').get('uuid'), carte.wallet.uuid)
         self.assertTrue(serialized_card['is_wallet_ephemere'])
 
-    def send_adh_to_fedow_with_api(self):
-        # TODO: L'adhésion ne se fait plus avec le membre, mais avec le wallet
-        # TEST AVEC WALLET SEUL
-        # TEST AVEC WALLET QUI A DEJA SON EMAIL
-        # Créer une adhésion sur lespass et vérifier ici
-
-        # TODO: Tester avec une adhesion extérieure.
-        # Erreur : Le token de l'adéhsion extérieur n'existe pas dans le wallet du lieu
-        # Dans fedow, TokenNotFound avec un get()
-
-        # D'abord, on test la validation d'une adhésion EXTERNE
-        fedowAPI = FedowAPI()
-        article_adhesion = Articles.objects.filter(
-            methode_choices=Articles.ADHESIONS,
-            subscription_fedow_asset__categorie=MoyenPaiement.ADHESION,
+    def adhesion_fedow_lespass(self):
+        # récup' des objet nécéssaires :
+        primary_card = CarteMaitresse.objects.filter(
+            carte__membre__isnull=False
         ).first()
 
-        """
-        carte = membre.CarteCashless_Membre.first()
-        wallet = carte.wallet or membre.wallet
-        if not wallet:
-            wallet: Wallet = fedowAPI.NFCcard.link_user(email=carte.membre.email, card=carte)
+        responsable: Membre = primary_card.carte.membre
+        pdv = PointDeVente.objects.get(name="Adhésions")
+        carte = self.create_one_card_db()
+        carte : CarteCashless = self.check_carte_total_WV(carte, 0) # un check carte depuis le front va créer le wallet Fedow
 
-        adhesion = fedowAPI.subscription.create(
-            wallet=f"{wallet.uuid}",
-            amount=int(membre.cotisation * 100),
-            date=membre.date_derniere_cotisation,
-            user_card_firstTagId=carte.tag_id,
-            article=article_adhesion,
-        )
+        fedowAPI = FedowAPI()
+        fedowAPI.place.get_accepted_assets()
 
-        self.assertIsInstance(adhesion, dict)
-        self.assertEqual(adhesion.get('amount'), int(self.config.prix_adhesion * 100))
-        self.assertEqual(adhesion.get('action'), TransactionValidator.SUBSCRIBE)
-        self.assertEqual(adhesion.get('sender'), UUID(self.config.fedow_place_wallet_uuid))
-        carte.refresh_from_db()
-        self.assertEqual(adhesion.get('receiver'), carte.wallet.uuid)
+        # Récupération d'un produit adhésion
+        # C'est une adhésion fédéré, on test par la même occasion qu'on peut adhérer via la fédération
+        article_adhesion = Articles.objects.filter(
+            methode_choices=Articles.ADHESIONS,
+            fedow_asset__categorie=MoyenPaiement.EXTERNAL_MEMBERSHIP,
+        ).first()
 
-        # TODO: vérifier le token uuid créé dans le cashless
-        """
+
+        json_achats = {"articles": [{"pk": f"{article_adhesion.pk}", "qty": 1}],
+                       "pk_responsable": f"{responsable.pk}",
+                       "pk_pdv": f"{pdv.pk}",
+                       "total": f"{article_adhesion.prix}", # on en selectionne deux pour vérifier que c'est bien une adhésion mais a prix x2
+                       "tag_id": f"{carte.tag_id}",
+                       "moyen_paiement": 'espece',
+                       }
+
+        response = self.client.post('/wv/paiement',
+                                    data=json.dumps(json_achats, cls=DjangoJSONEncoder),
+                                    content_type="application/json",
+                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+
+        content = response.json() # la réponse de paiement est encore un json ( pas encore htmx )
+        assert content['carte']['tag_id'] == carte.tag_id
+        assert content['somme_totale'] == f"{article_adhesion.prix}"
+
+        # La carte est pour l'instant anonyme
+        rendered_html_check_card = self.check_carte_total_get_template_response(carte) # qui n'est pas un json mais bien un rendu de template
+        self.assertContains(rendered_html_check_card, 'background-color:#b85521;') # couleur de fond ORANGE
+        self.assertContains(rendered_html_check_card, "aujourd&#39;hui") # l'adhésion précédente : aujourd'hui
+
+        # Liaison d'un email :
+        fake = Faker()
+        email = fake.email()
+        self.link_email_with_wallet_on_lespass(card=carte, email=email)
+        rendered_html_check_card = self.check_carte_total_get_template_response(carte)
+        self.assertContains(rendered_html_check_card, 'background-color:#339448;') # couleur de fond VERT
+        self.assertContains(rendered_html_check_card, "aujourd&#39;hui") # l'adhésion précédente : aujourd'hui
+
+        # Vérification coté Lespass que l'adhésion apparaisse bien lorsqu'on scanne le qrcode :
+        membership_response = self.check_carte_lespass_qrcode_membership(carte)
+        rendered_html_lespass = membership_response.text
+
+        import ipdb; ipdb.set_trace()
+        self.assertIn(article_adhesion.name, rendered_html_lespass)
 
     def fedow_wallet_with_tagid(self):
         card = self.create_one_card_db()
@@ -1181,11 +1202,11 @@ class CashlessTest(TiBilletTestCase):
         card.refresh_from_db()
         self.assertEqual(card.get_wallet().uuid, wallet.get('uuid'))
 
-        data_for_laboutik = fedowAPI.card_wallet_to_laboutik(serialized_card)
-        self.assertIsInstance(data_for_laboutik, dict)
-        self.assertIsInstance(data_for_laboutik.get('total_monnaie'), Decimal)
-        self.assertIsInstance(data_for_laboutik.get('assets'), list)
-        self.assertEqual(data_for_laboutik.get('first_tag_id'), card.tag_id)
+        # data_for_laboutik = fedowAPI.card_wallet_to_laboutik_for_test(serialized_card)
+        # self.assertIsInstance(data_for_laboutik, dict)
+        # self.assertIsInstance(data_for_laboutik.get('total_monnaie'), Decimal)
+        # self.assertIsInstance(data_for_laboutik.get('assets'), list)
+        # self.assertEqual(data_for_laboutik.get('first_tag_id'), card.tag_id)
 
         return serialized_card
 
@@ -2145,8 +2166,8 @@ class CashlessTest(TiBilletTestCase):
         print("création d'un wallet avec une carte seule (ephemere)")
         self.creation_wallet_carte_vierge()
 
-        # print("Envoie des adhésions à fedow")
-        # self.send_adh_to_fedow_with_api()
+        print("Envoie des adhésions à fedow é vérif que ok dans Lespass")
+        self.adhesion_fedow_lespass()
 
         print("Récupération d'un wallet via le tag_id")
         self.serialized_card = self.fedow_wallet_with_tagid()

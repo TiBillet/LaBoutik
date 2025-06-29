@@ -161,7 +161,7 @@ def create_article_membreship_badge(sender, instance: MoyenPaiement, created, **
         ]:
             config = Configuration.get_solo()
             retrieve_product = requests.get(
-                f"{config.billetterie_url}/api/products/{instance.pk}/",
+                f"{config.billetterie_url}/api/products/{instance.pk}/", # Ex : Si une adhésion est créé, le MP.pk est créé avec l'uuid de
                 verify=bool(not settings.DEBUG))
 
             if retrieve_product.status_code == 200 :

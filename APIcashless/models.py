@@ -136,21 +136,74 @@ class StatusMembre(models.Model):
 
 class Membre(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-
-    # Wallet FEDOW
+    # Utile
     wallet = models.OneToOneField("Wallet", on_delete=models.PROTECT, null=True, blank=True, related_name='membre')
+    date_ajout = models.DateTimeField(auto_now_add=True)
+    email = models.EmailField(max_length=50, null=True, blank=True, unique=True)
 
     name = models.CharField(
         db_index=True, max_length=50, verbose_name=_("Nom"))
     prenom = models.CharField(max_length=50, verbose_name=_(
         "Prénom"), null=True, blank=True)
 
+    last_action = models.DateTimeField(auto_now=True, verbose_name="Présence")
+
+
+    def derniere_presence(self):
+        return self.last_action
+
+    derniere_presence.short_description = _("Derniere présence")
+    derniere_presence.admin_order_field = '-last_action'
+
+    def numero_carte(self):
+        # Comprehension list :
+        num_carte = ", ".join([f"{cart.number}" for cart in self.CarteCashless_Membre.all()])
+        return num_carte
+
+    numero_carte.short_description = "Cartes liées"
+
+    def is_gerant(self):
+        for carte in CarteMaitresse.objects.filter(carte__membre=self):
+            if carte.edit_mode:
+                return True
+        return False
+
+    def _name(self):
+        if self.name:
+            return self.name
+        elif self.pseudo:
+            return self.pseudo
+        elif self.email:
+            return self.email
+        else:
+            return "Anonymous"
+
+    class Meta:
+        ordering = ('-date_ajout',)
+        verbose_name = _('Membre responsable')
+        verbose_name_plural = _('Membres responsables')
+
+    def __str__(self):
+        if self.pseudo:
+            return self.pseudo
+        elif self.prenom:
+            return f"{self.name} {self.prenom}"
+        elif self.name:
+            return self.name
+        elif self.email:
+            return self.email
+        else:
+            return "Anonymous"
+
+
+    ################################
+    # Plus utile, modèle géré par LESPASS
+    ################################
+
     pseudo = models.CharField(max_length=50, null=True, blank=True)
-    email = models.EmailField(max_length=50, null=True, blank=True, unique=True)
     demarchage = models.BooleanField(
         default=True, verbose_name=_("J'accepte de recevoir la newsletter"))
 
-    # numero_adherant = models.CharField(max_length=50, unique=True, null=True, blank=True)
     code_postal = models.IntegerField(null=True, blank=True)
     date_naissance = models.DateField(null=True, blank=True)
     tel = models.CharField(max_length=15, null=True, blank=True)
@@ -162,16 +215,12 @@ class Membre(models.Model):
     date_inscription = models.DateField(null=True, blank=True)
     date_derniere_cotisation = models.DateField(null=True, blank=True)
 
-    date_ajout = models.DateTimeField(auto_now_add=True)
-
-    last_action = models.DateTimeField(auto_now=True, verbose_name="Présence")
 
     cotisation = models.DecimalField(max_digits=10, decimal_places=2, default=20,
                                      help_text=_(
                                          "Vous pouvez modifier la valeur par default dans la page de configuration générale"))
 
     ajout_cadeau_auto = models.BooleanField(default=False)
-
     adhesion_auto_espece = models.BooleanField(default=False)
     adhesion_auto_cb = models.BooleanField(default=True)
 
@@ -210,19 +259,6 @@ class Membre(models.Model):
         else:
             return ""
 
-    def derniere_presence(self):
-        return self.last_action
-
-    derniere_presence.short_description = _("Derniere présence")
-    derniere_presence.admin_order_field = '-last_action'
-
-    def numero_carte(self):
-        # Comprehension list :
-        num_carte = ", ".join([f"{cart.number}" for cart in self.CarteCashless_Membre.all()])
-        return num_carte
-
-    numero_carte.short_description = "Cartes liées"
-
     def a_jour_cotisation(self):
 
         calcul_adh = Configuration.get_solo().calcul_adhesion
@@ -250,39 +286,6 @@ class Membre(models.Model):
             return datetime.strptime(f"01/01/{self.date_derniere_cotisation.year + 1}", "%d/%m/%Y")
 
         return self.date_derniere_cotisation + timedelta(days=365)
-
-    def is_gerant(self):
-        for carte in CarteMaitresse.objects.filter(carte__membre=self):
-            if carte.edit_mode:
-                return True
-        return False
-
-    def _name(self):
-        if self.name:
-            return self.name
-        elif self.pseudo:
-            return self.pseudo
-        elif self.email:
-            return self.email
-        else:
-            return "Anonymous"
-
-    class Meta:
-        ordering = ('-date_ajout',)
-        verbose_name = _('Membre responsable')
-        verbose_name_plural = _('Membres responsables')
-
-    def __str__(self):
-        if self.pseudo:
-            return self.pseudo
-        elif self.prenom:
-            return f"{self.name} {self.prenom}"
-        elif self.name:
-            return self.name
-        elif self.email:
-            return self.email
-        else:
-            return "Anonymous"
 
 
 # noinspection PyPep8Naming,PyUnusedLocal
@@ -1048,6 +1051,8 @@ class CarteCashless(models.Model):
             asset, created = self.assets.get_or_create(monnaie=MoyenPaiement.get_local_gift())
             return asset
 
+    """ 
+    Ancienne vérification de l'adhésion. Tout est par Fedow maintenant
     def cotisation_membre_a_jour(self):
         if self.membre:
             if self.membre.date_derniere_cotisation:
@@ -1071,6 +1076,8 @@ class CarteCashless(models.Model):
                 return False
         else:
             return False
+    """
+
 
     def url_qrcode(self):
         config = Configuration.get_solo()

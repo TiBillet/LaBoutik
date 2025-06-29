@@ -279,6 +279,51 @@ class CheckCarteQrUuid(viewsets.ViewSet):
 
         return Response(serializer_copy)
 
+class trigger_product_update(APIView):
+    permission_classes = [HasAPIKey]
+    # Lors de la création d'un nouveau produit adhésion sur Lespass, on lance un fedow_update pour récupérer l'objet
+    def post(self, request):
+        logger.info(f"trigger_product_update : fedowAPI.place.get_accepted_assets()")
+        try :
+            fedowAPI = FedowAPI()
+            fedowAPI.place.get_accepted_assets()
+
+            # Recherche des modif' des produits adhésions associés
+            # Mise à jour si besoin
+            product_pk = request.data['product_pk']
+            if MoyenPaiement.objects.filter(pk=product_pk).exists():
+                config = Configuration.get_solo()
+                retrieve_product = requests.get(
+                    f"{config.billetterie_url}/api/products/{product_pk}/", # Ex : Si une adhésion est créé, le MP.pk est créé avec l'uuid de
+                    verify=bool(not settings.DEBUG))
+
+                if retrieve_product.status_code == 200 :
+                    # Fabrique et mets à jour les articles adhésions ou badges
+                    product = ProductFromLespassValidator(data=retrieve_product.json(),
+                                                          context={
+                                                              'MoyenPaiement': MoyenPaiement.objects.get(pk=product_pk),
+                                                          })
+                    if not product.is_valid():
+                        for error in product.errors:
+                            logger.error(error)
+                        raise Exception(
+                            f"create_article_membreship_badge : Création d'Asset Adhésion ou Badge {product.errors}")
+                else :
+                    # Peut arriver si Lespass à envoyé des assets membership sur fedow, qui les as gardé.
+                    # Fedow envoie les ref' à Laboutik, qui va vérifier sur Lespass
+                    # Ça n'existe plus, donc ça plante.
+                    logger.warning("Asset non visible sur Lespass, as t il été créé puis supprimé avant le onboard ?")
+
+
+
+            return Response("update ok", status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"trigger_product_update : {str(e)}")
+            return Response(
+                {"error": f"Failed to trigger_product_update : {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 class StripeBankDepositFromLespass(APIView):
     permission_classes = [HasAPIKey]
     def post(self, request):
