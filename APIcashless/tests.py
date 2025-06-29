@@ -1182,8 +1182,9 @@ class CashlessTest(TiBilletTestCase):
         membership_response = self.check_carte_lespass_qrcode_membership(carte)
         rendered_html_lespass = membership_response.text
 
-        import ipdb; ipdb.set_trace()
-        self.assertIn(article_adhesion.name, rendered_html_lespass)
+        # L'adhésion possède un fedow asset qui correspond au PK de l'adhésion lespass
+        # L'adhésion achetée sur LaBoutik est bien visible sur Lespass via le qrcode / mon compte
+        self.assertIn(str(article_adhesion.fedow_asset.pk), rendered_html_lespass)
 
     def fedow_wallet_with_tagid(self):
         card = self.create_one_card_db()
