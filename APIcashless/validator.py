@@ -67,6 +67,7 @@ class PriceFromLespassValidator(serializers.Serializer):
     product = serializers.UUIDField()
     recurring_payment = serializers.BooleanField()
     stock = serializers.BooleanField(allow_null=True)
+    publish = serializers.BooleanField(allow_null=True)
     uuid = serializers.UUIDField()
 
     NA, YEAR, MONTH, DAY, HOUR, CIVIL = 'N', 'Y', 'M', 'D', 'H', 'C'
@@ -169,6 +170,7 @@ class ProductFromLespassValidator(serializers.Serializer):
         product = attrs
         categorie = product['categorie_article']
         prices = product['prices']
+        publish = product.get('publish')
         dict_cat_name = {
             'G': (_('Badge'), Articles.BADGEUSE),
             'A': (_('Adhésions'), Articles.ADHESIONS),
@@ -182,15 +184,31 @@ class ProductFromLespassValidator(serializers.Serializer):
             cat, created = Categorie.objects.get_or_create(name=dict_cat_name[categorie][0])
             logger.info(f"Categorie {cat.name} - created {created}")
             for price in prices :
-                article, created = Articles.objects.get_or_create(id=price['uuid'])
-                # créé ou pas, on met à jour l'article avec les infos de la billetterie
-                article.name=f"{product['name']} {price['name']}"
-                article.methode_choices=dict_cat_name[categorie][1]
-                article.prix=price['prix'] if not price['free_price'] else 1
-                article.categorie=cat
-                article.subscription_type=price['subscription_type']
-                article.fedow_asset=asset_fedow
-                article.save()
+                try :
+                    logger.info(f"Article {price['uuid']} - mise à jour / création ?")
+                    article = Articles.objects.get(id=price['uuid'])
+                    # Supper important, on vérifie que ça colle toujours
+                    article.fedow_asset=asset_fedow
+
+                    # Check si l'article est publié
+                    article.archive = False # Desarchive au cas ou ça serait de nouveau publié coté Lespass
+                    if not product.get('publish'):
+                        article.archive=True
+                    if not price.get('publish'):
+                        article.archive=True
+
+                    article.save()
+
+                except Articles.DoesNotExist:
+                    article = Articles.objects.create(
+                        id=price['uuid'],
+                        name=f"{product['name']} {price['name']}",
+                        methode_choices=dict_cat_name[categorie][1],
+                        prix=price['prix'] if not price['free_price'] else 1,
+                        categorie=cat,
+                        subscription_type=price['subscription_type'],
+                        fedow_asset=asset_fedow,
+                    )
 
         return attrs
 
