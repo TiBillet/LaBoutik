@@ -160,6 +160,18 @@ export const fr = {
     anonymousCard: 'Carte anonyme',
     sales: 'Ventes',
     cashDrawer: 'tiroir-caisse',
-    testLcd: 'test lcd'
+    testLcd: 'test lcd',
+    settings: 'paramètres',
+    infos: 'infos',
+    logs: 'logs',
+    functionSettingsNotExist:`La fonction "{replace}" du menu paramêtres n'existe pas.`,
+    appWillBeRecharged: "L'application sera rechargée.",
+    activateLogs: 'activer les logs',
+    printer: 'imprimante',
+    testPrinting: 'test impression',
+    available: 'disponible',
+    enable: 'activé',
+    connection: 'connexion',
+    printing: 'impression'
   }
 }
