@@ -1,0 +1,363 @@
+{% load i18n humanize static %}
+
+<!--
+<div>
+    <h1>Settings</h1>
+    <h2>Coucou, voici ce qu'envoi le contexte ( htmxview.views.AppSettings.list )</h2>
+    <ul>
+        <li>currency_code : {{ currency_code }}</li>
+        <li>validation_service_ecran : {{ validation_service_ecran }}</li>
+        <li>remboursement_auto_annulation : {{ remboursement_auto_annulation }}</li>
+        <li>void_card : {{ void_card }}</li>
+        <li>cash_float : {{ cash_float }}</li>
+        <li>timezone : {{ timezone }}</li>
+        <li>language : {{ language }}</li>
+    </ul>
+</div>
+
+<script>
+    // pour récupérer ces valeurs en js :
+
+    let currency_code = "{{ currency_code | safe }}"
+    let validation_service_ecran = "{{ validation_service_ecran | safe }}"
+    let remboursement_auto_annulation = "{{ remboursement_auto_annulation | safe }}"
+    let void_card = "{{ void_card | safe }}"
+    let cash_float = "{{ cash_float | safe }}"
+    let timezone = "{{ timezone | safe }}"
+    let language = "{{ language | safe }}"
+
+    console.log('currency_code = ', currency_code)
+    console.log('validation_service_ecran = ', validation_service_ecran)
+</script>
+-->
+
+<div class="BF-ligne l100p h100p">
+	<div class="BF-col-deb nav-settings">
+
+		<div class="BF-col bt-settings">
+			<i class="fas fa-info mb4px"></i>
+			<span>Infos <!-- TODO: traduction Infos --></span>
+			<div class="target-settings" hx-get="/htmx/appsettings/infos" hx-trigger="click" hx-target="#container-settings"
+				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>Infos</span>')">
+				<!-- TODO: traduction Paramètres et Infos -->
+			</div>
+		</div>
+
+		<div class="BF-col bt-settings">
+			<i class="fas fa-language mb4px"></i>
+			<span>Language <!-- TODO: traduction Language --></span>
+			<div class="target-settings" hx-get="/htmx/appsettings/language" hx-trigger="click"
+				hx-target="#container-settings"
+				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>Language</span>')">
+				<!-- TODO: traduction Paramètres et Language -->
+			</div>
+		</div>
+
+		<div class="BF-col bt-settings">
+			<i class="fas fa-stethoscope mb4px"></i>
+			<span>Logs <!-- TODO: traduction Logs --></span>
+			<div class="target-settings" action="logs" hx-get="/htmx/appsettings/logs" hx-trigger="click"
+				hx-target="#container-settings"
+				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>Logs</span>')">
+				<!-- TODO: traduction Paramètres et Logs -->
+			</div>
+		</div>
+
+		<div id="nav-settings-bt-print" class="BF-col bt-settings">
+			<i class="fas fa-print mb4px"></i>
+			<span>Printer <!-- TODO: traduction Printer --></span>
+			<div class="target-settings" action="printer" hx-get="/htmx/appsettings/printer" hx-trigger="click"
+				hx-target="#container-settings"
+				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>Printer</span>')">
+				<!-- TODO: traduction  Paramètres et Printer -->
+			</div>
+		</div>
+
+		<div class="BF-col bt-settings">
+			<!-- <i class="fas fa-nfc mb4px"></i> n'existe pas en 5.1 -->
+			<span>NFC</span>
+			<div class="target-settings" action="nfc" hx-get="/htmx/appsettings/nfc" hx-trigger="click"
+				hx-target="#container-settings"
+				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>NFC</span>')">
+				<!-- TODO: traduction  Paramètres -->
+			</div>
+		</div>
+
+		<div class="BF-col bt-settings">
+			<i class="fas fa-times mb4px"></i>
+			<span>Exit<!-- TODO: traduction --> </span>
+			<div class="target-settings" hx-get="/htmx/appsettings/printer" hx-trigger="click" hx-target="#container-settings"
+				hx-on:click="navigator.app.exitApp()">
+			</div>
+		</div>
+	</div>
+
+	<div id="container-settings" class="BF-col-deb content-settings">
+		{% include "appsettings/infos.html" %}
+	</div>
+</div>
+
+<script>
+	/**
+	 * Gère le changement de langue du côté javascript (TODO: gestion côté back, une fois htmx installé partout)
+	 */
+	function manageLanguageSelectFromFront() {
+		console.log('-> manageLanguageSelectFromFront')
+		const local = localStorage.getItem("language")
+		const data = getLanguages()
+		console.log('data =', data)
+
+		let htmlFragment = ''
+		for (let i = 0; i < data.length; i++) {
+			const langue = data[i].language
+			const label = data[i].infos
+
+			if (langue === local) {
+				htmlFragment += `<div style="margin-bottom: 3rem;">
+        <input type="radio" id="language-${i}" name="select-language" value="${langue}" checked />
+        <label for="language-${i}" style="font-size: 1.5rem;">${label}</label>
+      </div>`
+			} else {
+				htmlFragment += `<div style="margin-bottom: 3rem;">
+        <input type="radio" id="language-${i}" name="select-language" value="${langue}" />
+        <label for="language-${i}" style="font-size: 1.5rem;">${label}</label>
+      </div>`
+			}
+		}
+		document.querySelector('#settings-language-list').innerHTML = htmlFragment
+	}
+
+	/**
+	 * Méthode du bouton de validation du changement de langue
+	 */
+	async function changeLanguageAction() {
+		console.log("-> changeLanguageAction !")
+		// récupération de la valeur entrée
+		const selectLanguage = document.querySelector('input[type="radio"][name="select-language"]:checked').value
+		// console.log('selectLanguage =', selectLanguage)
+		localStorage.setItem("language", selectLanguage)
+		// POST le changement de langue au serveur et recharge la page
+		try {
+			const body = new URLSearchParams()
+			body.append('csrfmiddlewaretoken', glob.csrf_token)
+			body.append('language', selectLanguage)
+			const response = await fetch(`/i18n/setlang/`, { method: 'post', body })
+			if (response.status === 200) {
+				window.location.reload()
+			} else {
+				throw Error(data.message)
+			}
+		} catch (error) {
+			console.log('-> fetcht  =', error)
+		}
+
+	}
+
+	// --- printer --
+	// launch printing
+	async function settingsTestPrint() {
+		try {
+			// init led
+			document.querySelector("#Bluetooth-write-result").setAttribute("class", "led-red settings-led-size")
+
+			// create print sunmi queue
+			if (window.sunmiPrintQueue === undefined) {
+				window.sunmiPrintQueue = [];
+			}
+
+			// load function bluetoothWrite
+			const { bluetoothWrite } = await import("{% static 'webview/js/modules/mobileDevice.js' %}")
+
+			// date
+			const date = new Date();
+			const formattedDatePart1 = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, "0")}-${date.getDate().toString().padStart(2, "0")} `
+			const formattedDatePart2 = `${date.getHours().toString().padStart(2, "0")}:${date.getMinutes().toString().padStart(2, "0")}:${date.getSeconds().toString().padStart(2, "0")} `
+			const formattedDate = formattedDatePart1 + " " + formattedDatePart2;
+
+			// print
+			const content = [
+				{ type: "font", value: "A" },
+				{ type: "size", value: 1 },
+				{ type: "bold", value: 1 },
+				{ type: "align", value: "left" },
+				{ type: "text", value: "** TEST PRINT **" },
+				{ type: "bold", value: 0 },
+				{ type: "text", value: "Hello World" },
+				{ type: "size", value: 0 },
+				{ type: "text", value: "--------------------------------" },
+				{ type: "text", value: `Test completed at ${formattedDate}` },
+				{ type: "feed", value: 2 },
+				{ type: "cut" },
+			]
+
+			const options = { printUuid: sys.uuidV4(), content }
+			sunmiPrintQueue.push(options)
+			const result = await bluetoothWrite(options.printUuid)
+
+			if (result) {
+				document.querySelector("#Bluetooth-write-result").setAttribute("class", "led-green settings-led-size");
+			} else {
+				document.querySelector("#Bluetooth-write-result").setAttribute("class", "led-red settings-led-size");
+			}
+		} catch (error) {
+			console.log("-> SettingsTestPrint,", error);
+		}
+	}
+
+	async function testPrinterSunmi() {
+		try {
+
+			// load modules bluetooth
+			const { bluetoothSerialAvailable, enableBluetooth, bluetoothConnection, bluetoothDisconnect } = await import("{% static 'webview/js/modules/mobileDevice.js' %}")
+
+			// bluetooth available ?
+			const availableLed = document.querySelector('#settings-bluetooth-available-led')
+			if (await bluetoothSerialAvailable()) {
+				availableLed.setAttribute('class', 'led-green settings-led-size')
+			} else {
+				eavailableLed.setAttribute('class', 'led-red settings-led-size')
+			}
+
+			/*
+			// bluetooth enable ?
+			const enableLed = document.querySelector('#settings-bluetooth-enable-led')
+			const enableBluetoothResult = await enableBluetooth()
+			console.log('enableBluetoothResult =', enableBluetoothResult)
+			if (enableBluetoothResult) {
+				enableLed.setAttribute('class', 'led-green settings-led-size')
+			} else {
+				enableLed.setAttribute('class', 'led-red settings-led-size')
+			}
+
+			// bluetooth connection ?
+			const connectionLed = document.querySelector('#settings-bluetooth-connection-led')
+			if (await bluetoothConnection()) {
+				connectionLed.setAttribute('class', 'led-green settings-led-size')
+			} else {
+				connectionLed.setAttribute('class', 'led-red settings-led-size')
+			}
+*/
+		} catch (error) {
+			console.log("-> SettingsTestPrint,", error);
+		}
+	}
+
+	// --- logs ---
+	// etat d'activation des logs
+	function showLogsState() {
+		let template = '<label class="md16px">activer les logs</label>' // TODO: traduire "activer les logs" 
+		if (localStorage.getItem("activatedLogs") === "true") {
+			template += '<input type="checkbox" id="settings-start-record-logs" checked />'
+			// modifie la fonction de log
+			if (oldLogFunc === console.log) {
+				settingsStartLogs()
+			}
+		} else {
+			template += '<input type="checkbox" id="settings-start-record-logs" />'
+		}
+		document.querySelector('#settings-logs-state').innerHTML = template
+	}
+
+	settingsActivedLogs = function (event) {
+		const element = event.target
+		if (element.checked) {
+			localStorage.setItem("activatedLogs", "true")
+			settingsStartLogs()
+		} else {
+			localStorage.setItem("activatedLogs", "false")
+			if (window.settingsLogsContent !== undefined) {
+				window.settingsLogsContent = []
+				// active fonction  de log originale
+				console.log = window.oldLogFunc
+				document.querySelector('#settings-logs-content').innerHTML = ''
+			}
+		}
+
+	}
+
+	function showListLogs() {
+		let logsHtml = ''
+		if (window.settingsLogsContent !== undefined && window.settingsLogsContent.length > 0) {
+			for (let i = window.settingsLogsContent.length - 1; i >= 0; i--) {
+				const msg = window.settingsLogsContent[i]
+				// console.log('msg =', msg);
+				logsHtml += `<div>${msg}</div>`
+			}
+		}
+		document.querySelector('#settings-logs-content').innerHTML = logsHtml
+	}
+
+	// --- listen htmx:afterSwap and launch methods --
+	document.body.addEventListener('htmx:afterSwap', async function (evt) {
+		const eleLanguageList = evt.target.querySelector('#settings-language-list')
+		const eleVersionApk = evt.target.querySelector('#settings-info-version-apk')
+		const elePrinter = evt.target.querySelector('#settings-bluetooth-available-led')
+		const eleLogState = evt.target.querySelector('#settings-logs-state')
+
+		// language - launch method after swap
+		if (eleLanguageList !== null) {
+			manageLanguageSelectFromFront()
+		}
+
+		// infos - version apk
+		if (eleVersionApk !== null) {
+			document.querySelector('#settings-info-version-apk').innerText = glob.appConfig.versionApk
+		}
+
+		// printer
+		if (elePrinter !== null && await hasSunmiPrinter()) {
+			console.log('-> printer', new Date())
+			
+			testPrinterSunmi()
+		}
+
+		// logs
+		if (eleLogState !== null) {
+			showLogsState()
+			document.querySelector('#settings-start-record-logs').addEventListener('change', settingsActivedLogs)
+			showListLogs()
+		}
+	})
+</script>
+
+<style>
+	#service-commandes {
+		--width-nav-settings: 20%;
+		--height-bt-settings: 80px;
+	}
+
+	.nav-settings {
+		width: var(--width-nav-settings);
+		height: 100%;
+		background-color: var(--bleu09);
+		color: var(--blanc01);
+		overflow-y: scroll;
+		border-right: 1px solid var(--gris01);
+	}
+
+	.bt-settings {
+		position: relative;
+		width: 100%;
+		height: var(--height-bt-settings);
+		border-bottom: 1px solid var(--gris01);
+		margin: 4px 0;
+	}
+
+	.target-settings {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 98%;
+		height: var(--height-bt-settings);
+		opacity: 0;
+	}
+
+	.content-settings {
+		width: calc(100% - var(--width-nav-settings));
+		height: 100%;
+		background-color: var(--bleu09);
+		color: var(--blanc01);
+		overflow-y: scroll;
+		padding: 6px;
+	}
+</style>

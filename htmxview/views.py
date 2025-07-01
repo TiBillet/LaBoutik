@@ -35,6 +35,59 @@ from webview.serializers import debut_fin_journee
 logger = logging.getLogger(__name__)
 
 
+class AppSettings(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+
+    def list(self, request): # le get /
+        config = Configuration.get_solo()
+        context = {
+            "currency_code": config.currency_code,
+            "validation_service_ecran": config.validation_service_ecran,
+            "remboursement_auto_annulation": config.remboursement_auto_annulation,
+            "void_card": config.void_card,
+            "cash_float": config.cash_float,
+            "timezone" : config.timezone(),
+            "language" : config.language(),
+        }
+
+        return render(request, "appsettings/nav.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def infos(self, request):
+        context = {}
+
+        return render(request, "appsettings/infos.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def language(self, request):
+        config = Configuration.get_solo()
+        context = {
+            "timezone" : config.timezone(),
+            "language" : config.language(),
+        }
+
+        return render(request, "appsettings/language.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def printer(self, request):
+        context = {}
+
+        return render(request, "appsettings/printer.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def nfc(self, request):
+        context = {}
+
+        return render(request, "appsettings/nfc.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def logs(self, request):
+        context = {}
+
+        return render(request, "appsettings/logs.html", context)
+
+
 class Sales(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]

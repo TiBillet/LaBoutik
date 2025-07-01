@@ -242,7 +242,7 @@ async function bluetoothSerialWrite(contentToWrite) {
   return write
 }
 
-async function bluetoothDisconnect() {
+export async function bluetoothDisconnect() {
   const disconnect = await new Promise((resolve) => {
     window.bluetoothSerial.disconnect(() => {
       resolve(true)

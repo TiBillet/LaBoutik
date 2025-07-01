@@ -1,0 +1,115 @@
+<div class="settings-fond">
+  <!-- TODO: traduire "TEST IMPRESSION" -->
+  <bouton-basique traiter-texte="1" texte="TEST IMPRESSION|1.5rem" couleur-fond="#0335b8"
+    width="240px" height="100px" onclick="settingsTestPrint();" style="margin: 30px 0;"></bouton-basique>
+
+  <div class="settings-state-content-step">
+    <div class="settings-state">
+      <div id="settings-bluetooth-available-led"></div> <!-- led -->
+    </div>
+    <div class="settings-state-line"></div>
+    <label class="settings-label">Bluetooth available</label> <!-- TODO: traduire 'available' -->
+  </div>
+
+  <div class="BF-ligne l100p">
+    <div class="settings-state-connexion-line"></div>
+  </div>
+
+  <!--
+  <div class="settings-state-content-step">
+    <div class="settings-state">
+      <div id="settings-bluetooth-enable-led"></div>
+    </div>
+    <div class="settings-state-line"></div>
+    <label class="settings-label">Bluetooth enable</label> // TODO: traduire 'enable'
+  </div>
+
+  <div class="BF-ligne l100p">
+    <div class="settings-state-connexion-line"></div>
+  </div>
+
+  <div class="settings-state-content-step mb8px">
+    <div class="settings-state">
+      <div id="settings-bluetooth-connection-led"></div>
+    </div>
+    <div class="settings-state-line"></div>
+    <label class="settings-label">Bluetooth connection</label> // TODO: traduire 'connection'
+  </div>
+-->
+
+  <div class="BF-ligne l100p">
+    <div class="settings-state-connexion-line"></div>
+  </div>
+
+  <div class="settings-state-content-step mb8px">
+    <div class="settings-state">
+      <div id="Bluetooth-write-result" class="led-red settings-led-size"></div>
+    </div>
+    <div class="settings-state-line"></div>
+    <label class="settings-label">Printing</label> <!-- TODO: traduire 'Printing' -->
+  </div>
+</div>
+
+<style>
+  .settings-fond {
+    width: 100%;
+    height: 100%;
+    font-size: 1.5rem;
+    --settings-container-led-size: 30px;
+    --settings-state-line-size: 4%;
+    --settings-led-size: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+
+  }
+
+  .settings-state-content-step {
+    width: 100%;
+    height: var(--settings-container-led-size);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+  }
+
+  .settings-state {
+    width: var(--settings-container-led-size);
+    height: var(--settings-container-led-size);
+    border-radius: 50%;
+    border: 2px solid var(--blanc01);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+  }
+
+  .settings-state-line {
+    width: var(--settings-state-line-size);
+    height: 2px;
+    border: 1px solid var(--blanc01);
+    margin: 0 4px;
+  }
+
+  .settings-label {
+    width: 30%;
+    color: var(--blanc01);
+  }
+
+  .settings-led-size {
+    width: var(--settings-led-size);
+    height: var(--settings-led-size);
+  }
+
+  .settings-state-connexion-line {
+    width: calc(var(--settings-container-led-size) + var(--settings-state-line-size) + 30%);
+    height: 20px;
+    border-left: 2px solid var(--blanc01);
+    transform: translate(calc(var(--settings-container-led-size) / 2 - 4px));
+  }
+</style>

@@ -1,19 +1,4 @@
-window.settingsActivedLogs = function (event) {
-	const element = event.target
-	if (element.checked) {
-		localStorage.setItem("activatedLogs", "true")
-		settingsStartLogs()
-	} else {
-		localStorage.setItem("activatedLogs", "false")
-		if (window.settingsLogsContent !== undefined) {
-			window.settingsLogsContent = []
-			// active fonction  de log originale
-			console.log = window.oldLogFunc
-			document.querySelector('#settings-logs-content').innerHTML = ''
-		}
-	}
-
-}
+window.
 
 
 window.showListLogs = function () {
