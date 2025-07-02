@@ -1,5 +1,4 @@
-import json
-import logging
+import json, logging, time
 from datetime import timedelta, datetime
 from uuid import UUID
 
@@ -558,7 +557,6 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
     def check_reader_state(self, reader):
         pass
 
-    @transaction.atomic
     def create(self, request, *args, **kwargs):
         user = request.user
 
@@ -589,14 +587,26 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
         )
 
         # Envoi de l'intention de paiement au terminal
-        payment_intent.send_to_terminal(terminal)
+        payment_intent = payment_intent.send_to_terminal(terminal)
 
         # Lancer la tâche Celery pour surveiller le statut du paiement
         logger.info(f"\nStarted Celery task to poll payment intent status for ID: {payment_intent.pk}")
         poll_payment = poll_payment_intent_status.delay(payment_intent.pk)
-        if poll_payment.status == 'FAILURE':
-            logger.error(f"ERROR POLLING PAYMENT INTENT STATUS : {poll_payment.result}")
+
+        # Check que la requete celery est bien ok
+        retry_count = 0
+        while poll_payment.status != "STARTED" :
+            logger.info(f"WAIT POLLING PAYMENT INTENT STATUS {poll_payment.status} RESULT : {poll_payment.result}")
+            time.sleep(1)
+            retry_count += 1
+            if retry_count > 5:
+                break
+
+        if poll_payment.status != 'STARTED':
+            logger.error(f"WAIT POLLING PAYMENT INTENT STATUS {poll_payment.status} RESULT : {poll_payment.result}")
             return Response(poll_payment.result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        logger.info(f"END WAIT POLLING PAYMENT INTENT STATUS {poll_payment.status} RESULT : {poll_payment.result}")
 
         # Renvoie la partie websocket pour le suivi de l'intention de paiement
         return render(request, 'tpe/create.html', context={

@@ -2692,20 +2692,22 @@ class PaymentsIntent(models.Model):
         stripe.api_key = config_stripe.get_stripe_api()
         stripe_account=config_stripe.get_stripe_connect_account()
 
-        payment_intent = stripe.PaymentIntent.create(
+        payment_intent_stripe = stripe.PaymentIntent.create(
             amount=self.amount,
             currency=config.currency_code.lower(),
             payment_method_types=["card_present"],
             capture_method="automatic", # manual si on veut capturer pour payer plus tard. A tester automatic_async pour aller plus vite ?
             # stripe_account=stripe_account,
         )
-        self.payment_intent_stripe_id = payment_intent.id
+        self.payment_intent_stripe_id = payment_intent_stripe.id
         self.save()
 
         reader = stripe.terminal.Reader.process_payment_intent(
             terminal.stripe_id,
-            payment_intent=payment_intent.id
+            payment_intent=payment_intent_stripe.id
         )
 
         self.status = self.IN_PROGRESS
         self.save()
+
+        return self
