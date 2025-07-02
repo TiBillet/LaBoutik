@@ -558,6 +558,7 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
         validated_data = validator.validated_data
         amount = validated_data['amount']
         terminal = validated_data['terminal_pk']
+        card = validator.card
 
         kiosk = PointDeVente.objects.get(comportement=PointDeVente.KIOSK)
 
@@ -566,6 +567,7 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
             terminal=terminal,
             amount=amount,
             pos=kiosk,
+            card=card,
         )
 
         # Envoi de l'intention de paiement au terminal

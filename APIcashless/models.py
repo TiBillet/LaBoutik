@@ -27,7 +27,8 @@ from stdimage.validators import MaxSizeValidator, MinSizeValidator
 
 from epsonprinter.models import Printer
 from epsonprinter.models import Printer
-from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt
+from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt, sign_message, data_to_b64, \
+    verify_signature
 from .fontawesomeicons import FONT_ICONS_CHOICES
 
 # import requests, json
@@ -148,7 +149,6 @@ class Membre(models.Model):
 
     last_action = models.DateTimeField(auto_now=True, verbose_name="Présence")
 
-
     def derniere_presence(self):
         return self.last_action
 
@@ -195,7 +195,6 @@ class Membre(models.Model):
         else:
             return "Anonymous"
 
-
     ################################
     # Plus utile, modèle géré par LESPASS
     ################################
@@ -214,7 +213,6 @@ class Membre(models.Model):
 
     date_inscription = models.DateField(null=True, blank=True)
     date_derniere_cotisation = models.DateField(null=True, blank=True)
-
 
     cotisation = models.DecimalField(max_digits=10, decimal_places=2, default=20,
                                      help_text=_(
@@ -1077,7 +1075,6 @@ class CarteCashless(models.Model):
         else:
             return False
     """
-
 
     def url_qrcode(self):
         config = Configuration.get_solo()
@@ -2586,7 +2583,8 @@ class Terminal(models.Model):
     name = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Nom"))
 
     # Pour les TPE Stripe :
-    registration_code = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Code d'enregistrement du lecteur"))
+    registration_code = models.CharField(max_length=200, blank=True, null=True,
+                                         verbose_name=_("Code d'enregistrement du lecteur"))
     stripe_id = models.CharField(max_length=21, blank=True, null=True, verbose_name=_("Stripe ID"))
 
     STRIPE_WISEPOS = 'W'
@@ -2629,12 +2627,13 @@ class Terminal(models.Model):
                     self.stripe_id = reader.id
                 except Exception as e:
                     raise Exception(f"Error while creating stripe reader : {e}")
-            else :
+            else:
                 raise Exception(f"The registration code is not set.")
         return self.stripe_id
 
     def __str__(self):
         return f"{self.get_type_display()} {self.name}"
+
 
 class PaymentsIntent(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
@@ -2644,6 +2643,8 @@ class PaymentsIntent(models.Model):
     terminal = models.ForeignKey(Terminal, on_delete=models.PROTECT, verbose_name=_("TPE"))
     pos = models.ForeignKey(PointDeVente, on_delete=models.PROTECT, verbose_name=_("Point de vente"))
     datetime = models.DateTimeField(auto_now_add=True)
+    card = models.ForeignKey(CarteCashless, on_delete=models.PROTECT, verbose_name=_("Carte cashless"),
+                             related_name='payments_intents', blank=True, null=True, )
 
     REQUIRES_PAYMENT_METHOD = 'R'
     IN_PROGRESS = 'P'
@@ -2690,13 +2691,34 @@ class PaymentsIntent(models.Model):
         # C'est au moment du payment intent qu'on ajoute le stripe account si l'articl n'est pas une recharge fédéré
         config_stripe = ConfigurationStripe.get_solo()
         stripe.api_key = config_stripe.get_stripe_api()
-        stripe_account=config_stripe.get_stripe_connect_account()
+        stripe_account = config_stripe.get_stripe_connect_account()
+
+        ### Fabrication des metadata vérifié par Fedow pour valider le paiement ( Fedow le reçoit depuis le webhook stripe )
+        data = {
+            "fedow_place_uuid": f"{config.fedow_place_uuid}",
+            "tag_id": f"{self.card.tag_id}" if self.card else None,
+        }
+        # Signature de la requete
+        private_key = config.get_private_key()
+        signature = sign_message(
+            data_to_b64(data),
+            private_key,
+        ).decode('utf-8')
+        if not verify_signature(config.get_public_key(),
+                                data_to_b64(data),
+                                signature):
+            raise Exception(f"Signature verification failed")
 
         payment_intent_stripe = stripe.PaymentIntent.create(
             amount=self.amount,
             currency=config.currency_code.lower(),
             payment_method_types=["card_present"],
-            capture_method="automatic", # manual si on veut capturer pour payer plus tard. A tester automatic_async pour aller plus vite ?
+            capture_method="automatic",
+            # manual si on veut capturer pour payer plus tard. A tester automatic_async pour aller plus vite ?
+            metadata={
+                "data": json.dumps(data),
+                "signature": signature,
+            },
             # stripe_account=stripe_account,
         )
         self.payment_intent_stripe_id = payment_intent_stripe.id
