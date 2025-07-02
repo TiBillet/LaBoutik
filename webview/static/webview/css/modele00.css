@@ -1794,6 +1794,6 @@ footer {
 
 @media screen and (orientation: landscape) {
     #menu-burger-conteneur {
-        height: calc(100vh - 140px)
+        max-height: calc(100vh - 140px)
     }
 }

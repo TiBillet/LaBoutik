@@ -1,7 +1,7 @@
 // construction d'une partie du menu provenant des plugins
 import "./menuPlugins/addAllMenuPlugin.js"
-// import { isCordovaApp, enableBluetooth, bluetoothGetMacAddress, bluetoothWrite } from './modules/mobileDevice.js'
-import { isCordovaApp, bluetoothWrite, bluetoothGetMacAddress, bluetoothOpenCashDrawer } from './modules/mobileDevice.js'
+import { getCurrentCurrency } from '/static/webview/js/modules/currencysList.js'
+import { isCordovaApp, bluetoothHasSunmiPrinter, bluetoothWrite, bluetoothOpenCashDrawer } from './modules/mobileDevice.js'
 
 
 // ---- cordova ---
@@ -9,12 +9,7 @@ window.mobile = isCordovaApp()
 
 // condition has sunmi printer
 window.hasSunmiPrinter = async function () {
-  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
-  if (macAddress === 'unknown') {
-    return false
-  } else {
-    return true
-  }
+  return await bluetoothHasSunmiPrinter()
 }
 
 // conditions websocket on and has sunmi printer
@@ -46,7 +41,7 @@ function initWebsocket() {
           window.sunmiPrintQueue = []
         }
 
-        console.log('data.data =', data.data);
+        // console.log('data.data =', data.data)
 
         const options = { printUuid: sys.uuidV4(), content: data.data }
         sunmiPrintQueue.push(options)
@@ -234,10 +229,25 @@ export function reloadData() {
   }
   sys.ajax(requete, function (retour, status) {
     glob.data = retour.data
+
+    // converti les décimal python
+    for (const key in glob.data) {
+      const pv = glob.data[key]
+      for (const keyArticle in pv.articles) {
+        const article = pv.articles[keyArticle]
+        article.prix = sys.bigToFloat(article.prix)
+      }
+    }
+
     glob.responsable = retour.responsable
     glob.monnaie_principale_name = retour.monnaie_principale_name
+    glob.tables = retour.tables
+    glob.passageModeGerant = retour.responsable.edit_mode
+    glob.modeGerant = false
+    // data current curency
+    glob['currencyData'] = getCurrentCurrency(retour.currency_code)
     retour = null
-    main(nomModulePrive, { indexPv: 0, csrfToken: glob.csrf_token })
+    // main(nomModulePrive, { indexPv: 0, csrfToken: glob.csrf_token })
   })
 }
 
@@ -321,7 +331,7 @@ export function affiche_class(ctx, nom_class) {
   // console.log('id = ' + ctx.id)
 }
 
-/** @function
+/**
  *  Basculer de la vue boutons articles / à la vue liste articles
  */
 export function basculerListeArticles(evt) {
@@ -782,12 +792,6 @@ export function composeMenuPrincipal(typeMaj) {
 
   // add all menus plugin "../webview/js/menuPlugins/addAllMenuPlugin.js"
   frag += addPluginFunctionsToMenu()
-
-  // Relancer l'application 'demande carte maîtresse'
-  frag += `<div class="menu-burger-item BF-ligne-deb" onclick="window.location.reload();">
-    <i class="fas fa-undo-alt"></i>
-    <div data-i8n="restart,uppercase">REDEMARRER</div>
-  </div>`
 
   if (typeMaj === 0) {
     return frag
