@@ -546,10 +546,7 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
         amount = validated_data['amount']
         terminal = validated_data['terminal_pk']
 
-        try :
-            kiosk = PointDeVente.objects.get(comportement=PointDeVente.KIOSK)
-        except PointDeVente.DoesNotExist:
-
+        kiosk = PointDeVente.objects.get(comportement=PointDeVente.KIOSK)
 
         # Création de l'intention de paiement
         payment_intent = PaymentsIntent.objects.create(
