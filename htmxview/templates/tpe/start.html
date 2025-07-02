@@ -1,53 +1,47 @@
-<!DOCTYPE html>
-{% load static %}
-
-<div class="container" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-    <div id="stripe_pos_page">
-        <!-- Payment process will be displayed here -->
-    </div>
-
-    <div class="row page-header">
-        <div class="col-12 text-center">
-            <h2><i class="fas fa-credit-card"></i> Terminal de Paiement</h2>
+<div id="tb-kiosque" class="BF-col">
+    <div class="container" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+        <div id="stripe_pos_page">
+            <!-- Payment process will be displayed here -->
         </div>
-    </div>
 
-    <div class="card">
-        <div class="card-header bg-primary text-white">
-            <h4 class="mb-0">Nouvelle Transaction</h4>
+        <div class="row page-header">
+            <div class="col-12 text-center">
+                <h2><i class="fas fa-credit-card"></i> Terminal de Paiement</h2>
+            </div>
         </div>
-        <div class="card-body">
-            <form hx-post="/htmx/payment_intent_tpe/"
-                  hx-trigger="click"
-                  hx-target="#stripe_pos_page"
-                  hx-swap="innerHTML"
-                  onsubmit="return validateAmount()">
 
-                <div class="row mb-4">
-                    <div class="col-12">
-                        <div class="form-group amount-input">
-                            <label for="amount"><i class="fas fa-euro-sign"></i> Montant de la recharge</label>
-                            <div class="input-group">
-                                <input type="number" class="form-control form-control-lg" name="amount" id="amount"
-                                       step="0.01"
-                                       min="0.01" required placeholder="0.00">
-                                <div class="input-group-append">
-                                    <span class="input-group-text">€</span>
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">Nouvelle Transaction</h4>
+            </div>
+            <div class="card-body">
+                <form hx-post="/htmx/payment_intent_tpe/" hx-trigger="click" hx-target="#stripe_pos_page"
+                    hx-swap="innerHTML" onsubmit="return validateAmount()">
+
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="form-group amount-input">
+                                <label for="amount"><i class="fas fa-euro-sign"></i> Montant de la recharge</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control form-control-lg" name="amount" id="amount"
+                                        step="0.01" min="0.01" required placeholder="0.00">
+                                    <div class="input-group-append">
+                                        <span class="input-group-text">€</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <label for="tag_id" class="mt-2">TagId Carte Cashless</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control form-control-lg" name="tag_id" id="tag_id"
-                                       value="{{ card.tag_id }}">
-                            </div>
+                                <label for="tag_id" class="mt-2">TagId Carte Cashless</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control form-control-lg" name="tag_id" id="tag_id"
+                                        value="{{ card.tag_id }}">
+                                </div>
 
-                            <input type="hidden" name='terminal_pk' id="terminal_pk" value="{{ terminal.id }}">
+                                <input type="hidden" name='terminal_pk' id="terminal_pk" value="{{ terminal.id }}">
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    {% if terminal %}
+                    <div class="row">
+                        {% if terminal %}
                         <div class="col-12">
                             <div class="card mb-3">
                                 <div class="card-header bg-light">
@@ -61,15 +55,16 @@
                                 </div>
                             </div>
                         </div>
-                    {% else %}
+                        {% else %}
                         <div class="col-12 text-center">
                             <div class="alert alert-warning">
                                 <i class="fas fa-exclamation-triangle"></i> Aucun terminal disponible
                             </div>
                         </div>
-                    {% endif %}
-                </div>
-            </form>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>

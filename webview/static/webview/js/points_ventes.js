@@ -439,17 +439,14 @@ export function asignerTitreVue(titre) {
  * @param {String} pv_uuid - uuid du point de vente courant
  */
 export function afficherPointDeVentes(pv_uuid) {
-  console.log('-> fonction afficherPointDeVentes, pv_uuid = ', pv_uuid, '  --  type = ', typeof pv_uuid)
-
+  // console.log('-> fonction afficherPointDeVentes, pv_uuid = ', pv_uuid, '  --  type = ', typeof pv_uuid)
   let dataPV = glob.data.filter(obj => obj.id === pv_uuid)[0]
-  console.log('dataPV =', dataPV)
 
-
-  if (glob.data.length === 1 && glob.data[0].comportement === "K" || glob.data[0].comportement === "K") {
+  if (dataPV.comportement === "K") {
     // --- pv kiosque ---
     htmx.ajax('GET', '/htmx/payment_intent_tpe/request_card/', {target:'#tb-kiosque', swap:'outerHTML'})
   } else {
-    // --- pv sauf kioske ---
+    // --- pv différent de kioske ---
     // initialisation vue table
     sys.effacerElements(['#commandes-table', '#tables', '#service-commandes'])
     sys.afficherElements(['#page-commandes,block'])
@@ -511,7 +508,7 @@ export function afficherPointDeVentes(pv_uuid) {
   }
 }
 
-function retourne_index_pv(uuid_courant) {
+export function retourne_index_pv(uuid_courant) {
   for (let ipv = 0; ipv < glob.data.length; ipv++) {
     if (glob.data[ipv].id === uuid_courant) {
       return ipv
@@ -681,15 +678,8 @@ export function afficherMenuPV() {
       classPlus = 'fond-menu-cashless'
     }
 
-    let fonctionBouton = `onclick="vue_pv.initDataPVcourant('${pv}')"`
-
-    // Menu kiosque: lancer requête htmx et effacer le menu
-    if (glob.data[pv].comportement === 'K') {
-      fonctionBouton = ` hx-get="/htmx/payment_intent_tpe/request_card/" hx-trigger="click" hx-target="#tb-kiosque" hx-swap="outerHTML" hx-on:click="document.querySelector('#menu-burger-conteneur').classList.toggle('burger-show')"`
-    }
-
     fragPV += `
-    <div class="menu-burger-item BF-ligne-deb ${classPlus} test-${glob.data[pv].name.toLowerCase()}" ${fonctionBouton}>
+    <div class="menu-burger-item BF-ligne-deb ${classPlus} test-${glob.data[pv].name.toLowerCase()}" onclick="vue_pv.initDataPVcourant('${pv}')">
       <i class="fas ${icon}"></i>
       <div>${glob.data[pv].name}</div>
     </div>

@@ -181,9 +181,14 @@ let Nfc = class {
 
     // compose le bouton retour à afficher
     let bouton = ''
+    let addFunctions = ''
+    console.log('tes add funcs =', this.etatLecteurNfc.options.addFunctions)
+    if (this.etatLecteurNfc.options.addFunctionsToBtReturn !== undefined) {
+      addFunctions = this.etatLecteurNfc.options.addFunctionsToBtReturn
+    }
     if (this.etatLecteurNfc.tagIdIdentite !== 'cm') {
       bouton = `<div class="popup-conteneur-bt-retour BF-col">
-        <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="rfid.annuleLireTagId();fn.popupAnnuler();"></bouton-basique>
+        <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="rfid.annuleLireTagId();fn.popupAnnuler();${addFunctions}"></bouton-basique>
       </div>`
     }
 
