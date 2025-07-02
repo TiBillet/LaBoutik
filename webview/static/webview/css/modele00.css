@@ -372,6 +372,7 @@ body {
 #menu-burger-conteneur {
     display: none;
     width: 300px;
+    max-height: 188px;
     position: absolute;
     right: 0;
     top: 51px;
@@ -1794,6 +1795,6 @@ footer {
 
 @media screen and (orientation: landscape) {
     #menu-burger-conteneur {
-        max-height: calc(100vh - 140px)
+        max-height: calc(100vh - 188px)
     }
 }

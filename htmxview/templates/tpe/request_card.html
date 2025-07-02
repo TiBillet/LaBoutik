@@ -32,7 +32,7 @@
         // lance la lecture de carte
         rfid.muteEtat('message', `<div style="white-space: pre-line; text-align: center;" role="status" aria-label="waiting card" ">Kiosque - attente carte </div>`)
         rfid.muteEtat('callbackOk', sendTagId)
-        rfid.muteEtat('tagIdIdentite', 'cm')
+        rfid.muteEtat('tagIdIdentite', 'cm') // n'affiche pas de bouton retour
         rfid.lireTagId()
     {% endif %}
 

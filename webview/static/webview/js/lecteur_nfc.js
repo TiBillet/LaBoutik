@@ -12,7 +12,8 @@ let Nfc = class {
     modeNfc: '',
     data: {},
     tagIdIdentite: '',
-    cordovaLecture: false
+    cordovaLecture: false,
+    options: {}
   }
 
   muteEtat(cible, don) {
@@ -74,14 +75,14 @@ let Nfc = class {
   initCordovaNfc() {
     // console.log('-> initCordovaNfc,', new Date())
     try {
-     
+
       nfc.addTagDiscoveredListener((nfcEvent) => {
-          let tag = nfcEvent.tag
-          sys.log('tagId = ' + nfc.bytesToHexString(tag.id))
-          if (this.etatLecteurNfc.cordovaLecture === true) {
-            this.verificationTagId(nfc.bytesToHexString(tag.id), this.etatLecteurNfc.uuidConnexion)
-          }
-        },
+        let tag = nfcEvent.tag
+        sys.log('tagId = ' + nfc.bytesToHexString(tag.id))
+        if (this.etatLecteurNfc.cordovaLecture === true) {
+          this.verificationTagId(nfc.bytesToHexString(tag.id), this.etatLecteurNfc.uuidConnexion)
+        }
+      },
         function () {
           sys.log("Lecture tag id: OK!")
         },
@@ -89,11 +90,11 @@ let Nfc = class {
           sys.log("Lecture tag id:  Erreur!")
         })
       clearInterval(intervalIDVerifApiCordova)
-     
+
     } catch (e) {
       sys.log(cp + ' -> nfc indéfini, réessayer !')
     }
-  
+
   }
 
   /**
@@ -179,9 +180,12 @@ let Nfc = class {
     `
 
     // compose le bouton retour à afficher
-    let bouton = `<div class="popup-conteneur-bt-retour BF-col">
-      <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="rfid.annuleLireTagId();fn.popupAnnuler();"></bouton-basique>
-    </div>`
+    let bouton = ''
+    if (this.etatLecteurNfc.tagIdIdentite !== 'cm') {
+      bouton = `<div class="popup-conteneur-bt-retour BF-col">
+        <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px"  onclick="rfid.annuleLireTagId();fn.popupAnnuler();"></bouton-basique>
+      </div>`
+    }
 
     // 2 - Afficher le message
     fn.popup({

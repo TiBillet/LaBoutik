@@ -445,7 +445,7 @@ export function afficherPointDeVentes(pv_uuid) {
   console.log('dataPV =', dataPV)
 
 
-  if (glob.data.length === 1 && glob.data[0].comportement === "K") {
+  if (glob.data.length === 1 && glob.data[0].comportement === "K" || glob.data[0].comportement === "K") {
     // --- pv kiosque ---
     htmx.ajax('GET', '/htmx/payment_intent_tpe/request_card/', {target:'#tb-kiosque', swap:'outerHTML'})
   } else {
@@ -464,7 +464,6 @@ export function afficherPointDeVentes(pv_uuid) {
     }
 
     // titre vue
-
     let nomTitre = dataPV.name
     let iconTitre = dataPV.icon
 
