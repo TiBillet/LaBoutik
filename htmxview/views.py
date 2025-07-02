@@ -32,6 +32,7 @@ from epsonprinter.tasks import ticketZ_tasks_printer, send_print_order_inner_sun
 from htmxview.validators import CashfloatChangeValidator, PaymentIntentTpeValidator
 from webview.serializers import debut_fin_journee
 
+from htmxview.tasks import poll_payment_intent_status
 logger = logging.getLogger(__name__)
 
 
@@ -548,10 +549,7 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
         try :
             kiosk = PointDeVente.objects.get(comportement=PointDeVente.KIOSK)
         except PointDeVente.DoesNotExist:
-            kiosk = PointDeVente.objects.create(
-                name="Kiosque",
-                comportement=PointDeVente.KIOSK,
-            )
+
 
         # Création de l'intention de paiement
         payment_intent = PaymentsIntent.objects.create(
@@ -564,9 +562,11 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
         payment_intent.send_to_terminal(terminal)
 
         # Lancer la tâche Celery pour surveiller le statut du paiement
-        from htmxview.tasks import poll_payment_intent_status
-        poll_payment_intent_status.delay(payment_intent.pk)
-        logger.info(f"Started Celery task to poll payment intent status for ID: {payment_intent.pk}")
+        logger.info(f"\nStarted Celery task to poll payment intent status for ID: {payment_intent.pk}")
+        poll_payment = poll_payment_intent_status.delay(payment_intent.pk)
+        if poll_payment.status == 'FAILURE':
+            logger.error(f"ERROR POLLING PAYMENT INTENT STATUS : {poll_payment.result}")
+            return Response(poll_payment.result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         # Renvoie la partie websocket pour le suivi de l'intention de paiement
         return render(request, 'tpe/create.html', context={
