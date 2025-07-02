@@ -99,12 +99,14 @@ function initWebsocket() {
   })
 }
 
-navigator.connection.addEventListener('change', () => {
-  console.log('-> network change' + new Date());
-  if (navigator.onLine === false) {
-    document.dispatchEvent(new CustomEvent('netWorkOffLine', {}))
-  }
-});
+if (isCordovaApp()) {
+  navigator.connection.addEventListener('change', () => {
+    console.log('-> network change' + new Date());
+    if (navigator.onLine === false) {
+      document.dispatchEvent(new CustomEvent('netWorkOffLine', {}))
+    }
+  })
+}
 
 window.nomModulePrive = null
 window.pv_uuid_courant = ''

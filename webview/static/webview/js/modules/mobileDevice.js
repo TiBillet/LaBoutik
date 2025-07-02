@@ -256,7 +256,7 @@ export async function bluetoothDisconnect() {
 
 export async function bluetoothConnection() {
   const connection = await new Promise((resolve) => {
-    async function tryConnection () {
+    async function tryConnection() {
       let connect = false
       console.log('-> bluetoothConnection -', new Date())
 
