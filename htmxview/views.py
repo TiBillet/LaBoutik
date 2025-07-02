@@ -531,7 +531,7 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
             "tag_id": None,
         }
         return render(request, 'tpe/request_card.html', context)
-    
+
     # test tagId carte
     @action(detail=False, methods=['POST'])
     def check_request_card(self, request: Request):
