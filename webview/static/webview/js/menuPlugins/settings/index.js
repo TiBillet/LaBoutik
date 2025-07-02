@@ -10,7 +10,7 @@ window.showSettingsInterface = function () {
   // changer titre
   vue_pv.asignerTitreVue(`<span data-i8n="settings,capitalize">Paramètres</span> - <span data-i8n="infos",capitalize">Infos</span>`)
 
-  // ci-dessous <=> <button hx-get="allOrders/null" hx-target="#service-commandes">clique</button>
+  // ci-dessous <=> <button hx-get="/htmx/appsettings/" hx-target="#service-commandes">clique</button>
   htmx.ajax('GET', '/htmx/appsettings/', '#service-commandes')
 
   // --- listen htmx:afterSwap and launch methods --

@@ -1,0 +1,37 @@
+<div id="tb-kiosque" class="BF-col">
+  <h1>request card</h1>
+  <div>{{ tag_id }}</div>
+</div>
+
+<script>
+  function sendTagId(data) {
+    console.log('-> sendTagId, tagId =', data.tagId)
+
+    htmx.ajax('post', '/htmx/payment_intent_tpe/check_request_card/', { target: '#tb-kiosque', values: { tag_id: data.tagId } })
+  }
+
+
+  // lecture de carte
+  {% if tag_id == None %}
+  // Initialise et détermine le type de lecteur NFC(RFID) (interne/serveur/DEMO)
+  rfid.initModeLectureNfc()
+
+  // lance la lecture de carte
+  rfid.muteEtat('message', `<div style="white-space: pre-line; text-align: center;" role="status" aria-label="waiting card" ">attente carte </div>`)
+  rfid.muteEtat('callbackOk', sendTagId)
+  rfid.muteEtat('tagIdIdentite', 'cm')
+  rfid.lireTagId()
+  {% endif %}
+</script>
+
+<style>
+  #tb-kiosque {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--bleu10);
+    color: var(--blanc01);
+  }
+</style>
