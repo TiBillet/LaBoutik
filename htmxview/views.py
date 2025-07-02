@@ -40,6 +40,8 @@ class AppSettings(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
 
+    # TODO: besoin d'une variable "autorisation_mode_gerant"(responssable edit.mode) fournie par le serveur,
+    # pour la présence du bouton "mode gérant" si autorisé ou pas 
     def list(self, request): # le get /
         config = Configuration.get_solo()
         context = {
@@ -87,6 +89,19 @@ class AppSettings(viewsets.ViewSet):
         context = {}
 
         return render(request, "appsettings/logs.html", context)
+
+    # TODO: remplacer la requête si-dessous par un GET; le serveur donnera les 2 valeurs
+    # autorisation_mode_gerant(responssable edit.mode) et mode_gerant = activé/désactivé (n'existe pas, a créer).
+    @action(detail=False, methods=['POST'])
+    def manager_mode(self, request: Request):
+        activation_mode_gerant = request.data.get('activation_mode_gerant')
+        autorisation_mode_gerant = request.data.get('autorisation_mode_gerant')
+        context = {
+            "activation_mode_gerant": activation_mode_gerant,
+            "autorisation_mode_gerant": autorisation_mode_gerant
+        }
+
+        return render(request, "appsettings/manager_mode.html", context)
 
 
 class Sales(viewsets.ViewSet):
