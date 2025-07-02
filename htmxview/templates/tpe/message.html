@@ -1,6 +1,6 @@
 <div id="message" class="alert alert-info" hx-swap-oob="true">
     <strong>Status Paiement :</strong> {{ event.status_display }}
     <div class="text-muted small">
-        Dernière mise à jour: {{ event.timestamp }}
+        {{ event.retry_count }} - dernière mise à jour: {{ event.timestamp }}
     </div>
 </div>
