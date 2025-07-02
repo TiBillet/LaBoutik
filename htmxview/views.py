@@ -23,7 +23,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 
 from APIcashless.models import ArticleVendu, MoyenPaiement, Configuration, ClotureCaisse, CarteMaitresse, \
-    ConfigurationStripe
+    ConfigurationStripe, CarteCashless
 from APIcashless.models import PointDeVente, Terminal, PaymentsIntent, GroupementCategorie
 from administration.ticketZ import TicketZ, dround
 from administration.ticketZ_V4 import TicketZ as TicketZV4
@@ -534,28 +534,23 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
 
     # test tagId carte
     @action(detail=False, methods=['POST'])
-    def check_request_card(self, request: Request):
-        tag_id = request.data.get('tag_id')
+    def check_request_card(self, request, *args, **kwargs):
+        tag_id = request.data['tag_id']
         logger.info(f"--> tag_id = {tag_id}")
-        context = {
-            "tag_id": tag_id,
-        }
-        return render(request, "tpe/request_card.html", context)
+        card = CarteCashless.objects.get(tag_id=tag_id.upper())
 
-    @action(detail=False, methods=['GET'])
-    def start(self, request, *args, **kwargs):
         user = request.user
-        logger.info(user)
-
+        # TODO : lier le terminal à l'appareil / user
         terminal = Terminal.objects.filter(type=Terminal.STRIPE_WISEPOS, archived=False).first()
 
-        return render(request, 'tpe/start.html', context={
-            'user': user,
+        context = {
+            "card": card,
             'terminal': terminal,
-        })
+            'user' : user,
+        }
+        return render(request, "tpe/start.html", context)
 
-    def check_reader_state(self, reader):
-        pass
+
 
     def create(self, request, *args, **kwargs):
         user = request.user

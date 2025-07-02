@@ -1,78 +1,7 @@
 <!DOCTYPE html>
 {% load static %}
 
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="{% static 'webview/css/bootstrap.min.css' %}">
-{#    <link rel="stylesheet" href="{% static 'fontawesome/5.13.3.all.min.css' %}">#}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
-    <script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
-    <title>Terminal de Paiement Électronique</title>
-    <style>
-        body {
-            padding-top: 20px;
-            padding-bottom: 20px;
-            background-color: #f8f9fa;
-        }
-
-        .terminal-button {
-            margin-bottom: 15px;
-            height: 100px;
-            font-size: 1.2rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-
-        .terminal-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .amount-input {
-            margin-bottom: 20px;
-        }
-
-        .card {
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
-        }
-
-        .page-header {
-            border-bottom: 2px solid #007bff;
-            margin-bottom: 30px;
-            padding-bottom: 10px;
-        }
-
-        .form-control:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
-        }
-    </style>
-    <script>
-        function validateAmount() {
-            const amount = document.getElementById('amount').value;
-            if (!amount || amount <= 0) {
-                alert('Veuillez entrer un montant valide');
-                return false;
-            }
-            return true;
-        }
-    </script>
-</head>
-
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-
-<div class="container">
+<div class="container" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     <div id="stripe_pos_page">
         <!-- Payment process will be displayed here -->
     </div>
@@ -99,7 +28,8 @@
                         <div class="form-group amount-input">
                             <label for="amount"><i class="fas fa-euro-sign"></i> Montant de la recharge</label>
                             <div class="input-group">
-                                <input type="number" class="form-control form-control-lg" name="amount" id="amount" step="0.01"
+                                <input type="number" class="form-control form-control-lg" name="amount" id="amount"
+                                       step="0.01"
                                        min="0.01" required placeholder="0.00">
                                 <div class="input-group-append">
                                     <span class="input-group-text">€</span>
@@ -107,7 +37,8 @@
                             </div>
                             <label for="tag_id" class="mt-2">TagId Carte Cashless</label>
                             <div class="input-group">
-                                <input type="text" class="form-control form-control-lg" name="tag_id" id="tag_id" value="41726643">
+                                <input type="text" class="form-control form-control-lg" name="tag_id" id="tag_id"
+                                       value="{{ card.tag_id }}">
                             </div>
 
                             <input type="hidden" name='terminal_pk' id="terminal_pk" value="{{ terminal.id }}">
@@ -142,5 +73,3 @@
         </div>
     </div>
 </div>
-</body>
-</html>
