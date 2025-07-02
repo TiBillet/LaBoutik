@@ -524,6 +524,24 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
 
+    # menu kiosque
+    @action(detail=False, methods=['GET'])
+    def request_card(self, request, *args, **kwargs):
+        context = {
+            "tag_id": None,
+        }
+        return render(request, 'tpe/request_card.html', context)
+
+    # test tagId carte
+    @action(detail=False, methods=['POST'])
+    def check_request_card(self, request: Request):
+        tag_id = request.data.get('tag_id')
+        logger.info(f"--> tag_id = {tag_id}")
+        context = {
+            "tag_id": tag_id,
+        }
+        return render(request, "tpe/request_card.html", context)
+
     @action(detail=False, methods=['GET'])
     def start(self, request, *args, **kwargs):
         user = request.user
