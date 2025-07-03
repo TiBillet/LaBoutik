@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script
+      src="https://kit.fontawesome.com/845b24a10d.js"
+      crossorigin="anonymous"
+    ></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/test.css" />
+    <title>Confirmation Espèces</title>
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <div class="logo-header blue lighten-3">logo Moloset Whatever</div>
+        <button
+          id="toggleDarkModeBtn"
+          class="z-depth-4 white-text waves-effect waves-light btn-toggle-dark-mode"
+          onclick="toggleDarkMode()"
+        >
+          Mode Nuit
+        </button>
+      </header>
+      <div class="main-center">
+        <section>
+          <div class="card-panel z-depth-1 blue lighten-5">
+            <span class="dark-text"
+              >Veuillez insérer <span id="selectedAmount"></span>€ dans la
+              machine prévue à cette effet.
+              <span id="paymentMethod"></span>
+            </span>
+          </div>
+          <div class="progressBar">
+            <div class="bar" id="progressBar">
+              <div class="progress-value"></div>
+            </div>
+          </div>
+          <div class="card-panel-currentAmount z-depth-1 blue lighten-5">
+            <span class="dark-text"
+              >Montant actuel ajouté : <span id="currentAmount">0</span>€</span
+            >
+          </div>
+          <div class="input-field">
+            <input
+              type="number"
+              id="amountInput"
+              class="validate"
+              placeholder="Ajoutez €"
+              min="1"
+            />
+            <button class="btn waves-effect waves-light" onclick="addAmount()">
+              Ajouter
+            </button>
+          </div>
+          <div class="spinner-box">
+            <div class="spinner" id="spinner"></div>
+          </div>
+        </section>
+      </div>
+      <footer>
+        <button
+          class="btn-back btn-floating waves-effect waves-light"
+          onclick="goBack()"
+        >
+          <i class="material-icons">arrow_back</i>
+          <p>Page précédente</p>
+        </button>
+        <div class="logo-footer blue lighten-3">logo Moloset Whatever</div>
+      </footer>
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="../js/main.js"></script>
+    <script src="../js/cash.js"></script>
+  </body>
+</html>

@@ -2688,10 +2688,18 @@ class PaymentsIntent(models.Model):
     def send_to_terminal(self, terminal: Terminal):
         import stripe
         config = Configuration.get_solo()
+
         # C'est au moment du payment intent qu'on ajoute le stripe account si l'articl n'est pas une recharge fédéré
         config_stripe = ConfigurationStripe.get_solo()
         stripe.api_key = config_stripe.get_stripe_api()
-        stripe_account = config_stripe.get_stripe_connect_account()
+        # stripe_account = config_stripe.get_stripe_connect_account()
+
+        # On vérifie la disponibilité du terminal :
+        try :
+            reader = stripe.terminal.Reader.retrieve(terminal.stripe_id)
+        except stripe._error.InvalidRequestError:
+
+            import ipdb; ipdb.set_trace()
 
         ### Fabrication des metadata vérifié par Fedow pour valider le paiement ( Fedow le reçoit depuis le webhook stripe )
         data = {

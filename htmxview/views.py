@@ -28,8 +28,9 @@ from APIcashless.models import PointDeVente, Terminal, PaymentsIntent, Groupemen
 from administration.ticketZ import TicketZ, dround
 from administration.ticketZ_V4 import TicketZ as TicketZV4
 from epsonprinter.tasks import ticketZ_tasks_printer, send_print_order_inner_sunmi
+from fedow_connect.fedow_api import FedowAPI
 from htmxview.validators import CashfloatChangeValidator, PaymentIntentTpeValidator
-from webview.serializers import debut_fin_journee
+from webview.serializers import debut_fin_journee, CarteCashlessSerializer
 
 from htmxview.tasks import poll_payment_intent_status
 logger = logging.getLogger(__name__)
@@ -537,18 +538,22 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
     def check_request_card(self, request, *args, **kwargs):
         tag_id = request.data['tag_id']
         logger.info(f"--> tag_id = {tag_id}")
-        card = CarteCashless.objects.get(tag_id=tag_id.upper())
+
+        fedowApi = FedowAPI()
+        fedowApi.NFCcard.retrieve(tag_id)
+        carte = CarteCashless.objects.get(tag_id=tag_id)
 
         user = request.user
+
         # TODO : lier le terminal à l'appareil / user
         terminal = Terminal.objects.filter(type=Terminal.STRIPE_WISEPOS, archived=False).first()
-
         context = {
-            "card": card,
+            "total_monnaie": carte.total_monnaie(),
+            "card": carte,
             'terminal': terminal,
             'user' : user,
         }
-        return render(request, "tpe/start.html", context)
+        return render(request, "kiosk/montant.html", context)
 
 
 
@@ -571,7 +576,7 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
         validated_data = validator.validated_data
         amount = validated_data['amount']
         terminal = validated_data['terminal_pk']
-        card = validator.card
+        carte = validator.card
 
         kiosk = PointDeVente.objects.get(comportement=PointDeVente.KIOSK)
 
@@ -580,11 +585,22 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
             terminal=terminal,
             amount=amount,
             pos=kiosk,
-            card=card,
+            card=carte,
         )
 
         # Envoi de l'intention de paiement au terminal
-        payment_intent = payment_intent.send_to_terminal(terminal)
+        try :
+            payment_intent = payment_intent.send_to_terminal(terminal)
+        except Exception as e:
+            context = {
+                "total_monnaie": carte.total_monnaie(),
+                "card": carte,
+                'terminal': terminal,
+                'user': user,
+                'error_message': f"{e}",
+            }
+            return render(request, "kiosk/montant.html", context)
+
 
         # Lancer la tâche Celery pour surveiller le statut du paiement
         logger.info(f"\nStarted Celery task to poll payment intent status for ID: {payment_intent.pk}")
@@ -606,7 +622,7 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
         logger.info(f"END WAIT POLLING PAYMENT INTENT STATUS {poll_payment.status} RESULT : {poll_payment.result}")
 
         # Renvoie la partie websocket pour le suivi de l'intention de paiement
-        return render(request, 'tpe/create.html', context={
+        return render(request, 'kiosk/confirmationCB.html', context={
             'user': user,
             'terminal': terminal,
             'payment_intent': payment_intent,

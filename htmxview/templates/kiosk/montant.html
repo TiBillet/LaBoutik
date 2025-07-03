@@ -1,0 +1,126 @@
+{% load static %}
+
+<script src="https://kit.fontawesome.com/845b24a10d.js" crossorigin="anonymous"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
+      rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet"/>
+<link rel="stylesheet" href="{% static "kiosk/css/kiosk.css" %}"/>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="{% static "kiosk/js/main.js" %}"></script>
+<script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
+<script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
+
+<div id="tb-kiosque" class="BF-col">
+    <main class="container" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+        <header>
+            {#            <div class="logo-header blue lighten-3">logo Moloset Whatever</div>#}
+            <button
+                    id="toggleDarkModeBtn"
+                    class="z-depth-4 waves-effect waves-light btn-toggle-dark-mode"
+                    onclick="toggleDarkMode()"
+            ></button>
+        </header>
+        <div class="main-center">
+            <section>
+                <div class="card-panel z-depth-1 blue lighten-5">
+                    <span class="dark-text">Votre tirelire contient {{ total_monnaie }}€.</span>
+                    <span class="dark-text">Veuillez séléctionner le montant de votre recharge :</span>
+                </div>
+                <div class="row amounts">
+                    <div class="col s12 m3">
+                        <button
+                                class="btn-large z-depth-4 waves-effect waves-light"
+                                id="amount5"
+                                onclick="selectAmount(1)"
+                        >
+                            + 1€
+                        </button>
+                    </div>
+                    <div class="col s12 m3">
+                        <button
+                                class="btn-large z-depth-4 waves-effect waves-light"
+                                id="amount5"
+                                onclick="selectAmount(5)"
+                        >
+                            + 5€
+                        </button>
+                    </div>
+                    <div class="col s12 m3">
+                        <button
+                                class="btn-large z-depth-4 waves-effect waves-light"
+                                id="amount10"
+                                onclick="selectAmount(10)"
+                        >
+                            + 10€
+                        </button>
+                    </div>
+                    <div class="col s12 m3">
+                        <button
+                                class="btn-large z-depth-4 waves-effect waves-light"
+                                id="amount20"
+                                onclick="selectAmount(20)"
+                        >
+                            + 20€
+                        </button>
+                    </div>
+                    <div class="col s12 m3">
+                        <button
+                                class="btn-large z-depth-4 waves-effect waves-light"
+                                id="amount50"
+                                onclick="selectAmount(50)"
+                        >
+                            + 50€
+                        </button>
+                    </div>
+                </div>
+                {% if error_message %}
+                    <div class="erreur-input">{{ error_message }}</div>
+                {% endif %}
+                <form id="amountForm" hx-post="/htmx/payment_intent_tpe/" hx-trigger="click" hx-target="#tb-kiosque"
+                      hx-swap="innerHTML">
+                    <input type="hidden" name='tag_id' id="tag_id" value="{{ card.tag_id }}">
+                    <input type="hidden" name='terminal_pk' id="terminal_pk" value="{{ terminal.id }}">
+                    <input type="hidden" name='amount' id="amount" value="">
+
+                    <div class="align-button">
+                        <button class="btn-cbcash z-depth-4 btn-validate waves-effect waves-light" type="submit">
+                            Valider <span id="totalAmount">0</span>€
+                        </button>
+                    </div>
+
+                </form>
+                <div class="clean">
+                    <button class="btn-clear btn-floating-clear waves-effect waves-light"
+                            onclick="clearAmount()">
+                        <p>Effacer</p>
+                    </button>
+                </div>
+            </section>
+        </div>
+        <footer>
+            <button class="btn-back btn-floating waves-effect waves-light"
+                    hx-get="/htmx/payment_intent_tpe/request_card/"
+                    hx-trigger="click" hx-target="#tb-kiosque" hx-swap="innerHTML">
+                <i class="material-icons">arrow_back</i>
+                <p>Page précédente</p></button>
+            {#            <div class="logo-footer blue lighten-3">logo Moloset Whatever</div>#}
+        </footer>
+    </main>
+
+
+</div>
+
+<script>
+    document.getElementById("amountForm").addEventListener("htmx:configRequest", function (event) {
+        const totalAmountValue = document.getElementById("amount").value;
+        const errorDiv = document.getElementById("totalAmount");
+
+        if (totalAmountValue < 1) {
+            event.preventDefault(); // empêche l’envoi de la requête HTMX
+        }
+    });
+</script>
