@@ -1,12 +1,4 @@
-{% load static %}
-
-<link rel="stylesheet" href="{% static 'webview/css/bootstrap.min.css' %}">
-
-<div id="tb-kiosque" class="BF-col">
-  <h1>request card</h1>
-  <div>{{ tag_id }}</div>
-</div>
-
+<div id="tb-kiosque" class="BF-col"></div>
 
 <script>
   function sendTagId(data) {
@@ -33,15 +25,15 @@
     rfid.muteEtat('tagIdIdentite', 'cm') // n'affiche pas de bouton retour
   } else {
     rfid.muteEtat('tagIdIdentite', 'divers') // affiche le bouton retour
-    
+
     // --- ajoute des fonctions au bouton retour de kiosque ---
     // efface la div contenant kiosque
     let addFunctions = "document.querySelector('#tb-kiosque').style.display = 'none';"
     // si kiosque premier point de ventes le bt retour de kiosque ramènera au pv + 1
     const pvIndex = vue_pv.retourne_index_pv(pv_uuid_courant)
     const comportement = (glob.data.find(pv => pv.id === pv_uuid_courant)).comportement
-    if(pvIndex === 0 && comportement === "K") {
-      addFunctions+= `vue_pv.initDataPVcourant('${pvIndex+1}')`
+    if (pvIndex === 0 && comportement === "K") {
+      addFunctions += `vue_pv.initDataPVcourant('${pvIndex + 1}')`
     }
     rfid.muteEtat('options', { addFunctionsToBtReturn: addFunctions })
   }
@@ -60,52 +52,5 @@
     height: 100vh;
     background-color: var(--bleu10);
     color: var(--blanc01);
-  }
-
-  /*
-  body {
-    padding-top: 20px;
-    padding-bottom: 20px;
-    background-color: #f8f9fa;
-  }
-*/
-  .terminal-button {
-    margin-bottom: 15px;
-    height: 100px;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-  }
-
-  .terminal-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .amount-input {
-    margin-bottom: 20px;
-  }
-
-  .card {
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-  }
-
-  .card:hover {
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-  }
-
-  .page-header {
-    border-bottom: 2px solid #007bff;
-    margin-bottom: 30px;
-    padding-bottom: 10px;
-  }
-
-  .form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, .25);
   }
 </style>

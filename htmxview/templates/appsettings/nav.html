@@ -55,7 +55,7 @@
 
 		<div class="BF-col bt-settings">
 			<i class="fas fa-key mb4px"></i>
-			<span>Manager mode<!-- TODO: traduction --> </span>
+			<span>Manager<!-- TODO: traduction --> </span>
 			<div class="target-settings" action="manage-mode" hx-post="/htmx/appsettings/manager_mode/"  hx-vals="" hx-trigger="click" hx-target="#container-settings"
 				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>Manager mode</span>')"></div>
 		</div>
@@ -63,7 +63,7 @@
 		<!-- recharge l'application -->
 		<div class="BF-col bt-settings">
 			<i class="fas fa-sync mb4px"></i>
-			<span>Synchronise<!-- TODO: traduction --> </span>
+			<span>Synchro<!-- TODO: traduction --> </span>
 			<div class="target-settings" hx-on:click="vue_pv.reloadData();"></div>
 		</div>
 
@@ -295,6 +295,9 @@
 
 		// infos - version apk
 		if (eleVersionApk !== null) {
+			document.querySelector('#settings-info-server').innerText = glob.appConfig.current_server
+			document.querySelector('#settings-info-username').innerText = glob.appConfig.client.username
+			document.querySelector('#settings-info-ip').innerText = glob.appConfig.ip
 			document.querySelector('#settings-info-version-apk').innerText = glob.appConfig.versionApk
 		}
 
