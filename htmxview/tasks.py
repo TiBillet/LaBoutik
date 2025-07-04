@@ -64,8 +64,43 @@ def poll_payment_intent_status(payment_intent_pk, max_duration_seconds=120):
             time.sleep(1)
 
         logger.info(f"Finished polling payment intent status for ID: {payment_intent_pk}")
+        # Si le paiement est succes, on renvoi un template
+        if payment_intent.status == PaymentsIntent.CANCELED:
+            # Send the status update via WebSocket
+            event = {
+                'type': 'template',
+                'template': 'cancel.html',
+                'status': payment_intent.status,
+                'status_display': payment_intent.get_status_display(),
+                'timestamp': timezone.now().isoformat(),
+                'retry_count': retry_count,
+            }
+            async_to_sync(channel_layer.group_send)(
+                room_name,
+                event
+            )
+            return True
+
+        elif payment_intent.status == PaymentsIntent.SUCCEEDED:
+            # Send the status update via WebSocket
+            event = {
+                'type': 'template',
+                'template': 'success.html',
+                'status': payment_intent.status,
+                'status_display': payment_intent.get_status_display(),
+                'timestamp': timezone.now().isoformat(),
+                'retry_count': retry_count,
+            }
+            async_to_sync(channel_layer.group_send)(
+                room_name,
+                event
+            )
+            return True
 
     except PaymentsIntent.DoesNotExist:
         logger.error(f"Payment intent with ID {payment_intent_pk} does not exist")
     except Exception as e:
         logger.error(f"Error polling payment intent status: {e}")
+
+    logger.error(f"Error intent with ID {payment_intent_pk} ended with no condition ?")
+    raise Exception(f"Error intent with ID {payment_intent_pk} ended with no condition ?")

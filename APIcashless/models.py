@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 from datetime import datetime, timedelta, time
 from decimal import Decimal
 from uuid import uuid4
@@ -2668,24 +2669,46 @@ class PaymentsIntent(models.Model):
     )
 
     def get_from_stripe(self):
+        if settings.TEST:
+            # On va simuler un paiement ou des erreurs de paiements
+            import random
+            random_value = random.random()
+
+            if random_value < 0.8:
+                self.status = PaymentsIntent.REQUIRES_PAYMENT_METHOD
+            elif random_value < 0.9:
+                self.status = PaymentsIntent.CANCELED
+            else:
+                self.status = PaymentsIntent.SUCCEEDED
+
+            self.save()
+            return self.status
+
         config_stripe = ConfigurationStripe.get_solo()
         stripe.api_key = config_stripe.get_stripe_api()
         # Capture the payment
         stripe_payment = stripe.PaymentIntent.retrieve(self.payment_intent_stripe_id)
         if stripe_payment.status == 'requires_payment_method':
             self.status = PaymentsIntent.REQUIRES_PAYMENT_METHOD
+        elif stripe_payment.status == 'processing':
+            self.status = PaymentsIntent.IN_PROGRESS
         elif stripe_payment.status == 'requires_capture':
             self.status = PaymentsIntent.REQUIRES_CAPTURE
         elif stripe_payment.status == 'canceled':
             self.status = PaymentsIntent.CANCELED
-        elif stripe_payment.status == 'processing':
-            self.status = PaymentsIntent.IN_PROGRESS
         elif stripe_payment.status == 'succeeded':
             self.status = PaymentsIntent.SUCCEEDED
         self.save()
         return self.status
 
     def send_to_terminal(self, terminal: Terminal):
+        if settings.TEST:
+            # On simule un TPE Stripe
+            self.payment_intent_stripe_id = uuid.uuid4().hex[:30]
+            self.status = self.IN_PROGRESS
+            self.save()
+            return self
+
         import stripe
         config = Configuration.get_solo()
 
@@ -2697,9 +2720,8 @@ class PaymentsIntent(models.Model):
         # On vérifie la disponibilité du terminal :
         try :
             reader = stripe.terminal.Reader.retrieve(terminal.stripe_id)
-        except stripe._error.InvalidRequestError:
-
-            import ipdb; ipdb.set_trace()
+        except stripe._error.InvalidRequestError as e:
+            raise e
 
         ### Fabrication des metadata vérifié par Fedow pour valider le paiement ( Fedow le reçoit depuis le webhook stripe )
         data = {
