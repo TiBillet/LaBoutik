@@ -1,0 +1,60 @@
+{% load static %}
+
+<div id="tb-kiosque" class="BF-col">
+    <main class="container">
+        <header>
+            <button id="toggleDarkModeBtn"
+                    class="z-depth-4 white-text waves-effect waves-light btn-toggle-dark-mode"
+                    onclick="toggleDarkMode()">
+                Mode Nuit
+            </button>
+        </header>
+        <div class="main-center">
+            <section>
+                <div class="card-panel z-depth-1 blue lighten-5">
+                    <span class="dark-text">Veuillez suivre les indications du terminal de carte bancaire.</span>
+                </div>
+
+                <div class="spinner-box">
+                    <div class="spinnerCB" id="spinnerCB"></div>
+                </div>
+
+                <div class="row mb-4" hx-ext="ws"
+                     ws-connect="/ws/terminal/{{ payment_intent.payment_intent_stripe_id }}/">
+                    <div class="col-12">
+                        <div class="alert alert-info" id="notification">
+                            <strong>Status Paiement :</strong> {{ payment_intent.status }}
+                            <strong>{{ payment_intent.pk }}</strong>
+                        </div>
+
+
+                        {% if message %}
+                            <div class="alert alert-success">
+                                <i class="fa fa-check-circle"></i> {{ message }}
+                            </div>
+                        {% endif %}
+
+                        {% if error %}
+                            <div class="alert alert-danger">
+                                <i class="fa fa-exclamation-circle"></i> {{ error }}
+                            </div>
+                        {% endif %}
+
+                        <div id="message" class="alert alert-light">
+                            <!-- Messages from WebSocket will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+        </div>
+        <footer>
+            <button class="btn-back btn-floating waves-effect waves-light"
+                    hx-get="/htmx/payment_intent_tpe/{{ terminal.pk }}/cancel/"
+                    hx-trigger="click" hx-target="#tb-kiosque" hx-swap="innerHTML">
+                <i class="material-icons">arrow_back</i>
+                <p>Annuler</p>
+            </button>
+        </footer>
+    </main>
+</div>
