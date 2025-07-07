@@ -36,6 +36,7 @@ def poll_payment_intent_status(payment_intent_pk, max_duration_seconds=120):
 
     try:
         payment_intent = PaymentsIntent.objects.get(pk=payment_intent_pk)
+        logger.info(f"payment_intent {PaymentsIntent.pk} -- status : {payment_intent.status}")
         room_name = payment_intent.payment_intent_stripe_id
 
         retry_count = 0

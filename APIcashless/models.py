@@ -2671,10 +2671,12 @@ class PaymentsIntent(models.Model):
 
     def get_from_stripe(self):
         if settings.TEST:
+            # simule l'attente :
+            # return PaymentsIntent.REQUIRES_PAYMENT_METHOD
+
             # On va simuler un paiement ou des erreurs de paiements
             import random
             random_value = random.random()
-
             if random_value < 0.8:
                 self.status = PaymentsIntent.REQUIRES_PAYMENT_METHOD
             elif random_value < 0.9:
@@ -2683,6 +2685,11 @@ class PaymentsIntent(models.Model):
                 self.status = PaymentsIntent.SUCCEEDED
 
             self.save()
+            return self.status
+        """
+        """
+
+        if self.status in [PaymentsIntent.CANCELED, PaymentsIntent.SUCCEEDED]:
             return self.status
 
         config_stripe = ConfigurationStripe.get_solo()
@@ -2709,6 +2716,8 @@ class PaymentsIntent(models.Model):
             self.status = self.IN_PROGRESS
             self.save()
             return self
+        """
+        """
 
         import stripe
         config = Configuration.get_solo()
@@ -2720,7 +2729,7 @@ class PaymentsIntent(models.Model):
 
         # On vérifie la disponibilité du terminal :
         try :
-            reader = stripe.terminal.Reader.retrieve(terminal.stripe_id)
+            stripe.terminal.Reader.retrieve(terminal.stripe_id)
         except stripe._error.InvalidRequestError as e:
             raise e
 
@@ -2755,7 +2764,7 @@ class PaymentsIntent(models.Model):
         self.payment_intent_stripe_id = payment_intent_stripe.id
         self.save()
 
-        reader = stripe.terminal.Reader.process_payment_intent(
+        stripe.terminal.Reader.process_payment_intent(
             terminal.stripe_id,
             payment_intent=payment_intent_stripe.id
         )
