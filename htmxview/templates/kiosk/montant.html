@@ -97,11 +97,8 @@
             demoTagIdTempsReponse: {{ demoTagIdTempsReponse }}
       }
     </script>
-    <script src="{% static 'webview/js/modeNfc_demo.js' %}?{{ version }}"></script>
-    {% else %}
-    <script src="{% static 'webview/js/lecteur_nfc.js' %}?{{ version }}"></script>
     {% endif %}
+    <script src="{% static 'kiosk/js/nfc.js' %}"></script>
     <script src="{% static 'kiosk/js/main.js' %}"></script>
 </body>
-
 </html>
