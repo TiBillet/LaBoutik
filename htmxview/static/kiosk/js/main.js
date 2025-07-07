@@ -1,4 +1,4 @@
-const rfid = new Nfc()
+const rfid = new NfcReader()
 let totalAmount = 0;
 
 function goBack() {
@@ -99,14 +99,9 @@ function readNfc() {
       // after the popup has been shown on screen
       didOpen: () => {
         Swal.showLoading()
-        rfid.initModeLectureNfc()
-        rfid.muteEtat('message','')
-        rfid.muteEtat('callbackOk', sendTagId)
-        rfid.muteEtat('tagIdIdentite', 'cm')
-        rfid.lireTagId()
-
+        rfid.startLecture()
       },
-      // uns when the popup closes by user
+      // when the popup closes by user
       willClose: () => {
       }
     }).then((result) => {
