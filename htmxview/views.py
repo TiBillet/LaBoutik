@@ -636,33 +636,41 @@ class Kiosk(viewsets.ViewSet):
         # Renvoie la partie websocket pour le suivi de l'intention de paiement
         return render(request, 'kiosk/confirmationCB.html', context={
             'user': user,
+            'amount': (amount/100),
             'terminal': terminal,
             'payment_intent': payment_intent,
         })
 
-
-    @action(detail=True, methods=['GET'])
-    def retry(self, request, pk):
-        config_stripe = ConfigurationStripe.get_solo()
-        stripe.api_key = config_stripe.get_stripe_api()
-        payment_intent = get_object_or_404(PaymentsIntent, pk=pk)
-        terminal = payment_intent.terminal
-        stripe.terminal.Reader.cancel_action(terminal.stripe_id)
-        payment_intent.send_to_terminal(terminal)
-
-        return render(request, 'tpe/create.html', context={
-            'user': request.user,
-            'terminal': terminal,
-            'payment_intent': payment_intent,
-        })
 
     @action(detail=True, methods=['GET'])
     def cancel(self, request, pk):
+        payment_intent_db = get_object_or_404(PaymentsIntent, pk=pk)
+
+        # Annulation de toute action sur le terminal :
         config_stripe = ConfigurationStripe.get_solo()
         stripe.api_key = config_stripe.get_stripe_api()
-        terminal = get_object_or_404(Terminal, pk=pk)
+
+        terminal = payment_intent_db.terminal
         stripe.terminal.Reader.cancel_action(terminal.stripe_id)
+        logger.info(f"Cancel action on terminal {terminal.stripe_id}")
+
+        stripe.PaymentIntent.cancel(payment_intent_db.payment_intent_stripe_id)
+        payment_intent_db.refresh_from_db()
+        logger.info(f"Cancel payment intent {payment_intent_db.pk} -> status : {payment_intent_db.status}")
+
+        # Le cancel a été fait coté stripe, le OOB du websocket va afficher la page cancel
         return HttpResponse(status=205)
+
+        # On retourne l'index :
+        # context = {
+        #     "test":settings.TEST,
+        #     "DEMO_TAGID_CLIENT1" : os.environ.get('DEMO_TAGID_CLIENT1'),
+        # }
+        # return render(request, "kiosk/montant.html", context)
+
+        # Retour du spinner qui sera affiché a la place du boutton
+        # return render(request, "kiosk/spinnerbox.html", {})
+
 
     @action(detail=True, methods=['GET'])
     def valid_and_continue(self, request, pk):
