@@ -2582,7 +2582,8 @@ class Location(models.Model):
 class Terminal(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Nom"))
-
+    appareil = models.ForeignKey(Appareil, on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name="terminals", verbose_name=_("Appareil lié") )
     # Pour les TPE Stripe :
     registration_code = models.CharField(max_length=200, blank=True, null=True,
                                          verbose_name=_("Code d'enregistrement du lecteur"))

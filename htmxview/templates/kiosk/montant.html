@@ -1,18 +1,18 @@
 {% load static %}
 
-<script src="https://kit.fontawesome.com/845b24a10d.js" crossorigin="anonymous"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap"
-      rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet"/>
-<link rel="stylesheet" href="{% static "kiosk/css/kiosk.css" %}"/>
 
+{#statics pour la page montant :#}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<link rel="stylesheet" href="{% static "kiosk/css/kiosk.css" %}"/>
 <script src="{% static "kiosk/js/main.js" %}"></script>
-<script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
-<script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
+
+<script src="{% static 'js/sweetalert.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/htmx-ext-ws@2.0.2" crossorigin="anonymous"></script>
+
+{#<script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>#}
+{#<script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>#}
 
 <div id="tb-kiosque" class="BF-col">
     <main class="container" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
@@ -27,8 +27,8 @@
         <div class="main-center">
             <section>
                 <div class="card-panel z-depth-1 blue lighten-5">
-                    <span class="dark-text">Votre tirelire contient {{ total_monnaie }}€.</span>
-                    <span class="dark-text">Veuillez séléctionner le montant de votre recharge :</span>
+                    {#                    <span class="dark-text">Votre tirelire contient {{ total_monnaie }}€.</span>#}
+                    <span class="dark-text">Sélectionnez le montant de la recharge souhaitée :</span>
                 </div>
                 <div class="row amounts">
                     <div class="col s12 m3">
@@ -80,19 +80,52 @@
                 {% if error_message %}
                     <div class="erreur-input">{{ error_message }}</div>
                 {% endif %}
-                <form id="amountForm" hx-post="/htmx/payment_intent_tpe/" hx-trigger="click" hx-target="#tb-kiosque"
-                      hx-swap="innerHTML">
-                    <input type="hidden" name='tag_id' id="tag_id" value="{{ card.tag_id }}">
-                    <input type="hidden" name='terminal_pk' id="terminal_pk" value="{{ terminal.id }}">
-                    <input type="hidden" name='amount' id="amount" value="">
 
-                    <div class="align-button">
-                        <button class="btn-cbcash z-depth-4 btn-validate waves-effect waves-light" type="submit">
-                            Valider <span id="totalAmount">0</span>€
-                        </button>
-                    </div>
+                <div class="align-button">
+                    <button class="btn-cbcash z-depth-4 btn-validate waves-effect waves-light"
+                            hx-trigger="confirmed"
+                            hx-post="/htmx/kiosk/refill_with_wisepos/"
+                            hx-vals='js:{"totalAmount": totalAmount, "tag_id": this.tagId}'
+                            onClick='
+                                    console.log(totalAmount);
+                                    if (totalAmount > 0 ) {
 
-                </form>
+                                    let timerInterval;
+                                    let tagId
+                                    Swal.fire({
+                                    title: "Vous avez selectionné "+totalAmount+"€",
+                                    html: "<p>Merci de scanner votre carte TiBillet sur le lecteur Sunmi.</p><p>⬆️⬆️⬆️⬆️⬆️⬆️⬆️</p><p>Le lecteur de carte est juste au dessus de cet écran</p>",
+                                    timer: 30000,
+                                    timerProgressBar: true,
+                                    didOpen: () => {
+                                    Swal.showLoading();
+                                    /* const timer = Swal.getPopup().querySelector("b");
+                                    timerInterval = setInterval(() => {
+                                      timer.textContent = `${Swal.getTimerLeft()}`;
+                                    }, 100); */
+                                    },
+                                    willClose: () => {
+                                    clearInterval(timerInterval);
+                                    }
+                                    }).then((result) => {
+                                    /* Read more about handling dismissals below */
+                                    if (result.dismiss === Swal.DismissReason.timer) {
+                                    clearAmount();
+                                    console.log("I was closed by the timer");
+                                    } else {
+                                    console.log("I was closed");
+                                    {% if test %}
+                                        this.tagId = "{{ DEMO_TAGID_CLIENT1 }}"
+                                        console.log(this.tagId)
+                                        htmx.trigger(this, `confirmed`);
+                                    {% endif %}
+                                    }
+                                    });
+                                    }'>Valider <span id="totalAmount">0</span>€
+                    </button>
+                </div>
+
+
                 <div class="clean">
                     <button class="btn-clear btn-floating-clear waves-effect waves-light"
                             onclick="clearAmount()">
@@ -101,26 +134,8 @@
                 </div>
             </section>
         </div>
-        <footer>
-            <button class="btn-back btn-floating waves-effect waves-light"
-                    hx-get="/htmx/payment_intent_tpe/request_card/"
-                    hx-trigger="click" hx-target="#tb-kiosque" hx-swap="innerHTML">
-                <i class="material-icons">arrow_back</i>
-                <p>Page précédente</p></button>
-            {#            <div class="logo-footer blue lighten-3">logo Moloset Whatever</div>#}
-        </footer>
     </main>
 
 
 </div>
 
-<script>
-    document.getElementById("amountForm").addEventListener("htmx:configRequest", function (event) {
-        const totalAmountValue = document.getElementById("amount").value;
-        const errorDiv = document.getElementById("totalAmount");
-
-        if (totalAmountValue < 1) {
-            event.preventDefault(); // empêche l’envoi de la requête HTMX
-        }
-    });
-</script>

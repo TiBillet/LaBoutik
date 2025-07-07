@@ -1,4 +1,5 @@
 import json, logging, time
+import os
 from datetime import timedelta, datetime
 from uuid import UUID
 
@@ -29,7 +30,7 @@ from administration.ticketZ import TicketZ, dround
 from administration.ticketZ_V4 import TicketZ as TicketZV4
 from epsonprinter.tasks import ticketZ_tasks_printer, send_print_order_inner_sunmi
 from fedow_connect.fedow_api import FedowAPI
-from htmxview.validators import CashfloatChangeValidator, PaymentIntentTpeValidator
+from htmxview.validators import CashfloatChangeValidator, RefillWisePoseValidator
 from webview.serializers import debut_fin_journee, CarteCashlessSerializer
 
 from htmxview.tasks import poll_payment_intent_status
@@ -521,9 +522,17 @@ class Print(viewsets.ViewSet):
         })
 
 
-class PaymentIntentTpeViewset(viewsets.ViewSet):
+class Kiosk(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
+
+    # La vue GET par default /htmx/kiosk
+    def list(self, request):
+        context = {
+            "test":settings.TEST,
+            "DEMO_TAGID_CLIENT1" : os.environ.get('DEMO_TAGID_CLIENT1'),
+        }
+        return render(request, "kiosk/montant.html", context)
 
     # menu kiosque
     @action(detail=False, methods=['GET'])
@@ -556,9 +565,11 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
         return render(request, "kiosk/montant.html", context)
 
 
-
-    def create(self, request, *args, **kwargs):
+    @action(detail=False, methods=['POST'])
+    def refill_with_wisepos(self, request, *args, **kwargs):
         user = request.user
+
+        # import ipdb; ipdb.set_trace()
 
         if not settings.DEBUG:
             if not request.user.is_authenticated or not hasattr(request.user, 'appareil'):
@@ -567,15 +578,15 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
 
         # Validate the request data
         logger.info(f"request.data = {request.data}")
-        validator = PaymentIntentTpeValidator(data=request.data)
+        validator = RefillWisePoseValidator(data=request.data)
         if not validator.is_valid():
             logger.error(f"ERROR VALIDATION : {validator.errors}")
             return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
 
         # Get validated data
         validated_data = validator.validated_data
-        amount = validated_data['amount']
-        terminal = validated_data['terminal_pk']
+        amount = validated_data['totalAmount']
+        terminal = user.appareil.terminals.filter(type=Terminal.STRIPE_WISEPOS, archived=False).first()
         carte = validator.card
 
         kiosk = PointDeVente.objects.get(comportement=PointDeVente.KIOSK)

@@ -7,7 +7,6 @@ function goBack() {
 function selectAmount(amount) {
   totalAmount += amount;
   document.getElementById("totalAmount").textContent = `${totalAmount}`;
-  document.getElementById("amount").value = `${totalAmount}`;
 }
 
 function validateAmount() {
