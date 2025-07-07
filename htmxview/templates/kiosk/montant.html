@@ -90,36 +90,35 @@
                             onClick='
                                     console.log(totalAmount);
                                     if (totalAmount > 0 ) {
-
                                     let timerInterval;
-                                    let tagId
                                     Swal.fire({
-                                    title: "Vous avez selectionné "+totalAmount+"€",
-                                    html: "<p>Merci de scanner votre carte TiBillet sur le lecteur Sunmi.</p><p>⬆️⬆️⬆️⬆️⬆️⬆️⬆️</p><p>Le lecteur de carte est juste au dessus de cet écran</p>",
-                                    timer: 30000,
-                                    timerProgressBar: true,
+                                        title: "Vous avez selectionné "+totalAmount+"€",
+                                        html: "<p>Merci de scanner votre carte TiBillet sur le lecteur Sunmi.</p><p>⬆️⬆️⬆️⬆️⬆️⬆️⬆️</p><p>Le lecteur de carte est juste au dessus de cet écran</p>",
+                                        timer: 30000,
+                                        timerProgressBar: true,
                                     didOpen: () => {
-                                    Swal.showLoading();
-                                    /* const timer = Swal.getPopup().querySelector("b");
-                                    timerInterval = setInterval(() => {
-                                      timer.textContent = `${Swal.getTimerLeft()}`;
-                                    }, 100); */
+                                        Swal.showLoading();
+                                        /* const timer = Swal.getPopup().querySelector("b");
+                                        timerInterval = setInterval(() => {
+                                          timer.textContent = `${Swal.getTimerLeft()}`;
+                                        }, 100); */
                                     },
                                     willClose: () => {
-                                    clearInterval(timerInterval);
+                                        clearInterval(timerInterval);
                                     }
                                     }).then((result) => {
                                     /* Read more about handling dismissals below */
-                                    if (result.dismiss === Swal.DismissReason.timer) {
-                                    clearAmount();
-                                    console.log("I was closed by the timer");
-                                    } else {
-                                    console.log("I was closed");
-                                    {% if test %}
-                                        this.tagId = "{{ DEMO_TAGID_CLIENT1 }}"
-                                        console.log(this.tagId)
-                                        htmx.trigger(this, `confirmed`);
-                                    {% endif %}
+                                        if (result.dismiss === Swal.DismissReason.timer) {
+                                            clearAmount();
+                                            console.log("I was closed by the timer");
+                                        } else {
+                                            console.log("I was closed");
+
+                                        {% if test %}
+                                            this.tagId = "{{ DEMO_TAGID_CLIENT1 }}"
+                                            console.log(this.tagId)
+                                            htmx.trigger(this, `confirmed`);
+                                        {% endif %}
                                     }
                                     });
                                     }'>Valider <span id="totalAmount">0</span>€
