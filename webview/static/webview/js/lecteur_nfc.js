@@ -165,7 +165,7 @@ let Nfc = class {
     let modeNfc = this.etatLecteurNfc.modeNfc
     // console.log('-> lireTagId, modeNfc =', modeNfc)
     // 1 - générer un uuidConnexion
-    const uuidConnexion = sys.uuidV4()
+    const uuidConnexion = crypto.randomUUID()
 
     // TODO: émettre un log
     // console.log('uuidConnexion : ' + uuidConnexion)
@@ -182,7 +182,7 @@ let Nfc = class {
     // compose le bouton retour à afficher
     let bouton = ''
     let addFunctions = ''
-    console.log('tes add funcs =', this.etatLecteurNfc.options.addFunctions)
+    // console.log('tes add funcs =', this.etatLecteurNfc.options.addFunctions)
     if (this.etatLecteurNfc.options.addFunctionsToBtReturn !== undefined) {
       addFunctions = this.etatLecteurNfc.options.addFunctionsToBtReturn
     }
