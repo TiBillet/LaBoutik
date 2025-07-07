@@ -86,6 +86,7 @@
                             hx-trigger="confirmed"
                             hx-post="/htmx/kiosk/refill_with_wisepos/"
                             hx-vals='js:{"totalAmount": totalAmount, "tag_id": this.tagId}'
+                            hx-target="#tb-kiosque" hx-swap="innerHTML"
                             onClick='
                                     console.log(totalAmount);
                                     if (totalAmount > 0 ) {
