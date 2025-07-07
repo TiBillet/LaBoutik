@@ -1,135 +1,83 @@
-{% load static %}
+<!DOCTYPE html>
+<html>
 
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>kiosque</title>
+    {% load static %}
 
-{#statics pour la page montant :#}
-<link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-<link rel="stylesheet" href="{% static "kiosk/css/kiosk.css" %}"/>
+    {#statics pour la page montant :#}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{% static 'kiosk/css/kiosk.css' %}" />
 
-<script src="{% static "kiosk/js/main.js" %}"></script>
-<script src="{% static 'js/sweetalert.js' %}"></script>
+    <script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
+    <script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="{% static 'js/sweetalert.js' %}"></script>
 
-{#<script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js" crossorigin="anonymous"></script>#}
-{#<script src="https://cdn.jsdelivr.net/npm/htmx-ext-ws@2.0.2" crossorigin="anonymous"></script>#}
+</head>
 
-<script src="{% static 'webview/js/htmx@2.0.6.min.js' %}"></script>
-<script src="{% static 'webview/js/htmx-ext-ws@2.0.2.js' %}"></script>
-
-<div id="tb-kiosque" class="BF-col">
-    <main class="container" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body id="tb-kiosque" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <main class="container">
         <header>
-            {#            <div class="logo-header blue lighten-3">logo Moloset Whatever</div>#}
-            <button
-                    id="toggleDarkModeBtn"
-                    class="z-depth-4 waves-effect waves-light btn-toggle-dark-mode"
-                    onclick="toggleDarkMode()"
-            ></button>
+            <!-- <div class="logo-header blue lighten-3">logo Moloset Whatever</div> -->
+            <button id="toggleDarkModeBtn" class="z-depth-4 waves-effect waves-light btn-toggle-dark-mode"
+                onclick="toggleDarkMode()"></button>
         </header>
         <div class="main-center">
             <section>
                 <div class="card-panel z-depth-1 blue lighten-5">
-                    {#                    <span class="dark-text">Votre tirelire contient {{ total_monnaie }}€.</span>#}
+                    {# <span class="dark-text">Votre tirelire contient {{ total_monnaie }}€.</span>#}
                     <span class="dark-text">Sélectionnez le montant de la recharge souhaitée :</span>
                 </div>
                 <div class="row amounts">
                     <div class="col s12 m3">
-                        <button
-                                class="btn-large z-depth-4 waves-effect waves-light"
-                                id="amount5"
-                                onclick="selectAmount(1)"
-                        >
+                        <button class="btn-large z-depth-4 waves-effect waves-light" id="amount5"
+                            onclick="selectAmount(1)">
                             + 1€
                         </button>
                     </div>
                     <div class="col s12 m3">
-                        <button
-                                class="btn-large z-depth-4 waves-effect waves-light"
-                                id="amount5"
-                                onclick="selectAmount(5)"
-                        >
+                        <button class="btn-large z-depth-4 waves-effect waves-light" id="amount5"
+                            onclick="selectAmount(5)">
                             + 5€
                         </button>
                     </div>
                     <div class="col s12 m3">
-                        <button
-                                class="btn-large z-depth-4 waves-effect waves-light"
-                                id="amount10"
-                                onclick="selectAmount(10)"
-                        >
+                        <button class="btn-large z-depth-4 waves-effect waves-light" id="amount10"
+                            onclick="selectAmount(10)">
                             + 10€
                         </button>
                     </div>
                     <div class="col s12 m3">
-                        <button
-                                class="btn-large z-depth-4 waves-effect waves-light"
-                                id="amount20"
-                                onclick="selectAmount(20)"
-                        >
+                        <button class="btn-large z-depth-4 waves-effect waves-light" id="amount20"
+                            onclick="selectAmount(20)">
                             + 20€
                         </button>
                     </div>
                     <div class="col s12 m3">
-                        <button
-                                class="btn-large z-depth-4 waves-effect waves-light"
-                                id="amount50"
-                                onclick="selectAmount(50)"
-                        >
+                        <button class="btn-large z-depth-4 waves-effect waves-light" id="amount50"
+                            onclick="selectAmount(50)">
                             + 50€
                         </button>
                     </div>
                 </div>
                 {% if error_message %}
-                    <div class="erreur-input">{{ error_message }}</div>
+                <div class="erreur-input">{{ error_message }}</div>
                 {% endif %}
 
                 <div class="align-button">
-                    <button class="btn-cbcash z-depth-4 btn-validate waves-effect waves-light"
-                            hx-trigger="confirmed"
-                            hx-post="/htmx/kiosk/refill_with_wisepos/"
-                            hx-vals='js:{"totalAmount": totalAmount, "tag_id": this.tagId}'
-                            hx-target="#tb-kiosque" hx-swap="outerHTML"
-                            onClick='
-                                    console.log(totalAmount);
-                                    if (totalAmount > 0 ) {
-                                    let timerInterval;
-                                    Swal.fire({
-                                        title: "Vous avez selectionné "+totalAmount+"€",
-                                        html: "<p>Merci de scanner votre carte TiBillet sur le lecteur Sunmi.</p><p>⬆️⬆️⬆️⬆️⬆️⬆️⬆️</p><p>Le lecteur de carte est juste au dessus de cet écran</p>",
-                                        timer: 30000,
-                                        timerProgressBar: true,
-                                    didOpen: () => {
-                                        Swal.showLoading();
-                                        /* const timer = Swal.getPopup().querySelector("b");
-                                        timerInterval = setInterval(() => {
-                                          timer.textContent = `${Swal.getTimerLeft()}`;
-                                        }, 100); */
-                                    },
-                                    willClose: () => {
-                                        clearInterval(timerInterval);
-                                    }
-                                    }).then((result) => {
-                                    /* Read more about handling dismissals below */
-                                        if (result.dismiss === Swal.DismissReason.timer) {
-                                            clearAmount();
-                                            console.log("I was closed by the timer");
-                                        } else {
-                                            console.log("I was closed");
-
-                                        {% if test %}
-                                            this.tagId = "{{ DEMO_TAGID_CLIENT1 }}"
-                                            console.log(this.tagId)
-                                            htmx.trigger(this, `confirmed`);
-                                        {% endif %}
-                                    }
-                                    });
-                                    }'>Valider <span id="totalAmount">0</span>€
+                    <button class="btn-cbcash z-depth-4 btn-validate waves-effect waves-light" hx-trigger="confirmed"
+                        hx-post="/htmx/kiosk/refill_with_wisepos/"
+                        hx-vals='js:{"totalAmount": totalAmount, "tag_id": this.tagId}' hx-target="#tb-kiosque"
+                        hx-swap="innerHTML" onClick="readNfc()">Valider <span id="totalAmount">0</span>€
                     </button>
                 </div>
 
 
                 <div class="clean">
-                    <button class="btn-clear btn-floating-clear waves-effect waves-light"
-                            onclick="clearAmount()">
+                    <button class="btn-clear btn-floating-clear waves-effect waves-light" onclick="clearAmount()">
                         <p>Effacer</p>
                     </button>
                 </div>
@@ -137,10 +85,23 @@
         </div>
     </main>
 
+    {% if demo %}
+    <script>
+        window.DEMO = {
+            demoVirtualKeyboardActive: true,
+            demoTagIdCm: '{{ demoTagIdCm }}',
+            demoTagIdClient1: '{{ demoTagIdClient1 }}',
+            demoTagIdClient2: '{{ demoTagIdClient2 }}',
+            demoTagIdClient3: '{{ demoTagIdClient3 }}',
+            demoTagIdUnknown: 'XXXXXXXX',
+            demoTagIdTempsReponse: {{ demoTagIdTempsReponse }}
+      }
+    </script>
+    <script src="{% static 'webview/js/modeNfc_demo.js' %}?{{ version }}"></script>
+    {% else %}
+    <script src="{% static 'webview/js/lecteur_nfc.js' %}?{{ version }}"></script>
+    {% endif %}
+    <script src="{% static 'kiosk/js/main.js' %}"></script>
+</body>
 
-</div>
-
-<script>
-    /* au chargement de la page : */
-    clearAmount()
-</script>
+</html>

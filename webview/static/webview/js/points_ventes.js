@@ -444,7 +444,8 @@ export function afficherPointDeVentes(pv_uuid) {
 
   if (dataPV.comportement === "K") {
     // --- pv kiosque ---
-    htmx.ajax('GET', '/htmx/payment_intent_tpe/request_card/', {target:'#tb-kiosque', swap:'outerHTML'})
+    // htmx.ajax('GET', '/htmx/payment_intent_tpe/request_card/', {target:'#tb-kiosque', swap:'outerHTML'})
+    window.location = "/htmx/kiosk/"
   } else {
     // --- pv différent de kioske ---
     // initialisation vue table

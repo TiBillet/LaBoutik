@@ -1,6 +1,8 @@
 body {
   font-family: "Plus Jakarta Sans", sans-serif;
   background-color: #f5f5f5;
+  width: 100vw;
+  height: 100vh;
 }
 
 #paymentMethod {
@@ -45,6 +47,7 @@ body {
     opacity: 0;
     transform: scale(0);
   }
+
   100% {
     opacity: 1;
     transform: scale(1);
@@ -115,20 +118,16 @@ body {
 
 .card-panel-green {
   background: rgb(67, 160, 71);
-  background: linear-gradient(
-    0deg,
-    rgb(67, 160, 71) 0%,
-    rgb(129, 199, 132) 100%
-  );
+  background: linear-gradient(0deg,
+      rgb(67, 160, 71) 0%,
+      rgb(129, 199, 132) 100%);
 }
 
 .card-panel-blue {
   background: rgb(21, 101, 192);
-  background: linear-gradient(
-    0deg,
-    rgb(21, 101, 192) 0%,
-    rgb(100, 181, 246) 100%
-  );
+  background: linear-gradient(0deg,
+      rgb(21, 101, 192) 0%,
+      rgb(100, 181, 246) 100%);
 }
 
 .btn-cbcash {
@@ -140,11 +139,9 @@ body {
   border: 0;
   color: #f5f5f5;
   background: rgb(67, 160, 71);
-  background: linear-gradient(
-    0deg,
-    rgb(67, 160, 71) 0%,
-    rgb(129, 199, 132) 100%
-  );
+  background: linear-gradient(0deg,
+      rgb(67, 160, 71) 0%,
+      rgb(129, 199, 132) 100%);
   opacity: 0;
   animation: apparition 2s ease 300ms 1 normal forwards;
 }
@@ -157,11 +154,9 @@ body {
   font-weight: 600;
   color: #f5f5f5;
   background: rgb(21, 101, 192);
-  background: linear-gradient(
-    0deg,
-    rgb(21, 101, 192) 0%,
-    rgb(100, 181, 246) 100%
-  );
+  background: linear-gradient(0deg,
+      rgb(21, 101, 192) 0%,
+      rgb(100, 181, 246) 100%);
   border-radius: 15px;
   border: 0;
   opacity: 0;
@@ -177,11 +172,9 @@ body {
   border: 0;
   font-weight: 600;
   background: rgb(67, 160, 71);
-  background: linear-gradient(
-    0deg,
-    rgb(67, 160, 71) 0%,
-    rgb(129, 199, 132) 100%
-  );
+  background: linear-gradient(0deg,
+      rgb(67, 160, 71) 0%,
+      rgb(129, 199, 132) 100%);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.19);
   opacity: 0;
   animation: apparition 2s ease 400ms 1 normal forwards;
@@ -195,11 +188,9 @@ body {
   font-size: 2rem;
   color: #f5f5f5;
   background: rgb(211, 47, 47);
-  background: linear-gradient(
-    0deg,
-    rgb(211, 47, 47) 0%,
-    rgb(229, 115, 115) 100%
-  );
+  background: linear-gradient(0deg,
+      rgb(211, 47, 47) 0%,
+      rgb(229, 115, 115) 100%);
   border-radius: 15px;
   border: 0;
   opacity: 0;
@@ -214,11 +205,9 @@ body {
   font-size: 2rem;
   color: #f5f5f5;
   background: rgb(205, 166, 68);
-  background: linear-gradient(
-    0deg,
-    rgb(205, 166, 68) 0%,
-    rgb(241, 228, 121) 100%
-  );
+  background: linear-gradient(0deg,
+      rgb(205, 166, 68) 0%,
+      rgb(241, 228, 121) 100%);
   border-radius: 15px;
   border: 0;
   opacity: 0;
@@ -266,11 +255,9 @@ body {
 .progressBar .bar {
   width: var(--progress);
   height: 100%;
-  background: linear-gradient(
-    rgb(67, 160, 71),
-    rgb(129, 199, 132),
-    rgb(67, 160, 71)
-  );
+  background: linear-gradient(rgb(67, 160, 71),
+      rgb(129, 199, 132),
+      rgb(67, 160, 71));
   background-repeat: repeat;
   border-radius: 24px;
   box-shadow: 0 0 8px 0px rgb(67, 160, 71);
@@ -288,16 +275,19 @@ body {
   0% {
     background-position: 0 0;
   }
+
   100% {
     background-position: 0 50px;
   }
 }
 
 @keyframes end {
+
   0%,
   100% {
     box-shadow: 0 0 10px 0px rgb(67, 160, 71);
   }
+
   50% {
     box-shadow: 0 0 10px 5px rgb(67, 160, 71);
   }
@@ -338,6 +328,7 @@ body {
 }
 
 @keyframes mulShdSpin {
+
   0%,
   100% {
     box-shadow: 0em -2.6em 0em 0em rgb(67, 160, 71),
@@ -349,6 +340,7 @@ body {
       -2.6em 0em 0 0em rgba(67, 160, 71, 0.5),
       -1.8em -1.8em 0 0em rgba(67, 160, 71, 0.7);
   }
+
   12.5% {
     box-shadow: 0em -2.6em 0em 0em rgba(67, 160, 71, 0.7),
       1.8em -1.8em 0 0em rgb(67, 160, 71),
@@ -359,6 +351,7 @@ body {
       -2.6em 0em 0 0em rgba(67, 160, 71, 0.2),
       -1.8em -1.8em 0 0em rgba(67, 160, 71, 0.5);
   }
+
   25% {
     box-shadow: 0em -2.6em 0em 0em rgba(67, 160, 71, 0.5),
       1.8em -1.8em 0 0em rgba(67, 160, 71, 0.7),
@@ -369,6 +362,7 @@ body {
       -2.6em 0em 0 0em rgba(67, 160, 71, 0.2),
       -1.8em -1.8em 0 0em rgba(67, 160, 71, 0.2);
   }
+
   37.5% {
     box-shadow: 0em -2.6em 0em 0em rgba(67, 160, 71, 0.2),
       1.8em -1.8em 0 0em rgba(67, 160, 71, 0.5),
@@ -379,6 +373,7 @@ body {
       -2.6em 0em 0 0em rgba(67, 160, 71, 0.2),
       -1.8em -1.8em 0 0em rgba(67, 160, 71, 0.2);
   }
+
   50% {
     box-shadow: 0em -2.6em 0em 0em rgba(67, 160, 71, 0.2),
       1.8em -1.8em 0 0em rgba(67, 160, 71, 0.2),
@@ -389,6 +384,7 @@ body {
       -2.6em 0em 0 0em rgba(67, 160, 71, 0.2),
       -1.8em -1.8em 0 0em rgba(67, 160, 71, 0.2);
   }
+
   62.5% {
     box-shadow: 0em -2.6em 0em 0em rgba(67, 160, 71, 0.2),
       1.8em -1.8em 0 0em rgba(67, 160, 71, 0.2),
@@ -399,6 +395,7 @@ body {
       -2.6em 0em 0 0em rgba(67, 160, 71, 0.2),
       -1.8em -1.8em 0 0em rgba(67, 160, 71, 0.2);
   }
+
   75% {
     box-shadow: 0em -2.6em 0em 0em rgba(67, 160, 71, 0.2),
       1.8em -1.8em 0 0em rgba(67, 160, 71, 0.2),
@@ -409,6 +406,7 @@ body {
       -2.6em 0em 0 0em rgb(67, 160, 71),
       -1.8em -1.8em 0 0em rgba(67, 160, 71, 0.2);
   }
+
   87.5% {
     box-shadow: 0em -2.6em 0em 0em rgba(67, 160, 71, 0.2),
       1.8em -1.8em 0 0em rgba(67, 160, 71, 0.2),
@@ -457,11 +455,9 @@ body {
 }
 
 .btn-toggle-dark-mode.dark-mode {
-  background: linear-gradient(
-    0deg,
-    rgb(67, 160, 71) 0%,
-    rgb(129, 199, 132) 100%
-  );
+  background: linear-gradient(0deg,
+      rgb(67, 160, 71) 0%,
+      rgb(129, 199, 132) 100%);
 }
 
 body.dark-mode {

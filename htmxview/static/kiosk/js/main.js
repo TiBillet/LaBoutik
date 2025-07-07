@@ -1,3 +1,4 @@
+const rfid = new Nfc()
 let totalAmount = 0;
 
 function goBack() {
@@ -15,11 +16,9 @@ function validateAmount() {
     return true;
   } else {
     alert("Veuillez sélectionner un montant.");
-      return false;
+    return false;
   }
 }
-
-
 
 function selectPaymentMethod(method) {
   localStorage.setItem("paymentMethod", method);
@@ -82,3 +81,44 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   updateDarkModeButton();
 });
+
+function sendTagId(data) {
+  console.log('-> sendTagId, data =', data)
+}
+
+function readNfc() {
+  console.log('-> readNfc totalAmount =', totalAmount, '  --  DEMO =', window.DEMO)
+  if (totalAmount > 0) {
+    Swal.fire({
+      title: "Vous avez selectionné " + totalAmount + "€",
+      html: "<p>Merci de scanner votre carte TiBillet sur le lecteur Sunmi.</p><p>⬆️⬆️⬆️⬆️⬆️⬆️⬆️</p><p>Le lecteur de carte est juste au dessus de cet écran</p>",
+      timer: 30000,
+      timerProgressBar: true,
+      // after the popup has been shown on screen
+      didOpen: () => {
+        Swal.showLoading()
+        rfid.initModeLectureNfc()
+        rfid.muteEtat('message','')
+        rfid.muteEtat('callbackOk', sendTagId)
+        rfid.muteEtat('tagIdIdentite', 'cm')
+        rfid.lireTagId()
+
+      },
+      // uns when the popup closes by user
+      willClose: () => {
+      }
+    }).then((result) => {
+      // Read more about handling dismissals below 
+      if (result.dismiss === Swal.DismissReason.timer) {
+        clearAmount();
+        console.log("I was closed by the timer");
+      } else {
+        console.log("I was closed");
+        if (window.DEMO !== undefined) { }
+        this.tagId = "{{ DEMO_TAGID_CLIENT1 }}"
+        console.log(this.tagId)
+        htmx.trigger(this, `confirmed`);
+      }
+    })
+  }
+}
