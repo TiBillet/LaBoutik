@@ -71,7 +71,7 @@
                     <button class="btn-cbcash z-depth-4 btn-validate waves-effect waves-light" hx-trigger="confirmed"
                         hx-post="/htmx/kiosk/refill_with_wisepos/"
                         hx-vals='js:{"totalAmount": totalAmount, "tag_id": this.tagId}' hx-target="#tb-kiosque"
-                        hx-swap="innerHTML" onClick="readNfc('{{ test }}')">Valider <span id="totalAmount">0</span>€
+                        hx-swap="innerHTML" onClick="readNfc()">Valider <span id="totalAmount">0</span>€
                     </button>
                 </div>
 
