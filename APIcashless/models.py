@@ -2670,7 +2670,7 @@ class PaymentsIntent(models.Model):
     )
 
     def get_from_stripe(self):
-        if settings.TEST:
+        if settings.DEMO:
             # simule l'attente :
             # On va simuler un paiement ou des erreurs de paiements
             import random
@@ -2684,8 +2684,6 @@ class PaymentsIntent(models.Model):
 
             self.save()
             return self.status
-        """
-        """
 
         if self.status in [PaymentsIntent.CANCELED, PaymentsIntent.SUCCEEDED]:
             return self.status
@@ -2708,14 +2706,12 @@ class PaymentsIntent(models.Model):
         return self.status
 
     def send_to_terminal(self, terminal: Terminal):
-        if settings.TEST:
+        if settings.DEMO:
             # On simule un TPE Stripe
             self.payment_intent_stripe_id = uuid.uuid4().hex[:30]
             self.status = self.IN_PROGRESS
             self.save()
             return self
-        """
-        """
 
         import stripe
         config = Configuration.get_solo()

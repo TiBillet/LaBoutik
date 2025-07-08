@@ -568,12 +568,18 @@ class Kiosk(viewsets.ViewSet):
 
     @action(detail=False, methods=['POST'])
     def refill_with_wisepos(self, request, *args, **kwargs):
-        user = request.user
-
         if not settings.DEBUG:
             if not request.user.is_authenticated or not hasattr(request.user, 'appareil'):
                 logger.error(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
                 raise Exception(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
+
+        user = request.user
+        kiosk = PointDeVente.objects.get(comportement=PointDeVente.KIOSK)
+
+        if settings.DEMO:
+            terminal = Terminal.objects.filter(type=Terminal.STRIPE_WISEPOS, archived=False).first()
+        else :
+            terminal = user.appareil.terminals.filter(type=Terminal.STRIPE_WISEPOS, archived=False).first()
 
         # Validate the request data
         logger.info(f"request.data = {request.data}")
@@ -585,13 +591,8 @@ class Kiosk(viewsets.ViewSet):
         # Get validated data
         validated_data = validator.validated_data
         amount = validated_data['totalAmount']
-        if settings.TEST:
-            terminal = Terminal.objects.filter(type=Terminal.STRIPE_WISEPOS, archived=False).first()
-        else :
-            terminal = user.appareil.terminals.filter(type=Terminal.STRIPE_WISEPOS, archived=False).first()
 
         carte = validator.card
-        kiosk = PointDeVente.objects.get(comportement=PointDeVente.KIOSK)
 
         # Création de l'intention de paiement
         payment_intent = PaymentsIntent.objects.create(
