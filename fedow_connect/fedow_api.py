@@ -655,46 +655,6 @@ class FedowAPI():
                 moyen_paiement=asset_g) else timezone.now().isoformat()
         })
 
-        """
-        # L'adhésion associative est gérée par Lespass
-        # On ajoute l'adhésion associative
-        uuid_adhesion = f"{uuid4()}"
-        if self.config.methode_adhesion:
-            uuid_adhesion = f"{self.config.methode_adhesion.pk}"
-
-        assets_to_send.append({
-            "uuid": uuid_adhesion,
-            "name": f"Adhésion {self.config.structure}",
-            "currency_code": f"M{self.config.structure[:2].upper()}",
-            "category": "SUB",
-            "created_at": Membre.objects.all().order_by(
-                'date_ajout').first().date_ajout.isoformat() if Membre.objects.count() > 0 else timezone.now().isoformat()
-        })
-
-        """
-
-        """
-        # Badgeuse gérée par Lespass
-        # La Badgeuse si elle existe
-        try:
-            asset_b = MoyenPaiement.objects.get(categorie=MoyenPaiement.BADGE)
-            assets_to_send.append({
-                "uuid": str(asset_b.pk),
-                "name": f"Badgeuse {self.config.structure}",
-                "currency_code": f"{asset_b.name[:2]}{asset_b.categorie[1:]}".upper(),
-                "category": "BDG",
-                "created_at": ArticleVendu.objects.filter(moyen_paiement=asset_b).order_by(
-                    'date_time').first().date_time.isoformat() if ArticleVendu.objects.filter(
-                    moyen_paiement=asset_b) else timezone.now().isoformat()
-            })
-
-        except MoyenPaiement.DoesNotExist:
-            pass
-        except Exception as e:
-            print(e)
-            raise e
-        """
-
         responses = []
         for message in assets_to_send:
             request_fedow = _post(self.config, 'asset', message)
@@ -704,7 +664,9 @@ class FedowAPI():
 
         return responses
 
-    def card_wallet_to_laboutik(self, cardserialized: dict = None):
+    """ 
+    ex methode a supprimer
+    def card_wallet_to_laboutik_for_test(self, cardserialized: dict = None):
         data = {'total_monnaie': dround_fromcents(0)}
         wallet = cardserialized['wallet']
         if wallet:
@@ -732,3 +694,4 @@ class FedowAPI():
             return data
 
         raise Exception("Wallet not found")
+    """

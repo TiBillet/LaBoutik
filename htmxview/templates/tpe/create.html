@@ -1,24 +1,68 @@
 {% load static %}
-<script src="{% static 'webview/js/htmx@2.0.3.min.js' %}"></script>
-<script src="{% static 'webview/js/htmx-ext-ws@2.0.3.js' %}"></script>
 
-<div class="container">
-    <div id="tpe">
-        Appareil : {{ tpe.name }} {{ tpe.id.hex }}
-    </div>
-
-    <div hx-ext="ws" ws-connect="/ws/terminal/{{ tpe.id.hex }}/">
-        <div id="notification">
-            Status Tpe : {{ tpe.status }}
-            Status Paiement : {{ payment_intent.status }}
+<div id="stripe_pos_page" class="container mt-4">
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0">Terminal de Paiement</h4>
         </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-12">
+                    <h5 class="card-title">Appareil : <span class="badge bg-info">{{ terminal.name }}</span></h5>
+                    <h4 class="card-title"><span class="badge bg-info">{{ terminal.pk }}</span></h4>
+                </div>
+            </div>
 
-        <div id="message">
+            <div class="row mb-4" hx-ext="ws" ws-connect="/ws/terminal/{{ payment_intent.payment_intent_stripe_id }}/">
+                <div class="col-12">
+                    <div class="alert alert-info" id="notification">
+                        <strong>Status Paiement :</strong> {{ payment_intent.status }}
+                        <strong>{{ payment_intent.pk }}</strong>
+                    </div>
+
+
+                    {% if message %}
+                    <div class="alert alert-success">
+                        <i class="fa fa-check-circle"></i> {{ message }}
+                    </div>
+                    {% endif %}
+
+                    {% if error %}
+                    <div class="alert alert-danger">
+                        <i class="fa fa-exclamation-circle"></i> {{ error }}
+                    </div>
+                    {% endif %}
+
+                    <div id="message" class="alert alert-light">
+                        {# le template message.html livré par le websocket sera posé ici grâce à l'id de la div et a  hx-swap-oob="true" présent dans le template reçu #}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-12 d-flex justify-content-between">
+                    <button id="cancel"
+                            class="btn btn-danger"
+                            hx-get="/htmx/payment_intent_tpe/{{ terminal.pk }}/cancel/"
+                            hx-target="#stripe_pos_page">
+                        <i class="fa fa-times"></i> Annuler
+                    </button>
+
+                    <button id="validate"
+                            class="btn btn-success"
+                            hx-get="/htmx/payment_intent_tpe/{{ payment_intent.pk }}/valid_and_continue/"
+                            hx-target="#stripe_pos_page">
+                        <i class="fa fa-check"></i> Valider
+                    </button>
+
+                    <button id="retry"
+                            class="btn btn-warning"
+                            hx-get="/htmx/payment_intent_tpe/{{ payment_intent.pk }}/retry/"
+                            hx-target="#stripe_pos_page">
+                        <i class="fa fa-refresh"></i> Réessayer
+                    </button>
+                </div>
+            </div>
         </div>
-
-        <form id="form" ws-send>
-            <input name="amount" type="number" step="0.01">
-            <button type="submit">Envoyer</button>
-        </form>
     </div>
 </div>

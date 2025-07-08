@@ -271,6 +271,7 @@ def index(request):
 
                     data['monnaie_principale_name'] = monnaie_principale_name
                     data['currency_code'] = configuration.currency_code
+                    data['stripe_wisepos'] = Terminal.objects.filter(type=Terminal.STRIPE_WISEPOS).exists()
                     return Response(data, status=status.HTTP_200_OK)
                 else:
                     logger.error("/wv/index Carte sans nom !")

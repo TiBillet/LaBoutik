@@ -29,6 +29,7 @@ router.register(r'checkcarteqruuid', views.CheckCarteQrUuid, basename='checkcart
 # Additionally, we include login URLs for the browsable API.
 urlpatterns = [
     path('', include(router.urls)),
+    path('trigger_product_update', views.trigger_product_update.as_view(), name="trigger_new_product_created"),
     path('check_apikey', views.check_apikey.as_view(),
          name="check_apikey"),
     path('oceco_endpoint', views.oceco_endpoint.as_view(),

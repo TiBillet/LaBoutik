@@ -52,8 +52,7 @@ urlpatterns = [
     url('wv/', include(webview_url)),
     url('api/', include(cashless_url)),
     url('rapport/', include(administration_url)),
-    url('htmx/', include(htmxview_urls)),
-    # path('rapport/<uuid:pk_uuid>', TableauJour.as_view()),
+    url('htmx/', include(htmxview_urls, namespace="htmxview")),
 
     #TODO: Utiliser le cache en prod
     path('i18n/', include('django.conf.urls.i18n')),

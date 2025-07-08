@@ -1,0 +1,42 @@
+<div class="BF-col-deb l100p h100p" style="font-size: 1.5rem">
+  <!-- ajouter si-dessus -->
+  <div class="BF-col settings-info-line">
+    <label class="md16px">Server</label>
+    <div id="settings-info-server" class="settings-label-value">
+      <!-- TODO: insérer server url et enlever la partie js dans nav.html qui insère la valeur -->
+    </div>
+  </div>
+  <div class="BF-col settings-info-line">
+    <label class="md16px">User</label>
+    <div id="settings-info-username" class="settings-label-value">
+      <!-- TODO: insérer user name appareil  et enlever la partie js dans nav.html qui insère la valeur  -->
+    </div>
+  </div>
+  <div class="BF-col settings-info-line">
+    <label class="md16px">LaBoutik Ip</label>
+    <div id="settings-info-ip" class="settings-label-value"></div>
+    <!-- TODO: insérer ip appareil  et enlever la partie js dans nav.html qui insère la valeur  -->
+  </div>
+  <div class="BF-col settings-info-line">
+    <label class="md16px">LaBoutik version</label>
+    <div id="settings-info-version-apk" class="settings-label-value"></div> <!-- apk version managed by js in nav.html -->
+  </div>
+  <!-- ajouter si-dessous -->
+</div>
+
+<style>
+  @layer base {
+    .settings-info-line {
+      width: 99%;
+      min-height: 80px;
+      border-bottom: 1px solid var(--gris04);
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 800px) {
+      .settings-label-value {
+        font-size: 0.9rem;
+      }
+    }
+  }
+</style>

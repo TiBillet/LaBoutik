@@ -1,0 +1,5 @@
+{ % load static %}
+
+@layer htmx {
+  @import "{% static 'webview/css/bootstrap.min.css' %}"
+}

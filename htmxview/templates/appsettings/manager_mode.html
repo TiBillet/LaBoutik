@@ -1,0 +1,23 @@
+<div class="BF-col l100p h100p">
+  <h1> en cours - non fonctionnel</h1>
+  {% if autorisation_mode_gerant == "true" %}
+    {% if activation_mode_gerant == "true" %}
+      <h2>Mode gérant activé.</h2>
+      <bouton-basique traiter-texte="1" texte="DESACTIVER MODE GERANT|1.5rem" couleur-fond="#0335b8" 
+        width="240px" height="100px" onclick="settingsTestPrint();" style="margin: 30px 0;">
+      </bouton-basique>
+    {% else %}
+      <h2>Mode gérant désactivé.</h2>
+      <bouton-basique traiter-texte="1" texte="ACTIVER MODE GERANT|1.5rem" couleur-fond="#0335b8" 
+        width="240px" height="100px" onclick="settingsTestPrint();" style="margin: 30px 0;">
+      </bouton-basique>
+    {% endif %}
+  {% else %}
+    <h2>Mode gérant non autorisé.</h2>
+  {% endif %}
+
+</div>
+
+<style>
+  
+</style>

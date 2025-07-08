@@ -1,5 +1,6 @@
 import json
 import os
+import uuid
 from datetime import datetime, timedelta, time
 from decimal import Decimal
 from uuid import uuid4
@@ -27,7 +28,8 @@ from stdimage.validators import MaxSizeValidator, MinSizeValidator
 
 from epsonprinter.models import Printer
 from epsonprinter.models import Printer
-from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt
+from fedow_connect.utils import rsa_generator, fernet_decrypt, fernet_encrypt, sign_message, data_to_b64, \
+    verify_signature
 from .fontawesomeicons import FONT_ICONS_CHOICES
 
 # import requests, json
@@ -136,21 +138,72 @@ class StatusMembre(models.Model):
 
 class Membre(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-
-    # Wallet FEDOW
+    # Utile
     wallet = models.OneToOneField("Wallet", on_delete=models.PROTECT, null=True, blank=True, related_name='membre')
+    date_ajout = models.DateTimeField(auto_now_add=True)
+    email = models.EmailField(max_length=50, null=True, blank=True, unique=True)
 
     name = models.CharField(
         db_index=True, max_length=50, verbose_name=_("Nom"))
     prenom = models.CharField(max_length=50, verbose_name=_(
         "Prénom"), null=True, blank=True)
 
+    last_action = models.DateTimeField(auto_now=True, verbose_name="Présence")
+
+    def derniere_presence(self):
+        return self.last_action
+
+    derniere_presence.short_description = _("Derniere présence")
+    derniere_presence.admin_order_field = '-last_action'
+
+    def numero_carte(self):
+        # Comprehension list :
+        num_carte = ", ".join([f"{cart.number}" for cart in self.CarteCashless_Membre.all()])
+        return num_carte
+
+    numero_carte.short_description = "Cartes liées"
+
+    def is_gerant(self):
+        for carte in CarteMaitresse.objects.filter(carte__membre=self):
+            if carte.edit_mode:
+                return True
+        return False
+
+    def _name(self):
+        if self.name:
+            return self.name
+        elif self.pseudo:
+            return self.pseudo
+        elif self.email:
+            return self.email
+        else:
+            return "Anonymous"
+
+    class Meta:
+        ordering = ('-date_ajout',)
+        verbose_name = _('Membre responsable')
+        verbose_name_plural = _('Membres responsables')
+
+    def __str__(self):
+        if self.pseudo:
+            return self.pseudo
+        elif self.prenom:
+            return f"{self.name} {self.prenom}"
+        elif self.name:
+            return self.name
+        elif self.email:
+            return self.email
+        else:
+            return "Anonymous"
+
+    ################################
+    # Plus utile, modèle géré par LESPASS
+    ################################
+
     pseudo = models.CharField(max_length=50, null=True, blank=True)
-    email = models.EmailField(max_length=50, null=True, blank=True, unique=True)
     demarchage = models.BooleanField(
         default=True, verbose_name=_("J'accepte de recevoir la newsletter"))
 
-    # numero_adherant = models.CharField(max_length=50, unique=True, null=True, blank=True)
     code_postal = models.IntegerField(null=True, blank=True)
     date_naissance = models.DateField(null=True, blank=True)
     tel = models.CharField(max_length=15, null=True, blank=True)
@@ -162,16 +215,11 @@ class Membre(models.Model):
     date_inscription = models.DateField(null=True, blank=True)
     date_derniere_cotisation = models.DateField(null=True, blank=True)
 
-    date_ajout = models.DateTimeField(auto_now_add=True)
-
-    last_action = models.DateTimeField(auto_now=True, verbose_name="Présence")
-
     cotisation = models.DecimalField(max_digits=10, decimal_places=2, default=20,
                                      help_text=_(
                                          "Vous pouvez modifier la valeur par default dans la page de configuration générale"))
 
     ajout_cadeau_auto = models.BooleanField(default=False)
-
     adhesion_auto_espece = models.BooleanField(default=False)
     adhesion_auto_cb = models.BooleanField(default=True)
 
@@ -210,19 +258,6 @@ class Membre(models.Model):
         else:
             return ""
 
-    def derniere_presence(self):
-        return self.last_action
-
-    derniere_presence.short_description = _("Derniere présence")
-    derniere_presence.admin_order_field = '-last_action'
-
-    def numero_carte(self):
-        # Comprehension list :
-        num_carte = ", ".join([f"{cart.number}" for cart in self.CarteCashless_Membre.all()])
-        return num_carte
-
-    numero_carte.short_description = "Cartes liées"
-
     def a_jour_cotisation(self):
 
         calcul_adh = Configuration.get_solo().calcul_adhesion
@@ -250,39 +285,6 @@ class Membre(models.Model):
             return datetime.strptime(f"01/01/{self.date_derniere_cotisation.year + 1}", "%d/%m/%Y")
 
         return self.date_derniere_cotisation + timedelta(days=365)
-
-    def is_gerant(self):
-        for carte in CarteMaitresse.objects.filter(carte__membre=self):
-            if carte.edit_mode:
-                return True
-        return False
-
-    def _name(self):
-        if self.name:
-            return self.name
-        elif self.pseudo:
-            return self.pseudo
-        elif self.email:
-            return self.email
-        else:
-            return "Anonymous"
-
-    class Meta:
-        ordering = ('-date_ajout',)
-        verbose_name = _('Membre responsable')
-        verbose_name_plural = _('Membres responsables')
-
-    def __str__(self):
-        if self.pseudo:
-            return self.pseudo
-        elif self.prenom:
-            return f"{self.name} {self.prenom}"
-        elif self.name:
-            return self.name
-        elif self.email:
-            return self.email
-        else:
-            return "Anonymous"
 
 
 # noinspection PyPep8Naming,PyUnusedLocal
@@ -336,10 +338,11 @@ class PointDeVente(models.Model):
     accepte_commandes = models.BooleanField(default=True)
     service_direct = models.BooleanField(default=True, verbose_name=_("Service direct ( vente au comptoir )"))
 
-    VENTE, CASHLESS = 'A', 'C'
+    VENTE, CASHLESS, KIOSK = 'A', 'C', 'K'
     TYPE_CHOICES = [
         (VENTE, _('Vente')),
         (CASHLESS, _('Rechargement')),
+        (KIOSK, _('Kiosque')),
     ]
 
     comportement = models.CharField(
@@ -1047,6 +1050,8 @@ class CarteCashless(models.Model):
             asset, created = self.assets.get_or_create(monnaie=MoyenPaiement.get_local_gift())
             return asset
 
+    """ 
+    Ancienne vérification de l'adhésion. Tout est par Fedow maintenant
     def cotisation_membre_a_jour(self):
         if self.membre:
             if self.membre.date_derniere_cotisation:
@@ -1070,6 +1075,7 @@ class CarteCashless(models.Model):
                 return False
         else:
             return False
+    """
 
     def url_qrcode(self):
         config = Configuration.get_solo()
@@ -2523,30 +2529,30 @@ class Location(models.Model):
     def __str__(self):
         return self.name
 
-    @classmethod
-    def get_place_location(cls):
-        if not cls.objects.filter(is_primary_location=False).exists():
-            config_stripe = ConfigurationStripe.get_solo()
-            import stripe
-            stripe.api_key = config_stripe.get_stripe_api()
-            config = Configuration.get_solo()  # pour le nom de la structure
-            location = stripe.terminal.Location.create(
-                display_name=f"{config.structure}",
-                address={
-                    "line1": f"{config.adresse}",
-                    "city": f"{config.city}",
-                    "country": f"{config.country}",
-                    "postal_code": f"{config.postal_code}",
-                },
-                stripe_account=config_stripe.get_stripe_connect_account(),
-            )
-            place_location = cls.objects.create(
-                stripe_id=location.id,
-                name=f"{config.structure}",
-                is_primary_location=False,
-            )
-            return place_location
-        return cls.objects.get(is_primary_location=False)
+    # @classmethod
+    # def get_place_location(cls):
+    #     if not cls.objects.filter(is_primary_location=False).exists():
+    #         config_stripe = ConfigurationStripe.get_solo()
+    #         import stripe
+    #         stripe.api_key = config_stripe.get_stripe_api()
+    #         config = Configuration.get_solo()  # pour le nom de la structure
+    #         location = stripe.terminal.Location.create(
+    #             display_name=f"{config.structure}",
+    #             address={
+    #                 "line1": f"{config.adresse}",
+    #                 "city": f"{config.city}",
+    #                 "country": f"{config.country}",
+    #                 "postal_code": f"{config.postal_code}",
+    #             },
+    #             stripe_account=config_stripe.get_stripe_connect_account(),
+    #         )
+    #         place_location = cls.objects.create(
+    #             stripe_id=location.id,
+    #             name=f"{config.structure}",
+    #             is_primary_location=False,
+    #         )
+    #         return place_location
+    #     return cls.objects.get(is_primary_location=False)
 
     @classmethod
     def get_primary_location(cls):
@@ -2555,7 +2561,6 @@ class Location(models.Model):
             import stripe
             config_stripe = ConfigurationStripe.get_solo()
             stripe.api_key = config_stripe.get_stripe_api()
-            config_stripe = ConfigurationStripe.get_solo()
             location = stripe.terminal.Location.create(
                 display_name=f"Primary Asset Location",
                 address={
@@ -2577,9 +2582,11 @@ class Location(models.Model):
 class Terminal(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Nom"))
-
+    appareil = models.ForeignKey(Appareil, on_delete=models.SET_NULL, blank=True, null=True,
+                                 related_name="terminals", verbose_name=_("Appareil lié") )
     # Pour les TPE Stripe :
-    registration_code = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Code d'enregistrement du lecteur"))
+    registration_code = models.CharField(max_length=200, blank=True, null=True,
+                                         verbose_name=_("Code d'enregistrement du lecteur"))
     stripe_id = models.CharField(max_length=21, blank=True, null=True, verbose_name=_("Stripe ID"))
 
     STRIPE_WISEPOS = 'W'
@@ -2593,6 +2600,8 @@ class Terminal(models.Model):
         verbose_name=_("Type"),
     )
 
+    archived = models.BooleanField(default=False)
+
     def status(self):
         if self.stripe_id:
             import stripe
@@ -2604,31 +2613,40 @@ class Terminal(models.Model):
 
     def get_stripe_id(self):
         if not self.stripe_id:
-            if self.type == Terminal.STRIPE_WISEPOS:
-                import stripe
-                config_stripe = ConfigurationStripe.get_solo()
-                stripe.api_key = config_stripe.get_stripe_api()
-                location = Location.get_place_location()
-                # import ipdb; ipdb.set_trace()
-                reader = stripe.terminal.Reader.create(
-                    registration_code=self.registration_code,
-                    label=self.name,
-                    location=location.stripe_id,
-                )
-                self.stripe_id = reader.id
+            if self.type == Terminal.STRIPE_WISEPOS and self.registration_code:
+                try:
+                    import stripe
+                    config_stripe = ConfigurationStripe.get_solo()
+                    stripe.api_key = config_stripe.get_stripe_api()
+                    location = Location.get_primary_location()
+                    # location = Location.get_place_location() # place location pour les TPE lié uniquement au lieu et non pas au recharge cashless
+                    reader = stripe.terminal.Reader.create(
+                        registration_code=self.registration_code,
+                        label=self.name,
+                        location=location.stripe_id,
+                        # stripe_account=config_stripe.get_stripe_connect_account(),
+                    )
+                    self.stripe_id = reader.id
+                except Exception as e:
+                    raise Exception(f"Error while creating stripe reader : {e}")
+            else:
+                raise Exception(f"The registration code is not set.")
         return self.stripe_id
 
     def __str__(self):
         return f"{self.get_type_display()} {self.name}"
 
+
 class PaymentsIntent(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
-    amount = models.PositiveSmallIntegerField()
+    amount = models.PositiveIntegerField()
     payment_intent_stripe_id = models.CharField(max_length=30, blank=True, null=True,
                                                 verbose_name=_("Paiement intent stripe id"))
     terminal = models.ForeignKey(Terminal, on_delete=models.PROTECT, verbose_name=_("TPE"))
     pos = models.ForeignKey(PointDeVente, on_delete=models.PROTECT, verbose_name=_("Point de vente"))
     datetime = models.DateTimeField(auto_now_add=True)
+    card = models.ForeignKey(CarteCashless, on_delete=models.PROTECT, verbose_name=_("Carte cashless"),
+                             related_name='payments_intents', blank=True, null=True, )
 
     REQUIRES_PAYMENT_METHOD = 'R'
     IN_PROGRESS = 'P'
@@ -2651,5 +2669,105 @@ class PaymentsIntent(models.Model):
         verbose_name=_("Status"),
     )
 
-    def send_to_terminal(self, terminal):
-        pass
+    def get_from_stripe(self):
+        if settings.TEST:
+            # simule l'attente :
+            # On va simuler un paiement ou des erreurs de paiements
+            import random
+            random_value = random.random()
+            if random_value < 0.8:
+                self.status = PaymentsIntent.REQUIRES_PAYMENT_METHOD
+            elif random_value < 0.9:
+                self.status = PaymentsIntent.CANCELED
+            else:
+                self.status = PaymentsIntent.SUCCEEDED
+
+            self.save()
+            return self.status
+        """
+        """
+
+        if self.status in [PaymentsIntent.CANCELED, PaymentsIntent.SUCCEEDED]:
+            return self.status
+
+        config_stripe = ConfigurationStripe.get_solo()
+        stripe.api_key = config_stripe.get_stripe_api()
+        # Capture the payment
+        stripe_payment = stripe.PaymentIntent.retrieve(self.payment_intent_stripe_id)
+        if stripe_payment.status == 'requires_payment_method':
+            self.status = PaymentsIntent.REQUIRES_PAYMENT_METHOD
+        elif stripe_payment.status == 'processing':
+            self.status = PaymentsIntent.IN_PROGRESS
+        elif stripe_payment.status == 'requires_capture':
+            self.status = PaymentsIntent.REQUIRES_CAPTURE
+        elif stripe_payment.status == 'canceled':
+            self.status = PaymentsIntent.CANCELED
+        elif stripe_payment.status == 'succeeded':
+            self.status = PaymentsIntent.SUCCEEDED
+        self.save()
+        return self.status
+
+    def send_to_terminal(self, terminal: Terminal):
+        if settings.TEST:
+            # On simule un TPE Stripe
+            self.payment_intent_stripe_id = uuid.uuid4().hex[:30]
+            self.status = self.IN_PROGRESS
+            self.save()
+            return self
+        """
+        """
+
+        import stripe
+        config = Configuration.get_solo()
+
+        # C'est au moment du payment intent qu'on ajoute le stripe account si l'articl n'est pas une recharge fédéré
+        config_stripe = ConfigurationStripe.get_solo()
+        stripe.api_key = config_stripe.get_stripe_api()
+        # stripe_account = config_stripe.get_stripe_connect_account()
+
+        # On vérifie la disponibilité du terminal :
+        try :
+            stripe.terminal.Reader.retrieve(terminal.stripe_id)
+        except stripe._error.InvalidRequestError as e:
+            raise e
+
+        ### Fabrication des metadata vérifié par Fedow pour valider le paiement ( Fedow le reçoit depuis le webhook stripe )
+        data = {
+            "fedow_place_uuid": f"{config.fedow_place_uuid}",
+            "tag_id": f"{self.card.tag_id}" if self.card else None,
+        }
+        # Signature de la requete
+        private_key = config.get_private_key()
+        signature = sign_message(
+            data_to_b64(data),
+            private_key,
+        ).decode('utf-8')
+        if not verify_signature(config.get_public_key(),
+                                data_to_b64(data),
+                                signature):
+            raise Exception(f"Signature verification failed")
+
+        payment_intent_stripe = stripe.PaymentIntent.create(
+            amount=self.amount,
+            currency=config.currency_code.lower(),
+            payment_method_types=["card_present"],
+            capture_method="automatic",
+            # manual si on veut capturer pour payer plus tard. A tester automatic_async pour aller plus vite ?
+            metadata={
+                "data": json.dumps(data),
+                "signature": signature,
+            },
+            # stripe_account=stripe_account,
+        )
+        self.payment_intent_stripe_id = payment_intent_stripe.id
+        self.save()
+
+        stripe.terminal.Reader.process_payment_intent(
+            terminal.stripe_id,
+            payment_intent=payment_intent_stripe.id
+        )
+
+        self.status = self.IN_PROGRESS
+        self.save()
+
+        return self

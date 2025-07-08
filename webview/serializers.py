@@ -109,8 +109,8 @@ class CarteCashlessSerializer(serializers.ModelSerializer):
             'wallet',
             # 'total_monnaie',
             'membre_name',
-            'cotisation_membre_a_jour',
-            'cotisation_membre_a_jour_booleen',
+            # 'cotisation_membre_a_jour',
+            # 'cotisation_membre_a_jour_booleen',
             'cartes_maitresses',
             'assets',
         )

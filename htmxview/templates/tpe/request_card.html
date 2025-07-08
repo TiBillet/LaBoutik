@@ -1,0 +1,56 @@
+<div id="tb-kiosque" class="BF-col"></div>
+
+<script>
+  function sendTagId(data) {
+    console.log('-> sendTagId, tagId =', data.tagId)
+
+    htmx.ajax('post', '/htmx/payment_intent_tpe/check_request_card/', {
+      target: '#tb-kiosque',
+      swap: 'outerHTML',
+      values: { tag_id: data.tagId }
+    })
+  }
+
+
+  // lecture de carte
+  {% if tag_id == None %}
+  // Initialise et détermine le type de lecteur NFC(RFID) (interne/serveur/DEMO)
+  rfid.initModeLectureNfc()
+  // message lors de la lecture de code
+  rfid.muteEtat('message', `<div style="white-space: pre-line; text-align: center;" role="status" aria-label="waiting card" ">Kiosque - attente carte </div>`)
+  // une fois le tag id lu lance la méthode "sendTagId"
+  rfid.muteEtat('callbackOk', sendTagId)
+  // console.log('glob.data =', glob.data);
+  if (glob.data.length === 1) {
+    rfid.muteEtat('tagIdIdentite', 'cm') // n'affiche pas de bouton retour
+  } else {
+    rfid.muteEtat('tagIdIdentite', 'divers') // affiche le bouton retour
+
+    // --- ajoute des fonctions au bouton retour de kiosque ---
+    // efface la div contenant kiosque
+    let addFunctions = "document.querySelector('#tb-kiosque').style.display = 'none';"
+    // si kiosque premier point de ventes le bt retour de kiosque ramènera au pv + 1
+    const pvIndex = vue_pv.retourne_index_pv(pv_uuid_courant)
+    const comportement = (glob.data.find(pv => pv.id === pv_uuid_courant)).comportement
+    if (pvIndex === 0 && comportement === "K") {
+      addFunctions += `vue_pv.initDataPVcourant('${pvIndex + 1}')`
+    }
+    rfid.muteEtat('options', { addFunctionsToBtReturn: addFunctions })
+  }
+  // lance la lecture de carte
+  rfid.lireTagId()
+  {% endif %}
+
+</script>
+
+<style>
+  #tb-kiosque {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: var(--bleu10);
+    color: var(--blanc01);
+  }
+</style>

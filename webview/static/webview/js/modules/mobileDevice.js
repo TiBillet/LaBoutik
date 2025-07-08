@@ -83,67 +83,6 @@ export function isCordovaApp() {
   }
 }
 
-export async function enableBluetooth() {
-  return await new Promise((resolve, reject) => {
-    window.bluetoothSerial.enable(
-      function () {
-        console.log("Bluetooth is enabled");
-        resolve(true)
-      },
-      function () {
-        console.log("The user did *not* enable Bluetooth");
-        reject(false)
-      }
-    );
-  })
-
-}
-
-export async function bluetoothSerialAvailable() {
-  return await new Promise((resolve) => {
-    try {
-      window.bluetoothSerial.available(() => {
-        // console.log('-> bluetoothSerialAvailable =  succès')
-        resolve(true)
-      }, () => {
-        // console.log('-> bluetoothSerialAvailable =  no')
-        resolve(false)
-      })
-    } catch (error) {
-      resolve(false)
-    }
-  })
-}
-
-
-
-export async function bluetoothGetMacAddress(name) {
-  let retour = 'unknown'
-  const testBluetoothSerialAvailable = await bluetoothSerialAvailable()
-  // console.log('testBluetoothSerialAvailable =', testBluetoothSerialAvailable)
-
-  if (testBluetoothSerialAvailable) {
-    const list = await new Promise((resolve) => {
-      // list devices
-      window.bluetoothSerial.list(function (devices) {
-        resolve(devices)
-      }, (error) => {
-        console.log('error =', error);
-        resolve([])
-      });
-    })
-
-    for (let i = 0; i < list.length; i++) {
-      const device = list[i];
-      if (device.name === name) {
-        retour = device.id
-        break
-      }
-    }
-  }
-  return retour
-}
-
 async function loadImage(url) {
   const load = await new Promise((resolve) => {
     try {
@@ -198,6 +137,88 @@ async function escPosImageLoad(url) {
 }
 
 
+export async function bluetoothOpenCashDrawer() {
+  await bluetoothConnection()
+
+  let encoder = new ReceiptPrinterEncoder()
+  const data = encoder.raw([0x10, 0x14, 0x00, 0x00, 0x00]).encode()
+
+  const state = await bluetoothSerialWrite(data)
+  await bluetoothDisconnect()
+  return state
+}
+
+async function bluetoothSerialWrite(contentToWrite) {
+  const write = await new Promise((resolve) => {
+    window.bluetoothSerial.write(contentToWrite, () => {
+      resolve(true)
+    }, (error) => {
+      console.log('bluetoothSerialWrite:', error)
+      resolve(false)
+    })
+  })
+  return write
+}
+
+// disponible
+async function bluetoothTestAvailable() {
+  return await new Promise((resolve) => {
+    try {
+      window.bluetoothSerial.isEnabled(() => {
+        console.log('-> bluetoothSerial.isEnabled =  succès')
+        const event = new CustomEvent("bluetoothMessage", { detail: 'availableOn' })
+        document.body.dispatchEvent(event)
+        resolve(true)
+      }, () => {
+        console.log('-> bluetoothSerial.isEnabled =  no')
+        const event = new CustomEvent("bluetoothMessage", { detail: 'availableOff' })
+        document.body.dispatchEvent(event)
+        resolve(false)
+      })
+    } catch (error) {
+      resolve(false)
+    }
+  })
+}
+
+async function bluetoothGetMacAddress(name) {
+  let retour = 'unknown'
+  const testBluetoothSerialAvailable = await bluetoothTestAvailable()
+
+  if (testBluetoothSerialAvailable) {
+    const list = await new Promise((resolve) => {
+      // list devices
+      window.bluetoothSerial.list(function (devices) {
+        resolve(devices)
+      }, (error) => {
+        console.log('error =', error);
+        resolve([])
+      });
+    })
+
+    for (let i = 0; i < list.length; i++) {
+      const device = list[i];
+      if (device.name === name) {
+        retour = device.id
+        break
+      }
+    }
+  }
+  return retour
+}
+
+async function bluetoothDisconnect() {
+  const disconnect = await new Promise((resolve) => {
+    window.bluetoothSerial.disconnect(() => {
+      resolve(true)
+    }, (error) => {
+      resolve(false)
+      console.log(`-> bluetoothDisconnect, error = ${error}`)
+    })
+  })
+  return disconnect
+}
+
 /**
  * async bluetooth connect
  * @param {string} macAddress 
@@ -229,34 +250,11 @@ export async function bluetoothIsConnected() {
   return test
 }
 
-
-async function bluetoothSerialWrite(contentToWrite) {
-  const write = await new Promise((resolve) => {
-    window.bluetoothSerial.write(contentToWrite, () => {
-      resolve(true)
-    }, (error) => {
-      resolve(false)
-      console.log(`-> bluetoothSerialWrite, error = ${error}`)
-    })
-  })
-  return write
-}
-
-async function bluetoothDisconnect() {
-  const disconnect = await new Promise((resolve) => {
-    window.bluetoothSerial.disconnect(() => {
-      resolve(true)
-    }, (error) => {
-      resolve(false)
-      console.log(`-> bluetoothDisconnect, error = ${error}`)
-    })
-  })
-  return disconnect
-}
-
-export async function bluetoothConnection() {
+// connexion
+async function bluetoothConnection() {
   const connection = await new Promise((resolve) => {
-    async function tryConnection () {
+    let numberTryConnection = 0
+    async function tryConnection() {
       let connect = false
       console.log('-> bluetoothConnection -', new Date())
 
@@ -272,7 +270,22 @@ export async function bluetoothConnection() {
       }
       // tentative de reconnexion après 2 secondes
       if (connect === false) {
-        setTimeout(tryConnection, 2 * 1000)
+        numberTryConnection++
+        // 8 tentative de reconnexion avant d'arrêter
+        if (numberTryConnection > 6) {
+          const event1 = new CustomEvent("bluetoothMessage", { detail: 'connectionOff' })
+          document.body.dispatchEvent(event1)
+          const event2 = new CustomEvent("bluetoothMessage", { detail: 'enableOff' })
+          document.body.dispatchEvent(event2)
+          const event3 = new CustomEvent("bluetoothMessage", { detail: 'printError' })
+          document.body.dispatchEvent(event3)
+          resolve(false)
+        } else {
+          setTimeout(tryConnection, 2 * 1000)
+        }
+      } else {
+        const event = new CustomEvent("bluetoothMessage", { detail: 'connectionOn' })
+        document.body.dispatchEvent(event)
       }
     }
     tryConnection()
@@ -280,18 +293,31 @@ export async function bluetoothConnection() {
   return connection
 }
 
+// app autorise le bluetooth
+async function bluetoothTestIsEnable() {
+  return await new Promise((resolve, reject) => {
+    window.bluetoothSerial.enable(
+      function () {
+        console.log("Bluetooth is enabled - " + new Date())
+        const event = new CustomEvent("bluetoothMessage", { detail: 'enableOn' })
+        document.body.dispatchEvent(event)
+        resolve(true)
+      },
+      function () {
+        console.log("The user did *not* enable Bluetooth")
+        const event = new CustomEvent("bluetoothMessage", { detail: 'enableOff' })
+        document.body.dispatchEvent(event)
+        resolve(false)
+      }
+    )
+  })
+}
 
-/**
- * Print command
- * @param {String} currentPrintUuid 
- */
-export async function bluetoothWrite(currentPrintUuid) {
+// bluetooth print
+async function bluetoothPrint(currentPrintUuid) {
+ console.log('-> bluetoothPrint')
   const currentPrint = sunmiPrintQueue.find(queue => queue.printUuid === currentPrintUuid)
   const content = currentPrint.content
-
-  // 2 - interprets and print
-  await bluetoothConnection()
-  console.log('-> Après bluetoothConnection')
 
   // columns: 48
   let encoder = new ReceiptPrinterEncoder({
@@ -320,7 +346,6 @@ export async function bluetoothWrite(currentPrintUuid) {
     if (line.type === 'line') {
       result.rule(line.value)
     }
-
 
     // barcode
     if (line.type === 'barcode') {
@@ -388,25 +413,93 @@ export async function bluetoothWrite(currentPrintUuid) {
   // 3 - enlever l'impression faite de la queue d'impression
   if (rPrint) {
     sunmiPrintQueue = sunmiPrintQueue.filter(queue => queue.printUuid !== currentPrintUuid)
+    const event = new CustomEvent("bluetoothMessage", { detail: 'printSuccess' })
+    document.body.dispatchEvent(event)
+  } else {
+    const event = new CustomEvent("bluetoothMessage", { detail: 'printError' })
+    document.body.dispatchEvent(event)
   }
 
   // 4 - boucler sur la queue d'impression si non vide
   if (sunmiPrintQueue.length > 0) {
-    await bluetoothWrite(sunmiPrintQueue[0])
+    await bluetoothPrint(sunmiPrintQueue[0])
   }
 
-  // pour la gestion d'une queue d'impression, il est indispenssable de déconneté le bluetooth à la fin
-  await bluetoothDisconnect()
   return rPrint
 }
 
-export async function bluetoothOpenCashDrawer() {
-  await bluetoothConnection()
+class BluetoothSteps {
+  constructor() {
+    this.previousStep = null
+    this.currentStepName = 'idle'
+    this.steps = [
+      {
+        name: 'testAvailable',
+        previousStepName: 'idle',
+        action: bluetoothTestAvailable,
+        state: null
+      },
+      {
+        name: 'testIsEnable',
+        previousStepName: 'testAvailable',
+        action: bluetoothTestIsEnable,
+        state: null
+      },
+      {
+        name: 'bluetoothConnection',
+        previousStepName: 'testIsEnable',
+        action: bluetoothConnection,
+        state: null
+      },
+      {
+        name: 'bluetoothPrint',
+        previousStepName: 'bluetoothConnection',
+        action: bluetoothPrint,
+        state: null
+      },
+      {
+        name: 'bluetoothDisconnect',
+        previousStepName: 'bluetoothPrint',
+        action: bluetoothDisconnect,
+        state: null
+      }
+    ]
+  }
 
-  let encoder = new ReceiptPrinterEncoder()
-  const data = encoder.raw([0x10, 0x14, 0x00, 0x00, 0x00]).encode()
+  async run(stepName, data) {
+    const step = this.steps.find(item => item.name === stepName)
+    // console.log('current step name =', this.currentStepName)
+    if (step !== undefined && step.previousStepName === this.currentStepName) {
+      this.currentStepName = step.name
+      step.state = await step.action(data)
+      return step.state
+    }
+  }
+}
 
-  const state = await bluetoothSerialWrite(data)
+export async function bluetoothState() {
+  const bluetooth = new BluetoothSteps()
+  await bluetooth.run('testAvailable')
+  await bluetooth.run('testIsEnable')
+  await bluetooth.run('bluetoothConnection')
+}
+
+export async function bluetoothWrite(currentPrintUuid) {
+  const bluetooth = new BluetoothSteps()
+  await bluetooth.run('testAvailable')
+  await bluetooth.run('testIsEnable')
+  await bluetooth.run('bluetoothConnection')
+  await bluetooth.run('bluetoothPrint', currentPrintUuid)
+  await bluetooth.run('bluetoothDisconnect')
+  // pour la gestion d'une queue d'impression, il est indispenssable de déconneté le bluetooth à la fin
   await bluetoothDisconnect()
-  return state
+}
+
+export async function bluetoothHasSunmiPrinter() {
+  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
+  if (macAddress === 'unknown') {
+    return false
+  } else {
+    return true
+  }
 }

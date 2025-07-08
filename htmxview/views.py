@@ -1,7 +1,6 @@
-import json
-import logging
+import json, logging, time
+import os
 from datetime import timedelta, datetime
-# nico
 from uuid import UUID
 
 import stripe
@@ -11,27 +10,99 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
-from django.http import HttpRequest
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
+from rest_framework.response import Response
 
-from APIcashless.models import ArticleVendu, MoyenPaiement, Configuration, ClotureCaisse, Membre, CarteMaitresse
+from APIcashless.models import ArticleVendu, MoyenPaiement, Configuration, ClotureCaisse, CarteMaitresse, \
+    ConfigurationStripe, CarteCashless
 from APIcashless.models import PointDeVente, Terminal, PaymentsIntent, GroupementCategorie
 from administration.ticketZ import TicketZ, dround
 from administration.ticketZ_V4 import TicketZ as TicketZV4
 from epsonprinter.tasks import ticketZ_tasks_printer, send_print_order_inner_sunmi
-from htmxview.validators import CashfloatChangeValidator
-from webview.serializers import debut_fin_journee
+from fedow_connect.fedow_api import FedowAPI
+from htmxview.validators import CashfloatChangeValidator, RefillWisePoseValidator
+from webview.serializers import debut_fin_journee, CarteCashlessSerializer
 
+from htmxview.tasks import poll_payment_intent_status
 logger = logging.getLogger(__name__)
+
+
+class AppSettings(viewsets.ViewSet):
+    authentication_classes = [SessionAuthentication, ]
+    permission_classes = [IsAuthenticated, ]
+
+    # TODO: besoin d'une variable "autorisation_mode_gerant"(responssable edit.mode) fournie par le serveur,
+    # pour la présence du bouton "mode gérant" si autorisé ou pas 
+    def list(self, request): # le get /
+        config = Configuration.get_solo()
+        context = {
+            "currency_code": config.currency_code,
+            "validation_service_ecran": config.validation_service_ecran,
+            "remboursement_auto_annulation": config.remboursement_auto_annulation,
+            "void_card": config.void_card,
+            "cash_float": config.cash_float,
+            "timezone" : config.timezone(),
+            "language" : config.language(),
+        }
+
+        return render(request, "appsettings/nav.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def infos(self, request):
+        context = {}
+
+        return render(request, "appsettings/infos.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def language(self, request):
+        config = Configuration.get_solo()
+        context = {
+            "timezone" : config.timezone(),
+            "language" : config.language(),
+        }
+
+        return render(request, "appsettings/language.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def printer(self, request):
+        context = {}
+
+        return render(request, "appsettings/printer.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def nfc(self, request):
+        context = {}
+
+        return render(request, "appsettings/nfc.html", context)
+
+    @action(detail=False, methods=['GET'])
+    def logs(self, request):
+        context = {}
+
+        return render(request, "appsettings/logs.html", context)
+
+    # TODO: remplacer la requête si-dessous par un GET; le serveur donnera les 2 valeurs
+    # autorisation_mode_gerant(responssable edit.mode) et mode_gerant = activé/désactivé (n'existe pas, a créer).
+    @action(detail=False, methods=['POST'])
+    def manager_mode(self, request: Request):
+        activation_mode_gerant = request.data.get('activation_mode_gerant')
+        autorisation_mode_gerant = request.data.get('autorisation_mode_gerant')
+        context = {
+            "activation_mode_gerant": activation_mode_gerant,
+            "autorisation_mode_gerant": autorisation_mode_gerant
+        }
+
+        return render(request, "appsettings/manager_mode.html", context)
 
 
 class Sales(viewsets.ViewSet):
@@ -405,15 +476,6 @@ class Sales(viewsets.ViewSet):
         return self.z_ticket(request)
 
 
-class Membership(viewsets.ViewSet):
-    authentication_classes = [SessionAuthentication, ]
-    permission_classes = [IsAuthenticated, ]
-
-    def retrieve(self, request: HttpRequest, pk):
-        logger.info(pk)
-        pass
-
-
 class Print(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
@@ -460,24 +522,52 @@ class Print(viewsets.ViewSet):
         })
 
 
-class PaymentIntentTpeViewset(viewsets.ViewSet):
+class Kiosk(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
 
+    # La vue GET par default /htmx/kiosk
+    def list(self, request):
+        context = {
+            "test":settings.TEST,
+            "demo": settings.DEMO,
+            "demoTagIdClient1" : os.environ.get('DEMO_TAGID_CLIENT1'),
+        }
+        return render(request, "kiosk/montant.html", context)
+
+    # menu kiosque
     @action(detail=False, methods=['GET'])
-    def start(self, request, *args, **kwargs):
+    def request_card(self, request, *args, **kwargs):
+        context = {
+            "tag_id": None,
+        }
+        return render(request, 'tpe/request_card.html', context)
+
+    # test tagId carte
+    @action(detail=False, methods=['POST'])
+    def check_request_card(self, request, *args, **kwargs):
+        tag_id = request.data['tag_id']
+        logger.info(f"--> tag_id = {tag_id}")
+
+        fedowApi = FedowAPI()
+        fedowApi.NFCcard.retrieve(tag_id)
+        carte = CarteCashless.objects.get(tag_id=tag_id)
+
         user = request.user
-        terminals = Terminal.objects.filter(type=Terminal.STRIPE_WISEPOS)
 
-        return render(request, 'tpe/start.html', context={
-            'user': user,
-            'terminals': terminals,
-        })
+        # TODO : lier le terminal à l'appareil / user
+        terminal = Terminal.objects.filter(type=Terminal.STRIPE_WISEPOS, archived=False).first()
+        context = {
+            "total_monnaie": carte.total_monnaie(),
+            "card": carte,
+            'terminal': terminal,
+            'user' : user,
+        }
+        return render(request, "kiosk/montant.html", context)
 
-    def check_reader_state(self, reader):
-        pass
 
-    def create(self, request, *args, **kwargs):
+    @action(detail=False, methods=['POST'])
+    def refill_with_wisepos(self, request, *args, **kwargs):
         user = request.user
 
         if not settings.DEBUG:
@@ -485,46 +575,143 @@ class PaymentIntentTpeViewset(viewsets.ViewSet):
                 logger.error(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
                 raise Exception(f"ERROR NOT AUTHENTICATED OR NOT APPAREIL")
 
-        amount = request.data['amount']
-        terminal_pk = request.data['terminal_pk']
-        terminal = Terminal.objects.get(pk=terminal_pk)
+        # Validate the request data
+        logger.info(f"request.data = {request.data}")
+        validator = RefillWisePoseValidator(data=request.data)
+        if not validator.is_valid():
+            logger.error(f"ERROR VALIDATION : {validator.errors}")
+            return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get validated data
+        validated_data = validator.validated_data
+        amount = validated_data['totalAmount']
+        if settings.TEST:
+            terminal = Terminal.objects.filter(type=Terminal.STRIPE_WISEPOS, archived=False).first()
+        else :
+            terminal = user.appareil.terminals.filter(type=Terminal.STRIPE_WISEPOS, archived=False).first()
+
+        carte = validator.card
+        kiosk = PointDeVente.objects.get(comportement=PointDeVente.KIOSK)
 
         # Création de l'intention de paiement
         payment_intent = PaymentsIntent.objects.create(
             terminal=terminal,
             amount=amount,
+            pos=kiosk,
+            card=carte,
         )
+
         # Envoi de l'intention de paiement au terminal
-        payment_intent.send_to_terminal(terminal)
+        try :
+            payment_intent = payment_intent.send_to_terminal(terminal)
+        except Exception as e:
+            context = {
+                "total_monnaie": carte.total_monnaie(),
+                "card": carte,
+                'terminal': terminal,
+                'user': user,
+                'error_message': f"{e}",
+            }
+            return render(request, "kiosk/montant.html", context)
+
+
+        # Lancer la tâche Celery pour surveiller le statut du paiement
+        logger.info(f"\nStarted Celery task to poll payment intent status for ID: {payment_intent.pk}")
+        poll_payment = poll_payment_intent_status.delay(payment_intent.pk)
+
+        # Check que la requete celery est bien ok
+        retry_count = 0
+        while poll_payment.status != "STARTED" :
+            logger.info(f"WAIT POLLING PAYMENT INTENT STATUS {poll_payment.status} RESULT : {poll_payment.result}")
+            time.sleep(1)
+            retry_count += 1
+            if retry_count > 5:
+                break
+
+        if poll_payment.status != 'STARTED':
+            logger.error(f"WAIT POLLING PAYMENT INTENT STATUS {poll_payment.status} RESULT : {poll_payment.result}")
+            return Response(poll_payment.result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        logger.info(f"END WAIT POLLING PAYMENT INTENT STATUS {poll_payment.status} RESULT : {poll_payment.result}")
 
         # Renvoie la partie websocket pour le suivi de l'intention de paiement
-        return render(request, 'tpe/create.html', context={
+        return render(request, 'kiosk/confirmationCB.html', context={
             'user': user,
+            'amount': (amount/100),
             'terminal': terminal,
             'payment_intent': payment_intent,
         })
 
-    @action(detail=True, methods=['GET'])
-    def retry(self, request, pk):
-        payment_intent = get_object_or_404(PaymentsIntent, pk=pk)
-        terminal = payment_intent.terminal
-        stripe.terminal.Reader.cancel_action(terminal.stripe_id)
-        payment_intent.send_to_terminal(terminal)
-
-        return render(request, 'tpe/create.html', context={
-            'user': request.user,
-            'terminal': terminal,
-            'payment_intent': payment_intent,
-        })
 
     @action(detail=True, methods=['GET'])
     def cancel(self, request, pk):
-        config = Configuration.get_solo()
-        stripe.api_key = config.get_stripe_api()
-        terminal = get_object_or_404(Terminal, pk=pk)
+        payment_intent_db = get_object_or_404(PaymentsIntent, pk=pk)
+
+        # Annulation de toute action sur le terminal :
+        config_stripe = ConfigurationStripe.get_solo()
+        stripe.api_key = config_stripe.get_stripe_api()
+
+        terminal = payment_intent_db.terminal
         stripe.terminal.Reader.cancel_action(terminal.stripe_id)
+        logger.info(f"Cancel action on terminal {terminal.stripe_id}")
+
+        stripe.PaymentIntent.cancel(payment_intent_db.payment_intent_stripe_id)
+        payment_intent_db.refresh_from_db()
+        logger.info(f"Cancel payment intent {payment_intent_db.pk} -> status : {payment_intent_db.status}")
+
+        # Le cancel a été fait coté stripe, le OOB du websocket va afficher la page cancel
         return HttpResponse(status=205)
 
+        # On retourne l'index :
+        # context = {
+        #     "test":settings.TEST,
+        #     "DEMO_TAGID_CLIENT1" : os.environ.get('DEMO_TAGID_CLIENT1'),
+        # }
+        # return render(request, "kiosk/montant.html", context)
+
+        # Retour du spinner qui sera affiché a la place du boutton
+        # return render(request, "kiosk/spinnerbox.html", {})
+
+
+    @action(detail=True, methods=['GET'])
+    def valid_and_continue(self, request, pk):
+        config_stripe = ConfigurationStripe.get_solo()
+        stripe.api_key = config_stripe.get_stripe_api()
+
+        # Get the payment intent
+        payment_intent = get_object_or_404(PaymentsIntent, pk=pk)
+        terminal = payment_intent.terminal
+        status = payment_intent.get_from_stripe()
+        logger.info(f"Status = {status}")
+
+        try:
+            if status == PaymentsIntent.REQUIRES_PAYMENT_METHOD:
+                message = "En attente de paiement."
+            elif status == PaymentsIntent.REQUIRES_CAPTURE:
+                message = "Paiement validé."
+            elif status == PaymentsIntent.SUCCEEDED:
+                message = 'Paiement déjà validé!'
+            elif status == PaymentsIntent.IN_PROGRESS:
+                message= 'Paiement en cours de traitement. Veuillez attendre.'
+            else:
+                raise ValueError(f"Unknown status: {payment_intent.get_status_display()}")
+            return render(request, 'tpe/create.html', context={
+                'user': request.user,
+                'terminal': terminal,
+                'payment_intent': payment_intent,
+                'message': message
+            })
+
+        except Exception as e:
+            logger.error(f"Error processing payment: {e}")
+
+            # Return to the create template with error message
+            return render(request, 'tpe/create.html', context={
+                'user': request.user,
+                'terminal': terminal,
+                'payment_intent': payment_intent,
+                'error': f"Erreur lors du traitement du paiement: {str(e)}"
+            })
 
 ### TUTORIEL WEBSOCKET
 

@@ -1,7 +1,7 @@
 // construction d'une partie du menu provenant des plugins
 import "./menuPlugins/addAllMenuPlugin.js"
-// import { isCordovaApp, enableBluetooth, bluetoothGetMacAddress, bluetoothWrite } from './modules/mobileDevice.js'
-import { isCordovaApp, bluetoothWrite, bluetoothGetMacAddress, bluetoothOpenCashDrawer } from './modules/mobileDevice.js'
+import { getCurrentCurrency } from '/static/webview/js/modules/currencysList.js'
+import { isCordovaApp, bluetoothHasSunmiPrinter, bluetoothWrite, bluetoothOpenCashDrawer } from './modules/mobileDevice.js'
 
 
 // ---- cordova ---
@@ -9,12 +9,7 @@ window.mobile = isCordovaApp()
 
 // condition has sunmi printer
 window.hasSunmiPrinter = async function () {
-  const macAddress = await bluetoothGetMacAddress("InnerPrinter")
-  if (macAddress === 'unknown') {
-    return false
-  } else {
-    return true
-  }
+  return await bluetoothHasSunmiPrinter()
 }
 
 // conditions websocket on and has sunmi printer
@@ -46,7 +41,7 @@ function initWebsocket() {
           window.sunmiPrintQueue = []
         }
 
-        console.log('data.data =', data.data);
+        // console.log('data.data =', data.data)
 
         const options = { printUuid: sys.uuidV4(), content: data.data }
         sunmiPrintQueue.push(options)
@@ -99,9 +94,9 @@ function initWebsocket() {
   })
 }
 
-if (mobile) {
+if (isCordovaApp()) {
   navigator.connection.addEventListener('change', () => {
-    console.log('-> network change' + new Date())
+    console.log('-> network change' + new Date());
     if (navigator.onLine === false) {
       document.dispatchEvent(new CustomEvent('netWorkOffLine', {}))
     }
@@ -236,10 +231,25 @@ export function reloadData() {
   }
   sys.ajax(requete, function (retour, status) {
     glob.data = retour.data
+
+    // converti les décimal python
+    for (const key in glob.data) {
+      const pv = glob.data[key]
+      for (const keyArticle in pv.articles) {
+        const article = pv.articles[keyArticle]
+        article.prix = sys.bigToFloat(article.prix)
+      }
+    }
+
     glob.responsable = retour.responsable
     glob.monnaie_principale_name = retour.monnaie_principale_name
+    glob.tables = retour.tables
+    glob.passageModeGerant = retour.responsable.edit_mode
+    glob.modeGerant = false
+    // data current curency
+    glob['currencyData'] = getCurrentCurrency(retour.currency_code)
     retour = null
-    main(nomModulePrive, { indexPv: 0, csrfToken: glob.csrf_token })
+    // main(nomModulePrive, { indexPv: 0, csrfToken: glob.csrf_token })
   })
 }
 
@@ -323,7 +333,7 @@ export function affiche_class(ctx, nom_class) {
   // console.log('id = ' + ctx.id)
 }
 
-/** @function
+/**
  *  Basculer de la vue boutons articles / à la vue liste articles
  */
 export function basculerListeArticles(evt) {
@@ -430,69 +440,76 @@ export function asignerTitreVue(titre) {
  */
 export function afficherPointDeVentes(pv_uuid) {
   // console.log('-> fonction afficherPointDeVentes, pv_uuid = ', pv_uuid, '  --  type = ', typeof pv_uuid)
-
-  // initialisation vue table
-  sys.effacerElements(['#commandes-table', '#tables', '#service-commandes'])
-  sys.afficherElements(['#page-commandes,block'])
-
-  // arrivé dans le pv la liste est affiché ou pas en fonction de la largeur  de l'écran
-  const largeurSup1203px = window.matchMedia('(min-width: 1023px)').matches
-  if (largeurSup1203px === true) {
-    sys.afficherElements(['#achats,flex', '#products,flex'])
-  } else {
-    sys.effacerElements(['#achats'])
-    sys.afficherElements(['#products,flex'])
-  }
-
-  // titre vue
   let dataPV = glob.data.filter(obj => obj.id === pv_uuid)[0]
-  let nomTitre = dataPV.name
-  let iconTitre = dataPV.icon
 
-  let titre = ''
-  if (dataPV.service_direct === false) {
-    titre = `<span data-i8n="newTableOrder,capitalize">Nouvelle commande sur table</span> ${glob.tableEnCours.nom}, <span data-i8n="ps,uppercase">PV</span> ${nomTitre}`
+  if (dataPV.comportement === "K") {
+    // --- pv kiosque ---
+    // htmx.ajax('GET', '/htmx/payment_intent_tpe/request_card/', {target:'#tb-kiosque', swap:'outerHTML'})
+    window.location = "/htmx/kiosk/"
   } else {
-    titre = `<span data-i8n="directService,capitalize">Service Direct</span> - <i class="fas ${iconTitre}"></i> ${nomTitre}`
+    // --- pv différent de kioske ---
+    // initialisation vue table
+    sys.effacerElements(['#commandes-table', '#tables', '#service-commandes'])
+    sys.afficherElements(['#page-commandes,block'])
+
+    // arrivé dans le pv la liste est affiché ou pas en fonction de la largeur  de l'écran
+    const largeurSup1203px = window.matchMedia('(min-width: 1023px)').matches
+    if (largeurSup1203px === true) {
+      sys.afficherElements(['#achats,flex', '#products,flex'])
+    } else {
+      sys.effacerElements(['#achats'])
+      sys.afficherElements(['#products,flex'])
+    }
+
+    // titre vue
+    let nomTitre = dataPV.name
+    let iconTitre = dataPV.icon
+
+    let titre = ''
+    if (dataPV.service_direct === false) {
+      titre = `<span data-i8n="newTableOrder,capitalize">Nouvelle commande sur table</span> ${glob.tableEnCours.nom}, <span data-i8n="ps,uppercase">PV</span> ${nomTitre}`
+    } else {
+      titre = `<span data-i8n="directService,capitalize">Service Direct</span> - <i class="fas ${iconTitre}"></i> ${nomTitre}`
+    }
+
+    // console.log('test -> service_direct = ', dataPV.service_direct)
+    vue_pv.asignerTitreVue(titre)
+
+    let ele_tous = document.querySelector('#categorie-tous')
+    // cacher tous les blocks point de ventes
+    cacherAfficherClassElementHtml('block-pv', 'cacher')
+
+    // définir le point de vente en cours
+    pv_uuid_courant = pv_uuid
+
+    // actualisation de la possibilité de commander ou d'acheter directement
+    serviceDirecte = glob.data.filter(obj => obj.id === pv_uuid_courant)[0].service_direct
+    // console.log('serviceDirecte = ',serviceDirecte)
+
+    // mise à jour du bouton valider
+    majBoutonValiderPointsDeVentes(1)
+
+    // afficher le block point de vente voulu
+    document.querySelector('#pv' + pv_uuid).style.display = 'block'
+
+    // ---- catégories ----
+    // compose la liste de catégories en fonction du point de ventes
+    let contenu_categories = afficher_categories()
+
+    // insertion de la liste dans la page
+    document.querySelector('#categories').innerHTML = contenu_categories
+    translate('#categories')
+
+    // sélectionner la catégorie "tous" = class 'bouton-article'
+    affiche_class(ele_tous, 'bouton-article')
+    ele_tous.classList.add('active')
+
+    // clique sur "Tous"
+    document.querySelector('#categorie-tous').click()
   }
-
-  // console.log('test -> service_direct = ', dataPV.service_direct)
-  vue_pv.asignerTitreVue(titre)
-
-  let ele_tous = document.querySelector('#categorie-tous')
-  // cacher tous les blocks point de ventes
-  cacherAfficherClassElementHtml('block-pv', 'cacher')
-
-  // définir le point de vente en cours
-  pv_uuid_courant = pv_uuid
-
-  // actualisation de la possibilité de commander ou d'acheter directement
-  serviceDirecte = glob.data.filter(obj => obj.id === pv_uuid_courant)[0].service_direct
-  // console.log('serviceDirecte = ',serviceDirecte)
-
-  // mise à jour du bouton valider
-  majBoutonValiderPointsDeVentes(1)
-
-  // afficher le block point de vente voulu
-  document.querySelector('#pv' + pv_uuid).style.display = 'block'
-
-  // ---- catégories ----
-  // compose la liste de catégories en fonction du point de ventes
-  let contenu_categories = afficher_categories()
-
-  // insertion de la liste dans la page
-  document.querySelector('#categories').innerHTML = contenu_categories
-  translate('#categories')
-
-  // sélectionner la catégorie "tous" = class 'bouton-article'
-  affiche_class(ele_tous, 'bouton-article')
-  ele_tous.classList.add('active')
-
-  // clique sur "Tous"
-  document.querySelector('#categorie-tous').click()
 }
 
-function retourne_index_pv(uuid_courant) {
+export function retourne_index_pv(uuid_courant) {
   for (let ipv = 0; ipv < glob.data.length; ipv++) {
     if (glob.data[ipv].id === uuid_courant) {
       return ipv
@@ -628,6 +645,7 @@ export function initDataPVcourant(indexPV) {
   // etat initial du service directe
   glob.data[indexPV].service_direct = etatInitialServiceDirectePVs[indexPV]
   document.querySelector('#menu-burger-conteneur').classList.toggle('burger-show')
+
   if (glob.data[indexPV].service_direct === true) {
     vue_pv.afficherPointDeVentes(glob.data[indexPV].id)
   } else {
@@ -661,10 +679,8 @@ export function afficherMenuPV() {
       classPlus = 'fond-menu-cashless'
     }
 
-    let fonctionBouton = `onclick="vue_pv.initDataPVcourant('${pv}')"`
-
     fragPV += `
-    <div class="menu-burger-item BF-ligne-deb ${classPlus} test-${glob.data[pv].name.toLowerCase()}" ${fonctionBouton}>
+    <div class="menu-burger-item BF-ligne-deb ${classPlus} test-${glob.data[pv].name.toLowerCase()}" onclick="vue_pv.initDataPVcourant('${pv}')">
       <i class="fas ${icon}"></i>
       <div>${glob.data[pv].name}</div>
     </div>
@@ -676,7 +692,11 @@ export function afficherMenuPV() {
       <i class="fas fa-caret-up"></i>
     </div>
   `
-  document.querySelector('#menu-burger-conteneur').innerHTML = fragPV
+  let burgerMenuContent = document.querySelector('#menu-burger-conteneur')
+  // insertion des points de ventes
+  burgerMenuContent.innerHTML = fragPV
+  // process dynamic htmx content
+  htmx.process(burgerMenuContent)
 }
 
 export function afficherMenuPreparations() {
@@ -784,12 +804,6 @@ export function composeMenuPrincipal(typeMaj) {
 
   // add all menus plugin "../webview/js/menuPlugins/addAllMenuPlugin.js"
   frag += addPluginFunctionsToMenu()
-
-  // Relancer l'application 'demande carte maîtresse'
-  frag += `<div class="menu-burger-item BF-ligne-deb" onclick="window.location.reload();">
-    <i class="fas fa-undo-alt"></i>
-    <div data-i8n="restart,uppercase">REDEMARRER</div>
-  </div>`
 
   if (typeMaj === 0) {
     return frag

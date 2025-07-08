@@ -125,7 +125,7 @@ JET_SIDE_MENU_ITEMS = {
         {'app_label': 'APIcashless', 'label': "Configurations", 'items': [
             {'name': 'configuration'},
             {'name': 'appareil', 'label' : "Appareils de vente"},
-            # {'name': 'terminal', 'label' : "TPE cartes bancaires"}, # Pas activé tout de suite, on commence par le mode Kiosk
+            {'name': 'terminal', 'label' : "TPE cartes bancaires"}, # Pas activé tout de suite, on commence par le mode Kiosk
         ]},
         {'app_label': 'epsonprinter', 'label': "Imprimantes", 'items': [
             {'name': 'printer', 'label':'Imprimantes'},

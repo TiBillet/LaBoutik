@@ -12,6 +12,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django import forms
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -851,26 +852,32 @@ class TerminalForm(forms.ModelForm):
 
         if terminal_type == Terminal.STRIPE_WISEPOS and not registration_code and not stripe_id:
             raise ValidationError({
-                'registration_code': _("Le code d'enregistrement ne peut pas être vide pour un terminal de type STRIPE_WISEPOS non appairé.")
+                'registration_code': _(
+                    "Le code d'enregistrement ne peut pas être vide pour un terminal de type STRIPE_WISEPOS non appairé.")
             })
 
         return cleaned_data
 
+
 class TPEAdmin(admin.ModelAdmin):
     # Pour les terminaux bancaire
     form = TerminalForm
-    list_display = ('name', 'type')
+    list_display = ('name', 'type', 'appareil')
     fieldsets = (
-        (None, {'fields': ('name', 'type', 'registration_code')}),
+        (None, {'fields': ('name', 'type', 'registration_code', 'appareil', 'archived',)}),
     )
 
+    def get_queryset(self, request):
+        return super(TPEAdmin, self).get_queryset(request).exclude(archived=True)
+
+    @transaction.atomic
     def save_model(self, request, instance, form, change, *args, **kwargs):
         # Appairage :
         self.stripe_id = instance.get_stripe_id()
         super().save_model(request, instance, form, change)
 
 
-# staff_admin_site.register(Terminal, TPEAdmin) # Pas activé tout de suite, on commence d'abord par le mode Kiosk
+staff_admin_site.register(Terminal, TPEAdmin)  # Pas activé tout de suite, on commence d'abord par le mode Kiosk
 
 
 ### PRINTER
@@ -1451,8 +1458,8 @@ class TablesAdmin(SortableAdminMixin, admin.ModelAdmin):
     )
     ordering = ('poids',)
     actions = [liberer_la_table, ]
-    list_editable = ('archive', )
-    readonly_fields = ('statut', )
+    list_editable = ('archive',)
+    readonly_fields = ('statut',)
     list_display_links = ('name',)
     list_filter = ('archive',)
 

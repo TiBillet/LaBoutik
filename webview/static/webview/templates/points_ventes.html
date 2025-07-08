@@ -7,7 +7,7 @@
   <div style="position:absolute;top:8px;left:300px;color:#FFFFFF">${ document.querySelector('body').clientWidth }</div>
    -->
   <nav class="navbar-horizontal">
-    <div class="navbar-img BF-col curseur-action" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');vue_pv.reloadData();">
+    <div class="navbar-img BF-col curseur-action" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');">
       <img alt="TiBillet" src="../static/webview/images/icon-complet-blanc.svg"/>
     </div>
     <div id="header-part-left" class="BF-ligne-deb" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');">
@@ -18,7 +18,7 @@
       <div id="header-part-left-titre" class="BF-ligne"></div>
     </div>
     <div class="navbar-menu BF-col">
-      <i class="menu-burger-icon fas fa-bars fa-1x curseur-action" onclick="vue_pv.composeMenuPrincipal(1);document.querySelector('#menu-burger-conteneur').classList.toggle('burger-show');"></i>
+      <i class="menu-burger-icon fas fa-bars curseur-action" onclick="vue_pv.composeMenuPrincipal(1);document.querySelector('#menu-burger-conteneur').classList.toggle('burger-show');"></i>
     </div>
   </nav>
   <div id="menu-burger-conteneur">
@@ -109,4 +109,5 @@
 </div>
 
 <div id="service-commandes" onclick="document.querySelector('#menu-burger-conteneur').classList.remove('burger-show');"></div>
+<div id="tb-kiosque" style="display: none;"></div>
 <!-- fin: resto -->

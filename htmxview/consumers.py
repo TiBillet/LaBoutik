@@ -126,6 +126,16 @@ class TerminalConsumer(AsyncWebsocketConsumer):
         )
 
 
+    # Receive message from room group
+    # Doit avoir le même nom que le type du message de la methode receive
+    async def template(self, event):
+        logger.info(f"template event: {event}")
+        template_name = event['template']
+        html = get_template(f"kiosk/{template_name}").render(context={'event': event})
+        # Send message to WebSocket htmx
+        await self.send(text_data=html)
+
+
 
     # Receive message from room group
     # Doit avoir le même nom que le type du message de la methode receive

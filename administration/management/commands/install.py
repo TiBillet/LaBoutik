@@ -83,6 +83,7 @@ class Command(BaseCommand):
                     self.preparation_test()
                     self.printer_test()
                     self.add_membership_and_badge_articles()
+                    self.add_kiosk()
                     # badgeuse_creation()
 
             def _base_config(self, options):
@@ -766,6 +767,7 @@ class Command(BaseCommand):
                 carteM.points_de_vente.add(bar1)
                 carteM.points_de_vente.add(test)
                 carteM.points_de_vente.add(self.pdv_cashless)
+                self.carte_primaire = carteM
 
                 carteM3, created = CarteMaitresse.objects.get_or_create(carte=cards_db[2], edit_mode=True)
                 carteM3.points_de_vente.add(Resto)
@@ -1003,6 +1005,19 @@ class Command(BaseCommand):
                     pdv_adh.articles.add(price)
                 for carte in CarteMaitresse.objects.all():
                     carte.points_de_vente.add(pdv_adh)
+
+
+            def add_kiosk(self):
+                kiosk = PointDeVente.objects.create(
+                    name="Kiosque",
+                    comportement=PointDeVente.KIOSK,
+                )
+
+                cm : CarteMaitresse = self.carte_primaire
+                cm.points_de_vente.add(kiosk)
+                cm.save()
+
+
 
         ### RUNER ###
         if PointDeVente.objects.count() > 0:

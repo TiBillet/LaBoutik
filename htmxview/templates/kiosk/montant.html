@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>kiosque</title>
+    {% load static %}
+
+    {#statics pour la page montant :#}
+    <link rel="stylesheet" href="{% static 'bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'kiosk/css/kiosk.css' %}"/>
+    <script src="{% static 'webview/js/htmx@2.0.6.min.js' %}"></script>
+    <script src="{% static 'webview/js/htmx-ext-ws@2.0.2.js' %}"></script>
+    <script src="{% static 'bootstrap/bootstrap-5.2.3-dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/sweetalert.js' %}"></script>
+</head>
+
+<body id="tb-kiosque" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <div class="container">
+        <div class="header-space position-relative">
+            <button id="toggleDarkModeBtn" class="btn btn-toggle-dark-mode"
+                onclick="toggleDarkMode()">Mode Nuit</button>
+        </div>
+        <div class="main-center">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-10 col-lg-8">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <p class="instruction-text text-center">
+                                Sélectionnez le montant de la recharge souhaitée.<br/> Vous pouvez cliquer plusieurs fois sur les boutons pour additionner le montant. :)
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-6 col-md-4">
+                            <button class="btn btn-amount" id="amount1" onclick="selectAmount(1)">
+                                + 1€
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <button class="btn btn-amount" id="amount5" onclick="selectAmount(5)">
+                                + 5€
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <button class="btn btn-amount" id="amount10" onclick="selectAmount(10)">
+                                + 10€
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <button class="btn btn-amount" id="amount20" onclick="selectAmount(20)">
+                                + 20€
+                            </button>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <button class="btn btn-amount" id="amount50" onclick="selectAmount(50)">
+                                + 50€
+                            </button>
+                        </div>
+                    </div>
+
+                    {% if error_message %}
+                    <div class="alert alert-danger erreur-input">{{ error_message }}</div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-center mb-3">
+                        {% include "kiosk/button_sweet_scan.html" %}
+                    </div>
+
+                    <div class="d-flex justify-content-center">
+                        <button class="btn btn-clear" onclick="clearAmount()">
+                            Effacer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if demo %}
+    <script>
+        window.DEMO = {
+            demoVirtualKeyboardActive: true,
+            demoTagIdCm: '{{ demoTagIdCm }}',
+            demoTagIdClient1: '{{ demoTagIdClient1 }}',
+            demoTagIdClient2: '{{ demoTagIdClient2 }}',
+            demoTagIdClient3: '{{ demoTagIdClient3 }}',
+            demoTagIdUnknown: 'XXXXXXXX',
+            demoTagIdTempsReponse: {{ demoTagIdTempsReponse | default:1 }}
+      }
+    </script>
+    {% endif %}
+    <script src="http://localhost/cordova.js"></script>
+    <script src="{% static 'kiosk/js/nfc.js' %}"></script>
+    <script src="{% static 'kiosk/js/main.js' %}"></script>
+</body>
+</html>

@@ -39,7 +39,7 @@ psycopg2 = "2.8.6"
 python-memcached = "^1.62"
 numpy = "^1.24"
 pydyf = "0.10.0"
-stripe = "^11.3.0"
+stripe = "^12"
 daphne = ">=3.0,<4"
 python-dotenv = "^0.21.0"
 
