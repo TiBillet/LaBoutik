@@ -49,16 +49,18 @@ document.addEventListener("DOMContentLoaded", function () {
 function updateDarkModeButton() {
   const button = document.getElementById("toggleDarkModeBtn");
   if (document.body.classList.contains("dark-mode")) {
-    button.innerHTML = 'Mode Jour <i class="fas fa-sun"></i>';
+    button.innerHTML = 'Mode Jour';
+    button.setAttribute('aria-label', 'Activer le mode jour');
   } else {
-    button.innerHTML = 'Mode Nuit <i class="fas fa-moon"></i>';
+    button.innerHTML = 'Mode Nuit';
+    button.setAttribute('aria-label', 'Activer le mode nuit');
   }
 }
 
 function toggleDarkMode() {
   document.body.classList.toggle("dark-mode");
   const elements = document.querySelectorAll(
-    ".logo-header, .logo-footer, .main-center, .card-panel, .card-panel-blink, .card-panel-currentAmount, .btn-cbcash, .btn-validate, .btn-large, .btn-back, .btn-clear"
+    ".main-center, .card, .btn-amount, .btn-validate, .btn-clear, .btn-cancel, .btn-toggle-dark-mode"
   );
   elements.forEach((el) => el.classList.toggle("dark-mode"));
 
@@ -75,7 +77,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (theme === "dark") {
     document.body.classList.add("dark-mode");
     const elements = document.querySelectorAll(
-      ".logo-header, .logo-footer, .main-center, .card-panel, .card-panel-blink, .card-panel-currentAmount, .btn-cbcash, .btn-validate, .btn-large, .btn-back, .btn-clear"
+      ".main-center, .card, .btn-amount, .btn-validate, .btn-clear, .btn-cancel, .btn-toggle-dark-mode"
     );
     elements.forEach((el) => el.classList.add("dark-mode"));
   }
