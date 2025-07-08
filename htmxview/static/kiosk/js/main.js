@@ -94,7 +94,10 @@ function readNfc() {
     Swal.fire({
       title: "Vous avez selectionné " + totalAmount + "€",
       html: "<p>Merci de scanner votre carte TiBillet sur le lecteur Sunmi.</p><p>⬆️⬆️⬆️⬆️⬆️⬆️⬆️</p><p>Le lecteur de carte est juste au dessus de cet écran</p>",
-      timer: 30000,
+      showCancelButton: true,
+      denyButtonText: `Don't save`,
+
+        timer: 30000,
       timerProgressBar: true,
       // after the popup has been shown on screen
       didOpen: () => {
@@ -105,15 +108,20 @@ function readNfc() {
       willClose: () => {
       }
     }).then((result) => {
-      // Read more about handling dismissals below 
+      // Read more about handling dismissals below
+      console.log('-> result.dismiss =', result.dismiss)
       if (result.dismiss === Swal.DismissReason.timer) {
         clearAmount();
         console.log("I was closed by the timer");
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        clearAmount();
+        console.log("I was closed by the cancel button");
       } else {
         console.log("I was closed");
-        if (window.DEMO !== undefined) { }
-        this.tagId = "{{ DEMO_TAGID_CLIENT1 }}"
-        console.log(this.tagId)
+        if (window.DEMO !== undefined) {
+            this.tagId = window.DEMO.demoTagIdClient1;
+            console.log(this.tagId)
+        }
         htmx.trigger(this, `confirmed`);
       }
     })

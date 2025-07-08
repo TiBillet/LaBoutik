@@ -188,7 +188,7 @@
                     <div class="card mb-4">
                         <div class="card-body">
                             <p class="instruction-text text-center">
-                                Sélectionnez le montant de la recharge souhaitée :
+                                Sélectionnez le montant de la recharge souhaitée.<br/> Vous pouvez cliquer plusieurs fois sur les boutons pour additionner le montant. :)
                             </p>
                         </div>
                     </div>
@@ -226,10 +226,13 @@
                     {% endif %}
 
                     <div class="d-flex justify-content-center mb-3">
-                        <button class="btn btn-validate" hx-trigger="confirmed"
+                        <button class="btn btn-validate"
+{#                            hx-trigger="confirmed" onClick="readNfc()"#}
                             hx-post="/htmx/kiosk/refill_with_wisepos/"
-                            hx-vals='js:{"totalAmount": totalAmount, "tag_id": this.tagId}' hx-target="#tb-kiosque"
-                            hx-swap="innerHTML" onClick="readNfc()">Valider <span id="totalAmount">0</span>€
+{#                            hx-vals='js:{"totalAmount": totalAmount, "tag_id": this.tagId}' #}
+                            hx-vals='js:{"totalAmount": 10, "tag_id": {{ demoTagIdClient1 }}}'
+                            hx-target="#tb-kiosque" hx-swap="innerHTML"
+                            >Valider <span id="totalAmount">0</span>€
                         </button>
                     </div>
 
@@ -252,7 +255,7 @@
             demoTagIdClient2: '{{ demoTagIdClient2 }}',
             demoTagIdClient3: '{{ demoTagIdClient3 }}',
             demoTagIdUnknown: 'XXXXXXXX',
-            demoTagIdTempsReponse: {{ demoTagIdTempsReponse }}
+            demoTagIdTempsReponse: {{ demoTagIdTempsReponse | default:1 }}
       }
     </script>
     {% endif %}
