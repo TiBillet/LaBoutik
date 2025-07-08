@@ -257,6 +257,35 @@ body.dark-mode {
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
+/* Success page styles */
+.success-page {
+    background-color: #198754;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.success-page.dark-mode {
+    background-color: #0a5d36;
+    color: white;
+}
+
+.success-container {
+    padding: 2rem;
+    height: 100vh;
+}
+
+.success-title {
+    font-size: 5rem;
+    font-weight: bold;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
 .timer-container {
     font-size: 1.8rem;
     margin-bottom: 2rem;
@@ -288,4 +317,17 @@ body.dark-mode {
     background-color: #2d2d2d;
     color: white;
     box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
+}
+
+/* Success return button */
+.success-return {
+    color: #198754;
+}
+
+.success-return:hover {
+    color: #0a5d36;
+}
+
+.success-return.dark-mode {
+    color: white;
 }

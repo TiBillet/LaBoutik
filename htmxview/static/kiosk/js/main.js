@@ -62,7 +62,7 @@ function updateDarkModeButton() {
 function toggleDarkMode() {
   document.body.classList.toggle("dark-mode");
   const elements = document.querySelectorAll(
-    ".main-center, .card, .btn-amount, .btn-validate, .btn-clear, .btn-cancel, .btn-toggle-dark-mode, .cancel-page, .btn-return"
+    ".main-center, .card, .btn-amount, .btn-validate, .btn-clear, .btn-cancel, .btn-toggle-dark-mode, .cancel-page, .success-page, .btn-return"
   );
   elements.forEach((el) => el.classList.toggle("dark-mode"));
 
@@ -168,7 +168,7 @@ function initializePage() {
   if (theme === "dark") {
     document.body.classList.add("dark-mode");
     const elements = document.querySelectorAll(
-      ".main-center, .card, .btn-amount, .btn-validate, .btn-clear, .btn-cancel, .btn-toggle-dark-mode, .cancel-page, .btn-return"
+      ".main-center, .card, .btn-amount, .btn-validate, .btn-clear, .btn-cancel, .btn-toggle-dark-mode, .cancel-page, .success-page, .btn-return"
     );
     elements.forEach((el) => el.classList.add("dark-mode"));
     applyDarkModeStyles();
