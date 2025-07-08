@@ -66,14 +66,7 @@
                     {% endif %}
 
                     <div class="d-flex justify-content-center mb-3">
-                        <button class="btn btn-validate"
-                            hx-trigger="confirmed" onClick="readNfc()"
-                            hx-post="/htmx/kiosk/refill_with_wisepos/"
-                            hx-vals='js:{"totalAmount": totalAmount, "tag_id": this.tagId}'
-{#                            hx-vals='js:{"totalAmount": 10, "tag_id": {{ demoTagIdClient1 }}}'#}
-                            hx-target="#tb-kiosque" hx-swap="innerHTML"
-                            >Valider <span id="totalAmount">0</span>€
-                        </button>
+                        {% include "kiosk/button_sweet_scan.html" %}
                     </div>
 
                     <div class="d-flex justify-content-center">
