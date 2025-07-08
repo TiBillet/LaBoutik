@@ -8,6 +8,7 @@ let NfcReader = class {
     this.socketUrl = options?.socketUrl
     this.socketPort = options?.socketPort
     this.intervalIDVerifApiCordova = null
+    this.cordovaLecture = false
     this.simuData = [
       { name: 'primaire', tagId: window?.DEMO?.demoTagIdCm },
       { name: 'client1', tagId: window?.DEMO?.demoTagIdClient1 },
@@ -42,33 +43,27 @@ let NfcReader = class {
         tagId = 'erreur'
       }
 
-      // récupération des data enregistrés lors de la demande de lecture
-      data = this.etatLecteurNfc.data
-      data.tagId = tagId
-
       // réinitialisation de l'état du lecteur nfc
       this.uuidConnexion = null
 
       // envoyer le résultat du lecteur
-      const event = new CustomEvent("nfcResult", { detail: data })
+      const event = new CustomEvent("nfcResult", { detail: tagId })
       document.body.dispatchEvent(event)
     }
   }
 
-  initCordovaNfc() {
-    // console.log('-> initCordovaNfc,', new Date())
+  listenCordovaNfc() {
+    console.log('-> listenCordovaNfc,', new Date())
     try {
-
       nfc.addTagDiscoveredListener((nfcEvent) => {
         let tag = nfcEvent.tag
-        sys.log('tagId = ' + nfc.bytesToHexString(tag.id))
-        if (this.etatLecteurNfc.cordovaLecture === true) {
-          this.verificationTagId(nfc.bytesToHexString(tag.id), this.etatLecteurNfc.uuidConnexion)
+        if (this.cordovaLecture === true) {
+          this.verificationTagId(nfc.bytesToHexString(tag.id), this.uuidConnexion)
         }
       })
       clearInterval(this.intervalIDVerifApiCordova)
     } catch (error) {
-      console.log('-> initCordovaNfc :', error)
+      console.log('-> listenCordovaNfc :', error)
     }
   }
 
@@ -109,7 +104,7 @@ let NfcReader = class {
   * @param mode
   */
   gestionModeLectureNfc(mode) {
-    // console.log('-> gestionModeLectureNfc, mode =', mode)
+    // console.log('1 -> gestionModeLectureNfc, mode =', mode)
     this.uuidConnexion = crypto.randomUUID()
 
     if (window.DEMO === undefined) {
@@ -135,8 +130,9 @@ let NfcReader = class {
 
       // cordova
       if (mode === 'NFCMC') {
+        this.cordovaLecture = true
         this.intervalIDVerifApiCordova = setInterval(() => {
-          this.initCordovaNfc()
+          this.listenCordovaNfc()
         }, 500)
       }
     } else {
@@ -145,20 +141,20 @@ let NfcReader = class {
   }
 
   startLecture() {
+    console.log('0 -> startLecture')
     // récupère le nfcMode
-    let modeNfc = '', infosNavigateur = null
     try {
       const storage = JSON.parse(localStorage.getItem('laboutik'))
       this.modeNfc = storage.mode_nfc
-      this.gestionModeLectureNfc(modeNfc)
+      this.gestionModeLectureNfc(this.modeNfc)
     } catch (err) {
       console.log(`Nfc initLecture, storage: ${err}  !`)
     }
   }
 
   stopLecture() {
+    console.log('1 -> stopLecture')
     let modeNfc = this.modeNfc
-    let uuidConnexion = this.etatLecteurNfc.uuidConnexion
 
     // tagId pour "un serveur nfc + front" en local
     if (modeNfc === "NFCLO") {
@@ -168,7 +164,10 @@ let NfcReader = class {
 
     // cordova
     if (modeNfc === 'NFCMC') {
+      this.cordovaLecture = false
       clearInterval(this.intervalIDVerifApiCordova)
     }
+
+    this.uuidConnexion = null
   }
 }
