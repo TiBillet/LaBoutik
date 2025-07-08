@@ -82,12 +82,46 @@ document.addEventListener("DOMContentLoaded", function () {
   updateDarkModeButton();
 });
 
-function sendTagId(data) {
-  console.log('-> sendTagId, data =', data)
-}
 
 function readNfc() {
+  function listenTagId(event) {
+    console.log('-> event.detail =', event.detail)
+    Swal.clickConfirm()
+
+    /*
+    hx-swap="innerHTML"
+    hx-trigger="confirmed"
+                        hx-post="/htmx/kiosk/refill_with_wisepos/"
+                        hx-vals='js:{"totalAmount": totalAmount, "tag_id": Swal.tagId}' hx-target="#tb-kiosque"
+    */
+     htmx.ajax('POST', '/htmx/kiosk/refill_with_wisepos/', {
+      target: "#tb-kiosque",
+      swap: "outerHTML",
+      values: {totalAmount, tag_id: event.detail}
+    })
+  }
+  document.body.addEventListener('nfcResult', listenTagId)
+  
   console.log('-> readNfc totalAmount =', totalAmount, '  --  DEMO =', window.DEMO)
+  if (totalAmount > 0) {
+    Swal.fire({
+      title: "Vous avez selectionné " + totalAmount + "€",
+      html: "<p>Merci de scanner votre carte TiBillet sur le lecteur Sunmi.</p><p>⬆️⬆️⬆️⬆️⬆️⬆️⬆️</p><p>Le lecteur de carte est juste au dessus de cet écran</p>",
+      timer: 30000,
+      timerProgressBar: true,
+      // after the popup has been shown on screen
+      didOpen: () => {
+        Swal.showLoading()
+        rfid.startLecture()
+      },
+      // when the popup closes by user
+      willClose: () => {
+        rfid.stopLecture()
+        document.body.removeEventListener('nfcResult', listenTagId)
+      }
+    })
+  }
+  /*
   if (totalAmount > 0) {
     Swal.fire({
       title: "Vous avez selectionné " + totalAmount + "€",
@@ -116,4 +150,6 @@ function readNfc() {
       }
     })
   }
+*/
+  // Swal.clickConfirm()
 }

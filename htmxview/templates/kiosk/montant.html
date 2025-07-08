@@ -68,10 +68,7 @@
                 {% endif %}
 
                 <div class="align-button">
-                    <button class="btn-cbcash z-depth-4 btn-validate waves-effect waves-light" hx-trigger="confirmed"
-                        hx-post="/htmx/kiosk/refill_with_wisepos/"
-                        hx-vals='js:{"totalAmount": totalAmount, "tag_id": this.tagId}' hx-target="#tb-kiosque"
-                        hx-swap="innerHTML" onClick="readNfc()">Valider <span id="totalAmount">0</span>€
+                    <button class="btn-cbcash z-depth-4 btn-validate waves-effect waves-light" onClick="readNfc()">Valider <span id="totalAmount">0</span>€
                     </button>
                 </div>
 
@@ -98,6 +95,7 @@
       }
     </script>
     {% endif %}
+    <script src="http://localhost/cordova.js"></script>
     <script src="{% static 'kiosk/js/nfc.js' %}"></script>
     <script src="{% static 'kiosk/js/main.js' %}"></script>
 </body>
