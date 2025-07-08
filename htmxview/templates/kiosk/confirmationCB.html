@@ -44,30 +44,3 @@
     </div>
 </div>
 
-<script>
-    // Update dark mode state based on parent page
-    document.addEventListener("DOMContentLoaded", function() {
-        // Check if dark mode is active in the parent page
-        if (document.body.classList.contains("dark-mode")) {
-            const elements = document.querySelectorAll(
-                ".main-center, .card, .btn-cancel, .btn-toggle-dark-mode"
-            );
-            elements.forEach((el) => el.classList.add("dark-mode"));
-
-            // Update dark mode button
-            const button = document.getElementById("toggleDarkModeBtn");
-            if (button) {
-                button.innerHTML = 'Mode Jour';
-                button.setAttribute('aria-label', 'Activer le mode jour');
-            }
-
-            // Update cancel button styling for dark mode
-            const cancelButton = document.querySelector(".btn-cancel");
-            if (cancelButton) {
-                cancelButton.style.border = "3px solid #2d2d2d";
-                cancelButton.style.backgroundColor = "#e63946";
-                cancelButton.style.boxShadow = "0 6px 12px rgba(230, 57, 70, 0.5)";
-            }
-        }
-    });
-</script>
