@@ -1,197 +1,46 @@
 {% load static %}
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Confirmation de paiement</title>
-
-    <link rel="stylesheet" href="{% static 'bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css' %}"/>
-    <script src="{% static 'webview/js/htmx@2.0.6.min.js' %}"></script>
-    <script src="{% static 'webview/js/htmx-ext-ws@2.0.2.js' %}"></script>
-    <script src="{% static 'bootstrap/bootstrap-5.2.3-dist/js/bootstrap.min.js' %}"></script>
-    <script src="{% static 'js/sweetalert.js' %}"></script>
-
-    <style>
-        :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --success-color: #198754;
-            --danger-color: #dc3545;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-        }
-
-        body {
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            transition: all 0.3s ease;
-            font-size: 1.2rem;
-        }
-
-        body.dark-mode {
-            background-color: #121212;
-            color: #ffffff;
-        }
-
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            margin-bottom: 2rem;
-        }
-
-        .card.dark-mode {
-            background-color: #2d2d2d;
-            color: #ffffff;
-            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-cancel {
-            font-size: 1.8rem;
-            font-weight: bold;
-            padding: 20px 30px;
-            margin: 20px 0;
-            border-radius: 10px;
-            background-color: var(--danger-color);
-            color: white;
-            border: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .btn-cancel:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-cancel.dark-mode {
-            background-color: #e63946;
-            color: white;
-            box-shadow: 0 4px 8px rgba(230, 57, 70, 0.3);
-        }
-
-        .btn-toggle-dark-mode {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 1.2rem;
-            padding: 10px 15px;
-            border-radius: 50px;
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .btn-toggle-dark-mode:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-toggle-dark-mode.dark-mode {
-            background-color: #f8f9fa;
-            color: #212529;
-        }
-
-        .main-center {
-            padding: 30px 0;
-        }
-
-        .main-center.dark-mode {
-            background-color: #121212;
-        }
-
-        .header-space {
-            height: 80px;
-        }
-
-        .payment-info {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 1.5rem;
-        }
-
-        .payment-icons {
-            font-size: 2rem;
-            margin: 1.5rem 0;
-        }
-
-        .spinner-box {
-            display: flex;
-            justify-content: center;
-            margin: 2rem 0;
-        }
-
-        .spinnerCB {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top-color: var(--primary-color);
-            animation: spin 1s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
-        .dark-mode .spinnerCB {
-            border-color: rgba(255, 255, 255, 0.1);
-            border-top-color: var(--primary-color);
-        }
-    </style>
-</head>
-
-<body id="tb-kiosque" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-    <div class="container">
-        <div class="header-space position-relative">
-            <button id="toggleDarkModeBtn" class="btn btn-toggle-dark-mode"
-                onclick="toggleDarkMode()" aria-label="Activer le mode nuit">Mode Nuit</button>
-        </div>
-        <div class="main-center">
-            <div class="row justify-content-center">
-                <div class="col-12 col-md-10 col-lg-8">
-                    <section hx-ext="ws" ws-connect="/ws/terminal/{{ payment_intent.payment_intent_stripe_id }}/">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="payment-info text-center">
-                                    Vous souhaitez recharger <strong>{{ amount }}€</strong>.
-                                    <br>
-                                    Veuillez suivre les indications du terminal de paiement à droite de cet écran.
-                                </div>
-                                <div class="payment-icons text-center">
-                                    💳 ➡️ 💳 ➡️ 💳 ➡️ 💳 ➡️
-                                </div>
-                                <div class="spinner-box">
-                                    <div class="spinnerCB" id="spinnerCB"></div>
-                                </div>
+<div class="container">
+    <div class="header-space position-relative">
+        <button id="toggleDarkModeBtn" class="btn btn-toggle-dark-mode"
+            onclick="toggleDarkMode()" aria-label="Activer le mode nuit">Mode Nuit</button>
+    </div>
+    <div class="main-center">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-10 col-lg-8">
+                <section hx-ext="ws" ws-connect="/ws/terminal/{{ payment_intent.payment_intent_stripe_id }}/">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="payment-info text-center">
+                                Vous souhaitez recharger <strong>{{ amount }}€</strong>.
+                                <br>
+                                Veuillez suivre les indications du terminal de paiement à droite de cet écran.
+                            </div>
+                            <div class="payment-icons text-center">
+                                💳 ➡️ 💳 ➡️ 💳 ➡️ 💳 ➡️
+                            </div>
+                            <div class="spinner-box">
+                                <div class="spinnerCB" id="spinnerCB"></div>
                             </div>
                         </div>
+                    </div>
 
-                        {# La partie retourné par le websocket qui est écrasé par le oob message #}
-                        <div style="display: none">
-                            <div id="message"></div>
-                        </div>
+                    {# La partie retourné par le websocket qui est écrasé par le oob message #}
+                    <div style="display: none">
+                        <div id="message"></div>
+                    </div>
 
-                        <div class="d-flex justify-content-center" id="cancelButton">
-                            <button class="btn btn-cancel"
-                                    hx-get="/htmx/kiosk/{{ payment_intent.pk }}/cancel/"
-                                    hx-trigger="click" hx-target="#cancelButton" hx-swap="outerHTML">
-                                ❌ Annuler
-                            </button>
-                        </div>
-                    </section>
-                </div>
+                    <div class="d-flex justify-content-center" id="cancelButton">
+                        <button class="btn btn-cancel"
+                                style="font-size: 2.2rem; padding: 25px 40px; margin: 30px 0; box-shadow: 0 6px 12px rgba(220, 53, 69, 0.4); border: 3px solid #fff;"
+                                hx-get="/htmx/kiosk/{{ payment_intent.pk }}/cancel/"
+                                hx-trigger="click" hx-target="#cancelButton" hx-swap="outerHTML">
+                            ❌ ANNULER
+                        </button>
+                    </div>
+                </section>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="{% static 'kiosk/js/main.js' %}"></script>
-</body>
-</html>

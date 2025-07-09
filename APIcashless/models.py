@@ -2672,8 +2672,6 @@ class PaymentsIntent(models.Model):
     def get_from_stripe(self):
         if settings.TEST:
             # simule l'attente :
-            # return PaymentsIntent.REQUIRES_PAYMENT_METHOD
-
             # On va simuler un paiement ou des erreurs de paiements
             import random
             random_value = random.random()

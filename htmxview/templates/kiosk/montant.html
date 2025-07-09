@@ -9,171 +9,11 @@
 
     {#statics pour la page montant :#}
     <link rel="stylesheet" href="{% static 'bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'kiosk/css/kiosk.css' %}"/>
     <script src="{% static 'webview/js/htmx@2.0.6.min.js' %}"></script>
     <script src="{% static 'webview/js/htmx-ext-ws@2.0.2.js' %}"></script>
     <script src="{% static 'bootstrap/bootstrap-5.2.3-dist/js/bootstrap.min.js' %}"></script>
     <script src="{% static 'js/sweetalert.js' %}"></script>
-
-    <style>
-        :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #6c757d;
-            --success-color: #198754;
-            --danger-color: #dc3545;
-            --light-color: #f8f9fa;
-            --dark-color: #212529;
-        }
-
-        body {
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            transition: all 0.3s ease;
-            font-size: 1.2rem;
-        }
-
-        body.dark-mode {
-            background-color: #121212;
-            color: #ffffff;
-        }
-
-        .card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .card.dark-mode {
-            background-color: #2d2d2d;
-            color: #ffffff;
-            box-shadow: 0 4px 8px rgba(255, 255, 255, 0.1);
-        }
-
-        .btn-amount {
-            font-size: 1.8rem;
-            font-weight: bold;
-            padding: 20px 30px;
-            margin: 10px 0;
-            width: 100%;
-            border-radius: 10px;
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .btn-amount:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-amount.dark-mode {
-            background-color: #3a86ff;
-            color: white;
-            box-shadow: 0 4px 8px rgba(58, 134, 255, 0.3);
-        }
-
-        .btn-validate {
-            font-size: 1.8rem;
-            font-weight: bold;
-            padding: 15px 30px;
-            margin: 20px 0;
-            border-radius: 10px;
-            background-color: var(--success-color);
-            color: white;
-            border: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .btn-validate:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-validate.dark-mode {
-            background-color: #00b4d8;
-            color: white;
-            box-shadow: 0 4px 8px rgba(0, 180, 216, 0.3);
-        }
-
-        .btn-clear {
-            font-size: 1.2rem;
-            font-weight: bold;
-            padding: 10px 20px;
-            margin: 10px 0;
-            border-radius: 10px;
-            background-color: var(--danger-color);
-            color: white;
-            border: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .btn-clear:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-clear.dark-mode {
-            background-color: #e63946;
-            color: white;
-            box-shadow: 0 4px 8px rgba(230, 57, 70, 0.3);
-        }
-
-        .btn-toggle-dark-mode {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 1.2rem;
-            padding: 10px 15px;
-            border-radius: 50px;
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .btn-toggle-dark-mode:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .btn-toggle-dark-mode.dark-mode {
-            background-color: #f8f9fa;
-            color: #212529;
-        }
-
-        .main-center {
-            padding: 30px 0;
-        }
-
-        .main-center.dark-mode {
-            background-color: #121212;
-        }
-
-        .instruction-text {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-
-        .erreur-input {
-            color: var(--danger-color);
-            font-weight: bold;
-            margin: 10px 0;
-        }
-
-        #totalAmount {
-            font-weight: bold;
-        }
-
-        .header-space {
-            height: 80px;
-        }
-    </style>
 </head>
 
 <body id="tb-kiosque" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
@@ -188,7 +28,7 @@
                     <div class="card mb-4">
                         <div class="card-body">
                             <p class="instruction-text text-center">
-                                Sélectionnez le montant de la recharge souhaitée :
+                                Sélectionnez le montant de la recharge souhaitée.<br/> Vous pouvez cliquer plusieurs fois sur les boutons pour additionner le montant. :)
                             </p>
                         </div>
                     </div>
@@ -226,11 +66,7 @@
                     {% endif %}
 
                     <div class="d-flex justify-content-center mb-3">
-                        <button class="btn btn-validate" hx-trigger="confirmed"
-                            hx-post="/htmx/kiosk/refill_with_wisepos/"
-                            hx-vals='js:{"totalAmount": totalAmount, "tag_id": this.tagId}' hx-target="#tb-kiosque"
-                            hx-swap="innerHTML" onClick="readNfc()">Valider <span id="totalAmount">0</span>€
-                        </button>
+                        {% include "kiosk/button_sweet_scan.html" %}
                     </div>
 
                     <div class="d-flex justify-content-center">
@@ -252,7 +88,7 @@
             demoTagIdClient2: '{{ demoTagIdClient2 }}',
             demoTagIdClient3: '{{ demoTagIdClient3 }}',
             demoTagIdUnknown: 'XXXXXXXX',
-            demoTagIdTempsReponse: {{ demoTagIdTempsReponse }}
+            demoTagIdTempsReponse: {{ demoTagIdTempsReponse | default:1 }}
       }
     </script>
     {% endif %}

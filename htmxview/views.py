@@ -530,7 +530,8 @@ class Kiosk(viewsets.ViewSet):
     def list(self, request):
         context = {
             "test":settings.TEST,
-            "DEMO_TAGID_CLIENT1" : os.environ.get('DEMO_TAGID_CLIENT1'),
+            "demo": settings.DEMO,
+            "demoTagIdClient1" : os.environ.get('DEMO_TAGID_CLIENT1'),
         }
         return render(request, "kiosk/montant.html", context)
 
