@@ -53,12 +53,10 @@
                     console.log("I was closed by the cancel button");
                 } else if (result.dismiss === Swal.DismissReason.backdrop) {
                     console.log("I was closed on external click");
-                    // if (window.DEMO !== undefined) {
-                    //     validateButton.tagId = window.DEMO.demoTagIdClient1;
-                    //     console.log('Tag ID:', validateButton.tagId)
-                    // }
-                    // console.log('Button element:', validateButton);
-                    // htmx.trigger(validateButton, 'confirmed');
+                    if (window.DEMO !== undefined) {
+                        validateButton.setAttribute('tag-id', window.DEMO.demoTagIdClient1)
+                        htmx.trigger(validateButton, 'confirmed');
+                    }
                 }
             })
         }
