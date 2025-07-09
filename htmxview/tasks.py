@@ -69,18 +69,18 @@ def poll_payment_intent_status(payment_intent_pk, max_duration_seconds=120):
         if payment_intent.status in [PaymentsIntent.CANCELED, PaymentsIntent.CANCELED]:
             # Send the status update via WebSocket
 
-            # C'est un succes, on va chercher les infos coté Fedow
-            try :
-                fedowApi = FedowAPI()
-                tag_id = payment_intent.card.tag_id
-                logger.info(f"tag_id = {tag_id}")
-                fedow_validated_data = fedowApi.NFCcard.retrieve(tag_id)
-                logger.info(f"fedow_validated_data = {fedow_validated_data}")
-                carte = CarteCashless.objects.get(tag_id=tag_id)
-                logger.info(f"carte total_monnaie = {carte.total_monnaie()}")
-            except Exception as e:
-                logger.error(f"Error polling payment intent FEDOW: {e}")
-                raise Exception(f"Error polling payment intent FEDOW: {e}")
+            # # C'est un succes, on va chercher les infos coté Fedow
+            # try :
+            #     fedowApi = FedowAPI()
+            #     tag_id = payment_intent.card.tag_id
+            #     logger.info(f"tag_id = {tag_id}")
+            #     fedow_validated_data = fedowApi.NFCcard.retrieve(tag_id)
+            #     logger.info(f"fedow_validated_data = {fedow_validated_data}")
+            #     carte = CarteCashless.objects.get(tag_id=tag_id)
+            #     logger.info(f"carte total_monnaie = {carte.total_monnaie()}")
+            # except Exception as e:
+            #     logger.error(f"Error polling payment intent FEDOW: {e}")
+            #     raise Exception(f"Error polling payment intent FEDOW: {e}")
 
             event = {
                 'type': 'template',
@@ -89,8 +89,7 @@ def poll_payment_intent_status(payment_intent_pk, max_duration_seconds=120):
                 'status_display': payment_intent.get_status_display(),
                 'timestamp': timezone.now().isoformat(),
                 'retry_count': retry_count,
-                "total_monnaie": carte.total_monnaie(),
-
+                # "total_monnaie": carte.total_monnaie(),
             }
             async_to_sync(channel_layer.group_send)(
                 room_name,
