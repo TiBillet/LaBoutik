@@ -14,5 +14,20 @@
             </div>
         </div>
     </div>
-
 </div>
+
+<script>
+    let seconds = 15;
+    const countdownElement = document.getElementById('countdown');
+
+    // Update countdown every second
+    const timer = setInterval(function () {
+        seconds--;
+        countdownElement.textContent = seconds;
+
+        if (seconds <= 0) {
+            clearInterval(timer);
+            window.location.href = "/htmx/kiosk/";
+        }
+    }, 1000);
+</script>
