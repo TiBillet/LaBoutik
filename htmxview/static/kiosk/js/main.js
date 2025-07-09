@@ -97,7 +97,7 @@ function applyDarkModeStyles() {
   }
 
   // Ensure spinner is visible in dark mode
-  const spinner = document.querySelector(".spinnerCB");
+  const spinner = document.querySelector(".spinner_bootstrap");
   if (spinner) {
     spinner.style.borderColor = "rgba(255, 255, 255, 0.2)";
     spinner.style.borderTopColor = "#3a86ff"; // Bright blue for visibility
@@ -140,7 +140,7 @@ function removeDarkModeStyles() {
   }
 
   // Reset spinner
-  const spinner = document.querySelector(".spinnerCB");
+  const spinner = document.querySelector(".spinner_bootstrap");
   if (spinner) {
     spinner.style.borderColor = "";
     spinner.style.borderTopColor = "";
