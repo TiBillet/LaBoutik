@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import json, logging, time
 import os
 from datetime import timedelta, datetime
+from typing import Any, Literal
 from uuid import UUID
 
 import stripe
@@ -11,7 +14,8 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
+from django.http.response import HttpResponseRedirectBase
 from django.shortcuts import get_object_or_404
 from django.shortcuts import render
 from django.utils import timezone
@@ -35,6 +39,23 @@ from webview.serializers import debut_fin_journee, CarteCashlessSerializer
 
 from htmxview.tasks import poll_payment_intent_status
 logger = logging.getLogger(__name__)
+
+
+class HttpResponseClientRedirect(HttpResponseRedirectBase):
+    """
+    Import directement depuis django_htmx qui n'est pas supporté par django 2.2
+    """
+    status_code = 200
+
+    def __init__(self, redirect_to: str, *args: Any, **kwargs: Any) -> None:
+        super().__init__(redirect_to, *args, **kwargs)
+        self["HX-Redirect"] = self["Location"]
+        del self["Location"]
+
+    @property
+    def url(self) -> str:
+        return self["HX-Redirect"]
+
 
 
 class AppSettings(viewsets.ViewSet):
@@ -646,22 +667,32 @@ class Kiosk(viewsets.ViewSet):
 
     @action(detail=True, methods=['GET'])
     def cancel(self, request, pk):
-        payment_intent_db = get_object_or_404(PaymentsIntent, pk=pk)
+        try :
+            payment_intent_db = get_object_or_404(PaymentsIntent, pk=pk)
 
-        # Annulation de toute action sur le terminal :
-        config_stripe = ConfigurationStripe.get_solo()
-        stripe.api_key = config_stripe.get_stripe_api()
+            # Annulation de toute action sur le terminal :
+            config_stripe = ConfigurationStripe.get_solo()
+            stripe.api_key = config_stripe.get_stripe_api()
 
-        terminal = payment_intent_db.terminal
-        stripe.terminal.Reader.cancel_action(terminal.stripe_id)
-        logger.info(f"Cancel action on terminal {terminal.stripe_id}")
+            terminal = payment_intent_db.terminal
+            stripe.terminal.Reader.cancel_action(terminal.stripe_id)
+            logger.info(f"Cancel action on terminal {terminal.stripe_id}")
 
-        stripe.PaymentIntent.cancel(payment_intent_db.payment_intent_stripe_id)
-        payment_intent_db.refresh_from_db()
-        logger.info(f"Cancel payment intent {payment_intent_db.pk} -> status : {payment_intent_db.status}")
+            stripe.PaymentIntent.cancel(payment_intent_db.payment_intent_stripe_id)
+            payment_intent_db.refresh_from_db()
+            logger.info(f"Cancel payment intent {payment_intent_db.pk} -> status : {payment_intent_db.status}")
 
-        # Le cancel a été fait coté stripe, le OOB du websocket va afficher la page cancel
-        return HttpResponse(status=205)
+            # Le cancel a été fait coté stripe, le OOB du websocket va afficher la page cancel
+            # return HttpResponse(status=205)
+        except stripe._error.InvalidRequestError:
+            return HttpResponseClientRedirect('/htmx/kiosk/')
+        except Exception as e:
+            logger.error(e)
+            return HttpResponseClientRedirect('/htmx/kiosk/')
+        return HttpResponseClientRedirect('/htmx/kiosk/')
+
+
+
 
 
 
