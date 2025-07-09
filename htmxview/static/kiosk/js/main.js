@@ -1,4 +1,4 @@
-const rfid = new NfcReader()
+const rfid = new NfcReader() //TODO: import dynamic cordova 
 let totalAmount = 0;
 
 function goBack() {
@@ -86,26 +86,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 function readNfc() {
+  // listen function for 'nfcResult' message
   function listenTagId(event) {
     console.log('-> event.detail =', event.detail)
+    // confirm popup
     Swal.clickConfirm()
-
-    /*
-    hx-swap="innerHTML"
-    hx-trigger="confirmed"
-                        hx-post="/htmx/kiosk/refill_with_wisepos/"
-                        hx-vals='js:{"totalAmount": totalAmount, "tag_id": Swal.tagId}' hx-target="#tb-kiosque"
-    */
-     htmx.ajax('POST', '/htmx/kiosk/refill_with_wisepos/', {
+    // send tag id
+    htmx.ajax('POST', '/htmx/kiosk/refill_with_wisepos/', {
       target: "#tb-kiosque",
       swap: "outerHTML",
-      values: {totalAmount, tag_id: event.detail}
+      values: { totalAmount, tag_id: event.detail }
     })
   }
+  // launch listen for 'nfcResult' message
   document.body.addEventListener('nfcResult', listenTagId)
-  
-  console.log('-> readNfc totalAmount =', totalAmount, '  --  DEMO =', window.DEMO)
-  if (totalAmount > 0) {
+
+  if (totalAmount > 0 && window?.DEMO === undefined) {
     Swal.fire({
       title: "Vous avez selectionné " + totalAmount + "€",
       html: "<p>Merci de scanner votre carte TiBillet sur le lecteur Sunmi.</p><p>⬆️⬆️⬆️⬆️⬆️⬆️⬆️</p><p>Le lecteur de carte est juste au dessus de cet écran</p>",
@@ -123,35 +119,8 @@ function readNfc() {
       }
     })
   }
-  /*
-  if (totalAmount > 0) {
-    Swal.fire({
-      title: "Vous avez selectionné " + totalAmount + "€",
-      html: "<p>Merci de scanner votre carte TiBillet sur le lecteur Sunmi.</p><p>⬆️⬆️⬆️⬆️⬆️⬆️⬆️</p><p>Le lecteur de carte est juste au dessus de cet écran</p>",
-      timer: 30000,
-      timerProgressBar: true,
-      // after the popup has been shown on screen
-      didOpen: () => {
-        Swal.showLoading()
-        rfid.startLecture()
-      },
-      // when the popup closes by user
-      willClose: () => {
-      }
-    }).then((result) => {
-      // Read more about handling dismissals below 
-      if (result.dismiss === Swal.DismissReason.timer) {
-        clearAmount();
-        console.log("I was closed by the timer");
-      } else {
-        console.log("I was closed");
-        if (window.DEMO !== undefined) { }
-        this.tagId = "{{ DEMO_TAGID_CLIENT1 }}"
-        console.log(this.tagId)
-        htmx.trigger(this, `confirmed`);
-      }
-    })
+
+  if (totalAmount > 0 && window?.DEMO !== undefined) {
+    rfid.startLecture({ simulation: true })
   }
-*/
-  // Swal.clickConfirm()
 }
