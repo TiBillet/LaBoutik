@@ -134,6 +134,9 @@ let NfcReader = class {
         const tagId = bt.getAttribute('tag-id')
         console.log('tagId =', tagId);
 
+        // hide ui simu
+        document.querySelector('#nfc-reader-simu-overlay').remove()
+
         // envoyer le résultat du lecteur
         const event = new CustomEvent("nfcResult", { detail: tagId })
         document.body.dispatchEvent(event)
@@ -181,7 +184,7 @@ let NfcReader = class {
   startLecture(options) {
     console.log('0 -> startLecture  --  DEMO =', window?.DEMO)
     // simule
-    if (options.simulation === true) {
+    if (options?.simulation === true) {
       this.simule()
     } else {
       // hardware

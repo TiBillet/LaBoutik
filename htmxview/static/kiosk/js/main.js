@@ -208,11 +208,12 @@ function initializePage() {
   }
 }
 
+
 // Initialize on page load
 document.addEventListener("DOMContentLoaded", initializePage);
 
 // Initialize when HTMX swaps content
-document.addEventListener('htmx:afterSwap', function(event) {
+document.addEventListener('htmx:afterSwap', function (event) {
   // Only run if the swap target is the tb-kiosque element or its children
   if (event.detail.target.id === 'tb-kiosque' || event.detail.target.closest('#tb-kiosque')) {
     initializePage();
