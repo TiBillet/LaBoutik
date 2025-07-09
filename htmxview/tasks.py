@@ -89,7 +89,7 @@ def poll_payment_intent_status(payment_intent_pk, max_duration_seconds=120):
                 'status_display': payment_intent.get_status_display(),
                 'timestamp': timezone.now().isoformat(),
                 'retry_count': retry_count,
-                # "total_monnaie": carte.total_monnaie(),
+                "total_monnaie": carte.total_monnaie(),
             }
             async_to_sync(channel_layer.group_send)(
                 room_name,
