@@ -1,13 +1,10 @@
-import dateutil.parser
 import json
-
-import time
-import uuid
-
-import requests
-import unicodedata
 import logging
+import time
+import unicodedata
 
+import dateutil.parser
+import requests
 from django.db.models import Sum
 from django.utils import timezone
 
