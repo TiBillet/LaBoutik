@@ -683,7 +683,7 @@ class Kiosk(viewsets.ViewSet):
             logger.info(f"Cancel payment intent {payment_intent_db.pk} -> status : {payment_intent_db.status}")
 
             # Le cancel a été fait coté stripe, le OOB du websocket va afficher la page cancel
-            # return HttpResponse(status=205)
+            return HttpResponse(status=205)
         except stripe._error.InvalidRequestError:
             return HttpResponseClientRedirect('/htmx/kiosk/')
         except Exception as e:
