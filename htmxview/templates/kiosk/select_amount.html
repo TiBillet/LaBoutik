@@ -2,8 +2,8 @@
 <html>
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <title>kiosque</title>
     {% load static %}
 
@@ -16,11 +16,14 @@
     <script src="{% static 'js/sweetalert.js' %}"></script>
 </head>
 
-<body id="tb-kiosque" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-indicator="#spinner">
+<div id="tb-kiosque">
+
     <div class="container">
         <div class="header-space position-relative">
             <button id="toggleDarkModeBtn" class="btn btn-toggle-dark-mode"
-                onclick="toggleDarkMode()">Mode Nuit</button>
+                    onclick="toggleDarkMode()">Mode Nuit
+            </button>
         </div>
         <div class="main-center">
             <div class="row justify-content-center">
@@ -28,7 +31,8 @@
                     <div class="card mb-4">
                         <div class="card-body">
                             <p class="instruction-text text-center">
-                                Sélectionnez le montant de la recharge souhaitée.<br/> Vous pouvez cliquer plusieurs fois sur les boutons pour additionner le montant. :)
+                                Sélectionnez le montant de la recharge souhaitée.<br/> Vous pouvez cliquer plusieurs
+                                fois sur les boutons pour additionner le montant. :)
                             </p>
                         </div>
                     </div>
@@ -62,11 +66,11 @@
                     </div>
 
                     {% if error_message %}
-                    <div class="alert alert-danger erreur-input">{{ error_message }}</div>
+                        <div class="alert alert-danger erreur-input">{{ error_message }}</div>
                     {% endif %}
 
                     <div class="d-flex justify-content-center mb-3">
-                        {% include "kiosk/button_sweet_scan.html" %}
+                        {% include "kiosk/sweet_scan_button.html" %}
                     </div>
 
                     <div class="d-flex justify-content-center">
@@ -78,8 +82,9 @@
             </div>
         </div>
     </div>
+</div>
 
-    {% if demo %}
+{% if demo %}
     <script>
         window.DEMO = {
             demoVirtualKeyboardActive: true,
@@ -89,11 +94,14 @@
             demoTagIdClient3: '{{ demoTagIdClient3 }}',
             demoTagIdUnknown: 'XXXXXXXX',
             demoTagIdTempsReponse: {{ demoTagIdTempsReponse | default:1 }}
-      }
+        }
     </script>
-    {% endif %}
-    <script src="http://localhost/cordova.js"></script>
-    <script src="{% static 'kiosk/js/nfc.js' %}"></script>
-    <script src="{% static 'kiosk/js/main.js' %}"></script>
+{% endif %}
+<script src="http://localhost/cordova.js"></script>
+<script src="{% static 'kiosk/js/nfc.js' %}"></script>
+<script src="{% static 'kiosk/js/main.js' %}"></script>
+
+{% include "kiosk/spinner.html" %}
+
 </body>
 </html>

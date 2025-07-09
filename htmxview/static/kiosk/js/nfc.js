@@ -1,12 +1,11 @@
 // https://github.com/nerdy-harry/phonegap-nfc-api31?tab=readme-ov-file#nfcshowsettings
 
 let NfcReader = class {
-  constructor(options) {
+  constructor() {
     this.modeNfc = ''
     this.uuidConnexion = null
     this.socket = null
-    this.socketUrl = options?.socketUrl
-    this.socketPort = options?.socketPort
+    this.socketPort = 3000
     this.intervalIDVerifApiCordova = null
     this.cordovaLecture = false
     this.simuData = [
@@ -38,17 +37,14 @@ let NfcReader = class {
         console.log('Erreur uuidConnexion différent !!')
       }
 
-      // fixe le tagId à 'erreur'
-      if (msgErreurs !== 0) {
-        tagId = 'erreur'
-      }
-
-      // réinitialisation de l'état du lecteur nfc
-      this.uuidConnexion = null
-
       // envoyer le résultat du lecteur
-      const event = new CustomEvent("nfcResult", { detail: tagId })
-      document.body.dispatchEvent(event)
+      if (msgErreurs === 0) {
+        const event = new CustomEvent("nfcResult", { detail: tagId })
+        document.body.dispatchEvent(event)
+
+        // réinitialisation de l'état du lecteur nfc
+        this.uuidConnexion = null
+      }
     }
   }
 
@@ -155,7 +151,7 @@ let NfcReader = class {
     // nfc serveur socket_io + front sur le même appareil (pi ou desktop)
     if (mode === 'NFCLO') {
       // initialise la connexion
-      this.socket = io(this.socketUrl + ':' + this.socketPort, {})
+      this.socket = io('http://localhost:' + this.socketPort, {})
 
       // initialise la réception d'un tagId, méssage = 'envoieTagId'
       this.socket.on('envoieTagId', (retour) => {

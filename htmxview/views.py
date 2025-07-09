@@ -533,7 +533,7 @@ class Kiosk(viewsets.ViewSet):
             "demo": settings.DEMO,
             "demoTagIdClient1" : os.environ.get('DEMO_TAGID_CLIENT1'),
         }
-        return render(request, "kiosk/montant.html", context)
+        return render(request, "kiosk/select_amount.html", context)
 
     # menu kiosque
     @action(detail=False, methods=['GET'])
@@ -563,7 +563,7 @@ class Kiosk(viewsets.ViewSet):
             'terminal': terminal,
             'user' : user,
         }
-        return render(request, "kiosk/montant.html", context)
+        return render(request, "kiosk/select_amount.html", context)
 
 
     @action(detail=False, methods=['POST'])
@@ -613,7 +613,7 @@ class Kiosk(viewsets.ViewSet):
                 'user': user,
                 'error_message': f"{e}",
             }
-            return render(request, "kiosk/montant.html", context)
+            return render(request, "kiosk/select_amount.html", context)
 
 
         # Lancer la tâche Celery pour surveiller le statut du paiement
@@ -636,7 +636,7 @@ class Kiosk(viewsets.ViewSet):
         logger.info(f"END WAIT POLLING PAYMENT INTENT STATUS {poll_payment.status} RESULT : {poll_payment.result}")
 
         # Renvoie la partie websocket pour le suivi de l'intention de paiement
-        return render(request, 'kiosk/confirmationCB.html', context={
+        return render(request, 'kiosk/waiting_credit_card_terminal.html', context={
             'user': user,
             'amount': (amount/100),
             'terminal': terminal,
@@ -668,7 +668,7 @@ class Kiosk(viewsets.ViewSet):
         #     "test":settings.TEST,
         #     "DEMO_TAGID_CLIENT1" : os.environ.get('DEMO_TAGID_CLIENT1'),
         # }
-        # return render(request, "kiosk/montant.html", context)
+        # return render(request, "kiosk/select_amount.html", context)
 
         # Retour du spinner qui sera affiché a la place du boutton
         # return render(request, "kiosk/spinnerbox.html", {})

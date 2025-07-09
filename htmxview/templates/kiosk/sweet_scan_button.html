@@ -1,8 +1,9 @@
 <button class="btn btn-validate" id="scan_button" hx-post="/htmx/kiosk/refill_with_wisepos/"
-    hx-vals='js:{"totalAmount": totalAmount, "tag_id": document.querySelector("#scan_button").getAttribute("tag-id")}'
-    hx-target="#tb-kiosque" hx-swap="innerHTML" hx-trigger="confirmed" onClick="readNfc()">Valider <span
+        hx-vals='js:{"totalAmount": totalAmount, "tag_id": document.querySelector("#scan_button").getAttribute("tag-id")}'
+        hx-target="#tb-kiosque" hx-swap="innerHTML" hx-trigger="confirmed" onClick="readNfc()">Valider <span
         id="totalAmount">0</span>€
 </button>
+
 
 <script>
     function readNfc(event) {
@@ -53,12 +54,10 @@
                     console.log("I was closed by the cancel button");
                 } else if (result.dismiss === Swal.DismissReason.backdrop) {
                     console.log("I was closed on external click");
-                    // if (window.DEMO !== undefined) {
-                    //     validateButton.tagId = window.DEMO.demoTagIdClient1;
-                    //     console.log('Tag ID:', validateButton.tagId)
-                    // }
-                    // console.log('Button element:', validateButton);
-                    // htmx.trigger(validateButton, 'confirmed');
+                    if (window.DEMO !== undefined) {
+                        validateButton.setAttribute('tag-id', window.DEMO.demoTagIdClient1)
+                        htmx.trigger(validateButton, 'confirmed');
+                    }
                 }
             })
         }
