@@ -202,6 +202,7 @@ def print_command_inner_sunmi(commande, groupe, lignes_article):
         {"type": "align", "value": "left"},
         {"type": "text", "value": f"{title}"},
         {"type": "align", "value": "left"},
+        {"type": "size", "value": 0},
         line,
     ]
     for ligne in lignes_article:
@@ -821,8 +822,7 @@ def test_print(printer_pk):
                 {"type": "align", "value": "left"},
                 {"type": "text", "value": "** TEST PRINT FROM ADMIN **"},
                 {"type": "bold", "value": 0},
-                {"type": "text", "value": "Hello World"},
-                {"type": "text", "value": "Ceci est un test lancé depuis l'admin LaBoutik"},
+                {"type": "text", "value": "Hello World admin"},
                 {"type": "size", "value": 0},
                 {"type": "text", "value": "--------------------------------"},
                 {"type": "text", "value": f"Test completed at {time.strftime('%Y-%m-%d %H:%M:%S')}"},
