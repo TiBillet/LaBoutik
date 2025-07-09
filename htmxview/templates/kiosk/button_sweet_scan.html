@@ -1,8 +1,9 @@
 <button class="btn btn-validate" id="scan_button" hx-post="/htmx/kiosk/refill_with_wisepos/"
-    hx-vals='js:{"totalAmount": totalAmount, "tag_id": document.querySelector("#scan_button").getAttribute("tag-id")}'
-    hx-target="#tb-kiosque" hx-swap="innerHTML" hx-trigger="confirmed" onClick="readNfc()">Valider <span
+        hx-vals='js:{"totalAmount": totalAmount, "tag_id": document.querySelector("#scan_button").getAttribute("tag-id")}'
+        hx-target="#tb-kiosque" hx-swap="innerHTML" hx-trigger="confirmed" onClick="readNfc()">Valider <span
         id="totalAmount">0</span>€
 </button>
+
 
 <script>
     function readNfc(event) {

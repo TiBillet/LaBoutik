@@ -569,6 +569,7 @@ class Kiosk(viewsets.ViewSet):
     @action(detail=False, methods=['POST'])
     def refill_with_wisepos(self, request, *args, **kwargs):
         user = request.user
+        time.sleep(5)
 
         if not settings.DEBUG:
             if not request.user.is_authenticated or not hasattr(request.user, 'appareil'):

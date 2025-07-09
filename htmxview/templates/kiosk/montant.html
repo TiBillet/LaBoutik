@@ -16,7 +16,7 @@
     <script src="{% static 'js/sweetalert.js' %}"></script>
 </head>
 
-<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-indicator="#spinner">
 <div id="tb-kiosque">
 
     <div class="container">
@@ -100,5 +100,8 @@
 <script src="http://localhost/cordova.js"></script>
 <script src="{% static 'kiosk/js/nfc.js' %}"></script>
 <script src="{% static 'kiosk/js/main.js' %}"></script>
+
+{% include "kiosk/spinner.html" %}
+
 </body>
 </html>
