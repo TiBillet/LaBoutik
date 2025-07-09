@@ -10,7 +10,7 @@ let NfcReader = class {
     this.intervalIDVerifApiCordova = null
     this.cordovaLecture = false
     this.simuData = [
-      { name: 'primaire', tagId: window?.DEMO?.demoTagIdCm },
+      { name: 'primary', tagId: window?.DEMO?.demoTagIdCm },
       { name: 'client1', tagId: window?.DEMO?.demoTagIdClient1 },
       { name: 'client2', tagId: window?.DEMO?.demoTagIdClient2 },
       { name: 'client3', tagId: window?.DEMO?.demoTagIdClient3 },
@@ -69,34 +69,79 @@ let NfcReader = class {
 
   simule() {
     // compose le message à afficher
-    let message = `<div id="nfc-reader-simu">
-      <fieldset style="margin-bottom: 1rem;">
+    let uiSimu = `<div id="nfc-reader-simu-overlay">
+      <fieldset id="nfc-reader-simu-container">
         <legend data-i8n="nfcCardSimulation,capitalize">Nfc - Simulation</legend>`
 
-    this.simuData.forEach(item => {
-      message += `
-        <div class="nfc-reader-simu-ligne">
-          <input type="radio" name="simu-tag-id" value="${item.tagId}">
-          <label for="nfc-primaire" class="simu-carte">${item.name}</label>
-        </div>
+    this.simuData.forEach((item, i) => {
+      uiSimu += `
+        <div class="nfc-reader-simu-bt" tag-id="${item.tagId}">${item.name}</div>
       `
     })
 
-    message += `
+    uiSimu += `
       </fieldset>
     </div>
     <style>
-      .nfc-reader-simu-ligne {
+      #nfc-reader-simu-overlay {
+        width: 100vw;
+        height: 100vh;
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0.9;
+        display: flex;
+		    flex-direction: column;
+		    justify-content: center;
+		    align-items: center;
+        background-color:#000000;
+      }
+
+      #nfc-reader-simu-container {
+        min-height: 200px;
+        padding: 20px;
+        background-color:rgba(255, 255, 255,1);
+        color: #000000;
+        opacity: 1;
+        display: flex;
+		    flex-direction: column;
+		    justify-content: center;
+		    align-items: center;
+      }
+
+      .nfc-reader-simu-bt {
+        width: 150px;
+        height: 80px;
+        background-color: #0000ff;
+        color: #ffffff;
 		    display: flex;
 		    flex-direction: row;
-		    justify-content: flex-start;
+		    justify-content: center;
 		    align-items: center;
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        border-radius: 8px;
+        font-weight: bold;
 	    }
 
-      .simu-carte:hover {
-        color: #339448;
+      .nfc-reader-simu-ligne label {
+        margin-left: 10px;
       }
     </style>`
+    document.body.insertAdjacentHTML('beforeend', uiSimu)
+    document.querySelectorAll('.nfc-reader-simu-bt').forEach((bt) => {
+      bt.addEventListener('click', () => {
+        const tagId = bt.getAttribute('tag-id')
+        console.log('tagId =', tagId);
+
+        // hide ui simu
+        document.querySelector('#nfc-reader-simu-overlay').remove()
+
+        // envoyer le résultat du lecteur
+        const event = new CustomEvent("nfcResult", { detail: tagId })
+        document.body.dispatchEvent(event)
+      })
+    })
   }
 
   /**
@@ -107,48 +152,50 @@ let NfcReader = class {
     // console.log('1 -> gestionModeLectureNfc, mode =', mode)
     this.uuidConnexion = crypto.randomUUID()
 
-    if (window.DEMO === undefined) {
-      // nfc serveur socket_io + front sur le même appareil (pi ou desktop)
-      if (mode === 'NFCLO') {
-        // initialise la connexion
-        this.socket = io(this.socketUrl + ':' + this.socketPort, {})
+    // nfc serveur socket_io + front sur le même appareil (pi ou desktop)
+    if (mode === 'NFCLO') {
+      // initialise la connexion
+      this.socket = io(this.socketUrl + ':' + this.socketPort, {})
 
-        // initialise la réception d'un tagId, méssage = 'envoieTagId'
-        this.socket.on('envoieTagId', (retour) => {
-          this.verificationTagId(retour.tagId, retour.uuidConnexion)
-        })
+      // initialise la réception d'un tagId, méssage = 'envoieTagId'
+      this.socket.on('envoieTagId', (retour) => {
+        this.verificationTagId(retour.tagId, retour.uuidConnexion)
+      })
 
-        // initialise la getion des erreurs socket.io
-        this.socket.on('connect_error', (error) => {
-          // TODO: émettre un log
-          console.error(`Socket.io - ${this.socketUrl}:${this.socketPort} :`, error)
-        })
+      // initialise la getion des erreurs socket.io
+      this.socket.on('connect_error', (error) => {
+        // TODO: émettre un log
+        console.error(`Socket.io - ${this.socketUrl}:${this.socketPort} :`, error)
+      })
 
-        // demande la lecture
-        this.socket.emit('demandeTagId', { uuidConnexion: this.uuidConnexion })
-      }
+      // demande la lecture
+      this.socket.emit('demandeTagId', { uuidConnexion: this.uuidConnexion })
+    }
 
-      // cordova
-      if (mode === 'NFCMC') {
-        this.cordovaLecture = true
-        this.intervalIDVerifApiCordova = setInterval(() => {
-          this.listenCordovaNfc()
-        }, 500)
-      }
-    } else {
-      simule()
+    // cordova
+    if (mode === 'NFCMC') {
+      this.cordovaLecture = true
+      this.intervalIDVerifApiCordova = setInterval(() => {
+        this.listenCordovaNfc()
+      }, 500)
     }
   }
 
-  startLecture() {
-    console.log('0 -> startLecture')
-    // récupère le nfcMode
-    try {
-      const storage = JSON.parse(localStorage.getItem('laboutik'))
-      this.modeNfc = storage.mode_nfc
-      this.gestionModeLectureNfc(this.modeNfc)
-    } catch (err) {
-      console.log(`Nfc initLecture, storage: ${err}  !`)
+  startLecture(options) {
+    console.log('0 -> startLecture  --  DEMO =', window?.DEMO)
+    // simule
+    if (options?.simulation === true) {
+      this.simule()
+    } else {
+      // hardware
+      // récupère le nfcMode
+      try {
+        const storage = JSON.parse(localStorage.getItem('laboutik'))
+        this.modeNfc = storage.mode_nfc
+        this.gestionModeLectureNfc(this.modeNfc)
+      } catch (err) {
+        console.log(`Nfc initLecture, storage: ${err}  !`)
+      }
     }
   }
 
