@@ -16,7 +16,6 @@ window.showSettingsInterface = function () {
   // --- listen htmx:afterSwap and launch methods --
   document.body.addEventListener('htmx:afterSwap', async function (evt) {
     if (evt.target.querySelector('#service-commandes .nav-settings')) {
-      console.log('nav setttings affichés');
       // mettre à jour le hx-include du post "/manger_mode" avec la valeur glob.passageModeGerant
       const vals =`{
          "activation_mode_gerant": "${glob.modeGerant}",

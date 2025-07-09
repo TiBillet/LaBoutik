@@ -86,10 +86,8 @@
 	 * Gère le changement de langue du côté javascript (TODO: gestion côté back, une fois htmx installé partout)
 	 */
 	function manageLanguageSelectFromFront() {
-		console.log('-> manageLanguageSelectFromFront')
 		const local = localStorage.getItem("language")
 		const data = getLanguages()
-		console.log('data =', data)
 
 		let htmlFragment = ''
 		for (let i = 0; i < data.length; i++) {
@@ -115,7 +113,6 @@
 	 * Méthode du bouton de validation du changement de langue
 	 */
 	async function changeLanguageAction() {
-		console.log("-> changeLanguageAction !")
 		// récupération de la valeur entrée
 		const selectLanguage = document.querySelector('input[type="radio"][name="select-language"]:checked').value
 		// console.log('selectLanguage =', selectLanguage)
