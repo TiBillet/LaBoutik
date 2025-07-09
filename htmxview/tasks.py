@@ -66,7 +66,7 @@ def poll_payment_intent_status(payment_intent_pk, max_duration_seconds=120):
 
         logger.info(f"Finished polling payment intent status for ID: {payment_intent_pk}")
         # Si le paiement est succes, on renvoi un template
-        if payment_intent.status in [PaymentsIntent.CANCELED, PaymentsIntent.CANCELED]:
+        if payment_intent.status in [PaymentsIntent.CANCELED, PaymentsIntent.SUCCEEDED]:
             # Send the status update via WebSocket
 
             # # C'est un succes, on va chercher les infos coté Fedow
