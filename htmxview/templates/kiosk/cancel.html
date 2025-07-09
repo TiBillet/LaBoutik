@@ -3,6 +3,9 @@
         <div class="row justify-content-center align-items-center h-100">
             <div class="col-12 col-md-8 col-lg-6 text-center">
                 <h1 class="cancel-title">Annulé</h1>
+                {% if event.total_monnaie %}
+                    <h2 class="success-title">Vous avez {{ event.total_monnaie }} dans votre portefeuille.</h2>
+                {% endif %}
                 <div class="timer-container">
                     <p>Redirection dans <span id="countdown">15</span> secondes</p>
                 </div>

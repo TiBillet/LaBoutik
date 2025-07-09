@@ -131,6 +131,7 @@ class TerminalConsumer(AsyncWebsocketConsumer):
     async def template(self, event):
         logger.info(f"template event: {event}")
         template_name = event['template']
+
         html = get_template(f"kiosk/{template_name}").render(context={'event': event})
         # Send message to WebSocket htmx
         await self.send(text_data=html)
