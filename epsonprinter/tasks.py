@@ -204,6 +204,7 @@ def print_command_inner_sunmi(commande, groupe, lignes_article):
         {"type": "align", "value": "left"},
         {"type": "size", "value": 0},
         line,
+        {"type": "bold", "value": 1}, # taille 1 pour les articles qui suivent
     ]
     for ligne in lignes_article:
         ticket.append({"type": "text", "value": f"{int(ligne.qty)} x {ligne.article.name}"}, )
