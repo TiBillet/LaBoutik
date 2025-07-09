@@ -1,11 +1,10 @@
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from asgiref.sync import async_to_sync
 from celery import shared_task
 from channels.layers import get_channel_layer
-from django.template.loader import get_template
 from django.utils import timezone
 
 from APIcashless.models import PaymentsIntent, CarteCashless
@@ -74,8 +73,11 @@ def poll_payment_intent_status(payment_intent_pk, max_duration_seconds=120):
             try :
                 fedowApi = FedowAPI()
                 tag_id = payment_intent.card.tag_id
-                fedowApi.NFCcard.retrieve(tag_id)
+                logger.info(f"tag_id = {tag_id}")
+                fedow_validated_data = fedowApi.NFCcard.retrieve(tag_id)
+                logger.info(f"fedow_validated_data = {fedow_validated_data}")
                 carte = CarteCashless.objects.get(tag_id=tag_id)
+                logger.info(f"carte total_monnaie = {carte.total_monnaie()}")
             except Exception as e:
                 logger.error(f"Error polling payment intent FEDOW: {e}")
                 raise Exception(f"Error polling payment intent FEDOW: {e}")
