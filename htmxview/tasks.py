@@ -67,44 +67,35 @@ def poll_payment_intent_status(payment_intent_pk, max_duration_seconds=120):
 
         logger.info(f"Finished polling payment intent status for ID: {payment_intent_pk}")
         # Si le paiement est succes, on renvoi un template
-        if payment_intent.status == PaymentsIntent.CANCELED:
+        if payment_intent.status in [PaymentsIntent.CANCELED, PaymentsIntent.CANCELED]:
             # Send the status update via WebSocket
-            event = {
-                'type': 'template',
-                'template': 'cancel.html',
-                'status': payment_intent.status,
-                'status_display': payment_intent.get_status_display(),
-                'timestamp': timezone.now().isoformat(),
-                'retry_count': retry_count,
-            }
-            async_to_sync(channel_layer.group_send)(
-                room_name,
-                event
-            )
-            return True
 
-        elif payment_intent.status == PaymentsIntent.SUCCEEDED:
-            # Send the status update via WebSocket
             # C'est un succes, on va chercher les infos coté Fedow
-            fedowApi = FedowAPI()
-            tag_id = payment_intent.card.tag_id
-            fedowApi.NFCcard.retrieve(tag_id)
-            carte = CarteCashless.objects.get(tag_id=tag_id)
+            try :
+                fedowApi = FedowAPI()
+                tag_id = payment_intent.card.tag_id
+                fedowApi.NFCcard.retrieve(tag_id)
+                carte = CarteCashless.objects.get(tag_id=tag_id)
+            except Exception as e:
+                logger.error(f"Error polling payment intent FEDOW: {e}")
+                raise Exception(f"Error polling payment intent FEDOW: {e}")
 
             event = {
                 'type': 'template',
-                'template': 'success.html',
+                'template': 'cancel.html' if payment_intent.status == PaymentsIntent.CANCELED else 'success.html',
                 'status': payment_intent.status,
                 'status_display': payment_intent.get_status_display(),
                 'timestamp': timezone.now().isoformat(),
                 'retry_count': retry_count,
                 "total_monnaie": carte.total_monnaie(),
+
             }
             async_to_sync(channel_layer.group_send)(
                 room_name,
                 event
             )
             return True
+
 
     except PaymentsIntent.DoesNotExist:
         logger.error(f"Payment intent with ID {payment_intent_pk} does not exist")
