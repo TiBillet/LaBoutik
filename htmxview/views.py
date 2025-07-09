@@ -663,56 +663,7 @@ class Kiosk(viewsets.ViewSet):
         # Le cancel a été fait coté stripe, le OOB du websocket va afficher la page cancel
         return HttpResponse(status=205)
 
-        # On retourne l'index :
-        # context = {
-        #     "test":settings.TEST,
-        #     "DEMO_TAGID_CLIENT1" : os.environ.get('DEMO_TAGID_CLIENT1'),
-        # }
-        # return render(request, "kiosk/select_amount.html", context)
 
-        # Retour du spinner qui sera affiché a la place du boutton
-        # return render(request, "kiosk/spinnerbox.html", {})
-
-
-    @action(detail=True, methods=['GET'])
-    def valid_and_continue(self, request, pk):
-        config_stripe = ConfigurationStripe.get_solo()
-        stripe.api_key = config_stripe.get_stripe_api()
-
-        # Get the payment intent
-        payment_intent = get_object_or_404(PaymentsIntent, pk=pk)
-        terminal = payment_intent.terminal
-        status = payment_intent.get_from_stripe()
-        logger.info(f"Status = {status}")
-
-        try:
-            if status == PaymentsIntent.REQUIRES_PAYMENT_METHOD:
-                message = "En attente de paiement."
-            elif status == PaymentsIntent.REQUIRES_CAPTURE:
-                message = "Paiement validé."
-            elif status == PaymentsIntent.SUCCEEDED:
-                message = 'Paiement déjà validé!'
-            elif status == PaymentsIntent.IN_PROGRESS:
-                message= 'Paiement en cours de traitement. Veuillez attendre.'
-            else:
-                raise ValueError(f"Unknown status: {payment_intent.get_status_display()}")
-            return render(request, 'tpe/create.html', context={
-                'user': request.user,
-                'terminal': terminal,
-                'payment_intent': payment_intent,
-                'message': message
-            })
-
-        except Exception as e:
-            logger.error(f"Error processing payment: {e}")
-
-            # Return to the create template with error message
-            return render(request, 'tpe/create.html', context={
-                'user': request.user,
-                'terminal': terminal,
-                'payment_intent': payment_intent,
-                'error': f"Erreur lors du traitement du paiement: {str(e)}"
-            })
 
 ### TUTORIEL WEBSOCKET
 

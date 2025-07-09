@@ -8,7 +8,8 @@ from channels.layers import get_channel_layer
 from django.template.loader import get_template
 from django.utils import timezone
 
-from APIcashless.models import PaymentsIntent
+from APIcashless.models import PaymentsIntent, CarteCashless
+from fedow_connect.fedow_api import FedowAPI
 
 logger = logging.getLogger(__name__)
 
@@ -84,6 +85,12 @@ def poll_payment_intent_status(payment_intent_pk, max_duration_seconds=120):
 
         elif payment_intent.status == PaymentsIntent.SUCCEEDED:
             # Send the status update via WebSocket
+            # C'est un succes, on va chercher les infos coté Fedow
+            fedowApi = FedowAPI()
+            tag_id = payment_intent.card.tag_id
+            fedowApi.NFCcard.retrieve(tag_id)
+            carte = CarteCashless.objects.get(tag_id=tag_id)
+
             event = {
                 'type': 'template',
                 'template': 'success.html',
@@ -91,6 +98,7 @@ def poll_payment_intent_status(payment_intent_pk, max_duration_seconds=120):
                 'status_display': payment_intent.get_status_display(),
                 'timestamp': timezone.now().isoformat(),
                 'retry_count': retry_count,
+                "total_monnaie": carte.total_monnaie(),
             }
             async_to_sync(channel_layer.group_send)(
                 room_name,
