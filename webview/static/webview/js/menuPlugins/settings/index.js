@@ -35,5 +35,5 @@ export const menu = {
   func: "showSettingsInterface",
   icon: "fas fa-cog", // font awesome 5.11
   i8nIndex: "settings,uppercase",
-  testClass: 'test-action-change-language'
+  testClass: 'test-action-change-settings'
 }
