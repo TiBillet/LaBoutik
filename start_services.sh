@@ -29,7 +29,10 @@ poetry run python manage.py collectstatic --noinput
 poetry run python manage.py migrate
 poetry run python manage.py install
 
-
+if [ "$TEST" = "1" ]
+then
+    poetry run ./manage.py install --tdd
+fi
 
 # Start supervisor in the background
 /usr/bin/supervisord -c /DjangoFiles/supervisor/supervisord.conf &
