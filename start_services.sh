@@ -29,7 +29,7 @@ poetry run python manage.py collectstatic --noinput
 poetry run python manage.py migrate
 if [ "$TEST" = "1" ]
 then
-    poetry run ./manage.py install --tdd
+poetry run python manage.py install --tdd
 else
 poetry run python manage.py install
 fi
