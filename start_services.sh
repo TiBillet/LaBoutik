@@ -27,11 +27,11 @@ echo "Django MIGRATE and INSTALL if needed"
 cd /DjangoFiles
 poetry run python manage.py collectstatic --noinput
 poetry run python manage.py migrate
-poetry run python manage.py install
-
 if [ "$TEST" = "1" ]
 then
     poetry run ./manage.py install --tdd
+else
+poetry run python manage.py install
 fi
 
 # Start supervisor in the background
