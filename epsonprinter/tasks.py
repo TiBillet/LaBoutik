@@ -86,7 +86,24 @@ def print_command(commande_pk, groupement_solo_pk=None):
     """
     try:
         # Get the command from the database
-        commande = CommandeSauvegarde.objects.get(pk=commande_pk)
+        # C'est une fonction atomic qui le lance on va attendre un peu et tester
+        time.sleep(1)
+        start_time = time.time()
+        commande = None
+
+        while time.time() - start_time < 5:
+            try:
+                commande = CommandeSauvegarde.objects.get(pk=commande_pk)
+                break  # Si la commande est trouvée, on sort de la boucle
+            except CommandeSauvegarde.DoesNotExist:
+                time.sleep(0.5)  # Attente de 500ms avant la prochaine tentative
+                continue
+
+        # Si après 5 secondes la commande n'est toujours pas trouvée
+        if not commande:
+            logger.error(f"La commande {commande_pk} n'a pas été trouvée après 5 secondes d'attente")
+            return False
+
 
         # Get the specific groupement if provided
         groupement_solo = None
