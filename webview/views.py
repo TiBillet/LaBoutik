@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 from decimal import Decimal
 
 
+
 def login_admin(request):
     user: TibiUser = request.user
 
