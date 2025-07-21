@@ -5,6 +5,7 @@ import unicodedata
 
 import dateutil.parser
 import requests
+from django.conf import settings
 from django.db.models import Sum
 from django.utils import timezone
 
@@ -213,7 +214,7 @@ class print_command():
                                            'header': header,
                                            'body': body,
                                            'footer': footer,
-                                       })
+                                       }, verify=bool(not settings.DEBUG))
                     logger.info(f"REPONSE Serveur impression : {reponse.status_code} - {reponse.text}")
                 except ConnectionError:
                     logger.error(f"print_command ConnectionError for {groupe.printer.thermal_printer_adress} ")
@@ -332,6 +333,7 @@ class article_direct_to_printer():
                     time.sleep(0.5)
                     busy = True
                     logger.info(f"nb_try : {nb_try}")
+                logger.info(f"article_direct_to_printer")
                 logger.info(f"REPONSE Serveur impression : {reponse.status_code} - {reponse.text}")
 
             req.close()

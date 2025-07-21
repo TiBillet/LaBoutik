@@ -86,7 +86,24 @@ def print_command(commande_pk, groupement_solo_pk=None):
     """
     try:
         # Get the command from the database
-        commande = CommandeSauvegarde.objects.get(pk=commande_pk)
+        # C'est une fonction atomic qui le lance on va attendre un peu et tester
+        time.sleep(1)
+        start_time = time.time()
+        commande = None
+
+        while time.time() - start_time < 5:
+            try:
+                commande = CommandeSauvegarde.objects.get(pk=commande_pk)
+                break  # Si la commande est trouvée, on sort de la boucle
+            except CommandeSauvegarde.DoesNotExist:
+                time.sleep(0.5)  # Attente de 500ms avant la prochaine tentative
+                continue
+
+        # Si après 5 secondes la commande n'est toujours pas trouvée
+        if not commande:
+            logger.error(f"La commande {commande_pk} n'a pas été trouvée après 5 secondes d'attente")
+            return False
+
 
         # Get the specific groupement if provided
         groupement_solo = None
@@ -122,12 +139,16 @@ def print_command(commande_pk, groupement_solo_pk=None):
                 printer_type = groupe.printer.printer_type
 
                 if printer_type == groupe.printer.EPSON_PI:
+                    logger.info(f"PRINT : epsonprinter.tasks.print_command -> print_command_epsonTM20 : {commande} - {groupe}")
                     # For Epson printers, we need to pass the whole command and optionally the groupement
+                    # Pas besoin du groupe, la TM20 reconstruit le dict avec les articles
                     result = print_command_epson_tm20(commande, groupe if groupement_solo else None)
                 elif printer_type in [groupe.printer.SUNMI_INTEGRATED_80, groupe.printer.SUNMI_INTEGRATED_57]:
+                    logger.info(f"PRINT : epsonprinter.tasks.print_command -> print_command_inner_sunmi : {commande} - {groupe}")
                     # For Sunmi integrated printers
                     result = print_command_inner_sunmi(commande, groupe, lignes_article)
                 elif printer_type == groupe.printer.SUNMI_CLOUD:
+                    logger.info(f"PRINT : epsonprinter.tasks.print_command -> print_command_sunmi_cloud : {commande} - {groupe}")
                     # For Sunmi Cloud printers
                     result = print_command_sunmi_cloud(commande, groupe, lignes_article)
                 else:
@@ -234,12 +255,12 @@ def print_command_epson_tm20(commande, groupement_solo=None):
     Returns:
         bool: True if the print job was successfully sent, False otherwise
     """
-    logger.info(f"PRINT : Celery print_command_epsonTM20 : {commande} - {groupement_solo}")
+    logger.info(f"print_command_epson_tm20 : {commande} - {groupement_solo}")
 
     ticket = print_command_epson(commande, groupement_solo)
 
     if ticket.can_print():
-        logger.info(f"   ticket.can_print() -> PRINT")
+        logger.info(f"   print_command_epson_tm20 ticket.can_print() True -> ticket.to_printer()")
         # TODO: Tester max retry avec le débranchage de l'imprimante
         ticket.to_printer()
         return True

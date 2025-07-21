@@ -23,7 +23,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import viewsets, status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.request import Request
 from rest_framework.response import Response
 
@@ -495,6 +495,21 @@ class Sales(viewsets.ViewSet):
 
         messages.error(request, _("Error when closing cash register. Contact the potato who coded this."))
         return self.z_ticket(request)
+
+
+"""
+"""
+class FalsePrinter(viewsets.ViewSet):
+    permission_classes = [AllowAny]
+
+    def create(self, request):
+        logger.info(f"HTTP FalsePrinter POST : {request.data}")
+        return Response("False Printer OK", status=200)
+
+    def list(self, request):
+        logger.info(f"HTTP FalsePrinter POST : {request.data}")
+        return Response("False Printer OK", status=200)
+
 
 
 class Print(viewsets.ViewSet):

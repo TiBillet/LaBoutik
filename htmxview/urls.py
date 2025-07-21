@@ -13,6 +13,7 @@ router.register(r'appsettings', views.AppSettings, basename='appsettings')
 
 router.register(r'kiosk', views.Kiosk, basename='kiosk')
 router.register(r'print', views.Print, basename='print')
+router.register(r'falseprinter', views.FalsePrinter, basename='falseprinter')
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

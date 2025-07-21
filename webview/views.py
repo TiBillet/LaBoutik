@@ -34,6 +34,7 @@ logger = logging.getLogger(__name__)
 from decimal import Decimal
 
 
+
 def login_admin(request):
     user: TibiUser = request.user
 
@@ -82,6 +83,7 @@ def login_admin(request):
 
 @csrf_exempt
 def new_hardware(request):
+    #TODO : ajouter un rate limite
     new_perif_validator = NewPeriphPinValidator(data=request.POST, context={'request': request})
     if not new_perif_validator.is_valid():
         return JsonResponse(new_perif_validator.errors, status=status.HTTP_400_BAD_REQUEST)
