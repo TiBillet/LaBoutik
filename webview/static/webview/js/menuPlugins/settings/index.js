@@ -13,6 +13,7 @@ window.showSettingsInterface = function () {
   // ci-dessous <=> <button hx-get="/htmx/appsettings/" hx-target="#service-commandes">clique</button>
   htmx.ajax('GET', '/htmx/appsettings/', '#service-commandes')
 
+  /* en attente
   // --- listen htmx:afterSwap and launch methods --
   document.body.addEventListener('htmx:afterSwap', async function (evt) {
     if (evt.target.querySelector('#service-commandes .nav-settings')) {
@@ -24,6 +25,7 @@ window.showSettingsInterface = function () {
       document.querySelector('div[action="manage-mode"]').setAttribute('hx-vals', vals)
     }
   })
+  */
 }
 
 

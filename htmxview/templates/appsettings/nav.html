@@ -51,20 +51,29 @@
 				//-- TODO: traduction  Paramètres --//
 			</div>
 		</div>
-		-->
+		
 
 		<div class="BF-col bt-settings">
 			<i class="fas fa-key mb4px"></i>
-			<span>Manager<!-- TODO: traduction --> </span>
-			<div class="target-settings" action="manage-mode" hx-post="/htmx/appsettings/manager_mode/"  hx-vals="" hx-trigger="click" hx-target="#container-settings"
+			<span>Manager//!-- TODO: traduction --// </span>
+			<div class="target-settings" action="manage-mode" hx-post="/htmx/appsettings/manager_mode/" hx-vals=""
+				hx-trigger="click" hx-target="#container-settings"
 				hx-on:click="vue_pv.asignerTitreVue('<span>Paramètres</span> - <span>Manager mode</span>')"></div>
 		</div>
+		-->
 
-		<!-- recharge l'application -->
+		<!-- recharger les data sans demande de carte primaire -->
 		<div class="BF-col bt-settings">
 			<i class="fas fa-sync mb4px"></i>
 			<span>Synchro<!-- TODO: traduction --> </span>
 			<div class="target-settings" hx-on:click="vue_pv.reloadData();"></div>
+		</div>
+
+		<!-- recharge l'application -->
+		<div class="BF-col bt-settings">
+			<i class="fas fa-undo-alt mb4px"></i>
+			<span>Redémarrer<!-- TODO: traduction --> </span>
+			<div class="target-settings" hx-on:click="window.location.reload();"></div>
 		</div>
 
 		<div class="BF-col bt-settings">
@@ -122,6 +131,7 @@
 			const body = new URLSearchParams()
 			body.append('csrfmiddlewaretoken', glob.csrf_token)
 			body.append('language', selectLanguage)
+
 			const response = await fetch(`/i18n/setlang/`, { method: 'post', body })
 			if (response.status === 200) {
 				window.location.reload()
@@ -292,10 +302,17 @@
 
 		// infos - version apk
 		if (eleVersionApk !== null) {
-			document.querySelector('#settings-info-server').innerText = glob.appConfig.current_server
-			document.querySelector('#settings-info-username').innerText = glob.appConfig.client.username
-			document.querySelector('#settings-info-ip').innerText = glob.appConfig.ip
-			document.querySelector('#settings-info-version-apk').innerText = glob.appConfig.versionApk
+			if (window?.DEMO) {
+				document.querySelector('#settings-info-server').innerText = 'Démo'
+				document.querySelector('#settings-info-username').innerText = glob.appConfig.hostname
+				document.querySelector('#settings-info-ip').innerText = glob.appConfig.ip_lan
+				document.querySelector('#settings-info-version-apk').innerText = "fakeVersion.0.0.1"
+			} else {
+				document.querySelector('#settings-info-server').innerText = glob.appConfig.current_server
+				document.querySelector('#settings-info-username').innerText = glob.appConfig.client.username
+				document.querySelector('#settings-info-ip').innerText = glob.appConfig.ip
+				document.querySelector('#settings-info-version-apk').innerText = glob.appConfig.versionApk
+			}
 		}
 
 		// printer
