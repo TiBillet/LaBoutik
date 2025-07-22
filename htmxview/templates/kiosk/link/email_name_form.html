@@ -1,0 +1,78 @@
+{% extends "kiosk/base.html" %}
+
+{% block main %}
+    <div id="tb-kiosque" itemscope itemtype="https://schema.org/WebPage">
+        <div class="container">
+            <header class="header-space position-relative">
+                <button id="toggleDarkModeBtn" class="btn btn-toggle-dark-mode"
+                        onclick="toggleDarkMode()" aria-label="Toggle dark mode">Mode Nuit
+                </button>
+            </header>
+            <main class="main-center">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-10 col-lg-8">
+                        <section class="card mb-4">
+                            <div class="card-body">
+                                <h1 class="instruction-text text-center">
+                                    Veuillez saisir vos informations personnelles.<br/>
+                                    Ces informations seront associées à votre carte TiBillet.
+                                </h1>
+                            </div>
+                        </section>
+
+                        <form id="email-name-form" hx-post="/htmx/kiosk/link/email_name/" hx-target="#tb-kiosque" hx-swap="innerHTML" 
+                              itemscope itemtype="https://schema.org/ContactPoint" aria-label="Formulaire d'informations personnelles">
+                            <div class="row g-3 mb-4">
+                                <div class="col-12">
+                                    <div class="form-floating">
+                                        <input type="email" class="form-control" id="email" name="email" placeholder="nom@exemple.com" required
+                                               itemprop="email" aria-required="true">
+                                        <label for="email">Email</label>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Nom" required
+                                               itemprop="familyName" aria-required="true">
+                                        <label for="last_name">Nom</label>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Prénom" required
+                                               itemprop="givenName" aria-required="true">
+                                        <label for="first_name">Prénom</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {% if error_message %}
+                                <div class="alert alert-danger erreur-input" role="alert">{{ error_message }}</div>
+                            {% endif %}
+
+                            <div class="d-flex justify-content-center mb-3">
+                                {% include "kiosk/sweet_scan_button.html" %}
+                            </div>
+
+                            <div class="d-flex justify-content-center">
+                                <button type="reset" class="btn btn-clear" aria-label="Effacer le formulaire">
+                                    Effacer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Initialize totalAmount for the scan button
+        let totalAmount = 1;
+        
+        // Override the clearAmount function to reset the form
+        function clearAmount() {
+            document.getElementById('email-name-form').reset();
+        }
+    </script>
+{% endblock %}

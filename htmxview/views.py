@@ -34,7 +34,7 @@ from administration.ticketZ import TicketZ, dround
 from administration.ticketZ_V4 import TicketZ as TicketZV4
 from epsonprinter.tasks import ticketZ_tasks_printer, send_print_order_inner_sunmi
 from fedow_connect.fedow_api import FedowAPI
-from htmxview.validators import CashfloatChangeValidator, RefillWisePoseValidator
+from htmxview.validators import CashfloatChangeValidator, RefillWisePoseValidator, linkValidator
 from webview.serializers import debut_fin_journee, CarteCashlessSerializer
 
 from htmxview.tasks import poll_payment_intent_status
@@ -570,6 +570,29 @@ class Kiosk(viewsets.ViewSet):
             "demoTagIdClient1" : os.environ.get('DEMO_TAGID_CLIENT1'),
         }
         return render(request, "kiosk/select_amount.html", context)
+
+    @action(detail=False, methods=['GET', 'POST'])
+    def link(self, request):
+        if request.method == 'GET':
+            return render(request, "kiosk/link/email_name_form.html", {})
+        
+        logger.info(f"request.data = {request.data}")
+        validator = linkValidator(data=request.data)
+        if not validator.is_valid():
+            logger.error(f"ERROR VALIDATION : {validator.errors}")
+            context = {
+                "error_message": f"Validation error: {validator.errors}",
+            }
+            return render(request, "kiosk/link/email_name_form.html", context)
+
+        #TODO: Créer l'user et lier la carte NFC avec le link LesPass
+
+        # Return success message
+        context = {
+            "success_message": _("Your information has been successfully linked to your TiBillet card."),
+        }
+        return render(request, "kiosk/link/success.html", context)
+            
 
     # menu kiosque
     @action(detail=False, methods=['GET'])

@@ -1,7 +1,8 @@
 <button class="btn btn-validate" id="scan_button" hx-post="/htmx/kiosk/refill_with_wisepos/"
         hx-vals='js:{"totalAmount": totalAmount, "tag_id": document.querySelector("#scan_button").getAttribute("tag-id")}'
-        hx-target="#tb-kiosque" hx-swap="innerHTML" hx-trigger="confirmed" onClick="readNfc()">Valider <span
-        id="totalAmount">0</span>€
+        hx-target="#tb-kiosque" hx-swap="innerHTML" hx-trigger="confirmed" onClick="readNfc()"
+        aria-label="Valider et scanner votre carte" itemprop="potentialAction" itemscope itemtype="https://schema.org/PayAction">
+        Valider <span id="totalAmount" itemprop="price">0</span><span itemprop="priceCurrency" content="EUR">€</span>
 </button>
 
 
@@ -24,7 +25,7 @@
         if (totalAmount > 0) {
             Swal.fire({
                 title: "Vous avez selectionné " + totalAmount + "€",
-                html: "<p>Merci de scanner votre carte TiBillet sur le lecteur Sunmi.</p><p>⬆️⬆️⬆️⬆️⬆️⬆️⬆️</p><p>Le lecteur de carte est juste au dessus de cet écran</p>",
+                html: "<p>Merci de scanner votre carte TiBillet sur le lecteur Sunmi.</p><p aria-hidden='true'>⬆️⬆️⬆️⬆️⬆️⬆️⬆️</p><p>Le lecteur de carte est juste au dessus de cet écran</p>",
                 showCancelButton: true,
                 cancelButtonText: `Annuler`,
 

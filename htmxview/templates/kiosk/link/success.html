@@ -1,0 +1,56 @@
+{% extends "kiosk/base.html" %}
+
+{% block main %}
+    <div id="tb-kiosque" itemscope itemtype="https://schema.org/WebPage">
+        <div class="container">
+            <header class="header-space position-relative">
+                <button id="toggleDarkModeBtn" class="btn btn-toggle-dark-mode"
+                        onclick="toggleDarkMode()" aria-label="Toggle dark mode">Mode Nuit
+                </button>
+            </header>
+            <main class="main-center">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-md-10 col-lg-8">
+                        <section class="card mb-4 success-card">
+                            <div class="card-body">
+                                <h1 class="instruction-text text-center">
+                                    <i class="bi bi-check-circle-fill text-success"></i> Succès!
+                                </h1>
+                                <p class="text-center">
+                                    {{ success_message }}
+                                </p>
+                            </div>
+                        </section>
+
+                        {% if card %}
+                        <section class="card mb-4">
+                            <div class="card-body">
+                                <h2 class="card-title">Informations de la carte</h2>
+                                <div class="card-info">
+                                    <p><strong>Email:</strong> {{ card.email }}</p>
+                                    <p><strong>Nom:</strong> {{ card.nom }}</p>
+                                    <p><strong>Prénom:</strong> {{ card.prenom }}</p>
+                                    <p><strong>Identifiant de carte:</strong> {{ card.tag_id }}</p>
+                                </div>
+                            </div>
+                        </section>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-center">
+                            <a href="/htmx/kiosk/" class="btn btn-validate" aria-label="Retour à l'accueil">
+                                Retour à l'accueil
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Auto-redirect after 10 seconds
+        setTimeout(function() {
+            window.location.href = "/htmx/kiosk/";
+        }, 10000);
+    </script>
+{% endblock %}

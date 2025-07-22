@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr" itemscope itemtype="https://schema.org/WebSite">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="description" content="Kiosque TiBillet pour recharger votre carte ou enregistrer vos informations"/>
+    <title>Kiosque TiBillet</title>
+    <meta itemprop="name" content="Kiosque TiBillet">
+    <meta itemprop="description" content="Kiosque TiBillet pour recharger votre carte ou enregistrer vos informations">
+    {% load static %}
+
+    {#statics pour la page montant :#}
+    <link rel="stylesheet" href="{% static 'bootstrap/bootstrap-5.2.3-dist/css/bootstrap.min.css' %}"/>
+    <link rel="stylesheet" href="{% static 'kiosk/css/kiosk.css' %}"/>
+    <script src="{% static 'webview/js/htmx@2.0.6.min.js' %}"></script>
+    <script src="{% static 'webview/js/htmx-ext-ws@2.0.2.js' %}"></script>
+    <script src="{% static 'bootstrap/bootstrap-5.2.3-dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/sweetalert.js' %}"></script>
+</head>
+
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' hx-indicator="#spinner" class="h-100">
+
+{% block main %}
+
+{% endblock %}
+
+
+{% if demo %}
+    <script>
+        window.DEMO = {
+            demoVirtualKeyboardActive: true,
+            demoTagIdCm: '{{ demoTagIdCm }}',
+            demoTagIdClient1: '{{ demoTagIdClient1 }}',
+            demoTagIdClient2: '{{ demoTagIdClient2 }}',
+            demoTagIdClient3: '{{ demoTagIdClient3 }}',
+            demoTagIdUnknown: 'XXXXXXXX',
+            demoTagIdTempsReponse: {{ demoTagIdTempsReponse | default:1 }}
+        }
+    </script>
+{% endif %}
+<script src="http://localhost/cordova.js"></script>
+<script src="{% static 'kiosk/js/nfc.js' %}"></script>
+<script src="{% static 'kiosk/js/main.js' %}"></script>
+
+{% include "kiosk/spinner.html" %}
+
+</body>
+</html>
