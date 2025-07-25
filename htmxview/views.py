@@ -503,12 +503,16 @@ class FalsePrinter(viewsets.ViewSet):
     permission_classes = [AllowAny]
 
     def create(self, request):
+        logger.info("\n****************")
         logger.info(f"HTTP FalsePrinter POST : {request.data}")
-        return Response("False Printer OK", status=200)
+        logger.info("\n****************\n")
+        return Response("False Printer POST OK", status=200)
 
     def list(self, request):
-        logger.info(f"HTTP FalsePrinter POST : {request.data}")
-        return Response("False Printer OK", status=200)
+        logger.info("\n****************")
+        logger.info(f"HTTP FalsePrinter GET : {request.data}")
+        logger.info("\n****************\n")
+        return Response("False Printer GET OK", status=200)
 
 
 
