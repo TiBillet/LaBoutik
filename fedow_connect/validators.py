@@ -252,8 +252,11 @@ class TransactionValidator(serializers.Serializer):
     previous_transaction = serializers.UUIDField()
 
     FIRST, SALE, CREATION, REFILL, TRANSFER, SUBSCRIBE, BADGE, FUSION, REFUND, VOID = 'FST', 'SAL', 'CRE', 'REF', 'TRF', 'SUB', 'BDG', 'FUS', 'RFD', 'VID'
+    QRCODE_SALE = 'QRS'
+
     TYPE_ACTION = (
         (FIRST, "Premier bloc"),
+        (QRCODE_SALE, "Vente via QrCode"),
         (SALE, "Vente d'article"),
         (CREATION, 'Creation monétaire'),
         (REFILL, 'Recharge'),
