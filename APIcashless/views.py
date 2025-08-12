@@ -381,6 +381,7 @@ class StripeBankDepositFromLespass(APIView):
 class SaleFromLespass(APIView):
     permission_classes = [HasAPIKey]
     def post(self, request):
+        logger.debug(f"SaleFromLespass : ")
         logger.debug(request.data)
         validator = SaleFromLespassValidator(data=request.data)
         if not validator.is_valid():
@@ -390,6 +391,8 @@ class SaleFromLespass(APIView):
         price_uuid =  validator.validated_data['pricesold']['price']['uuid']
         product_uuid =  validator.validated_data['pricesold']['price']['product']
         moyen_paiement = MoyenPaiement.objects.get(categorie=validator.validated_data['payment_method'])
+        if validator.validated_data.get('asset'):
+            moyen_paiement = MoyenPaiement.objects.get(pk=validator.validated_data['asset'])
 
         # Amount est un entier.
         amount = validator.validated_data['amount'] / 100
@@ -431,6 +434,7 @@ class SaleFromLespass(APIView):
                 moyen_paiement=moyen_paiement,
                 uuid_paiement=validator.validated_data['uuid'],
                 commande=validator.validated_data['uuid'],
+                metadata=validator.validated_data.get('metadata'),
             )
             return Response("", status=status.HTTP_200_OK)
         except Exception as e:

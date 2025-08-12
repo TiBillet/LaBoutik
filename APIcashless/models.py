@@ -21,7 +21,6 @@ from django.utils import timezone
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from rest_framework_api_key.models import AbstractAPIKey, APIKey
-from rest_framework_api_key.models import AbstractAPIKey, APIKey
 from solo.models import SingletonModel
 from stdimage import StdImageField, JPEGField
 from stdimage.validators import MaxSizeValidator, MinSizeValidator
@@ -1676,6 +1675,8 @@ class ArticleVendu(models.Model):
 
     # Commentaires
     comment = models.TextField(blank=True, null=True, verbose_name=_("Commentaire"))
+
+    metadata = models.TextField(blank=True, null=True, verbose_name=_("Metadata"))
 
     class Meta:
         ordering = ('-date_time',)

@@ -1,17 +1,12 @@
-from collections import OrderedDict
-from random import choices
-
-from IPython.utils.coloransi import value
-from django.utils import timezone
-from rest_framework import serializers
-from werkzeug.routing import ValidationError
-
-from APIcashless.models import CarteCashless, Configuration, Assets, Membre, MoyenPaiement, Articles, Categorie, Wallet, \
-    ArticleVendu
-from django.utils.translation import gettext, gettext_lazy as _
-from rest_framework.generics import get_object_or_404
 import logging
 
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
+
+from APIcashless.models import CarteCashless, Membre, MoyenPaiement, Articles, Categorie, Wallet, \
+    ArticleVendu
 from fedow_connect.fedow_api import FedowAPI
 
 logger = logging.getLogger(__name__)
@@ -104,9 +99,12 @@ class SaleFromLespassValidator(serializers.Serializer):
     uuid = serializers.UUIDField()
     datetime = serializers.DateTimeField()
     pricesold = PriceSoldFromLespassValidator()
-    qty = serializers.DecimalField(max_digits=8, decimal_places=2)
+    qty = serializers.DecimalField(max_digits=12, decimal_places=6)
     vat = serializers.DecimalField(max_digits=4, decimal_places=2)
-    # user_uuid_wallet = serializers.UUIDField()
+    metadata = serializers.JSONField(required=False, allow_null=True)
+    asset = serializers.UUIDField(required=False, allow_null=True)
+    wallet = serializers.UUIDField(required=False, allow_null=True)
+
 
     def validate_uuid(self, value):
         # uuid_paiement = uuid LigneArticle sur Lespass
@@ -135,6 +133,7 @@ class ProductFromLespassValidator(serializers.Serializer):
     NONE, BILLET, PACK, RECHARGE_CASHLESS = 'N', 'B', 'P', 'R'
     RECHARGE_FEDERATED, VETEMENT, MERCH, ADHESION, BADGE = 'S', 'T', 'M', 'A', 'G'
     DON, FREERES, NEED_VALIDATION = 'D', 'F', 'V'
+    QRCODE_MA = 'Q'
 
     CATEGORIE_ARTICLE_CHOICES = [
         (NONE, _('Selectionnez une catégorie')),
@@ -148,6 +147,7 @@ class ProductFromLespassValidator(serializers.Serializer):
         (BADGE, _('Badgeuse')),
         (DON, _('Don')),
         (FREERES, _('Reservation gratuite')),
+        (QRCODE_MA, _('QrCode paiement on my account')),
         (NEED_VALIDATION, _('Nécessite une validation manuelle'))
     ]
 
@@ -175,6 +175,7 @@ class ProductFromLespassValidator(serializers.Serializer):
             'G': (_('Badge'), Articles.BADGEUSE),
             'A': (_('Adhésions'), Articles.ADHESIONS),
             'B': (_('Billet'), Articles.BILLET),
+            'Q': (_('QRCode'), Articles.VENTE),
         }
         asset_fedow = MoyenPaiement.objects.get(pk=product['uuid']) if categorie in ['G','A'] else None
 
