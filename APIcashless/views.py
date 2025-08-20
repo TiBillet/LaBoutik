@@ -383,18 +383,26 @@ class RefundFromLespass(APIView):
     def post(self, request):
         logger.info(f"SaleFromLespass : ")
         logger.info(request.data)
-        refund_sale_uuid = request.data.get('uuid')
-        vente_depuis_lespass = get_object_or_404(ArticleVendu, uuid=refund_sale_uuid, qty__gt=0)
-        # si un article négatif a déja été renseingé, on revoie une erreur existe déja
-        if ArticleVendu.objects.filter(uuid_paiement=refund_sale_uuid, qty__lt=0).exists():
-            return Response("Refund already recorded : uuid ", status=status.HTTP_208_ALREADY_REPORTED)
+
+        # Récupération de la vente a rembourser
+        refund_sale_uuid = request.data['metadata']['original_lignearticle_uuid']
+        vente_depuis_lespass = get_object_or_404(ArticleVendu, uuid=refund_sale_uuid)
+
+        validator = SaleFromLespassValidator(data=request.data)
+        if not validator.is_valid():
+            logger.error(f"Sale from lespass not valid : {validator.errors}")
+            return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        if Decimal(validator.data.get('qty')) > 0:
+            return Response("Refund qty > 0", status=status.HTTP_400_BAD_REQUEST)
 
         try:
             refund_depuis_lespass = ArticleVendu.objects.create(
+                uuid=validator.validated_data['uuid'],
                 article=vente_depuis_lespass.article,
                 prix=vente_depuis_lespass.prix,
-                date_time=timezone.now(),
-                qty=(-vente_depuis_lespass.qty),
+                date_time=validator.validated_data['datetime'],
+                qty=Decimal(validator.data.get('qty')),
                 pos=vente_depuis_lespass.pos,
                 tva=vente_depuis_lespass.tva,
                 membre=None,
@@ -403,7 +411,7 @@ class RefundFromLespass(APIView):
                 moyen_paiement=vente_depuis_lespass.moyen_paiement,
                 uuid_paiement=refund_sale_uuid,
                 commande=refund_sale_uuid,
-                metadata=vente_depuis_lespass.metadata,
+                metadata=validator.validated_data['metadata'],
             )
             return Response("", status=status.HTTP_200_OK)
         except Exception as e:
