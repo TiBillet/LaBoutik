@@ -37,7 +37,8 @@ urlpatterns = [
 
     path('salefromlespass', views.SaleFromLespass.as_view(),
          name="salefromlespass"),
-
+    path('refundfromlespass', views.RefundFromLespass.as_view(),
+         name="refundfromlespass"),
     path('stripebankdepositfromlespass', views.StripeBankDepositFromLespass.as_view(),
          name="stripebankdepositfromlespass"),
 

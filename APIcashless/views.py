@@ -378,12 +378,50 @@ class StripeBankDepositFromLespass(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+class RefundFromLespass(APIView):
+    permission_classes = [HasAPIKey]
+    def post(self, request):
+        logger.info(f"SaleFromLespass : ")
+        logger.info(request.data)
+        refund_sale_uuid = request.data.get('uuid')
+        vente_depuis_lespass = get_object_or_404(ArticleVendu, uuid=refund_sale_uuid, qty__gt=0)
+        # si un article négatif a déja été renseingé, on revoie une erreur existe déja
+        if ArticleVendu.objects.filter(uuid_paiement=refund_sale_uuid, qty__lt=0).exists():
+            return Response("Refund already recorded : uuid ", status=status.HTTP_208_ALREADY_REPORTED)
+
+        try:
+            refund_depuis_lespass = ArticleVendu.objects.create(
+                article=vente_depuis_lespass.article,
+                prix=vente_depuis_lespass.prix,
+                date_time=timezone.now(),
+                qty=(-vente_depuis_lespass.qty),
+                pos=vente_depuis_lespass.pos,
+                tva=vente_depuis_lespass.tva,
+                membre=None,
+                responsable=None,
+                carte=None,
+                moyen_paiement=vente_depuis_lespass.moyen_paiement,
+                uuid_paiement=refund_sale_uuid,
+                commande=refund_sale_uuid,
+                metadata=vente_depuis_lespass.metadata,
+            )
+            return Response("", status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Error creating ArticleVendu SaleFromLespass: {str(e)}")
+            return Response(
+                {"error": f"Failed to create ArticleVendu SaleFromLespass: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        import ipdb; ipdb.set_trace()
+
 class SaleFromLespass(APIView):
     permission_classes = [HasAPIKey]
     def post(self, request):
-        logger.debug(f"SaleFromLespass : ")
-        logger.debug(request.data)
+        logger.info(f"SaleFromLespass : ")
+        logger.info(request.data)
         validator = SaleFromLespassValidator(data=request.data)
+
         if not validator.is_valid():
             logger.error(f"Sale from lespass not valid : {validator.errors}")
             return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)

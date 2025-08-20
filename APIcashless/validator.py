@@ -96,6 +96,7 @@ class SaleFromLespassValidator(serializers.Serializer):
     # paiement_stripe_uuid = serializers.UUIDField()
     payment_method = serializers.ChoiceField(choices=MoyenPaiement.CATEGORIES)
     amount = serializers.IntegerField()
+    status = serializers.CharField(max_length=10)
     uuid = serializers.UUIDField()
     datetime = serializers.DateTimeField()
     pricesold = PriceSoldFromLespassValidator()
@@ -104,7 +105,6 @@ class SaleFromLespassValidator(serializers.Serializer):
     metadata = serializers.JSONField(required=False, allow_null=True)
     asset = serializers.UUIDField(required=False, allow_null=True)
     wallet = serializers.UUIDField(required=False, allow_null=True)
-
 
     def validate_uuid(self, value):
         # uuid_paiement = uuid LigneArticle sur Lespass
