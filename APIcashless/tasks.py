@@ -1,7 +1,7 @@
 import decimal
 import json
 import logging
-import os
+import os, time
 import smtplib
 from datetime import datetime
 from uuid import uuid4
@@ -119,6 +119,7 @@ def adhesion_to_odoo(article_vendu_pk: int):
 
 @app.task
 def cashback(article_vendu_pk):
+    time.sleep(2) # pour laisser l'article vendu se rentrer en DB
     config = Configuration.get_solo()
     article_vendu = ArticleVendu.objects.get(pk=article_vendu_pk)
     if article_vendu.article.methode_choices == Articles.RECHARGE_EUROS and config.cashback_active:
