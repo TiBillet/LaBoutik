@@ -327,10 +327,10 @@ class DataAchatDepuisClientValidator(serializers.Serializer):
 
             # On vérifie que la mehtode des articles vendus soit dans un point de vente.
             # Pas de cashless dans vente, et pas de repas dans cashless
-            if article.methode_choices == Articles.VENTE:
-                pdv = attrs.get('pk_pdv')
-                if pdv.comportement != PointDeVente.VENTE:
-                    raise serializers.ValidationError(_("Comportement du point de vente invalide"))
+            # if article.methode_choices == Articles.VENTE:
+            #     pdv = attrs.get('pk_pdv')
+            #     if pdv.comportement != PointDeVente.VENTE:
+            #         raise serializers.ValidationError(_("Comportement du point de vente invalide"))
 
         # On check si nouvelle table est présente.
         # Si oui, on la crée et on renseigne le pk_table
