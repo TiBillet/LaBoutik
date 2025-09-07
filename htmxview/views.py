@@ -202,6 +202,7 @@ class Sales(viewsets.ViewSet):
     def z_ticket(self, request):
         tagid_carte_primaire = request.data.get('tagIdCm')
         logger.info(f"tagid_carte_primaire = {tagid_carte_primaire}")
+
         carte_primaire = CarteMaitresse.objects.get(carte__tag_id=tagid_carte_primaire)
         points_de_vente = carte_primaire.points_de_vente.all()
 

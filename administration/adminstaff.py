@@ -1575,6 +1575,7 @@ def reprint_ticketz(modeladmin, request, queryset):
 
 
 class ClotureCaisseAdmin(admin.ModelAdmin):
+    change_list_template = "admin/APIcashless/cloturecaisse/change_list.html"
     list_display = (
         'categorie',
         'start',

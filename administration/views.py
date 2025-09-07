@@ -67,6 +67,35 @@ class TicketZ_V2(viewsets.ViewSet):
     authentication_classes = [SessionAuthentication, ]
     permission_classes = [IsAuthenticated, ]
 
+    @action(detail=False, methods=['post'])
+    def from_datetime(self, request):
+        start = request.data.get('start')
+        end = request.data.get('end')
+        logger.info(f"start : {start} - end : {end}")
+        if not start or not end:
+            return Response('start et end sont obligatoires', status=status.HTTP_400_BAD_REQUEST)
+        try:
+            start_dt = dateutil.parser.parse(start)
+            end_dt = dateutil.parser.parse(end)
+            # Ensure timezone-aware
+            config = Configuration.get_solo()
+            tzinfo = pytz.timezone(config.fuseau_horaire or settings.TIME_ZONE)
+            if timezone.is_naive(start_dt) or timezone.is_naive(end_dt):
+                config = Configuration.get_solo()
+            if timezone.is_naive(start_dt):
+                start_dt = timezone.make_aware(start_dt, tzinfo)
+            if timezone.is_naive(end_dt):
+                end_dt = timezone.make_aware(end_dt, tzinfo)
+        except Exception as e:
+            logger.exception("Erreur de parsing des dates pour TicketZ_V2.from_datetime")
+            return Response('Format de date invalide', status=status.HTTP_400_BAD_REQUEST)
+        if end_dt <= start_dt:
+            return Response('end doit être postérieur à start', status=status.HTTP_400_BAD_REQUEST)
+        # Construire le ticketZ V4 sur l’intervalle demandé
+        ticketZ = TicketZV4(start_date=start_dt, end_date=end_dt)
+        json_context = ticketZ.json_context()
+        return render(request, "rapports/V2.html", context=json.loads(json_context))
+
     def retrieve(self, request, pk):
         # avec un uuid
         ticketz_v2 = self.get_ticketz_v2(
