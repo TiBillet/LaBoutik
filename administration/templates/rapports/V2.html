@@ -173,6 +173,9 @@
 <br>
 <table class="tg">
     <tbody>
+    {% if from_datetime %}
+        <p>Rapport temporaire. Pour avoir le détail par point de vente, merci d'ouvrir une cloture déja gérénée.</p>
+    {% else %}
     <tr>
         <td class="tg-titre tg-gras tg-centre tg-noborder tg-relative" colspan="4">{% trans "POINT DE VENTE" %}</td>
     </tr>
@@ -208,6 +211,7 @@
             {% endfor %}
         </td>
     </tr>
+    {% endif %}
     </tbody>
 </table>
 

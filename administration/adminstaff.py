@@ -1037,6 +1037,15 @@ staff_admin_site.register(Printer, PrinterAdmin)
 class ConfigurationAdmin(SingletonModelAdmin):
     # form = CustomConfigForm
 
+    # Write-only inputs for Sunmi; will be hidden once set
+    def _sunmi_app_id_set(self, obj: Configuration):
+        return bool(obj.sunmi_app_id)
+    _sunmi_app_id_set.short_description = "Sunmi APP ID"
+
+    def _sunmi_app_key_set(self, obj: Configuration):
+        return bool(obj.sunmi_app_key)
+    _sunmi_app_key_set.short_description = "Sunmi APP KEY"
+
     readonly_fields = [
         # 'key',
         # 'key_billetterie',
@@ -1063,6 +1072,8 @@ class ConfigurationAdmin(SingletonModelAdmin):
         'federated_with',
         '_onboarding',
         '_cle_dokos',
+        '_sunmi_app_id_set',
+        '_sunmi_app_key_set',
     ]
 
     fieldsets = (
@@ -1106,6 +1117,12 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 'cash_float',
                 'cloture_de_caisse_auto',
                 'ticketZ_printer',
+            ),
+        }),
+        (' Sunmi Cloud printer', {
+            'fields': (
+                'sunmi_app_id',
+                'sunmi_app_key',
             ),
         }),
         # ('Billetterie', {
@@ -1214,6 +1231,28 @@ class ConfigurationAdmin(SingletonModelAdmin):
         return form
 
     def save_model(self, request, instance: Configuration, form, change):
+        # Handle Sunmi credentials: write-only inputs that trigger encryption methods
+        try:
+            app_id = form.cleaned_data.get('sunmi_app_id')
+        except Exception:
+            app_id = None
+        try:
+            app_key = form.cleaned_data.get('sunmi_app_key')
+        except Exception:
+            app_key = None
+
+        if app_id:
+            try:
+                instance.set_sunmi_app_id(app_id)
+                messages.add_message(request, messages.SUCCESS, "Sunmi APP ID enregistré (chiffré)")
+            except Exception as e:
+                messages.add_message(request, messages.ERROR, f"Erreur enregistrement Sunmi APP ID: {e}")
+        if app_key:
+            try:
+                instance.set_sunmi_app_key(app_key)
+                messages.add_message(request, messages.SUCCESS, "Sunmi APP KEY enregistrée (chiffrée)")
+            except Exception as e:
+                messages.add_message(request, messages.ERROR, f"Erreur enregistrement Sunmi APP KEY: {e}")
         # if (not form.initial.get('badgeuse_active')
         #         and instance.badgeuse_active):
         # On passe de False à True
@@ -1408,6 +1447,12 @@ class ConfigurationAdmin(SingletonModelAdmin):
             # Obfuscation de la clé API
             if obj.odoo_api_key:
                 replace['odoo_api_key'] = '_odoo_api_key'
+
+            # Sunmi fields: once set, show boolean True instead of inputs
+            if obj.sunmi_app_id:
+                replace['sunmi_app_id'] = '_sunmi_app_id_set'
+            if obj.sunmi_app_key:
+                replace['sunmi_app_key'] = '_sunmi_app_key_set'
 
             # Wizard de connexion à la fédération
             # 1 - On demande la string généré par Fedow lors de la création d'un nouveau lieu

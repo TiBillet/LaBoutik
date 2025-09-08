@@ -94,7 +94,9 @@ class TicketZ_V2(viewsets.ViewSet):
         # Construire le ticketZ V4 sur l’intervalle demandé
         ticketZ = TicketZV4(start_date=start_dt, end_date=end_dt)
         json_context = ticketZ.json_context()
-        return render(request, "rapports/V2.html", context=json.loads(json_context))
+        py_context = json.loads(json_context)
+        py_context['from_datetime'] = True
+        return render(request, "rapports/V2.html", context=py_context)
 
     def retrieve(self, request, pk):
         # avec un uuid
