@@ -1046,6 +1046,20 @@ class ConfigurationAdmin(SingletonModelAdmin):
         return bool(obj.sunmi_app_key)
     _sunmi_app_key_set.short_description = "Sunmi APP KEY"
 
+    def sunmi_actions(self, obj: Configuration):
+        # Render two buttons that submit the main form with special flags
+        return format_html(
+            '<div>'
+            '<button type="button" class="button" onclick="(function(f){{var i=document.createElement(\'input\');i.type=\'hidden\';i.name=\'_test_sunmi_api\';i.value=\'1\';f.appendChild(i);f.submit();}})(this.closest(\'form\'))">{}</button>'
+            '&nbsp;'
+            '<button type="button" class="button" onclick="(function(f){{if(confirm(\'Confirmer la suppression des clés Sunmi ?\')){{var i=document.createElement(\'input\');i.type=\'hidden\';i.name=\'_revoke_sunmi_keys\';i.value=\'1\';f.appendChild(i);f.submit();}}}})(this.closest(\'form\'))">{}</button>'
+            '</div>',
+            _("Tester l'api"),
+            _("Supprimer les clés")
+        )
+    sunmi_actions.short_description = "Actions Sunmi"
+    sunmi_actions.allow_tags = True
+
     readonly_fields = [
         # 'key',
         # 'key_billetterie',
@@ -1074,6 +1088,7 @@ class ConfigurationAdmin(SingletonModelAdmin):
         '_cle_dokos',
         '_sunmi_app_id_set',
         '_sunmi_app_key_set',
+        'sunmi_actions',
     ]
 
     fieldsets = (
@@ -1123,6 +1138,7 @@ class ConfigurationAdmin(SingletonModelAdmin):
             'fields': (
                 'sunmi_app_id',
                 'sunmi_app_key',
+                'sunmi_actions',
             ),
         }),
         # ('Billetterie', {
@@ -1432,6 +1448,41 @@ class ConfigurationAdmin(SingletonModelAdmin):
             messages.add_message(request, messages.ERROR, _(f"Fedow non connecté. Asset non mis à jour : {e}"))
 
         super().save_model(request, instance, form, change)
+
+    def changeform_view(self, request, object_id=None, form_url='', extra_context=None):
+        # Handle custom Sunmi actions before normal processing
+        if request.method == 'POST' and object_id:
+            obj = self.get_object(request, object_id)
+            if obj is not None:
+                if '_test_sunmi_api' in request.POST:
+                    try:
+                        app_id = obj.get_sunmi_app_id()
+                        app_key = obj.get_sunmi_app_key()
+                        # Find a Sunmi Cloud printer to test against
+                        from epsonprinter.models import Printer as PrinterModel
+                        printer = PrinterModel.objects.filter(printer_type=PrinterModel.SUNMI_CLOUD, sunmi_serial_number__isnull=False).first()
+                        if not printer:
+                            messages.add_message(request, messages.ERROR, _("Aucune imprimante Sunmi Cloud configurée (numéro de série manquant)."))
+                        else:
+                            try:
+                                from epsonprinter.sunmi_cloud_printer import SunmiCloudPrinter
+                                p = SunmiCloudPrinter(384, app_id=app_id, app_key=app_key, printer_sn=printer.sunmi_serial_number)
+                                # Perform a lightweight API call to check connectivity/credentials
+                                p.onlineStatus(printer.sunmi_serial_number)
+                                messages.add_message(request, messages.SUCCESS, _("Test API Sunmi réussi (requête en ligne exécutée)."))
+                            except Exception as e:
+                                messages.add_message(request, messages.ERROR, _("Erreur lors de l'appel à l'API Sunmi: %s") % e)
+                    except Exception as e:
+                        messages.add_message(request, messages.ERROR, _("Clés Sunmi manquantes ou invalides: %s") % e)
+                    return HttpResponseRedirect(request.path)
+                if '_revoke_sunmi_keys' in request.POST:
+                    try:
+                        obj.clear_sunmi_keys()
+                        messages.add_message(request, messages.SUCCESS, _("Clés Sunmi supprimées. Vous pouvez en saisir de nouvelles."))
+                    except Exception as e:
+                        messages.add_message(request, messages.ERROR, _("Impossible de supprimer les clés Sunmi: %s") % e)
+                    return HttpResponseRedirect(request.path)
+        return super().changeform_view(request, object_id, form_url, extra_context)
 
     def get_fieldsets(self, request, obj: Configuration = None):
         if obj:

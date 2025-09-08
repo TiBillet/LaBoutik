@@ -1962,6 +1962,14 @@ class Configuration(SingletonModel):
                 "The Sunmi APP KEY is not set: You have to set it manually with config.set_sunmi_app_key(app_key)")
         return fernet_decrypt(self.sunmi_app_key)
 
+    def clear_sunmi_keys(self):
+        """Clear Sunmi APP ID and APP KEY from the database and cache."""
+        self.sunmi_app_id = None
+        self.sunmi_app_key = None
+        cache.clear()
+        self.save()
+        return True
+
     def timezone(self):
         return settings.TIME_ZONE
 
