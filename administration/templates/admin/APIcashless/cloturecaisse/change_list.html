@@ -2,22 +2,23 @@
 {% load i18n static %}
 
 {#
- Custom change list for APIcashless.ClotureCaisse
- Adds a Ticket Z V2 date-time range form next to the search fields.
+Custom change list for APIcashless.ClotureCaisse
+Adds a Ticket Z V2 date-time range form next to the search fields.
 #}
 
 {% block search %}
-  {{ block.super }}
-  <form action="/rapport/ticketz_v2/from_datetime/" method="post" class="ticketz-range-form" style="margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-    {% csrf_token %}
-    <label style="display:flex; align-items:center; gap:4px;">
-      <span>{% trans "De" %}:</span>
-      <input type="datetime-local" name="start" required>
-    </label>
-    <label style="display:flex; align-items:center; gap:4px;">
-      <span>{% trans "à" %}:</span>
-      <input type="datetime-local" name="end" required>
-    </label>
-    <button type="submit" class="button">{% trans "Ticket Z (intervalle)" %}</button>
-  </form>
+    {{ block.super }}
+    <form action="/rapport/ticketz_v2/from_datetime/" method="post" class="ticketz-range-form"
+          style="margin-top:8px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        {% csrf_token %}
+        <label style="display:flex; align-items:center; gap:4px;">
+            <span>{% trans "De" %}:</span>
+            <input type="datetime-local" name="start" required>
+        </label>
+        <label style="display:flex; align-items:center; gap:4px;">
+            <span>{% trans "à" %}:</span>
+            <input type="datetime-local" name="end" required>
+        </label>
+        <button type="submit" class="button">{% trans "Ticket Z (intervalle)" %}</button>
+    </form>
 {% endblock %}
