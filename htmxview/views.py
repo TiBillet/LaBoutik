@@ -200,8 +200,9 @@ class Sales(viewsets.ViewSet):
 
     @action(detail=False, methods=['POST'])
     def z_ticket(self, request):
-        tagid_carte_primaire = request.data.get('tagIdCm')
+        tagid_carte_primaire = request.session['tagid_carte_primaire']
         logger.info(f"tagid_carte_primaire = {tagid_carte_primaire}")
+        request.session['tagid_carte_primaire'] = tagid_carte_primaire
 
         carte_primaire = CarteMaitresse.objects.get(carte__tag_id=tagid_carte_primaire)
         points_de_vente = carte_primaire.points_de_vente.all()
@@ -257,6 +258,15 @@ class Sales(viewsets.ViewSet):
 
     @action(detail=False, methods=['GET'])
     def print_temp_ticket(self, request):
+
+        tagid_carte_primaire = request.session['tagid_carte_primaire']
+        logger.info(f"tagid_carte_primaire = {tagid_carte_primaire}")
+
+        carte_primaire = CarteMaitresse.objects.get(carte__tag_id=tagid_carte_primaire)
+        points_de_vente = carte_primaire.points_de_vente.all()
+
+        logger.info(f"points_de_vente = {points_de_vente}")
+
         # Ticket Z temporaire :
         user = request.user
         # Le wscanal est celui de l'appareil
@@ -285,7 +295,8 @@ class Sales(viewsets.ViewSet):
 
         context = {'ticket_today': ticket_today,}
 
-        return HttpResponse(status=200)
+        # return HttpResponse(status=200)
+        return self.z_ticket(request)
 
 
     @action(detail=True, methods=['GET'])
