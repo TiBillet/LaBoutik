@@ -152,8 +152,10 @@
 
         // Set responsable.uuid in the hidden input field
         if (window.glob.tagIdCm) {
-            console.log(window.glob.tagIdCm);
             document.getElementById('tagIdCm_input_hidden').value = window.glob.tagIdCm;
+            console.log(document.getElementById('tagIdCm_input_hidden').value);
+        } else {
+            console.log('No tagIdCm found in window.glob');
         }
     }
 </script>

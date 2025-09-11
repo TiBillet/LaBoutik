@@ -132,6 +132,8 @@ class Sales(viewsets.ViewSet):
 
     def list(self, request):
         context = {}
+        tagid_carte_primaire = request.data.get('tagIdCm')
+        logger.info(f"get sale tagid_carte_primaire : {tagid_carte_primaire}")
         return render(request, "sales/sales.html", context)
 
     @action(detail=False, methods=['POST'])
@@ -200,13 +202,15 @@ class Sales(viewsets.ViewSet):
 
     @action(detail=False, methods=['POST'])
     def z_ticket(self, request):
-        tagid_carte_primaire = request.session['tagid_carte_primaire']
+        # Récupération de la carte primaire via le formulaire avec hidden input
+        tagid_carte_primaire = request.session.get('tagid_carte_primaire')
+        if not request.session.get('tagid_carte_primaire'):
+            tagid_carte_primaire = request.data['tagIdCm']
+        carte_primaire = CarteMaitresse.objects.get(carte__tag_id=tagid_carte_primaire)
         logger.info(f"tagid_carte_primaire = {tagid_carte_primaire}")
         request.session['tagid_carte_primaire'] = tagid_carte_primaire
 
-        carte_primaire = CarteMaitresse.objects.get(carte__tag_id=tagid_carte_primaire)
         points_de_vente = carte_primaire.points_de_vente.all()
-
         logger.info(f"points_de_vente = {points_de_vente}")
 
         config = Configuration.get_solo()
@@ -509,8 +513,6 @@ class Sales(viewsets.ViewSet):
         return self.z_ticket(request)
 
 
-"""
-"""
 class FalsePrinter(viewsets.ViewSet):
     permission_classes = [AllowAny]
 
