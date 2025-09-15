@@ -249,7 +249,7 @@ export function reloadData() {
     // data current curency
     glob['currencyData'] = getCurrentCurrency(retour.currency_code)
     retour = null
-    // main(nomModulePrive, { indexPv: 0, csrfToken: glob.csrf_token })
+    main(nomModulePrive, { indexPv: 0, csrfToken: glob.csrf_token })
   })
 }
 
