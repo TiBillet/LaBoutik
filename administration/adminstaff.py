@@ -823,7 +823,7 @@ class AppareilAdmin(admin.ModelAdmin):
 
         # Scénario création de l'objet depuis l'admin. Nom OK
         # On va chercher le code pin sur le serveur primaire
-        if not form.initial.get('actif') :
+        if not form.initial.get('actif') and not instance.claimed_at:
             try:
                 pin_code = get_pin_on_appareillage(instance.name)
                 instance.pin_code = pin_code
