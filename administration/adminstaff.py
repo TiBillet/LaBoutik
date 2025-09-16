@@ -817,9 +817,9 @@ class AppareilAdmin(admin.ModelAdmin):
 
         # Scenario : On coche actif alors qu'il a été désactivé avant.
         # On a pas de code pin, on va en refabriquer un
-        if instance.actif and not form.initial.get('actif') and not instance.pin_code:
-            messages.add_message(request, messages.WARNING, _(f"RE - Activation du terminal {instance.name}"))
-            instance.actif = False
+        # if instance.actif and not form.initial.get('actif') and not instance.pin_code:
+        #     messages.add_message(request, messages.WARNING, _(f"RE - Activation du terminal {instance.name}"))
+        #     instance.actif = False
 
         # Scénario création de l'objet depuis l'admin. Nom OK
         # On va chercher le code pin sur le serveur primaire
