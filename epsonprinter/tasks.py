@@ -678,43 +678,43 @@ def print_ticket_purchases_sunmi_cloud(ticket_data, printer, size=80):
         # Create a printer instance with dots per line based on size
         dots_per_line = 384 if size == 80 else 240  # 384 for 80mm, 240 for 57mm
         from .sunmi_cloud_printer import SunmiCloudPrinter, ALIGN_CENTER, ALIGN_LEFT, ALIGN_RIGHT
-        printer = SunmiCloudPrinter(dots_per_line, app_id=app_id, app_key=app_key, printer_sn=printer_sn)
+        sunmi_printer = SunmiCloudPrinter(dots_per_line, app_id=app_id, app_key=app_key, printer_sn=printer_sn)
 
         # Add header
-        printer.lineFeed()
-        printer.setAlignment(ALIGN_CENTER)
-        printer.setPrintModes(True, True, True)  # Bold, double height, double width
-        printer.appendText(remove_accents(ticket_data['business_name'].upper()) + "\n")
-        printer.setPrintModes(False, False, False)  # Reset print modes
+        sunmi_printer.lineFeed()
+        sunmi_printer.setAlignment(ALIGN_CENTER)
+        sunmi_printer.setPrintModes(True, True, True)  # Bold, double height, double width
+        sunmi_printer.appendText(remove_accents(ticket_data['business_name'].upper()) + "\n")
+        sunmi_printer.setPrintModes(False, False, False)  # Reset print modes
 
         # Add business information
         if ticket_data['business_address'] and ticket_data['business_address'] != 'None':
-            printer.appendText(remove_accents(ticket_data['business_address']) + "\n")
+            sunmi_printer.appendText(remove_accents(ticket_data['business_address']) + "\n")
         if ticket_data['business_siret']:
-            printer.appendText(f"SIRET: {ticket_data['business_siret']}\n")
+            sunmi_printer.appendText(f"SIRET: {ticket_data['business_siret']}\n")
         if ticket_data['business_vat_number']:
-            printer.appendText(f"TVA: {ticket_data['business_vat_number']}\n")
+            sunmi_printer.appendText(f"TVA: {ticket_data['business_vat_number']}\n")
 
         # Add separator
-        printer.appendText("-" * (48 if size == 80 else 32) + "\n")
+        sunmi_printer.appendText("-" * (48 if size == 80 else 32) + "\n")
 
         # Add receipt information
-        printer.setAlignment(ALIGN_LEFT)
-        printer.appendText(f"DATE: {ticket_data['date_time']}\n")
-        printer.appendText(f"TICKET: {ticket_data['receipt_id']}\n")
+        sunmi_printer.setAlignment(ALIGN_LEFT)
+        sunmi_printer.appendText(f"DATE: {ticket_data['date_time']}\n")
+        sunmi_printer.appendText(f"TICKET: {ticket_data['receipt_id']}\n")
 
         if ticket_data['table']:
-            printer.appendText(f"TABLE: {remove_accents(ticket_data['table'])}\n")
+            sunmi_printer.appendText(f"TABLE: {remove_accents(ticket_data['table'])}\n")
         if ticket_data['server']:
-            printer.appendText(f"SERVEUR: {remove_accents(ticket_data['server'])}\n")
+            sunmi_printer.appendText(f"SERVEUR: {remove_accents(ticket_data['server'])}\n")
 
         # Add separator
-        printer.appendText("-" * (48 if size == 80 else 32) + "\n")
+        sunmi_printer.appendText("-" * (48 if size == 80 else 32) + "\n")
 
         # Add articles
         if size == 80:
-            printer.appendText("ARTICLE                  QTE    PRIX    TOTAL\n")
-            printer.appendText("-" * 48 + "\n")
+            sunmi_printer.appendText("ARTICLE                  QTE    PRIX    TOTAL\n")
+            sunmi_printer.appendText("-" * 48 + "\n")
 
             for article in ticket_data['articles']:
                 name = remove_accents(article['name'])
@@ -727,7 +727,7 @@ def print_ticket_purchases_sunmi_cloud(ticket_data, printer, size=80):
                     name = name[:17] + "..."
 
                 # Format with fixed width columns
-                printer.appendText(f"{name.ljust(20)} {str(qty).ljust(6)} {price}  {total}\n")
+                sunmi_printer.appendText(f"{name.ljust(20)} {str(qty).ljust(6)} {price}  {total}\n")
         else:
             # For 57mm, use a simpler format
             for article in ticket_data['articles']:
@@ -736,36 +736,45 @@ def print_ticket_purchases_sunmi_cloud(ticket_data, printer, size=80):
                 price = article['unit_price']
                 total = article['total_price']
 
-                printer.appendText(name + "\n")
-                printer.appendText(f"{qty} x {price} = {total}\n")
+                sunmi_printer.appendText(name + "\n")
+                sunmi_printer.appendText(f"{qty} x {price} = {total}\n")
 
         # Add separator
-        printer.appendText("-" * (48 if size == 80 else 32) + "\n")
+        sunmi_printer.appendText("-" * (48 if size == 80 else 32) + "\n")
 
         # Add totals
-        printer.setAlignment(ALIGN_RIGHT)
-        printer.appendText(f"TOTAL HT: {ticket_data['total_ht']}\n")
-        printer.appendText(f"TVA: {ticket_data['total_tva']}\n")
-        printer.setPrintModes(True, False, False)  # Bold
-        printer.appendText(f"TOTAL TTC: {ticket_data['total_ttc']}\n")
-        printer.setPrintModes(False, False, False)  # Reset print modes
+        sunmi_printer.setAlignment(ALIGN_RIGHT)
+        sunmi_printer.appendText(f"TOTAL HT: {ticket_data['total_ht']}\n")
+        sunmi_printer.appendText(f"TVA: {ticket_data['total_tva']}\n")
+        sunmi_printer.setPrintModes(True, False, False)  # Bold
+        sunmi_printer.appendText(f"TOTAL TTC: {ticket_data['total_ttc']}\n")
+        sunmi_printer.setPrintModes(False, False, False)  # Reset print modes
 
-        printer.setAlignment(ALIGN_LEFT)
-        printer.appendText(f"PAIEMENT: {remove_accents(ticket_data['payment_method'])}\n")
+        sunmi_printer.setAlignment(ALIGN_LEFT)
+        sunmi_printer.appendText(f"PAIEMENT: {remove_accents(ticket_data['payment_method'])}\n")
 
         # Add footer
-        printer.appendText("-" * (48 if size == 80 else 32) + "\n")
-        printer.setAlignment(ALIGN_CENTER)
+        sunmi_printer.appendText("-" * (48 if size == 80 else 32) + "\n")
+        sunmi_printer.setAlignment(ALIGN_CENTER)
 
         if ticket_data['footer']:
-            printer.appendText(remove_accents(ticket_data['footer']) + "\n")
+            sunmi_printer.appendText(remove_accents(ticket_data['footer']) + "\n")
 
         # Add final commands
-        printer.lineFeed(3)
-        printer.cut()
+        sunmi_printer.lineFeed(3)
+        sunmi_printer.cutPaper(False)  # Partial cut
 
         # Send the print job
-        printer.printData()
+        # Generate a unique trade number for this print job
+        trade_no = f"{printer_sn}_{int(time.time())}"
+        title = f"REÇU"
+        # Send the print job to the printer
+        sunmi_printer.pushContent(
+            trade_no=trade_no,
+            sn=printer_sn,
+            count=1,
+            media_text=title
+        )
         logger.info(f"Receipt printed to Sunmi Cloud {size}mm printer: {printer.name}")
         return True
 
@@ -999,6 +1008,7 @@ def print_command_sunmi_cloud(commande, groupe, lignes_article):
 
         # Generate a unique trade number for this print job
         trade_no = f"{printer_sn}_{int(time.time())}"
+
 
         # Send the print job to the printer
         printer.pushContent(
