@@ -9,10 +9,10 @@ POSTGRES_PASSWORD='K4g8g73Zt2E0BDI2PPhqDwaot37adiREZOEmDbFeRr4='
 DOMAIN='laboutik2.tibillet.localhost'
 # No Cashless if no Fedow nor Lespass tenant manager
 FEDOW_URL='https://fedow.tibillet.localhost/' # ex : https://fedow.tibillet.localhost/
-LESPASS_TENANT_URL='https://lespass.tibillet.localhost/' # ex : https://lespass.tibillet.localhost/
+LESPASS_TENANT_URL='https://chantefrein.tibillet.localhost/' # ex : https://lespass.tibillet.localhost/
 
 # The name of your cashless asset ex : TestCoin, FestivalCoin, etc ....
-MAIN_ASSET_NAME='CoinCoin'
+MAIN_ASSET_NAME='Étincelle'
 
 # admin email
 ADMIN_EMAIL='jturbeaux@pm.me'
@@ -41,7 +41,7 @@ TEST=1
 DEMO=1
 SENTRY_DNS=''
 
-DEMO_TAGID_CM='CAAAAAA1'
+DEMO_TAGID_CM='6172BACA'
 DEMO_TAGID_CLIENT1='41726643'
 DEMO_TAGID_CLIENT2='93BD3684'
 
