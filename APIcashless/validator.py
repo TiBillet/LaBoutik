@@ -56,7 +56,7 @@ class PriceFromLespassValidator(serializers.Serializer):
     name = serializers.CharField(max_length=250)
     short_description = serializers.CharField(max_length=250, allow_null=True, allow_blank=True)
     long_description = serializers.CharField(max_length=2500, allow_null=True, allow_blank=True)
-    max_per_user = serializers.IntegerField()
+    # max_per_user = serializers.IntegerField(allow_null=True, required=False)
     prix = serializers.DecimalField(max_digits=8, decimal_places=2)
     free_price = serializers.BooleanField()
     product = serializers.UUIDField()
