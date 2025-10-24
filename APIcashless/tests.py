@@ -40,11 +40,12 @@ class CashlessTest(TiBilletTestCase):
         self.assertTrue(config.fedow_synced)
 
         get_accepted_assets = fedowAPI.place.get_accepted_assets()
-
+        if not len(get_accepted_assets) == 9:
+            import ipdb; ipdb.set_trace()
         # Les adhésions et la badgeuse sont créé depuis LesPass
         # Trois assets ont été créé par le handshake avec Fedow
-        # Trois assets créé par lespass : deux adhésion et un badge
-        self.assertEqual(len(get_accepted_assets), 6)
+        # Trois assets créé par lespass : quatres adhésions et un badge que le cashless récupère grâce à la fédération coté Fedow
+        self.assertEqual(len(get_accepted_assets), 9)
         cats = [asset.get('category') for asset in get_accepted_assets]
         self.assertIn('FED', cats)
         self.assertIn('TNF', cats)
@@ -54,7 +55,7 @@ class CashlessTest(TiBilletTestCase):
 
         badgeuse_tibilletistan = MoyenPaiement.objects.get(categorie=MoyenPaiement.EXTERNAL_BADGE)
         adhesions_tibilletistan = MoyenPaiement.objects.filter(categorie=MoyenPaiement.EXTERNAL_MEMBERSHIP)
-        self.assertEqual(adhesions_tibilletistan.count(), 2)
+        self.assertEqual(adhesions_tibilletistan.count(), 5)
 
         # Les adhesion et la badgeuse vient d'ailleurs
         tibilletistan = badgeuse_tibilletistan.place_origin
