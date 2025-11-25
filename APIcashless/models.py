@@ -777,6 +777,9 @@ class MoyenPaiement(models.Model):
     # Online
     STRIPE_FED = 'SF'  # Paimeent vers le compte stripe principal
     STRIPE_NOFED = 'SN'  # Paiement direct vers le compte stripe connect
+    STRIPE_RECURENT = "SR"
+    QRCODE_MA = "QR"
+    STRIPE_SEPA_NOFED = "SP"
     FEDOW = 'FD'
 
     # Assets with special method
@@ -811,6 +814,9 @@ class MoyenPaiement(models.Model):
 
         (STRIPE_NOFED, _('En ligne')),
         (STRIPE_FED, _('Fédéré')),
+        (STRIPE_RECURENT, _("Stripe récurrent")),
+        (QRCODE_MA, _("QrCode ou NFC depuis Lespass")),
+        (STRIPE_SEPA_NOFED, _("Stripe prélèvement SEPA")),
 
         (OCECO, _('Oceco')),
         (BADGE, _('Badgeuse')),
@@ -2592,7 +2598,7 @@ class Terminal(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     name = models.CharField(max_length=200, blank=True, null=True, verbose_name=_("Nom"))
     appareil = models.ForeignKey(Appareil, on_delete=models.SET_NULL, blank=True, null=True,
-                                 related_name="terminals", verbose_name=_("Appareil lié") )
+                                 related_name="terminals", verbose_name=_("Appareil lié"))
     # Pour les TPE Stripe :
     registration_code = models.CharField(max_length=200, blank=True, null=True,
                                          verbose_name=_("Code d'enregistrement du lecteur"))
@@ -2731,7 +2737,7 @@ class PaymentsIntent(models.Model):
         # stripe_account = config_stripe.get_stripe_connect_account()
 
         # On vérifie la disponibilité du terminal :
-        try :
+        try:
             stripe.terminal.Reader.retrieve(terminal.stripe_id)
         except stripe._error.InvalidRequestError as e:
             raise e

@@ -436,7 +436,18 @@ class SaleFromLespass(APIView):
 
         price_uuid =  validator.validated_data['pricesold']['price']['uuid']
         product_uuid =  validator.validated_data['pricesold']['price']['product']
-        moyen_paiement = MoyenPaiement.objects.get(categorie=validator.validated_data['payment_method'])
+
+        try :
+            pm = validator.validated_data['payment_method']
+            if pm == MoyenPaiement.STRIPE_RECURENT: # Si c'est un paiement récurrent, on fait comme si c'était Stripe
+                pm = MoyenPaiement.STRIPE_NOFED
+            moyen_paiement = MoyenPaiement.objects.get(categorie=pm)
+        except MoyenPaiement.DoesNotExist:
+            moyen_paiement = MoyenPaiement.objects.create(
+                categorie=validator.validated_data['payment_method'],
+                name=dict(MoyenPaiement.CATEGORIES)[validator.validated_data['payment_method']],
+            )
+
         if validator.validated_data.get('asset'):
             moyen_paiement = MoyenPaiement.objects.get(pk=validator.validated_data['asset'])
 

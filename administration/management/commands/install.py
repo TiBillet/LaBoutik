@@ -660,7 +660,7 @@ class Command(BaseCommand):
                              str(uuid4())[:8].upper()]
                         )
                 # pour cashless demo 1
-                elif os.environ.get('MAIN_ASSET_NAME') == 'TestCoin':
+                elif os.environ.get('DOMAIN') == 'laboutik.tibillet.localhost' or os.environ.get('MAIN_ASSET_NAME') == 'TestCoin':
                     cards = [
                         ["https://demo.tibillet.localhost/qr/76dc433c-00ac-479c-93c4-b7a0710246af", "76DC433C",
                          "EE144CE8"],
