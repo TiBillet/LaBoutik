@@ -61,7 +61,7 @@ class PriceFromLespassValidator(serializers.Serializer):
     free_price = serializers.BooleanField()
     product = serializers.UUIDField()
     recurring_payment = serializers.BooleanField()
-    stock = serializers.BooleanField(allow_null=True)
+    stock = serializers.IntegerField(allow_null=True, required=False)
     publish = serializers.BooleanField(allow_null=True)
     uuid = serializers.UUIDField()
 
