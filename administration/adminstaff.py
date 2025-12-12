@@ -1038,28 +1038,6 @@ staff_admin_site.register(Printer, PrinterAdmin)
 class ConfigurationAdmin(SingletonModelAdmin):
     # form = CustomConfigForm
 
-    # Write-only inputs for Sunmi; will be hidden once set
-    def _sunmi_app_id_set(self, obj: Configuration):
-        return bool(obj.sunmi_app_id)
-    _sunmi_app_id_set.short_description = "Sunmi APP ID"
-
-    def _sunmi_app_key_set(self, obj: Configuration):
-        return bool(obj.sunmi_app_key)
-    _sunmi_app_key_set.short_description = "Sunmi APP KEY"
-
-    def sunmi_actions(self, obj: Configuration):
-        # Render two buttons that submit the main form with special flags
-        return format_html(
-            '<div>'
-            '<button type="button" class="button" onclick="(function(f){{var i=document.createElement(\'input\');i.type=\'hidden\';i.name=\'_test_sunmi_api\';i.value=\'1\';f.appendChild(i);f.submit();}})(this.closest(\'form\'))">{}</button>'
-            '&nbsp;'
-            '<button type="button" class="button" onclick="(function(f){{if(confirm(\'Confirmer la suppression des clés Sunmi ?\')){{var i=document.createElement(\'input\');i.type=\'hidden\';i.name=\'_revoke_sunmi_keys\';i.value=\'1\';f.appendChild(i);f.submit();}}}})(this.closest(\'form\'))">{}</button>'
-            '</div>',
-            _("Tester l'api"),
-            _("Supprimer les clés")
-        )
-    sunmi_actions.short_description = "Actions Sunmi"
-    sunmi_actions.allow_tags = True
 
     readonly_fields = [
         # 'key',
@@ -1103,7 +1081,7 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 'pied_ticket',
                 'telephone',
                 'numero_tva',
-                'taux_tva',
+                # 'taux_tva',
                 'fuseau_horaire',
                 'currency_code',
                 'horaire_ouverture',
@@ -1270,10 +1248,6 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 messages.add_message(request, messages.SUCCESS, "Sunmi APP KEY enregistrée (chiffrée)")
             except Exception as e:
                 messages.add_message(request, messages.ERROR, f"Erreur enregistrement Sunmi APP KEY: {e}")
-        # if (not form.initial.get('badgeuse_active')
-        #         and instance.badgeuse_active):
-        # On passe de False à True
-        # badgeuse_creation()
 
         # obj.user = request.user
         ex_api_key = None
@@ -1313,38 +1287,6 @@ class ConfigurationAdmin(SingletonModelAdmin):
         if instance.revoquer_odoo_api_key:
             instance.odoo_api_key = None
             instance.revoquer_odoo_api_key = False
-
-        # if instance.revoquer_key_billetterie:
-        #     if instance.key_billetterie:
-        #         ex_api_key = APIKey.objects.get(id=instance.key_billetterie.id)
-        #         instance.key_billetterie = None
-        #         messages.add_message(request, messages.WARNING, "API Key deleted")
-        #
-        #     else:
-        #         api_key = None
-        #         key = " "
-        #         # On affiche la string Key sur l'admin de django en message
-        #         # et django.message capitalize chaque message...
-        #         # du coup on fait bien gaffe à ce que je la clée générée ai bien une majusculle au début ...
-        #         while key[0].isupper() == False:
-        #             api_key, key = APIKey.objects.create_key(name="billetterie_key")
-        #             if key[0].isupper() == False:
-        #                 api_key.delete()
-        #
-        #         instance.key_billetterie = api_key
-        #
-        #         messages.add_message(
-        #             request,
-        #             messages.SUCCESS,
-        #             _(f"Copiez bien la clé suivante et mettez la en lieu sur ! Elle n'est pas enregistrée sur nos serveurs et ne sera affichée qu'une seule fois ici :")
-        #         )
-        #         messages.add_message(
-        #             request,
-        #             messages.WARNING,
-        #             f"{key}"
-        #         )
-        #
-        #     instance.revoquer_key_billetterie = False
 
         ### DOKOS
         if instance.dokos_url and instance.dokos_key and instance.dokos_id:
@@ -1532,6 +1474,30 @@ class ConfigurationAdmin(SingletonModelAdmin):
             return fieldsets
 
         return [(None, {'fields': self.get_fields(request, obj)})]
+
+
+    # Write-only inputs for Sunmi; will be hidden once set
+    def _sunmi_app_id_set(self, obj: Configuration):
+        return bool(obj.sunmi_app_id)
+    _sunmi_app_id_set.short_description = "Sunmi APP ID"
+
+    def _sunmi_app_key_set(self, obj: Configuration):
+        return bool(obj.sunmi_app_key)
+    _sunmi_app_key_set.short_description = "Sunmi APP KEY"
+
+    def sunmi_actions(self, obj: Configuration):
+        # Render two buttons that submit the main form with special flags
+        return format_html(
+            '<div>'
+            '<button type="button" class="button" onclick="(function(f){{var i=document.createElement(\'input\');i.type=\'hidden\';i.name=\'_test_sunmi_api\';i.value=\'1\';f.appendChild(i);f.submit();}})(this.closest(\'form\'))">{}</button>'
+            '&nbsp;'
+            '<button type="button" class="button" onclick="(function(f){{if(confirm(\'Confirmer la suppression des clés Sunmi ?\')){{var i=document.createElement(\'input\');i.type=\'hidden\';i.name=\'_revoke_sunmi_keys\';i.value=\'1\';f.appendChild(i);f.submit();}}}})(this.closest(\'form\'))">{}</button>'
+            '</div>',
+            _("Tester l'api"),
+            _("Supprimer les clés")
+        )
+    sunmi_actions.short_description = "Actions Sunmi"
+    sunmi_actions.allow_tags = True
 
 
 staff_admin_site.register(Configuration, ConfigurationAdmin)
