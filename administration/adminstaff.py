@@ -1084,6 +1084,7 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 # 'taux_tva',
                 'fuseau_horaire',
                 'currency_code',
+                'currency_symbol',
                 'horaire_ouverture',
                 'horaire_fermeture',
             )

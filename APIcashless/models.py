@@ -1933,6 +1933,8 @@ class Configuration(SingletonModel):
 
     currency_code = models.CharField(max_length=3, default="EUR")
 
+    currency_symbol = models.CharField(max_length=10, null=True, blank=True)
+
     # Sunmi Cloud Printer configuration
     sunmi_app_id = models.CharField(max_length=200,
                                     null=True, blank=True,

@@ -195,6 +195,7 @@ class Sales(viewsets.ViewSet):
             'commands_today': commands_today,
             'moyens_paiement': MoyenPaiement.objects.filter(
                 categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CHEQUE, MoyenPaiement.CREDIT_CARD_NOFED]),
+            'currency_code': config.currency_code
         }
 
         return render(request, "sales/sales_list.html", context)
@@ -227,6 +228,7 @@ class Sales(viewsets.ViewSet):
         json_context = ticketZ.json_context()
         context = json.loads(json_context)
         context['carte_primaire'] = carte_primaire
+        context['currency_code'] = config.currency_code
 
         # on pourrait envoyer le query_context, mais avec le json.loads on s'assure que le json stoqué en DB est OK
         return render(request, "sales/z_ticket.html", context=context)
@@ -254,6 +256,7 @@ class Sales(viewsets.ViewSet):
         json_context = ticketZ.json_context()
         context = json.loads(json_context)
         context['carte_primaire'] = carte_primaire
+        context['currency_code'] = config.currency_code
 
         # on pourrait envoyer le query_context, mais avec le json.loads on s'assure que le json stoqué en DB est OK
         return render(request, "sales/articles_list.html", context=context)
