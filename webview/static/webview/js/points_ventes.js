@@ -1,6 +1,5 @@
 // construction d'une partie du menu provenant des plugins
 import "./menuPlugins/addAllMenuPlugin.js"
-import { getCurrentCurrency } from '/static/webview/js/modules/currencysList.js'
 import { isCordovaApp, bluetoothHasSunmiPrinter, bluetoothWrite, bluetoothOpenCashDrawer } from './modules/mobileDevice.js'
 
 // ---- cordova ---
@@ -233,7 +232,6 @@ export function reloadData() {
 	}
 	sys.ajax(requete, function (retour, status) {
 		glob.data = retour.data
-
 		// converti les décimal python
 		for (const key in glob.data) {
 			const pv = glob.data[key]
@@ -248,8 +246,8 @@ export function reloadData() {
 		glob.tables = retour.tables
 		glob.passageModeGerant = retour.responsable.edit_mode
 		glob.modeGerant = false
-		// data current curency
-		glob['currencyData'] = getCurrentCurrency(retour.currency_code)
+		// data current currency
+    glob['currencyData'] = {cc: retour.currency_code, symbol: retour.currency_symbol}
 		retour = null
 		main(nomModulePrive, { indexPv: 0, csrfToken: glob.csrf_token })
 	})

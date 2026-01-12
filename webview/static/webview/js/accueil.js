@@ -1,8 +1,38 @@
+window.glob = {}
+
 // console.log('-> accueil.js')
 import * as Sys from '/static/webview/js/modules/systeme.js'
-import { getCurrentCurrency } from '/static/webview/js/modules/currencysList.js'
 import { translate, getTranslate, getLanguages } from '/static/webview/js/modules/i8n.js'
 import * as Fn from "/static/webview/js/modules/fonctions.js"
+
+
+/**
+ * Métode pour bypasser la traduction
+ * Retourne un string représentant la monnaie d'un pays
+ * @param {String} option - option de traduction : capitalize, uppercase
+ * @returns {String} - resultat de la traduction (innerHTML/string )
+ */
+window.methodCurrency = (option) => {
+  let result = ''
+  const currency = glob.currencyData
+  if (currency.symbol !== "") {
+    result = currency.symbol
+  } else {
+    result = currency.cc
+  }
+  // option exist
+  if (option !== undefined && option !== null && typeof (option) === 'string') {
+
+    if (option.includes('capitalize')) {
+      result = result.charAt(0).toUpperCase() + result.slice(1)
+    }
+
+    if (option.includes('uppercase')) {
+      result = result.toUpperCase()
+    }
+  }
+  return result
+}
 
 // --- logs ---
 // sauvegarder l'ancienne fonction console.log
@@ -43,8 +73,6 @@ window.getLanguages = getLanguages
 sys.affCharge({ etat: 1, largeur: 80, couleur: '#0F0', nbc: 8, rpt: 4, epaisseur: 8 })
 
 window.fn = Fn
-
-window.glob = {}
 window.rfid = new Nfc()
 window.ledPossibilite = true
 window.intervalActualisationVuePreparations = 5000 // 3600000
@@ -118,8 +146,8 @@ const demande_pvs = function (data) {
         glob.tables = retour.tables
         glob.passageModeGerant = retour.responsable.edit_mode
         glob.modeGerant = false
-        // data current curency
-        glob['currencyData'] = getCurrentCurrency(retour.currency_code)
+        // data current currency
+        glob['currencyData'] = {cc: retour.currency_code, symbol: retour.currency_symbol}
         retour = null
         initProgramme()
       }

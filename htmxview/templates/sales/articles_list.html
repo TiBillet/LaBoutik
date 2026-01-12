@@ -82,8 +82,8 @@
                             <tr>
                                 <td>{{ article.name }}</td>
                                 <td>{{ article.qty_totale | floatformat:2 }}</td>
-                                <td>{{ article.prix_ttc | floatformat:2 }}&nbsp;€</td>
-                                <td>{{ article.chiffre_affaire_ttc | floatformat:2 }}&nbsp;€</td>
+                                <td>{{ article.prix_ttc | floatformat:2 }}&nbsp;{{ currency_to_show }}</td>
+                                <td>{{ article.chiffre_affaire_ttc | floatformat:2 }}&nbsp;{{ currency_to_show }}</td>
                             </tr>
                         {% endif %}
                     {% endfor %}
@@ -91,7 +91,7 @@
                         <td>{% trans "Subtotal" %}</td>
                         <td>{{ articles.SUBTOTAL.qty_totale | floatformat:2 }}</td>
                         <td>-</td>
-                        <td>{{ articles.SUBTOTAL.chiffre_affaire_ttc | floatformat:2 }}&nbsp;€</td>
+                        <td>{{ articles.SUBTOTAL.chiffre_affaire_ttc | floatformat:2 }}&nbsp;{{ currency_to_show }}</td>
                     </tr>
                 {% endif %}
             {% endfor %}
@@ -103,7 +103,7 @@
                 <td>{% trans "TOTAL" %}</td>
                 <td>{{ table_detail_ventes.TOTAL.qty_totale | floatformat:2 }}</td>
                 <td>-</td>
-                <td>{{ table_detail_ventes.TOTAL.chiffre_affaire_ttc | floatformat:2 }}&nbsp;€</td>
+                <td>{{ table_detail_ventes.TOTAL.chiffre_affaire_ttc | floatformat:2 }}&nbsp;{{ currency_to_show }}</td>
             </tr>
         </tbody>
     </table>

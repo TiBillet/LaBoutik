@@ -70,7 +70,7 @@
         <summary class="order__summary">
             <div class="order__datetime">{{ first_article.date_time|time:"H:i" }}</div>
             <div class="order__article-count">{{ cmd.qty|floatformat:0 }} article{% if cmd.qty > 1 %}s{% endif %}</div>
-            <div class="order__price">{{ cmd.total|floatformat:2 }} &euro;</div>
+            <div class="order__price">{{ cmd.total|floatformat:2 }} {{ currency_to_show }}</div>
             <div class="order__method">{{ first_article.moyen_paiement }}</div>
             <i class="js__order-icon fas fa-plus"></i>
         </summary>

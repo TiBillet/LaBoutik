@@ -19,7 +19,7 @@
 
         <tr>
             <th>{% trans 'TOTAL sales only' %}</th>
-            <td>{{ table_vente.TOTAL | floatformat:2 | default:0 }}€</td>
+            <td>{{ table_vente.TOTAL | floatformat:2 | default:0 }}{{ currency_to_show }}</td>
         </tr>
 
         <tr>
@@ -32,7 +32,7 @@
                 <tr>
                     <th>{% if forloop.last %}{% trans "TOTAL" %}{% else %}
                         {{ categories|getvalue:moyen_de_paiement }}{% endif %}</th>
-                    <td>{{ value | floatformat:2 }}&nbsp;€</td>
+                    <td>{{ value | floatformat:2 }}&nbsp;{{ currency_to_show }}</td>
                 </tr>
             {% endif %}
         {% endfor %}

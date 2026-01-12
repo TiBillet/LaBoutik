@@ -191,11 +191,16 @@ class Sales(viewsets.ViewSet):
                 commands_today[article.commande]['total'] += (article.qty * article.prix)
                 commands_today[article.commande]['qty'] += article.qty
 
+        config = Configuration.get_solo()
+        # currency to show
+        currency_to_show = config.currency_symbol if config.currency_symbol != None else config.currency_code
+
         context = {
             'commands_today': commands_today,
             'moyens_paiement': MoyenPaiement.objects.filter(
                 categorie__in=[MoyenPaiement.CASH, MoyenPaiement.CHEQUE, MoyenPaiement.CREDIT_CARD_NOFED]),
-            'currency_code': config.currency_code
+            'currency_code': config.currency_code,
+            'currency_to_show': currency_to_show
         }
 
         return render(request, "sales/sales_list.html", context)
@@ -224,11 +229,16 @@ class Sales(viewsets.ViewSet):
         matin = timezone.make_aware(datetime.combine(start, heure_cloture))
 
         ticketZ = TicketZV4(start_date=matin, end_date=timezone.localtime(), points_de_vente=points_de_vente)
+
+        # currency to show
+        currency_to_show = config.currency_symbol if config.currency_symbol != None else config.currency_code
+
         # Le context json lance le calcul et s'assure qu'il est serialisable.
         json_context = ticketZ.json_context()
         context = json.loads(json_context)
         context['carte_primaire'] = carte_primaire
         context['currency_code'] = config.currency_code
+        context['currency_to_show'] = currency_to_show
 
         # on pourrait envoyer le query_context, mais avec le json.loads on s'assure que le json stoqué en DB est OK
         return render(request, "sales/z_ticket.html", context=context)
@@ -255,8 +265,12 @@ class Sales(viewsets.ViewSet):
         # Le context json lance le calcul et s'assure qu'il est serialisable.
         json_context = ticketZ.json_context()
         context = json.loads(json_context)
+
+        # currency to show
+        currency_to_show = config.currency_symbol if config.currency_symbol != None else config.currency_code
+
         context['carte_primaire'] = carte_primaire
-        context['currency_code'] = config.currency_code
+        context['currency_to_show'] = currency_to_show
 
         # on pourrait envoyer le query_context, mais avec le json.loads on s'assure que le json stoqué en DB est OK
         return render(request, "sales/articles_list.html", context=context)

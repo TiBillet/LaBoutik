@@ -33,8 +33,6 @@ from webview.validators import DataAchatDepuisClientValidator, PreparationValida
 logger = logging.getLogger(__name__)
 from decimal import Decimal
 
-
-
 def login_admin(request):
     user: TibiUser = request.user
 
@@ -273,6 +271,7 @@ def index(request):
 
                     data['monnaie_principale_name'] = monnaie_principale_name
                     data['currency_code'] = configuration.currency_code
+                    data['currency_symbol'] = '' if configuration.currency_symbol == None else configuration.currency_symbol
                     data['stripe_wisepos'] = Terminal.objects.filter(type=Terminal.STRIPE_WISEPOS).exists()
                     return Response(data, status=status.HTTP_200_OK)
                 else:
