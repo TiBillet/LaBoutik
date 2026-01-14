@@ -719,6 +719,10 @@ class TicketZ():
         return context_json
 
     def to_sunmi_printer_57(self):
+        # currency code
+        config = Configuration.get_solo()
+        currency = config.currency_code
+        
         #TODO: dans celery avec un max retry
         '''
         exemple :
@@ -760,22 +764,22 @@ class TicketZ():
         # header = remove_accents(header)
         ### BODY ###
         for moyen_paiement, valeur in self.to_dict.get('dict_moyenPaiement_euros').items():
-            ticket.append({"type": "text", "value": f"{moyen_paiement.upper()}:{dround(valeur)} EUR"})
+            ticket.append({"type": "text", "value": f"{moyen_paiement.upper()}:{dround(valeur)} {currency}"})
 
         ticket += [
             {"type": "text", "value": "-" * 32},
-            {"type": "text", "value": f"TOTAL HT:{dround(self.to_dict.get('total_HT'))} EUR"},
-            {"type": "text", "value": f"TOTAL TVA:{dround(self.total_collecte_toute_tva)} EUR"},
-            {"type": "text", "value": f"TOTAL TTC:{dround(self.total_TTC)} EUR"},
-            {"type": "text", "value": f"TOTAL Offert:{dround(self.total_gift_by_mp)} EUR"},
+            {"type": "text", "value": f"TOTAL HT:{dround(self.to_dict.get('total_HT'))} {currency}"},
+            {"type": "text", "value": f"TOTAL TVA:{dround(self.total_collecte_toute_tva)} {currency}"},
+            {"type": "text", "value": f"TOTAL TTC:{dround(self.total_TTC)} {currency}"},
+            {"type": "text", "value": f"TOTAL Offert:{dround(self.total_gift_by_mp)} {currency}"},
             {"type": "text", "value": "-" * 32},
         ]
 
         # Ventillation TVA
         dict_TVA = self.to_dict.get('dict_TVA')
         for tva, total in dict_TVA.items():
-            ticket.append({"type": "text", "value": f"TVA {tva}% : {dround(total)} EUR"})
-        ticket.append({"type": "text", "value": f"TOTAL TVA:{self.total_collecte_toute_tva} EUR"})
+            ticket.append({"type": "text", "value": f"TVA {tva}% : {dround(total)} {currency}"})
+        ticket.append({"type": "text", "value": f"TOTAL TVA:{self.total_collecte_toute_tva} {currency}"})
 
         # Cashless
         ticket += [
@@ -783,9 +787,9 @@ class TicketZ():
             {"type": "align", "value": "center"},
             {"type": "text", "value": f"CASHLESS"},
             {"type": "align", "value": "left"},
-            {"type": "text", "value": f"Recharge:{dround(self.to_dict.get('total_recharge'))} EUR"},
-            {"type": "text", "value": f"Recharge cadeau:{dround(self.to_dict.get('total_recharge_cadeau'))} EUR"},
-            {"type": "text", "value": f"Remboursement:{dround(self.to_dict.get('total_remboursement'))} EUR"},
+            {"type": "text", "value": f"Recharge:{dround(self.to_dict.get('total_recharge'))} {currency}"},
+            {"type": "text", "value": f"Recharge cadeau:{dround(self.to_dict.get('total_recharge_cadeau'))} {currency}"},
+            {"type": "text", "value": f"Remboursement:{dround(self.to_dict.get('total_remboursement'))} {currency}"},
         ]
 
         # Fond de caisse :
@@ -794,12 +798,12 @@ class TicketZ():
             {"type": "align", "value": "center"},
             {"type": "text", "value": f"FOND DE CAISSE ESPECE"},
             {"type": "align", "value": "left"},
-            {"type": "text", "value": f"Fond caisse initial:{dround(self.to_dict.get('fond_caisse'))} EUR"},
-            {"type": "text", "value": f"+ cashless esp:{dround(self.to_dict.get('recharge_cash'))} EUR"},
-            {"type": "text", "value": f"- cashless esp:{dround(self.to_dict.get('remboursement_espece'))} EUR"},
-            {"type": "text", "value": f"Adhesions en esp:{dround(self.to_dict.get('adhesion_espece'))} EUR"},
-            {"type": "text", "value": f"Ventes en esp:{dround(self.to_dict.get('ventes_directe_espece'))} EUR"},
-            {"type": "text", "value": f"Fond caisse final:{dround(self.to_dict.get('total_cash'))} EUR"},
+            {"type": "text", "value": f"Fond caisse initial:{dround(self.to_dict.get('fond_caisse'))} {currency}"},
+            {"type": "text", "value": f"+ cashless esp:{dround(self.to_dict.get('recharge_cash'))} {currency}"},
+            {"type": "text", "value": f"- cashless esp:{dround(self.to_dict.get('remboursement_espece'))} {currency}"},
+            {"type": "text", "value": f"Adhesions en esp:{dround(self.to_dict.get('adhesion_espece'))} {currency}"},
+            {"type": "text", "value": f"Ventes en esp:{dround(self.to_dict.get('ventes_directe_espece'))} {currency}"},
+            {"type": "text", "value": f"Fond caisse final:{dround(self.to_dict.get('total_cash'))} {currency}"},
         ]
 
         ### THE END
