@@ -111,7 +111,7 @@ class check_apikey(APIView):
 class oceco_endpoint(APIView):
     '''
     exemple :
-    curl -H "Authorization: Api-Key WDW7GZ4L.fJq05uXsi3taK1WrGtLWDis761YPSMrp" -X POST --data "number_printed=01E31CBB&qty_oceco=10" https://tibillet.demo.nasjo.fr/api/oceco_endpoint
+    curl -H "Authorization: Api-Key WDW7GZ4L.fJq05uXsi3taK1WrGtLWDis761YPSMrp" -X POST --data "number_printed=01E31CBB&qty_oceco=10" https://laboutik.demo-tibillet.ovh/api/oceco_endpoint
     '''
 
     permission_classes = [HasAPIKey]
