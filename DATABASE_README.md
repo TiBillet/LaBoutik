@@ -12,12 +12,9 @@ LaBoutik est une application de gestion de point de vente (POS) et de paiement *
 - **CarteCashless** : Cartes physiques liées aux membres pour les paiements.
 - **Assets** : Soldes et crédits disponibles sur une carte pour une monnaie donnée.
 - **CarteMaitresse** : Cartes spéciales avec des droits étendus (ex: staff).
-- **PaymentsIntent** : Suivi des intentions de paiement via Stripe.
 
 ### 👥 Utilisateurs & Membres
 - **TibiUser** : Utilisateurs du système (staff/admin) avec authentification par clé publique.
-- **Membre** : Clients ou adhérents utilisant le système cashless.
-- **StatusMembre** : Catégories ou niveaux d'adhésion des membres.
 
 ### 📦 Catalogue & Ventes
 - **Articles** : Produits en vente avec prix, TVA et méthode de préparation.
