@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION="1.1.1"
+VERSION="1.3.6"
 IMAGE_NAME="laboutik"
 DOCKER_USER="tibillet"
 
