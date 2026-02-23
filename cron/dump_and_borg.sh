@@ -1,7 +1,11 @@
 #!/bin/bash
 set -e
-# a lancer sur l'hote qui heberge les conteneurs. Verifier que borgbackup soit bien installé !
-# Créer une clé ssh dans le conteneur et copier la avec : ssh-copy-id tibilletbackup@de.codecommun.co -p 49422
+
+# Dans le cas d'un nouveau dépot BorgWarehouse ou d'un déplacement depuis ancienne méthode :
+# Ajouter l'adresse et une clé dans le .env ( l'adresse se récupère sur le front de BWH )
+# borg init --encryption=repokey-blake2 $BORG_REPO
+# borg key export $BORG_REPO .key && cat .key && rm .key
+# bash /DjangoFiles/cron/dump_and_borg.sh
 
 echo "load env from declare"
 source /home/tibillet/.env_for_cron_backup

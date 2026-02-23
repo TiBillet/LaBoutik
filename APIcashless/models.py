@@ -707,7 +707,7 @@ class Place(models.Model):
     # Fedow place
     uuid = models.UUIDField(primary_key=True, default=uuid4, editable=False)
     wallet = models.OneToOneField(Wallet, on_delete=models.PROTECT, related_name='place')
-    name = models.CharField(db_index=True, max_length=30, verbose_name=_("Nom"), unique=True)
+    name = models.CharField(db_index=True, max_length=100, verbose_name=_("Nom"), unique=True)
     dokos_id = models.CharField(max_length=50, blank=True, null=True)
     stripe_connect_valid = models.BooleanField(default=False)
 
