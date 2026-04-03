@@ -286,8 +286,8 @@
         <td class="tg-data" colspan="2">{{ table_recharges.CA | floatformat:2 | default:0 }} €</td> <!-- CA "Espèces" -->
         <td class="tg-data" colspan="2">N/A</td> <!-- TODO : Aller chercher dans fedow les recharges stripe sur les cartes --> <!-- Stripe "En ligne" -->
         <td class="tg-data" colspan="2">{{ table_recharges.CH | floatformat:2 | default:0 }} €</td> <!-- "Chèque" -->
-        <td class="tg-data" colspan="2">{{ table_vente.SN | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
-        <td class="tg-data" colspan="2">{{ table_vente.XE | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
+        <td class="tg-data" colspan="2">{{ table_recharges.SN | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
+        <td class="tg-data" colspan="2">{{ table_recharges.XE | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
         <td class="tg-data tg-gras {% if table_recharges.TOTAL < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_recharges.TOTAL | floatformat:2 | default:0 }} €</td>
     </tr>
     <tr>
@@ -301,8 +301,8 @@
         <td class="tg-data" colspan="2">{{ table_adhesions.SF | floatformat:2 | default:0 }} €</td>
         <!-- Stripe "En ligne" -->
         <td class="tg-data" colspan="2">{{ table_adhesions.CH | floatformat:2 | default:0 }} €</td> <!-- "Chèque" -->
-        <td class="tg-data" colspan="2">{{ table_vente.SN | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
-        <td class="tg-data" colspan="2">{{ table_vente.XE | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
+        <td class="tg-data" colspan="2">{{ table_adhesions.SN | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
+        <td class="tg-data" colspan="2">{{ table_adhesions.XE | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
         <td class="tg-data tg-gras {% if table_adhesions.TOTAL < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_adhesions.TOTAL | floatformat:2 | default:0 }} €</td>
     </tr>
     <tr>
@@ -314,8 +314,8 @@
         <!-- CA "Espèces" -->
         <td class="tg-data" colspan="2">N/A</td> <!-- Stripe "En ligne" -->
         <td class="tg-data" colspan="2">N/A</td> <!-- "Chèque" -->
-        <td class="tg-data" colspan="2">{{ table_vente.SN | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
-        <td class="tg-data" colspan="2">{{ table_vente.XE | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
+        <td class="tg-data" colspan="2">{{ table_retour_consigne.SN | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
+        <td class="tg-data" colspan="2">{{ table_retour_consigne.XE | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
         <td class="tg-data tg-gras {% if table_retour_consigne.TOTAL < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_retour_consigne.TOTAL | floatformat:2 | default:0 }} €</td>
     </tr>
     <tr>
@@ -327,8 +327,8 @@
         <td class="tg-data" colspan="2">N/A</td>
         <!-- TODO : Aller chercher dans fedow les recharges stripe sur les cartes --> <!-- Stripe "En ligne" -->
         <td class="tg-data" colspan="2">N/A</td> <!-- "Chèque" -->
-        <td class="tg-data" colspan="2">{{ table_vente.SN | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
-        <td class="tg-data" colspan="2">{{ table_vente.XE | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
+        <td class="tg-data" colspan="2">{{ table_remboursement.SN | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
+        <td class="tg-data" colspan="2">{{ table_remboursement.XE | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
         <td class="tg-data tg-gras {% if table_remboursement.TOTAL < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_remboursement.TOTAL | floatformat:2 | default:0 }} €</td>
     </tr>
     <tr>
@@ -338,8 +338,8 @@
         <td class="tg-data tg-gras {% if table_TOTAL_sop.CA < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_TOTAL_sop.CA | floatformat:2 | default:0 }} €</td> <!-- CA "Espèces" -->
         <td class="tg-data tg-gras {% if table_TOTAL_sop.SF < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_TOTAL_sop.SF | floatformat:2 | default:0 }} €</td> <!-- Stripe "En ligne" -->
         <td class="tg-data tg-gras {% if table_TOTAL_sop.CH < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_TOTAL_sop.CH | floatformat:2 | default:0 }} €</td> <!-- "Chèque" -->
-        <td class="tg-data tg-gras {% if table_vente.SN < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_vente.SN | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
-        <td class="tg-data tg-gras {% if table_vente.XE < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_vente.XE | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
+        <td class="tg-data tg-gras {% if table_TOTAL_sop.SN < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_TOTAL_sop.SN | floatformat:2 | default:0 }} €</td> <!-- "Stripe no fed" -->
+        <td class="tg-data tg-gras {% if table_TOTAL_sop.XE < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_TOTAL_sop.XE | floatformat:2 | default:0 }} €</td> <!-- "externe" -->
         <td class="tg-data tg-gras {% if table_TOTAL_sop.TOTAL < 0 %}tg-negatif{% else %}tg-positif{% endif %}" colspan="2">{{ table_TOTAL_sop.TOTAL | floatformat:2 | default:0 }} €</td>
     </tr>
     </tbody>
