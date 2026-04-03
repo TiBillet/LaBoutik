@@ -385,7 +385,14 @@ class RefundFromLespass(APIView):
         logger.info(request.data)
 
         # Récupération de la vente a rembourser
-        refund_sale_uuid = request.data['metadata']['original_lignearticle_uuid']
+        metadata = request.data.get('metadata')
+        if not metadata or 'original_lignearticle_uuid' not in metadata:
+            logger.error(f"RefundFromLespass : metadata manquante ou sans original_lignearticle_uuid. data reçue : {request.data}")
+            return Response(
+                {"error": "metadata avec original_lignearticle_uuid requis pour un remboursement"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        refund_sale_uuid = metadata['original_lignearticle_uuid']
         vente_depuis_lespass = get_object_or_404(ArticleVendu, uuid=refund_sale_uuid)
 
         validator = SaleFromLespassValidator(data=request.data)
