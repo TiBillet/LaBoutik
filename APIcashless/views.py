@@ -480,7 +480,13 @@ class SaleFromLespass(APIView):
                 raise Exception(
                     f"create_article_membreship_badge : Création d'Asset Adhésion ou Badge {product.errors}")
 
-        article = Articles.objects.get(pk=price_uuid)
+        article, created = Articles.objects.get_or_create(
+            pk=price_uuid,
+            defaults={
+                'name': validator.validated_data['pricesold']['price']['name'],
+                'prix': amount,
+            }
+        )
         pos, created = PointDeVente.objects.get_or_create(name=_('Billetterie'))
 
         try:

@@ -176,6 +176,7 @@ class ProductFromLespassValidator(serializers.Serializer):
             'A': (_('Adhésions'), Articles.ADHESIONS),
             'B': (_('Billet'), Articles.BILLET),
             'Q': (_('QRCode'), Articles.VENTE),
+            'F': (_('Reservation gratuite'), Articles.BILLET),
         }
         asset_fedow = MoyenPaiement.objects.get(pk=product['uuid']) if categorie in ['G','A'] else None
 
