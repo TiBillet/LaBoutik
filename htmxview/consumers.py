@@ -2,11 +2,11 @@
 import json
 import logging
 
+from channels.db import database_sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.conf import settings
 from django.template.loader import get_template
 from django.utils import timezone
-from nose.tools import raises
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +22,10 @@ class PrintConsumer(AsyncWebsocketConsumer):
         if not settings.DEBUG:
             if not self.user.is_authenticated or not hasattr(self.user, 'appareil'):
                 logger.error(f"{self.room_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
-                raise Exception(f"{self.room_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
+                # On ferme proprement le websocket au lieu de lever une exception.
+                # / Cleanly close the socket instead of raising.
+                await self.close()
+                return
 
 
         # Join room group
@@ -83,11 +86,14 @@ class TerminalConsumer(AsyncWebsocketConsumer):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.user = self.scope['user']
 
-        # Si l'user n'est pas un terminal préalablement appairé :
+        # Si l'appareil n'est pas appairé : on ferme proprement le websocket
+        # au lieu de lever une exception (qui laissait un traceback inutile).
+        # / Device not paired: cleanly close the socket instead of raising.
         if not settings.DEBUG:
             if not self.user.is_authenticated or not hasattr(self.user, 'appareil'):
                 logger.error(f"{self.room_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
-                raise Exception(f"{self.room_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
+                await self.close()
+                return
 
         logger.info(f"{self.room_name} {self.user} connected")
 
@@ -98,6 +104,66 @@ class TerminalConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
+
+        # REJEU D'ETAT A LA (RE)CONNEXION
+        # / State replay on (re)connect
+        #
+        # Le resultat final du paiement (succes/annule) est pousse une seule fois
+        # par la tache Celery `poll_payment_intent_status`.
+        # Si le reseau de la borne coupe juste a cet instant, ou si le paiement
+        # reussit avant meme que ce websocket soit connecte, le message est perdu :
+        # l'ecran reste bloque sur le spinner alors que Stripe a deja valide.
+        #
+        # Pour eviter ca : des qu'un client (re)connecte, on relit l'etat reel du
+        # paiement en base. S'il est deja termine, on lui renvoie tout de suite le
+        # bon ecran. La tache Celery met l'etat a jour en base meme quand la borne
+        # est deconnectee, donc l'etat lu ici est fiable.
+        #
+        # / The final payment result is pushed only once by the Celery task and can
+        # be lost on a flaky network. On reconnect we re-read the real status from
+        # the database and replay the correct screen.
+        await self.replay_payment_state_if_finished()
+
+    @database_sync_to_async
+    def get_finished_template_name(self):
+        """
+        Lit le statut reel du paiement en base et renvoie le nom du template final
+        si le paiement est termine, sinon None.
+        / Reads the real payment status from DB; returns the final template name
+        if the payment is finished, else None.
+
+        room_name == payment_intent_stripe_id
+        (voir routing.py et kiosk/waiting_credit_card_terminal.html)
+        """
+        from APIcashless.models import PaymentsIntent
+        try:
+            payment_intent = PaymentsIntent.objects.get(payment_intent_stripe_id=self.room_name)
+        except PaymentsIntent.DoesNotExist:
+            return None
+
+        if payment_intent.status == PaymentsIntent.SUCCEEDED:
+            return 'success.html'
+        if payment_intent.status == PaymentsIntent.CANCELED:
+            return 'cancel.html'
+        # Paiement encore en cours : le polling enverra la suite.
+        # / Still in progress: polling will send the rest.
+        return None
+
+    async def replay_payment_state_if_finished(self):
+        """
+        Renvoie immediatement l'ecran final (succes/annule) si le paiement est
+        deja termine au moment ou ce client (re)connecte. Sinon ne fait rien.
+        / Immediately replays the final screen if the payment is already finished.
+        """
+        template_name = await self.get_finished_template_name()
+        if not template_name:
+            return
+        logger.info(f"Rejeu d'etat WS pour {self.room_name} -> kiosk/{template_name}")
+        # Meme rendu que la methode `template()` : le HTML porte un hx-swap-oob
+        # qui remplace #tb-kiosque cote borne.
+        # / Same render as `template()`: the HTML carries an hx-swap-oob.
+        html = get_template(f"kiosk/{template_name}").render(context={})
+        await self.send(text_data=html)
 
     async def disconnect(self, close_code):
         # Leave room group
