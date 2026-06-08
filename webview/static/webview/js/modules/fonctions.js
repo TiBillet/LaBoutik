@@ -132,7 +132,13 @@ export function popup(options) {
 
   if (options.boutons !== undefined) boutons = options.boutons
 
-  style_fond = 'background-color:' + type_message[options.type].coul_fond + ';'
+  // Couleur explicite (ex: statut d'adhesion) prioritaire sur le type.
+  // / Explicit color (e.g. membership status) overrides the type color.
+  let coul_fond = type_message[options.type].coul_fond
+  if (options.couleur) {
+    coul_fond = options.couleur
+  }
+  style_fond = 'background-color:' + coul_fond + ';'
 
   action_prope_style = ' style="' + style_curseur + style_fond + '"'
 

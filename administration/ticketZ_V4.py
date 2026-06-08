@@ -516,8 +516,13 @@ class TicketZ:
             prix_achat: Decimal = ligne[2]
             taux_tva: Decimal = ligne[3]
 
-            # STR plutôt que Categorie pour le json dump
-            categorie: str = f"{article.categorie}"
+            # STR plutôt que Categorie pour le json dump.
+            # Si l'article n'a pas de catégorie, on le range sous "Sans catégorie".
+            # / Articles without a category are grouped under "Sans catégorie".
+            if article.categorie is None:
+                categorie: str = str(_("Sans catégorie"))
+            else:
+                categorie: str = f"{article.categorie}"
 
             # Tous les articles vendus de ce tuple
             articles_totaux = articles_vendus.filter(
@@ -547,8 +552,12 @@ class TicketZ:
             #     tva = tva_from_ttc(total_euro_vendu, categorie.tva.taux)
             # benefice = total_euro_vendu - cout_total - tva
 
-            # Toute les cases du tableau. Le tuple de 3 unique est utilisé comme clé
-            table[categorie][ligne] = {
+            # Toute les cases du tableau. Le tuple de 3 unique est utilisé comme clé.
+            # table[categorie] n'existe pas toujours : la catégorie peut être
+            # cashless (exclue plus haut) ou absente. setdefault crée la case
+            # manquante au lieu de lever KeyError.
+            # / setdefault avoids KeyError when the category key is missing.
+            table.setdefault(categorie, {})[ligne] = {
                 "name": article.name,
                 "qty_vendus": vendus.aggregate(Sum("qty"))["qty__sum"] or 0,
                 "qty_offertes": offerts.aggregate(Sum("qty"))["qty__sum"] or 0,

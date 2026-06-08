@@ -2147,6 +2147,16 @@ class Configuration(SingletonModel):
         default="https://www.tibillet.re/"
     )
 
+    # Clé API ExternalApiKey (Lespass) pour lire les adhesions au paiement NFC.
+    # Collee a la main par l'admin. / Lespass key to read memberships.
+    lespass_api_key = models.CharField(max_length=100, blank=True, null=True,
+                                       verbose_name=_("Clé API Lespass (adhésions)"))
+
+    # Active la verification d'adhesion + couleur a chaque paiement NFC.
+    # / Enables membership check + color on each NFC payment.
+    verifier_adhesion_paiement_nfc = models.BooleanField(default=False,
+                                       verbose_name=_("Vérifier l'adhésion à chaque paiement NFC"))
+
     '''
     CASHBACK
     '''

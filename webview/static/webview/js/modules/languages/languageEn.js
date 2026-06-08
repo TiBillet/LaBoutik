@@ -171,6 +171,9 @@ export const en = {
     available: 'available',
     enable: 'enable',
     connection: 'connection',
-    printing: 'printing'
+    printing: 'printing',
+    validMemberships: 'valid memberships',
+    noValidMembership: 'no valid membership',
+    validUntil: 'valid until'
   }
 }

@@ -1206,6 +1206,12 @@ class ConfigurationAdmin(SingletonModelAdmin):
                 'revoquer_dokos',
             ),
         }),
+        ('Lespass', {
+            'fields': (
+                'lespass_api_key',
+                'verifier_adhesion_paiement_nfc',
+            ),
+        }),
         ('Federation', {
             'fields': (
                 # 'string_connect',
@@ -1447,6 +1453,24 @@ class ConfigurationAdmin(SingletonModelAdmin):
             messages.add_message(request, messages.SUCCESS, _("Mise à jour des assets Fedow OK"))
         except Exception as e:
             messages.add_message(request, messages.ERROR, _(f"Fedow non connecté. Asset non mis à jour : {e}"))
+
+        ### LESPASS — verification d'adhesion au paiement NFC
+        # Si l'admin coche la case, on exige une cle ET un test d'API live.
+        # Si le test echoue, on decoche la case et on previent : jamais de case
+        # cochee sans connexion Lespass valide (sinon chaque paiement NFC ferait
+        # un appel voue a l'echec).
+        # / If the box is ticked, require a key AND a live API test. On failure,
+        #   untick it and warn (never enabled without a valid Lespass link).
+        if instance.verifier_adhesion_paiement_nfc:
+            from webview.adhesion import tester_connexion_lespass
+            succes_lespass, message_lespass = tester_connexion_lespass(instance)
+            if succes_lespass:
+                messages.add_message(request, messages.SUCCESS,
+                                     _(f"Lespass : {message_lespass} Vérification d'adhésion activée."))
+            else:
+                instance.verifier_adhesion_paiement_nfc = False
+                messages.add_message(request, messages.WARNING,
+                                     _(f"Vérification d'adhésion NON activée — {message_lespass}"))
 
         super().save_model(request, instance, form, change)
 

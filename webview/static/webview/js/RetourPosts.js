@@ -5,6 +5,45 @@ window.orthoPaiement = {
   CH: 'cheque'
 }
 
+/**
+ * Echappe les caracteres HTML d'un texte avant injection dans le DOM.
+ * / Escapes HTML characters before injecting text into the DOM.
+ *
+ * LOCALISATION : webview/static/webview/js/RetourPosts.js
+ *
+ * Empeche qu'un texte venant du serveur (ex : nom d'adhesion renvoye par
+ * Lespass) contenant des < ou > ne casse l'affichage ou n'injecte du HTML.
+ * Technique : on pose le texte en textContent puis on relit innerHTML.
+ *
+ * @param {string} texte - texte brut a echapper
+ * @return {string} texte avec &lt; &gt; &amp; echappes
+ */
+function echapperHtml(texte) {
+  const conteneur = document.createElement('div')
+  conteneur.textContent = texte
+  return conteneur.innerHTML
+}
+
+/**
+ * Formate une date ISO en date locale courte (JJ/MM/AAAA), ou '' si absente/invalide.
+ * / Formats an ISO date to a short local date, or '' if missing/invalid.
+ *
+ * LOCALISATION : webview/static/webview/js/RetourPosts.js
+ * Utilise pour afficher la date de fin de validite d'une adhesion dans le popup.
+ *
+ * @param {string} dateIso - date au format ISO (ex : "2026-09-01T23:59:59Z")
+ * @return {string} date locale courte, ou '' si pas de date exploitable
+ */
+function formaterDateAdhesion(dateIso) {
+  if (!dateIso) return ''
+  const date = new Date(dateIso)
+  if (isNaN(date.getTime())) return ''
+  // Locale alignee sur la langue choisie dans le POS (localStorage 'language').
+  // / Locale aligned with the POS chosen language.
+  const langue = localStorage.getItem('language') === 'en' ? 'en-GB' : 'fr-FR'
+  return date.toLocaleDateString(langue, { day: '2-digit', month: '2-digit', year: 'numeric' })
+}
+
 async function showButtonPrintTicket(retour, options) {
   // ne pas afficher ce bouton dans ce context
   const action = options.actionAValider !== undefined ? options.actionAValider : 'unknown'
@@ -480,6 +519,13 @@ async function afficherRetourVenteDirecte(retour, status, options) {
         <span data-i8n="transaction,capitalize">Transaction</span> <span data-i8n="ok">Ok</span>
       </div>`
 
+      // Nom du porteur affiche une seule fois, sous le titre (si carte nominative).
+      // Evite de repeter le nom sur les lignes "carte avant/apres".
+      // / Card holder name shown once, under the title (avoids repeating it).
+      if (retour.carte && retour.carte.membre_name) {
+        msgDefaut += `<div class="popup-sous-titre-nom" data-testid="popup-nom-client">${echapperHtml(retour.carte.membre_name)}</div>`
+      }
+
       // envoie les indexs de traduction des monnaies utilisées
       let moyensDePaiement = `(<span data-i8n="${orthoPaiement[options.achats.moyen_paiement]}"></span>`
       if (options.achats.complementaire !== undefined) {
@@ -529,10 +575,17 @@ async function afficherRetourVenteDirecte(retour, status, options) {
           if (options.achats.moyen_paiement === 'nfc') {
             const surCarteAvantAchat = new Big(retour.total_sur_carte_avant_achats)
             const surCarteApresAchat = new Big(retour.carte.total_monnaie)
-            msgDefaut += `<div class="popup-msg1 test-return-pre-purchase-card">${retour.carte.membre_name} - <span data-i8n="prePurchaseCard">carte avant achats</span> 
-            ${surCarteAvantAchat} <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>
-            <div class="popup-msg1 test-return-post-purchase-card">${retour.carte.membre_name} - <span data-i8n="postPurchaseCard">carte après achats</span> ${surCarteApresAchat} 
-            <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>`
+            const symboleMonnaie = getTranslate('currencySymbol', null, 'methodCurrency')
+            // Solde carte avant -> apres sur UNE seule ligne (le nom est en en-tete).
+            // On conserve les deux classes test-* pour ne pas casser les selecteurs.
+            // / Card balance before -> after on a single line (name is in the header).
+            msgDefaut += `<div class="popup-msg1 popup-solde-carte test-return-pre-purchase-card test-return-post-purchase-card"
+                 aria-label="${getTranslate('card', 'capitalize') || 'Carte'}">
+            <span class="popup-solde-label" data-i8n="card,capitalize">carte</span>
+            <span>${surCarteAvantAchat} ${symboleMonnaie}</span>
+            <span class="popup-solde-fleche" aria-hidden="true">→</span>
+            <span>${surCarteApresAchat} ${symboleMonnaie}</span>
+          </div>`
           }
 
         } else {
@@ -675,15 +728,81 @@ async function afficherRetourVenteDirecte(retour, status, options) {
         msgDefaut += `</div>`
       }
 
+      // Bloc adhesions affiche AVANT le bouton "Retour".
+      // adhesion_couleur est notre marqueur de reponse fiable : s'il est absent
+      // (option desactivee) ou null (Lespass injoignable), on n'affiche rien car
+      // on ne connait pas le statut reel du porteur.
+      // / Membership block shown BEFORE the "Return" button.
+      //   adhesion_couleur is our "reliable answer" marker: if absent (feature off)
+      //   or null (Lespass unreachable) we show nothing (real status unknown).
+      let adhesionsHtml = ''
+      if (retour.adhesion_couleur) {
+        const adhesionsValides = (retour.adhesions || []).filter(adh => adh.is_valid)
+        if (adhesionsValides.length > 0) {
+          // Au moins une adhesion valide : on liste uniquement les valides.
+          // / At least one valid membership: list only the valid ones.
+          let pills = ''
+          let ordre = 0
+          for (const adh of adhesionsValides) {
+            ordre += 1
+            // Nom echappe : il vient de Lespass, on ne fait pas confiance a son HTML.
+            // / Name escaped: it comes from Lespass, we don't trust its HTML.
+            const nomAdhesion = echapperHtml(adh.product_name || '')
+            const nomAdherent = echapperHtml(adh.member_name || '')
+            const tarif = echapperHtml(adh.price_name || '')
+            const dateFin = formaterDateAdhesion(adh.deadline)
+            // Nom de l'adherent (depuis Lespass, pas le membre LaBoutik), sur sa ligne.
+            // / Member name (from Lespass, not the LaBoutik member), on its own line.
+            const ligneAdherent = nomAdherent
+              ? `<span class="popup-adhesion-adherent">${nomAdherent}</span>`
+              : ''
+            // Ligne meta : tarif + date de validite, separes par un point median.
+            // / Meta line: price + validity date, separated by a middle dot.
+            const metaParts = []
+            if (tarif) metaParts.push(tarif)
+            if (dateFin) metaParts.push(`<span data-i8n="validUntil">valide jusqu’au</span> ${dateFin}`)
+            const ligneMeta = metaParts.length > 0
+              ? `<span class="popup-adhesion-meta">${metaParts.join(' · ')}</span>`
+              : ''
+            pills += `
+              <div class="popup-adhesion-pill" data-testid="popup-adhesion-row" role="listitem" style="--ordre:${ordre}">
+                <span class="popup-adhesion-check" aria-hidden="true">✓</span>
+                <span class="popup-adhesion-infos">
+                  <span class="popup-adhesion-nom">${nomAdhesion}</span>
+                  ${ligneAdherent}
+                  ${ligneMeta}
+                </span>
+              </div>`
+          }
+          adhesionsHtml = `
+            <div class="popup-adhesions" data-testid="popup-adhesions">
+              <div class="popup-adhesions-titre" data-i8n="validMemberships,capitalize">Adhésions valides</div>
+              <div class="popup-adhesions-liste" role="list">${pills}</div>
+            </div>`
+        } else {
+          // Aucune adhesion valide (aucune adhesion du tout, ou toutes expirees).
+          // / No valid membership (none at all, or all expired).
+          adhesionsHtml = `
+            <div class="popup-adhesions" data-testid="popup-adhesions">
+              <div class="popup-adhesion-aucune" data-testid="popup-adhesion-aucune">
+                <span aria-hidden="true">⛔</span>
+                <span data-i8n="noValidMembership,capitalize">Aucune adhésion valide</span>
+              </div>
+            </div>`
+        }
+      }
+
       msg = `<div class="BF-col-uniforme l100p h100p">
           <div class="BF-col">
             ${msgDefaut}
             ${await showButtonPrintTicket(retour, options)}
           </div>
+          ${adhesionsHtml}
           <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
         </div>`
-      // affichage du popup
-      fn.popup({ message: msg, type: typeMsg })
+      // affichage du popup (couleur = statut d'adhesion si fourni, sinon couleur du type)
+      // / show popup (color = membership status if provided, else type color)
+      fn.popup({ message: msg, type: typeMsg, couleur: retour.adhesion_couleur })
     } else {
       gestionTransactionFondsInsuffisants(retour, options)
     }
