@@ -85,6 +85,10 @@ def _post(config, path, data):
     # logger.debug("_post verify_signature end")
 
     session = requests.Session()
+    # timeout OBLIGATOIRE : sans lui, requests attend indefiniment et gele le
+    # worker gunicorn. Comme cet appel Fedow se fait dans le cycle requete/reponse
+    # (ex: SaleFromLespass), un Fedow lent ferait timeouter l'appelant (Lespass, 10s).
+    # / Mandatory timeout: without it requests blocks forever and freezes the worker.
     request_fedow = session.post(
         f"https://{fedow_domain}/{path}/",
         headers={
@@ -94,6 +98,7 @@ def _post(config, path, data):
         },
         data=json.dumps(data),
         verify=bool(not settings.DEBUG),
+        timeout=(3, 5),
     )
     # TODO: Vérifier la signature de FEDOW
     session.close()
@@ -121,6 +126,10 @@ def _get(config, path: list, arg=None, param=None):
                             signature)
 
     session = requests.Session()
+    # timeout OBLIGATOIRE : sans lui, requests attend indefiniment et gele le
+    # worker gunicorn (cf. _post ci-dessus). get_accepted_assets() est appele a
+    # chaque vente recue de Lespass -> un Fedow lent fait timeouter Lespass (10s).
+    # / Mandatory timeout: without it requests blocks forever and freezes the worker.
     request_fedow = session.get(
         f"https://{fedow_domain}{PATH}",
         headers={
@@ -128,6 +137,7 @@ def _get(config, path: list, arg=None, param=None):
             "Signature": f"{signature}",
         },
         verify=bool(not settings.DEBUG),
+        timeout=(3, 5),
     )
     session.close()
     # TODO: Vérifier la signature de FEDOW

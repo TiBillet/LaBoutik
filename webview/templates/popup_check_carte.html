@@ -21,6 +21,11 @@
                     <span>{% trans "Carte fédérée" %}</span>
                 </div>
             {% endif %}
+            {% if membre_name %}
+                {# Nom du porteur, affiche une fois (comme sur le popup de paiement). #}
+                {# Card holder name, shown once (same as the payment popup). #}
+                <div class="popup-sous-titre-nom" data-testid="popup-nom-client">{{ membre_name }}</div>
+            {% endif %}
         </div>
 
         <div class="containe" style="font-size: 1.2em">
@@ -46,7 +51,38 @@
                 {% endfor %}
             </div>
 
-            {% if tokens_membership %}
+            {% if lespass_repondu %}
+                {# Adhesions Lespass : validite reelle, affichees en pills (meme look #}
+                {# que le popup de paiement). / Lespass memberships: real validity as pills. #}
+                <div class="popup-adhesions" data-testid="popup-adhesions" style="margin-top: 1em;">
+                    {% if adhesions_valides %}
+                        <div class="popup-adhesions-titre">{% trans "Adhésions valides" %}</div>
+                        <div class="popup-adhesions-liste" role="list">
+                            {% for adhesion in adhesions_valides %}
+                                <div class="popup-adhesion-pill" role="listitem"
+                                     data-testid="popup-adhesion-row" style="--ordre:{{ forloop.counter }}">
+                                    <span class="popup-adhesion-check" aria-hidden="true">✓</span>
+                                    <span class="popup-adhesion-infos">
+                                        <span class="popup-adhesion-nom test-return-membership-item-name{{ forloop.counter }}">{{ adhesion.product_name }}</span>
+                                        {% if adhesion.member_name %}<span class="popup-adhesion-adherent">{{ adhesion.member_name }}</span>{% endif %}
+                                        {% if adhesion.price_name or adhesion.deadline_dt %}
+                                            <span class="popup-adhesion-meta">{% if adhesion.price_name %}{{ adhesion.price_name }}{% endif %}{% if adhesion.deadline_dt %}{% if adhesion.price_name %} · {% endif %}{% trans "valide jusqu’au" %} {{ adhesion.deadline_dt|date:"d/m/Y" }}{% endif %}</span>
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {# Aucune adhesion valide (aucune, ou toutes expirees). #}
+                        <div class="popup-adhesion-aucune" data-testid="popup-adhesion-aucune">
+                            <span aria-hidden="true">⛔</span>
+                            <span>{% trans "Aucune adhésion valide" %}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            {% elif tokens_membership %}
+                {# Fallback Fedow (pas de cle API Lespass / Lespass indispo) : presence + #}
+                {# date d'activation. / Fedow fallback (no Lespass key): presence + activation. #}
                 <div style="margin-top: 1em;">
                     <p class="popup-row-header">
                         <span>{% trans "Adhésions" %}</span>

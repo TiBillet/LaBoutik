@@ -168,3 +168,5 @@ tempo/
 /qrcode_url_and_number_for_print_yourplace.csv
 /debug_format.txt
 /resume_git_*
+/logs/
+/Backup/

@@ -172,6 +172,9 @@ export const fr = {
     available: 'disponible',
     enable: 'activé',
     connection: 'connexion',
-    printing: 'impression'
+    printing: 'impression',
+    validMemberships: 'adhésions valides',
+    noValidMembership: 'aucune adhésion valide',
+    validUntil: 'valide jusqu’au'
   }
 }

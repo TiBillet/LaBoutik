@@ -8,6 +8,7 @@ from django.core import signing
 from django.db import transaction
 from django.http import JsonResponse, HttpResponseNotFound, HttpResponseNotAllowed
 from django.shortcuts import render, redirect
+from django.utils.dateparse import parse_datetime
 from django.utils.translation import ugettext_lazy as _
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status, serializers
@@ -29,6 +30,7 @@ from webview.serializers import CarteCashlessSerializer, PointDeVenteSerializer,
     debut_fin_journee
 from webview.validators import DataAchatDepuisClientValidator, PreparationValidator, LoginHardwareValidator, \
     NewPeriphPinValidator
+from webview.adhesion import couleur_adhesion, fetch_adhesions
 
 logger = logging.getLogger(__name__)
 from decimal import Decimal
@@ -571,9 +573,46 @@ def check_carte(request):
 
         data['background'] = '#b85521'  # FOND ORANGE
         if not serializer_from_fedow['is_wallet_ephemere']:  # We get an user
-            # Check if the membership are OK
+            # Logique historique : vert si un token d'adhesion (SUB) existe cote Fedow.
+            # Attention : c'est de la PRESENCE, pas de la validite (Fedow ne porte pas
+            # la deadline). La validite reelle vient de Lespass, ci-dessous.
+            # / Legacy: green if a Fedow SUB token exists (presence, not validity).
             if data['tokens_membership']:
                 data['background'] = '#339448'  # FOND VERT
+
+        # Si l'option est activee, on enrichit avec la VALIDITE reelle des adhesions
+        # (Lespass), comme au paiement NFC : meme couleur + memes pills.
+        # IMPORTANT : sans cle API (ou Lespass injoignable, ou carte sans wallet),
+        # le flag 'lespass_repondu' reste absent -> le template garde l'affichage
+        # Fedow intact. Un simple check carte ne doit jamais tomber en erreur.
+        # / If enabled, enrich with real validity from Lespass. Without an API key
+        #   (or Lespass down / no wallet) we keep the Fedow display untouched.
+        configuration = Configuration.get_solo()
+        if configuration.verifier_adhesion_paiement_nfc:
+            wallet = carte.get_wallet()
+            if wallet is not None:
+                adhesions_lespass = fetch_adhesions(wallet.uuid, configuration)
+                # 'is not None' (et non 'truthy') : une liste vide = Lespass a repondu
+                # "aucune adhesion" -> on affiche quand meme le bloc Lespass (et pas Fedow).
+                # / Empty list still means Lespass answered: show the Lespass block.
+                if adhesions_lespass is not None:
+                    data['lespass_repondu'] = True
+
+                    # On ne garde que les adhesions valides, deadline convertie en date
+                    # pour le template (Lespass renvoie une date ISO en chaine).
+                    # / Keep only valid memberships, parse the ISO deadline for the template.
+                    adhesions_valides = []
+                    for adhesion in adhesions_lespass:
+                        if adhesion.get('is_valid'):
+                            adhesion_affichee = dict(adhesion)
+                            if adhesion.get('deadline'):
+                                adhesion_affichee['deadline_dt'] = parse_datetime(adhesion['deadline'])
+                            adhesions_valides.append(adhesion_affichee)
+                    data['adhesions_valides'] = adhesions_valides
+
+                    couleur = couleur_adhesion(adhesions_lespass)
+                    if couleur:
+                        data['background'] = couleur
 
         # ancienne réponse
         # return Response(data, status=status.HTTP_200_OK)
@@ -1131,6 +1170,28 @@ class Commande:
 
             self.reponse['route'] = "transaction_nfc"
 
+            # Couleur + liste d'adhesions du porteur (si l'option est activee en config).
+            # Le garde 'adhesion_couleur' assure un seul appel par paiement : methode_VT
+            # est appelee par article, et le cache rend de toute facon l'appel idempotent.
+            # / Membership color + list (if enabled in config); run once per payment.
+            if self.configuration.verifier_adhesion_paiement_nfc and 'adhesion_couleur' not in self.reponse:
+                wallet = self.carte_db.get_wallet()
+                # Une carte qui paie sans wallet Fedow est un etat anormal : on bloque
+                # la vente avec un message clair plutot que de laisser remonter un
+                # AttributeError opaque. La transaction @atomic est annulee : rien
+                # n'est debite (le push Fedow se fait plus loin, apres la boucle).
+                # / A paying card without a Fedow wallet is abnormal: block with a clear
+                #   message instead of an opaque AttributeError (atomic rollback, no debit).
+                if wallet is None:
+                    logger.warning(f"Paiement NFC : carte {self.carte_db} sans wallet Fedow, adhesion non verifiable.")
+                    raise NotAcceptable(
+                        detail=_("Carte sans wallet Fedow : adhésion non vérifiable, vente annulée."),
+                        code=None,
+                    )
+                adhesions = fetch_adhesions(wallet.uuid, self.configuration)
+                self.reponse['adhesions'] = adhesions or []
+                self.reponse['adhesion_couleur'] = couleur_adhesion(adhesions)
+
     # RECHARGE_EUROS = 'RE'
     def methode_RE(self, article, qty):
         # On check qu'il existe bien un token lié à l'article de recharge
@@ -1550,8 +1611,6 @@ def paiement(request):
 
             return Response(reponse, status=status.HTTP_200_OK)
 
-        logger.error(
-            f"/wv/paiement validator.errors : {validator.errors}")
         # errors = [validator.errors[error][0] for error in validator.errors]
         # import ipdb; ipdb.set_trace()
         return Response(validator.errors, status=status.HTTP_406_NOT_ACCEPTABLE)

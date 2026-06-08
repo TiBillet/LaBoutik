@@ -2,22 +2,28 @@
     font-size: xx-large;
     display: inline-block;
     text-align: right;
+    font-variant-numeric: tabular-nums;
 }
 
+/* Lignes regroupees en chips translucides, coherentes avec les pills d'adhesion. */
+/* Rows as translucent chips, consistent with the membership pills. */
 .popup-row {
-    background: white;
-    color: #3b567f;
+    color: #fff;
     display: grid;
     grid-template-columns: 2fr 1fr;
     grid-template-rows: 1fr auto;
     grid-template-areas: "name value" "origin value";
-    margin: 0;
-    padding: .5rem 0;
+    margin: .4rem 0;
+    padding: .55rem 1rem;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.10);
 }
 
+/* Plus de zebre blanc : toutes les lignes ont la meme chip translucide. */
+/* No more white zebra: every row uses the same translucent chip. */
 .popup-row:nth-child(odd) {
-    background: none;
-    color: white;
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.10);
 }
 
 .membership-row {
@@ -31,10 +37,12 @@
 
 .popup-row-header {
     align-items: center;
-    border-bottom: 2px solid;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.25);
     display: flex;
     justify-content: space-between;
     margin-bottom: .5rem;
+    padding-bottom: .3rem;
+    font-weight: bold;
 }
 
 .popup-row-name {
@@ -59,6 +67,7 @@
     padding: .3rem 0 0 1rem;
     text-align: right;
     width: 5ch;
+    font-variant-numeric: tabular-nums;
 }
 
 @media only screen and (min-width: 500px) {

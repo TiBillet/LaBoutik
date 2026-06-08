@@ -293,9 +293,13 @@ class trigger_product_update(APIView):
             product_pk = request.data['product_pk']
             if MoyenPaiement.objects.filter(pk=product_pk).exists():
                 config = Configuration.get_solo()
+                # timeout OBLIGATOIRE : appel sortant vers Lespass dans le cycle
+                # requete/reponse. Sans lui, un Lespass lent gele le worker gunicorn.
+                # / Mandatory timeout: outbound call to Lespass inside the request cycle.
                 retrieve_product = requests.get(
                     f"{config.billetterie_url}/api/products/{product_pk}/", # Ex : Si une adhésion est créé, le MP.pk est créé avec l'uuid de
-                    verify=bool(not settings.DEBUG))
+                    verify=bool(not settings.DEBUG),
+                    timeout=(3, 5))
 
                 if retrieve_product.status_code == 200 :
                     # Fabrique et mets à jour les articles adhésions ou badges
@@ -428,7 +432,6 @@ class RefundFromLespass(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-        import ipdb; ipdb.set_trace()
 
 class SaleFromLespass(APIView):
     permission_classes = [HasAPIKey]
@@ -440,6 +443,19 @@ class SaleFromLespass(APIView):
         if not validator.is_valid():
             logger.error(f"Sale from lespass not valid : {validator.errors}")
             return Response(validator.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # Idempotence : si cette vente (meme uuid) est deja enregistree, on s'arrete
+        # tout de suite. Indispensable car Lespass retente l'envoi (retry Celery) :
+        # sans ce garde, chaque retry recreerait une vente en double ET referait les
+        # appels HTTP couteux ci-dessous (Lespass /api/products + Fedow) qui saturent
+        # les workers. On repond 200 pour que Lespass marque sended_to_laboutik=True
+        # et cesse de retenter. Pattern repris de StripeBankDepositFromLespass.
+        # / Idempotency guard: if this sale already exists, return 200 immediately,
+        # before the costly outbound HTTP calls, so Lespass stops retrying.
+        vente_uuid = validator.validated_data['uuid']
+        if ArticleVendu.objects.filter(uuid=vente_uuid).exists():
+            logger.info(f"SaleFromLespass : vente {vente_uuid} deja enregistree -> skip")
+            return Response("Déja enregistré", status=status.HTTP_200_OK)
 
         price_uuid =  validator.validated_data['pricesold']['price']['uuid']
         product_uuid =  validator.validated_data['pricesold']['price']['product']
@@ -461,24 +477,37 @@ class SaleFromLespass(APIView):
         # Amount est un entier.
         amount = validator.validated_data['amount'] / 100
 
-        # On va vérifier les produit sur Lespass et créer les articles manquants
+        # On synchronise le produit depuis Lespass UNIQUEMENT si l'article n'existe
+        # pas encore dans LaBoutik. La synchro (creation des articles + fedow_asset
+        # via ProductFromLespassValidator) n'a besoin de tourner qu'a la PREMIERE
+        # vente du produit. Sans ce garde, chaque vente refaisait deux appels HTTP
+        # sortants (Lespass /api/products + Fedow get_accepted_assets) dans le cycle
+        # requete/reponse -> saturation des workers et timeouts cote Lespass.
+        # / Sync the product from Lespass ONLY when the article does not exist yet
+        # in LaBoutik. The sync only needs to run on the first sale of the product;
+        # otherwise we skip the costly outbound HTTP calls (Lespass + Fedow).
         config = Configuration.get_solo()
-        retrieve_product = requests.get(
-            f"{config.billetterie_url}/api/products/{product_uuid}/",
-            verify=bool(not settings.DEBUG))
+        article_existe_deja = Articles.objects.filter(pk=price_uuid).exists()
+        if not article_existe_deja:
+            # timeout OBLIGATOIRE : appel sortant vers Lespass dans le cycle
+            # requete/reponse. Sans lui, requests attend indefiniment et gele le worker.
+            # / Mandatory timeout: outbound call inside the request cycle.
+            retrieve_product = requests.get(
+                f"{config.billetterie_url}/api/products/{product_uuid}/",
+                verify=bool(not settings.DEBUG),
+                timeout=(3, 5))
 
-        if retrieve_product.status_code == 200:
-            # On mets à jour les produits assets Fedow
-            fedowAPI = FedowAPI()
-            fedowAPI.place.get_accepted_assets()
-            # Mets à jour tout les articles adhésions ou badges
-            # import ipdb; ipdb.set_trace()
-            logger.info(retrieve_product.json())
-            product = ProductFromLespassValidator(data=retrieve_product.json())
-            if not product.is_valid():
-                logger.error(product.errors)
-                raise Exception(
-                    f"create_article_membreship_badge : Création d'Asset Adhésion ou Badge {product.errors}")
+            if retrieve_product.status_code == 200:
+                # On mets à jour les produits assets Fedow
+                fedowAPI = FedowAPI()
+                fedowAPI.place.get_accepted_assets()
+                # Mets à jour tout les articles adhésions ou badges
+                logger.info(retrieve_product.json())
+                product = ProductFromLespassValidator(data=retrieve_product.json())
+                if not product.is_valid():
+                    logger.error(product.errors)
+                    raise Exception(
+                        f"create_article_membreship_badge : Création d'Asset Adhésion ou Badge {product.errors}")
 
         article, created = Articles.objects.get_or_create(
             pk=price_uuid,
