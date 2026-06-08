@@ -314,7 +314,9 @@ class NFCCard():
             raise ConnectionError("Fedow is down ?")
 
         elif request_fedow.status_code == 404:
-            logger.error(request_fedow.content)
+            # Carte inconnue : carte non enregistrée dans Fedow. Cas terrain normal.
+            # On ne logge pas en error pour éviter le bruit Sentry ; l'appelant gère.
+            # / Unknown card: normal case, no error log to avoid Sentry noise.
             raise FileNotFoundError(f"Carte inconnue")
 
         else:

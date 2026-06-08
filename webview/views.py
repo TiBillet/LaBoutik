@@ -549,7 +549,11 @@ def check_carte(request):
             # CardValidator. Mets à jour les assets/tokens depuis Fedow
             serializer_from_fedow = fedowApi.NFCcard.retrieve(tag_id_request)
         except Exception as e:
-            logger.error(f"Check carte FEDOW : {e}")
+            # Carte inconnue (FileNotFoundError) = cas terrain normal : pas de log.
+            # Les autres exceptions sont de vraies pannes Fedow : on garde le log error.
+            # / Unknown card is normal (no log); other errors are real failures (keep log).
+            if not isinstance(e, FileNotFoundError):
+                logger.error(f"Check carte FEDOW : {e}")
             data = {
                 'background': '#e93363',
                 'error_msg': _('Carte inconnue'),
