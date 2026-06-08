@@ -592,7 +592,7 @@ def check_carte(request):
         # / If enabled, enrich with real validity from Lespass. Without an API key
         #   (or Lespass down / no wallet) we keep the Fedow display untouched.
         configuration = Configuration.get_solo()
-        if configuration.verifier_adhesion_paiement_nfc:
+        if configuration.verifier_adhesion_paiement_nfc and configuration.lespass_api_key:
             wallet = carte.get_wallet()
             if wallet is not None:
                 adhesions_lespass = fetch_adhesions(wallet.uuid, configuration)
@@ -1174,11 +1174,16 @@ class Commande:
 
             self.reponse['route'] = "transaction_nfc"
 
-            # Couleur + liste d'adhesions du porteur (si l'option est activee en config).
+            # Couleur + liste d'adhesions du porteur (si l'option est activee ET qu'une
+            # cle Lespass est presente). Sans cle, on ne fait RIEN : comportement
+            # identique a avant (pas d'appel, pas de blocage sur wallet manquant).
             # Le garde 'adhesion_couleur' assure un seul appel par paiement : methode_VT
             # est appelee par article, et le cache rend de toute facon l'appel idempotent.
-            # / Membership color + list (if enabled in config); run once per payment.
-            if self.configuration.verifier_adhesion_paiement_nfc and 'adhesion_couleur' not in self.reponse:
+            # / Only if enabled AND a Lespass key is set. Without a key: do nothing
+            #   (same behaviour as before: no call, no block on a missing wallet).
+            if (self.configuration.verifier_adhesion_paiement_nfc
+                    and self.configuration.lespass_api_key
+                    and 'adhesion_couleur' not in self.reponse):
                 wallet = self.carte_db.get_wallet()
                 # Une carte qui paie sans wallet Fedow est un etat anormal : on bloque
                 # la vente avec un message clair plutot que de laisser remonter un
