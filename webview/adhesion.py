@@ -27,14 +27,18 @@ COULEUR_VALIDE = '#339448'    # vert  : au moins une adhesion valide
 COULEUR_EXPIREE = '#b85521'   # orange: adhesions presentes mais toutes expirees
 COULEUR_AUCUNE = '#1a1e25'    # neutre: aucune adhesion (paiement OK)
 
-# Durees de cache differenciees (cf. recette) :
-# - une adhesion trouvee change rarement -> on cache longtemps (24h).
-# - une liste VIDE est cachee tres peu (60s) : sinon un client qui adhere juste
-#   apres un scan resterait "non adherent" pendant 24h (faux negatif).
-# / Differentiated cache TTL: found memberships rarely change (24h); empty lists are
-#   cached briefly (60s) so a membership created right after a scan shows up quickly.
-CACHE_ADHESIONS_TROUVEES = 60 * 60 * 24  # 24h
-CACHE_ADHESIONS_VIDE = 60                # 60s
+# On NE cache QUE les reponses contenant au moins une adhesion VALIDE (etat stable
+# pour un moment). Les reponses "aucune valide" (liste vide OU adhesions toutes
+# expirees) ne sont PAS cachees : un renouvellement ou une nouvelle adhesion doit
+# etre visible des le prochain scan, sans attendre l'expiration d'un cache.
+# Pourquoi : 'is_valid' est un booleen TEMPOREL. Cacher un False fige un faux
+# "non valide" apres un renouvellement (incident terrain #413 : adhesion remise a
+# jour mais POS affiche "non valide" jusqu'au lendemain a cause du cache 24h).
+# / Only responses with at least one VALID membership are cached (stable for a while).
+#   "None valid" responses (empty OR all expired) are NOT cached, so a renewal or a new
+#   membership shows up on the next scan. is_valid is a TEMPORAL boolean; caching a
+#   False froze a stale "not valid" after a renewal (field incident #413).
+CACHE_ADHESIONS_VALIDE = 60 * 60 * 24    # 24h : au moins une adhesion valide
 
 
 def couleur_adhesion(adhesions):
@@ -99,10 +103,14 @@ def fetch_adhesions(wallet_uuid, config):
         logger.warning(f"fetch_adhesions : reponse non-JSON de Lespass : {e}")
         return None
 
-    # Une liste vide est cachee tres peu de temps, une liste pleine longtemps.
-    # / Empty list cached briefly, non-empty list cached for a long time.
-    duree_cache = CACHE_ADHESIONS_TROUVEES if adhesions else CACHE_ADHESIONS_VIDE
-    cache.set(cache_key, adhesions, duree_cache)
+    # On ne cache QUE s'il y a au moins une adhesion VALIDE (etat stable). Sinon
+    # (aucune valide : liste vide ou toutes expirees), on ne cache PAS : un
+    # renouvellement / une nouvelle adhesion est visible des le prochain scan.
+    # / Cache only if at least one VALID membership (stable). Otherwise (none valid)
+    #   we don't cache, so a renewal / new membership shows up on the next scan.
+    au_moins_une_valide = any(adhesion.get('is_valid') for adhesion in adhesions)
+    if au_moins_une_valide:
+        cache.set(cache_key, adhesions, CACHE_ADHESIONS_VALIDE)
     return adhesions
 
 

@@ -31,6 +31,7 @@ from webview.serializers import CarteCashlessSerializer, PointDeVenteSerializer,
 from webview.validators import DataAchatDepuisClientValidator, PreparationValidator, LoginHardwareValidator, \
     NewPeriphPinValidator
 from webview.adhesion import couleur_adhesion, fetch_adhesions
+from webview.billet_lespass import EnvoiBilletErreur, envoyer_reservation_billet
 
 logger = logging.getLogger(__name__)
 from decimal import Decimal
@@ -1371,6 +1372,111 @@ class Commande:
         #     carte_db.save()
         #
         #     logger.warning('methode_adhesion : Pas de membre sur cette carte, on lance une adhesion suspendue')
+
+    # BILLET = 'BI'
+    def methode_BI(self, article, qty):
+        """
+        Vente d'un billet d'évènement en caisse.
+        / Event ticket sale at the POS.
+
+        LOCALISATION : webview/views.py (classe Commande)
+
+        Le billet doit exister côté Lespass pour être scanné à l'entrée.
+        On crée donc la réservation sur Lespass via l'API v2, en synchrone,
+        AVANT d'enregistrer la vente locale.
+        Si Lespass refuse ou ne répond pas : la vente est annulée
+        (transaction atomique), rien n'est débité.
+
+        FLUX :
+        1. Vérifie le moyen de paiement (espèce ou CB uniquement)
+        2. Cherche l'email du client : carte NFC -> membre -> email,
+           sinon email de la Configuration (billet anonyme rattaché à la caisse)
+        3. webview/billet_lespass.py : envoyer_reservation_billet()
+        4. Lespass crée Reservation + Tickets + ligne de vente (origine LaBoutik)
+        5. Enregistre la vente locale (ArticleVendu) avec l'uuid de la
+           réservation Lespass en metadata
+
+        DEPENDENCIES :
+        - Configuration.lespass_api_key (permission "reservation" côté Lespass)
+        - L'uuid de l'article = l'uuid du tarif (Price) Lespass
+        """
+        total = round((article.prix * qty), 2)
+        self.total_vente_article += total
+        config = self.configuration
+
+        # Seuls l'espèce et la carte bancaire sont acceptés pour un billet.
+        # Le cashless impliquerait une transaction Fedow : pas encore géré.
+        # / Only cash and credit card are accepted for tickets (no cashless yet).
+        moyens_acceptes = {
+            MoyenPaiement.CASH: "cash",
+            MoyenPaiement.CREDIT_CARD_NOFED: "card",
+        }
+        if self.moyen_paiement.categorie not in moyens_acceptes:
+            raise NotAcceptable(
+                detail=_("Les billets n'acceptent que espèce ou carte bancaire."),
+                code=None,
+            )
+        payment_method_lespass = moyens_acceptes[self.moyen_paiement.categorie]
+
+        # Email du client : carte NFC -> membre -> email.
+        # Sinon, billet anonyme : on utilise l'email de la caisse.
+        # Le billet (PDF) est envoyé par Lespass à cet email.
+        # / Customer email from the NFC card, else the POS email (anonymous ticket).
+        email_client = None
+        if self.carte_db and self.carte_db.membre and self.carte_db.membre.email:
+            email_client = self.carte_db.membre.email
+        if not email_client:
+            email_client = config.email
+        if not email_client:
+            raise NotAcceptable(
+                detail=_("Aucun email disponible pour créer le billet. "
+                         "Renseignez l'email dans les paramètres de la caisse."),
+                code=None,
+            )
+
+        # Appel synchrone vers Lespass. En cas d'échec : vente refusée,
+        # la transaction atomique annule tout, rien n'est débité.
+        # / Synchronous call to Lespass. On failure: sale refused, full rollback.
+        try:
+            reservation = envoyer_reservation_billet(
+                article=article,
+                qty=qty,
+                email=email_client,
+                payment_method=payment_method_lespass,
+                config=config,
+            )
+        except EnvoiBilletErreur as erreur:
+            raise NotAcceptable(detail=f"{erreur}", code=None)
+
+        # Enregistrement de la vente locale, avec la référence Lespass.
+        # / Local sale record, with the Lespass reservation reference.
+        tva = 0
+        if article.categorie:
+            if article.categorie.tva:
+                tva = article.categorie.tva.taux
+
+        ArticleVendu.objects.create(
+            article=article,
+            prix=article.prix,
+            prix_achat=article.prix_achat,
+            tva=tva,
+            qty=qty,
+            pos=self.point_de_vente,
+            carte=self.carte_db,
+            membre=self.carte_db.membre if self.carte_db else None,
+            moyen_paiement=self.moyen_paiement,
+            responsable=self.responsable,
+            commande=self.uuid_commande,
+            uuid_paiement=self.uuid_paiement,
+            table=self.table,
+            ip_user=self.ip_user,
+            metadata=json.dumps({
+                "lespass_reservation": reservation.get("identifier"),
+                "email": f"{email_client}",
+            }),
+        )
+
+        self.reponse['route'] = f'transaction_{self.moyen_paiement.name.lower().replace(" ", "_")}'
 
     # RETOUR_CONSIGNE = 'CR'
     def methode_CR(self, article, qty):
