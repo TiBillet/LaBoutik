@@ -178,7 +178,23 @@ class ProductFromLespassValidator(serializers.Serializer):
             'Q': (_('QRCode'), Articles.VENTE),
             'F': (_('Reservation gratuite'), Articles.BILLET),
         }
-        asset_fedow = MoyenPaiement.objects.get(pk=product['uuid']) if categorie in ['G','A'] else None
+        # Pour une adhésion ('A') ou un badge ('G'), on récupère l'asset Fedow (MoyenPaiement)
+        # dont le pk correspond à l'uuid du produit. Cet asset est normalement créé en amont par
+        # get_accepted_assets(). S'il n'existe pas (asset Fedow jamais créé/accepté par la place,
+        # ou produit catégorisé adhésion côté Lespass sans asset associé), on NE crashe PAS en 500 :
+        # filter().first() renvoie None, l'article est créé sans fedow_asset et la vente passe.
+        # / For a membership ('A') or badge ('G'), fetch the Fedow asset (MoyenPaiement) whose pk
+        # matches the product uuid. Normally created earlier by get_accepted_assets(). If missing,
+        # do NOT crash with a 500: filter().first() returns None, the article is created without a
+        # Fedow asset and the sale goes through.
+        asset_fedow = None
+        if categorie in ['G', 'A']:
+            asset_fedow = MoyenPaiement.objects.filter(pk=product['uuid']).first()
+            if asset_fedow is None:
+                logger.warning(
+                    f"ProductFromLespassValidator : aucun MoyenPaiement (asset Fedow) pour "
+                    f"l'adhésion/badge {product['uuid']} ({product.get('name')}). "
+                    f"Article créé sans fedow_asset.")
 
         # Si c'est un billet, une adhésion ou un article badge :
         # Création de la catégorie d'article
