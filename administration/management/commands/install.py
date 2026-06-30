@@ -35,7 +35,14 @@ class Command(BaseCommand):
         class Install(object):
             def __init__(self, options):
                 self.main_asset = os.environ['MAIN_ASSET_NAME']
-                self.admin_email = os.environ['ADMIN_EMAIL']
+                # L'admin de la caisse doit etre le meme que l'admin du tenant
+                # Lespass cible (ex: chantefrein). On utilise ADMIN_LABOUTIK s'il
+                # est defini dans le .env, sinon on retombe sur l'admin classique
+                # ADMIN_EMAIL. Le .env est partage entre Lespass et LaBoutik, donc
+                # ADMIN_LABOUTIK permet de viser un tenant different de lespass.
+                # / LaBoutik admin must match the target Lespass tenant admin.
+                #   Use ADMIN_LABOUTIK if set in .env, else fall back to ADMIN_EMAIL.
+                self.admin_email = os.environ.get('ADMIN_LABOUTIK') or os.environ['ADMIN_EMAIL']
 
                 self.fedow_url = os.environ['FEDOW_URL']
                 # Au format https://fedow.tibillet.localhost/
@@ -88,7 +95,7 @@ class Command(BaseCommand):
 
             def _base_config(self, options):
                 config = Configuration.get_solo()
-                config.email = os.environ['ADMIN_EMAIL']
+                config.email = self.admin_email
                 config.billetterie_url = os.environ['LESPASS_TENANT_URL']
                 config.fedow_domain = os.environ['FEDOW_URL']
 
@@ -467,7 +474,7 @@ class Command(BaseCommand):
                 # Création de l'user admin via l'email dans le .env
                 User = get_user_model()
                 staff_group, created = Group.objects.get_or_create(name="staff")
-                email_first_admin = os.environ['ADMIN_EMAIL']
+                email_first_admin = self.admin_email
                 admin, created = User.objects.get_or_create(
                     username=email_first_admin,
                     email=email_first_admin,
@@ -494,7 +501,7 @@ class Command(BaseCommand):
                     # On récupère la clé publique de l'admin commun
                     hello_lespass = requests.post(f'{lespass_url}api/get_user_pub_pem/',
                                                   data={
-                                                      "email": f"{os.environ['ADMIN_EMAIL']}",
+                                                      "email": f"{self.admin_email}",
                                                   },
                                                   verify=bool(not settings.DEBUG))
                     # Returns True if :attr:`status_code` is less than 400, False if not
@@ -522,7 +529,7 @@ class Command(BaseCommand):
                                                       "server_cashless": f"https://{os.environ['DOMAIN']}",
                                                       "key_cashless": f"{rsa_encrypt_string(utf8_string=key, public_key=lespass_admin_public_key)}",
                                                       "pum_pem_cashless": f"{config.get_public_pem()}",
-                                                      "email": f"{os.environ['ADMIN_EMAIL']}",
+                                                      "email": f"{self.admin_email}",
                                                   },
                                                   verify=bool(not settings.DEBUG))
 
@@ -661,13 +668,23 @@ class Command(BaseCommand):
                         )
                 # pour cashless demo 1
                 elif os.environ.get('DOMAIN') == 'laboutik.tibillet.localhost' or os.environ.get('MAIN_ASSET_NAME') == 'TestCoin':
+                    # Tags des cartes de demo LEGACY (V1), lus depuis le .env partage.
+                    # Ils doivent rester DISJOINTS des DEMO_TAGID_* utilises par Lespass
+                    # V2 sur le meme Fedow : un first_tag_id est global (une carte = un
+                    # seul wallet), deux places ne peuvent pas partager le meme tag.
+                    # / LEGACY (V1) demo card tags, read from the shared .env. Must stay
+                    #   DISJOINT from Lespass V2's DEMO_TAGID_* on the same Fedow.
+                    tag_cm_legacy = os.environ['DEMO_TAGID_CM_LEGACY']
+                    tag_client1_legacy = os.environ['DEMO_TAGID_CLIENT1_LEGACY']
+                    tag_client2_legacy = os.environ['DEMO_TAGID_CLIENT2_LEGACY']
+                    number_test_legacy = os.environ['FEDOW_TEST_CARD_NUMBER_LEGACY']
                     cards = [
                         ["https://demo.tibillet.localhost/qr/76dc433c-00ac-479c-93c4-b7a0710246af", "76DC433C",
-                         "EE144CE8"],
+                         tag_cm_legacy],
                         ["https://demo.tibillet.localhost/qr/87683c94-1187-49ae-a64d-54174f6eb76d", "87683C94",
-                         "93BD3684"],
+                         tag_client2_legacy],
                         ["https://demo.tibillet.localhost/qr/c2b2400c-1f7e-4305-b75e-8c1db3f8d113", "C2B2400C",
-                         "41726643"],
+                         tag_client1_legacy],
                         ["https://demo.tibillet.localhost/qr/7c9b0d8a-6c37-433b-a091-2c6017b085f0", "7C9B0D8A",
                          "11372ACA"],
                         ["https://demo.tibillet.localhost/qr/8ee38b17-fc02-4c8d-84cb-59eaaa059ee0", "A9253967",
@@ -688,7 +705,7 @@ class Command(BaseCommand):
                          "F18923CB"],
                         ["https://m.tibillet.re/qr/ff71becc-c75c-47bc-9b1e-08cf71aa3eb6", "FF71BECC", "3D30DC3F"],
                         ["https://m.tibillet.re/qr/91cbf50a-e7af-4b03-9c03-a65e5475d31b", "91CBF50A", "2DEB7B40"],
-                        ["https://m.tibillet.re/qr/c3db3821-bc6a-487b-926d-36b6ff943994", "C3DB3821", "AD1E7E40"],
+                        ["https://m.tibillet.re/qr/c3db3821-bc6a-487b-926d-36b6ff943994", number_test_legacy, "AD1E7E40"],
                         ["https://m.tibillet.re/qr/0c9e2d94-0628-45df-b30d-c974ee4cc3e4", "0C9E2D94", "9DD67D40"],
                         ["https://m.tibillet.re/qr/b1346b95-9a25-42dc-9067-e7a9f3d03d47", "B1346B95", "2DF5A23B"],
                         ["https://m.tibillet.re/qr/7eef8be2-d605-4f61-a11a-00e94dfc7953", "7EEF8BE2", "7D568D3B"],
@@ -696,7 +713,10 @@ class Command(BaseCommand):
                         ["https://m.tibillet.re/qr/d70fe430-439d-4ca5-a3ab-58fa21cac23e", "D70FE430", "BD8A0F40"],
                         ["https://m.tibillet.re/qr/312d83fd-bf04-4712-a082-0671b59c91c2", "312D83FD", "1D51AE3F"],
                         ["https://m.tibillet.re/qr/147701d4-747b-4934-93f2-597449bcde22", "147701D4", "BDCE2140"],
-                        ["https://m.tibillet.re/qr/58515F52-747b-4934-93f2-597449bcde22", "58515F52", "52BE6543"],
+                        # tag_id re-tague (52BE6543 -> 52BE6544) : 52BE6543 est desormais
+                        # la carte client_1 (DEMO_TAGID_CLIENT1_LEGACY) plus haut, et tag_id
+                        # est unique. / re-tagged to free 52BE6543 for the client_1 card above.
+                        ["https://m.tibillet.re/qr/58515F52-747b-4934-93f2-597449bcde22", "58515F52", "52BE6544"],
                     ]
                 else:
                     # Pour cashless_test2

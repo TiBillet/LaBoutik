@@ -286,6 +286,31 @@ class NFCCard():
         request_create_cards_list = _post(self.config, 'card', serializer.data)
         if request_create_cards_list.status_code == 201:
             return request_create_cards_list
+
+        # Idempotence du re-flush : la base locale de LaBoutik vient d'etre videe,
+        # mais le volume Fedow, lui, persiste. Les cartes peuvent donc deja exister
+        # cote Fedow. Dans ce cas Fedow renvoie soit un 409 (doublon d'uuid), soit
+        # un 400 avec une erreur d'unicite sur first_tag_id. Ce n'est pas une vraie
+        # erreur : la carte est deja connue de Fedow, on continue sans bloquer le flush.
+        # / Re-flush idempotency: the local DB was just flushed but the Fedow volume
+        #   persists, so cards may already exist on Fedow (409 on uuid, or 400 with a
+        #   uniqueness error on first_tag_id). Not a real error: the card is already
+        #   known by Fedow, keep going without breaking the flush.
+        corps_reponse = request_create_cards_list.text.lower()
+        carte_deja_sur_fedow = (
+            request_create_cards_list.status_code == 409
+            or (
+                request_create_cards_list.status_code == 400
+                and 'first_tag_id' in corps_reponse
+                and 'exist' in corps_reponse  # 'existe deja' (FR) / 'already exists' (EN)
+            )
+        )
+        if carte_deja_sur_fedow:
+            logger.warning(
+                "NFCcard.create : carte(s) deja presente(s) sur Fedow (re-flush), on continue"
+            )
+            return request_create_cards_list
+
         raise Exception(f"cards create error {request_create_cards_list.status_code}")
 
     def retrieve(self, user_card_firstTagId: str = None):
