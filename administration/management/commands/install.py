@@ -668,56 +668,67 @@ class Command(BaseCommand):
                         )
                 # pour cashless demo 1
                 elif os.environ.get('DOMAIN') == 'laboutik.tibillet.localhost' or os.environ.get('MAIN_ASSET_NAME') == 'TestCoin':
-                    # Tags des cartes de demo LEGACY (V1), lus depuis le .env partage.
-                    # Ils doivent rester DISJOINTS des DEMO_TAGID_* utilises par Lespass
-                    # V2 sur le meme Fedow : un first_tag_id est global (une carte = un
-                    # seul wallet), deux places ne peuvent pas partager le meme tag.
-                    # / LEGACY (V1) demo card tags, read from the shared .env. Must stay
-                    #   DISJOINT from Lespass V2's DEMO_TAGID_* on the same Fedow.
-                    tag_cm_legacy = os.environ['DEMO_TAGID_CM_LEGACY']
-                    tag_client1_legacy = os.environ['DEMO_TAGID_CLIENT1_LEGACY']
-                    tag_client2_legacy = os.environ['DEMO_TAGID_CLIENT2_LEGACY']
-                    number_test_legacy = os.environ['FEDOW_TEST_CARD_NUMBER_LEGACY']
-                    cards = [
-                        ["https://demo.tibillet.localhost/qr/76dc433c-00ac-479c-93c4-b7a0710246af", "76DC433C",
-                         tag_cm_legacy],
-                        ["https://demo.tibillet.localhost/qr/87683c94-1187-49ae-a64d-54174f6eb76d", "87683C94",
-                         tag_client2_legacy],
-                        ["https://demo.tibillet.localhost/qr/c2b2400c-1f7e-4305-b75e-8c1db3f8d113", "C2B2400C",
-                         tag_client1_legacy],
-                        ["https://demo.tibillet.localhost/qr/7c9b0d8a-6c37-433b-a091-2c6017b085f0", "7C9B0D8A",
-                         "11372ACA"],
-                        ["https://demo.tibillet.localhost/qr/8ee38b17-fc02-4c8d-84cb-59eaaa059ee0", "A9253967",
-                         "4D64463B"],
-                        ["https://demo.tibillet.localhost/qr/f75234fc-0c86-40cf-ae00-604cd3719403", "F75234FC",
-                         "CC3EB41E"],
-                        ["https://demo.tibillet.localhost/qr/b2eba074-f070-4fe3-9150-deda224b708d", "B2EBA074",
-                         "91168FE9"],
-                        ["https://demo.tibillet.localhost/qr/5ddb4c9f-5f9e-4fa1-aacb-60316f2a3aea", "5DDB4C9F",
-                         "A14F75E9"],
-                        ["https://demo.tibillet.localhost/qr/189ce45e-d606-4e5a-bfbe-5ed5ec5e4995", "189CE45E",
-                         "A14DD6CA"],
-                        ["https://demo.tibillet.localhost/qr/d6cad253-b6cf-4d8f-9238-0927de8a4ce9", "D6CAD253",
-                         "01F097CA"],
-                        ["https://demo.tibillet.localhost/qr/eced8aef-3e1f-4614-be11-b756768c9bad", "ECED8AEF",
-                         "4172AACA"],
-                        ["https://demo.tibillet.localhost/qr/7dc2fee6-a312-4ff3-849c-b26da9302174", "7DC2FEE6",
-                         "F18923CB"],
-                        ["https://m.tibillet.re/qr/ff71becc-c75c-47bc-9b1e-08cf71aa3eb6", "FF71BECC", "3D30DC3F"],
-                        ["https://m.tibillet.re/qr/91cbf50a-e7af-4b03-9c03-a65e5475d31b", "91CBF50A", "2DEB7B40"],
-                        ["https://m.tibillet.re/qr/c3db3821-bc6a-487b-926d-36b6ff943994", number_test_legacy, "AD1E7E40"],
-                        ["https://m.tibillet.re/qr/0c9e2d94-0628-45df-b30d-c974ee4cc3e4", "0C9E2D94", "9DD67D40"],
-                        ["https://m.tibillet.re/qr/b1346b95-9a25-42dc-9067-e7a9f3d03d47", "B1346B95", "2DF5A23B"],
-                        ["https://m.tibillet.re/qr/7eef8be2-d605-4f61-a11a-00e94dfc7953", "7EEF8BE2", "7D568D3B"],
-                        ["https://m.tibillet.re/qr/2182d39f-74e5-490f-a2dd-c57ef2e2e002", "2182D39F", "BD2FAF3F"],
-                        ["https://m.tibillet.re/qr/d70fe430-439d-4ca5-a3ab-58fa21cac23e", "D70FE430", "BD8A0F40"],
-                        ["https://m.tibillet.re/qr/312d83fd-bf04-4712-a082-0671b59c91c2", "312D83FD", "1D51AE3F"],
-                        ["https://m.tibillet.re/qr/147701d4-747b-4934-93f2-597449bcde22", "147701D4", "BDCE2140"],
-                        # tag_id re-tague (52BE6543 -> 52BE6544) : 52BE6543 est desormais
-                        # la carte client_1 (DEMO_TAGID_CLIENT1_LEGACY) plus haut, et tag_id
-                        # est unique. / re-tagged to free 52BE6543 for the client_1 card above.
-                        ["https://m.tibillet.re/qr/58515F52-747b-4934-93f2-597449bcde22", "58515F52", "52BE6544"],
+                    # BANC V1/V2 (S6) : on ne FABRIQUE plus les cartes ici.
+                    # Lespass V2 les a creees dans le Fedow partage. LaBoutik se
+                    # contente de les CHECKER (retrieve Fedow) : le CardValidator
+                    # synchronise alors la CarteCashless locale. Puis on rend la
+                    # carte CM (DEMO_TAGID_CM) primaire — c'est exactement le tag
+                    # que le simulateur NFC du front envoie ("primaire").
+                    # / V1/V2 bench (S6): no more card FABRICATION here. Lespass V2
+                    # created them in the shared Fedow. LaBoutik just CHECKS them
+                    # (Fedow retrieve), which syncs the local CarteCashless, then
+                    # promotes the CM card (DEMO_TAGID_CM) to primary.
+                    from fedow_connect.fedow_api import FedowAPI
+                    from django.core.management.base import CommandError
+
+                    # Tag CM + tags clients lus depuis le .env partage (plus de *_LEGACY).
+                    # / CM tag + client tags from the shared .env (no more *_LEGACY).
+                    tags_par_role = [
+                        ("cm", os.environ['DEMO_TAGID_CM'], testMembre),
+                        ("client1", os.environ.get('DEMO_TAGID_CLIENT1'), client_1_membre),
+                        ("client2", os.environ.get('DEMO_TAGID_CLIENT2'), client_2_membre),
+                        ("client3", os.environ.get('DEMO_TAGID_CLIENT3'), client_3_membre),
                     ]
+
+                    carte_cm = None
+                    for role, tag, membre in tags_par_role:
+                        if not tag:
+                            continue
+                        tag = tag.upper().strip()
+                        # Check carte : retrieve Fedow -> cree/sync la CarteCashless locale.
+                        # / Card check: Fedow retrieve -> creates/syncs the local card.
+                        try:
+                            FedowAPI().NFCcard.retrieve(tag)
+                        except FileNotFoundError:
+                            raise CommandError(
+                                f"Carte '{role}' (tag {tag}) absente de Fedow. "
+                                f"Lance d'abord le flush Lespass : c'est lui qui cree "
+                                f"les cartes du .env (DEMO_TAGID_*) dans le Fedow partage."
+                            )
+                        carte = CarteCashless.objects.get(tag_id=tag)
+                        carte.membre = membre
+                        carte.save()
+                        if role == "cm":
+                            carte_cm = carte
+
+                    # Points de vente (idempotents) requis par la carte primaire.
+                    # / Points of sale (idempotent) required by the primary card.
+                    bar1 = PointDeVente.objects.get_or_create(
+                        name="Bar 1", poid_liste=1, icon='fa-beer')[0]
+                    Resto = PointDeVente.objects.get_or_create(
+                        name="Resto", service_direct=False, poid_liste=2, icon='fa-hamburger')[0]
+                    test_pdv = PointDeVente.objects.get_or_create(name="Test", poid_liste=5)[0]
+
+                    # La carte CM devient primaire (ouvre la caisse en mode gerant).
+                    # / The CM card becomes primary (opens the POS in manager mode).
+                    carteM, created = CarteMaitresse.objects.get_or_create(
+                        carte=carte_cm, edit_mode=True)
+                    carteM.points_de_vente.add(Resto)
+                    carteM.points_de_vente.add(bar1)
+                    carteM.points_de_vente.add(test_pdv)
+                    carteM.points_de_vente.add(self.pdv_cashless)
+                    self.carte_primaire = carteM
+                    return
                 else:
                     # Pour cashless_test2
                     cards = [

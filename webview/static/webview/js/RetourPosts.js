@@ -52,10 +52,16 @@ async function showButtonPrintTicket(retour, options) {
     const btUuid = sys.uuidV4()
     window['xhValsAchats' + btUuid] = JSON.stringify(retour)
     // bt print
-    return `<bouton-basique traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="200px" height="86px" 
+    // Memes dimensions que le bouton RETOUR (400x120) pour un rendu homogene
+    // dans la zone d'actions. La couleur indigo reste propre au TICKET pour le
+    // distinguer du RETOUR (issue #104).
+    // / Same size as the RETURN button (400x120) for a homogeneous look in the
+    //   actions zone. The indigo color stays specific to TICKET to tell it apart
+    //   from RETURN (issue #104).
+    return `<bouton-basique traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="400px" height="120px"
       hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
       hx-target="#print-ticket-status-${btUuid}" hx-swap="innerHTML"
-      hx-vals='${window['xhValsAchats' + btUuid]}' style="margin-top:8px;min-width:200px;">
+      hx-vals='${window['xhValsAchats' + btUuid]}'>
     </bouton-basique>
     <div id="print-ticket-status-${btUuid}"></div>`
   } else {
@@ -700,11 +706,19 @@ async function afficherRetourVenteDirecte(retour, status, options) {
       if (options.methodes[0] === "Adhesion") {
         let msgCotisation = ''
         if (retour.carte !== undefined && retour.carte !== null) {
+          // On affiche seulement le nom du membre. L'ancienne ligne de statut
+          // d'adhesion (cotisation_membre_a_jour) a ete retiree du serializer
+          // (webview/serializers.py) : elle valait "undefined" cote front. Le
+          // statut fiable est desormais affiche par le bloc adhesionsHtml
+          // (Adhesions valides / Aucune adhesion valide) via Lespass.
+          // / Show only the member name. The old membership-status line
+          //   (cotisation_membre_a_jour) was removed from the serializer and
+          //   rendered "undefined" on the front. The reliable status is now
+          //   shown by the adhesionsHtml block via Lespass.
           msgCotisation = `
             <div class="popup-msg1">
               <span data-i8n="member">membre</span> : <span class="test-return-membre-name">${retour.carte.membre_name}</span>
             </div>
-            <div class="popup-msg1 test-msg-adhesion-date">${retour.carte.cotisation_membre_a_jour}</div>
           `
         }
 
