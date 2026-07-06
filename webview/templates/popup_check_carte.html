@@ -3,112 +3,137 @@
 {% load humanize %}
 {% get_current_language as LANGUAGE_CODE %}
 
-<div id="popup-cashless" style="background-color:{{ background }};" class="BF-col-uniforme popup-cashless-conteneur">
+{# Popup de lecture de carte. Mise en page responsive (issue #104) : infos #}
+{# carte d'un cote, adhesions de l'autre (2 colonnes en paysage), et le bouton #}
+{# RETOUR ancre en bas, toujours visible. #}
+{# / Card-check popup. Responsive layout (#104): card infos on one side, #}
+{#   memberships on the other (2 columns in landscape); RETURN button anchored #}
+{#   at the bottom, always visible. #}
+<div id="popup-cashless" style="background-color:{{ background }};" class="BF-col popup-cashless-conteneur">
 
     {% if error_msg %}
-        <div class="BF-col check-carte-inconnue l100p test-return-msg-content"
-             style="white-space: pre-line; text-align: center;">
-            {{ error_msg }}
+        <div class="popup-retour">
+            <div class="popup-retour-body">
+                <div class="popup-retour-infos">
+                    <div class="BF-col check-carte-inconnue l100p test-return-msg-content"
+                         style="white-space: pre-line; text-align: center;">
+                        {{ error_msg }}
+                    </div>
+                </div>
+            </div>
+            <div class="popup-retour-actions">
+                {% include "elements/bouton_return.html" %}
+            </div>
         </div>
     {% else %}
-        <div class="BF-col-uniforme check-carte-ok">
-            {% if serializer_from_fedow.is_wallet_ephemere %}
-                <div class="check-carte-ok-total-carte test-return-card-type">
-                    <span>{% trans "Carte anonyme" %}</span>
-                </div>
-            {% else %}
-                <div class="check-carte-ok-total-carte test-return-card-type">
-                    <span>{% trans "Carte fédérée" %}</span>
-                </div>
-            {% endif %}
-            {% if membre_name %}
-                {# Nom du porteur, affiche une fois (comme sur le popup de paiement). #}
-                {# Card holder name, shown once (same as the payment popup). #}
-                <div class="popup-sous-titre-nom" data-testid="popup-nom-client">{{ membre_name }}</div>
-            {% endif %}
-        </div>
+        <div class="popup-retour">
+            <div class="popup-retour-body">
 
-        <div class="containe" style="font-size: 1.2em">
-            <div>
-                <p class="popup-row-header">
-                    <span>{% trans "Tirelire" %}</span>
-                    <span class="popup-total-value check-carte-ok-total-carte test-return-total-card"
-                          title="total">{{ total_monnaie }}</span>
-                </p>
-
-                {% for token in tokens_cashless|dictsort:"name" %}
-                    <p class="popup-row">
-                        <span class="popup-row-value test-return-monnaie-item-value{{ forloop.counter }}">{{ token.value | dec2 }}</span>
-                        <span class="popup-row-name test-return-monnaie-item-name{{ forloop.counter }}">
-                        {{ token.name }}
-                    </span>
-                        {% if token.asset.place_origin.name %}
-                            <span class="popup-row-origin test-return-monnaie-item-place{{ forloop.counter }}" title="{% trans "Provenance" %}">
-                            {{ token.asset.place_origin.name }}
-                            </span>
+                {# Colonne infos carte : type, nom, portefeuille. #}
+                {# Card infos column: type, name, wallet. #}
+                <div class="popup-retour-infos">
+                    <div class="check-carte-ok-total-carte test-return-card-type">
+                        {% if serializer_from_fedow.is_wallet_ephemere %}
+                            <span>{% trans "Carte anonyme" %}</span>
+                        {% else %}
+                            <span>{% trans "Carte fédérée" %}</span>
                         {% endif %}
-                    </p>
-                {% endfor %}
+                    </div>
+
+                    {% if membre_name and membre_name != "---" %}
+                        {# Nom du porteur, affiche une fois (comme sur le popup de paiement). #}
+                        {# "---" est la valeur des cartes anonymes : on ne l'affiche pas. #}
+                        {# Card holder name, shown once. "---" = anonymous card: hidden. #}
+                        <div class="popup-sous-titre-nom" data-testid="popup-nom-client">{{ membre_name }}</div>
+                    {% endif %}
+
+                    {# Portefeuille en carte dense : Tirelire (total) + une ligne par monnaie. #}
+                    {# Dense wallet card: piggy bank total + one row per currency. #}
+                    <div class="popup-wallet" data-testid="popup-wallet">
+                        <div class="popup-wallet-head">
+                            <span>{% trans "Tirelire" %}</span>
+                            <span class="popup-wallet-v test-return-total-card" title="total">{{ total_monnaie }}</span>
+                        </div>
+                        {% for token in tokens_cashless|dictsort:"name" %}
+                            <div class="popup-wallet-line">
+                                <span class="popup-wallet-n">
+                                    <span class="test-return-monnaie-item-name{{ forloop.counter }}">{{ token.name }}</span>
+                                    {% if token.asset.place_origin.name %}
+                                        <span class="popup-wallet-origin test-return-monnaie-item-place{{ forloop.counter }}" title="{% trans "Provenance" %}">{{ token.asset.place_origin.name }}</span>
+                                    {% endif %}
+                                </span>
+                                <span class="popup-wallet-v"><span class="test-return-monnaie-item-value{{ forloop.counter }}">{{ token.value | dec2 }}</span></span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                {# Colonne adhesions (a droite en paysage). #}
+                {# Memberships column (right side in landscape). #}
+                {% if lespass_repondu or tokens_membership %}
+                    <div class="popup-retour-side">
+                        {% if lespass_repondu %}
+                            {# Adhesions Lespass : validite reelle, affichees en pills (meme look #}
+                            {# que le popup de paiement). / Lespass memberships: real validity as pills. #}
+                            <div class="popup-adhesions" data-testid="popup-adhesions">
+                                {% if adhesions_valides %}
+                                    <div class="popup-adhesions-titre">{% trans "Adhésions valides" %}</div>
+                                    <div class="popup-adhesions-liste" role="list">
+                                        {% for adhesion in adhesions_valides %}
+                                            <div class="popup-adhesion-pill" role="listitem"
+                                                 data-testid="popup-adhesion-row" style="--ordre:{{ forloop.counter }}">
+                                                <span class="popup-adhesion-check" aria-hidden="true">✓</span>
+                                                <span class="popup-adhesion-infos">
+                                                    <span class="popup-adhesion-nom test-return-membership-item-name{{ forloop.counter }}">{{ adhesion.product_name }}</span>
+                                                    {% if adhesion.member_name %}<span class="popup-adhesion-adherent">{{ adhesion.member_name }}</span>{% endif %}
+                                                    {% if adhesion.price_name or adhesion.deadline_dt %}
+                                                        <span class="popup-adhesion-meta">{% if adhesion.price_name %}{{ adhesion.price_name }}{% endif %}{% if adhesion.deadline_dt %}{% if adhesion.price_name %} · {% endif %}{% trans "valide jusqu’au" %} {{ adhesion.deadline_dt|date:"d/m/Y" }}{% endif %}</span>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    {# Aucune adhesion valide (aucune, ou toutes expirees). #}
+                                    <div class="popup-adhesion-aucune" data-testid="popup-adhesion-aucune">
+                                        <span aria-hidden="true">⛔</span>
+                                        <span>{% trans "Aucune adhésion valide" %}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% elif tokens_membership %}
+                            {# Fallback Fedow (pas de cle API Lespass / Lespass indispo) : presence + #}
+                            {# date d'activation. / Fedow fallback (no Lespass key): presence + activation. #}
+                            <div style="margin-top: 1em;">
+                                <p class="popup-row-header">
+                                    <span>{% trans "Adhésions" %}</span>
+
+                                    <span class="popup-total-value check-carte-ok-total-carte test-return-total-card">
+                                    <span>{{ tokens_membership | length }}</span>
+                                </span>
+                                </p>
+                                {% for token in tokens_membership|dictsort:"name" %}
+                                    <p class="popup-row membership-row">
+                                        <span class="popup-row-name test-return-membership-item-name{{ forloop.counter }}">{{ token.name }}</span>
+                                        <span class="popup-row-start test-return-membership-item-activation{{ forloop.counter }}" title="{% trans "Activation" %}">
+                                    {{ token.start_membership_date | naturalday }}
+                                </span>
+                                        <span class="popup-row-origin test-return-membership-item-place{{ forloop.counter }}" title="{% trans "Provenance" %}">
+                                    {{ token.asset.place_origin.name }}
+                                </span>
+                                    </p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                {% endif %}
+
             </div>
 
-            {% if lespass_repondu %}
-                {# Adhesions Lespass : validite reelle, affichees en pills (meme look #}
-                {# que le popup de paiement). / Lespass memberships: real validity as pills. #}
-                <div class="popup-adhesions" data-testid="popup-adhesions" style="margin-top: 1em;">
-                    {% if adhesions_valides %}
-                        <div class="popup-adhesions-titre">{% trans "Adhésions valides" %}</div>
-                        <div class="popup-adhesions-liste" role="list">
-                            {% for adhesion in adhesions_valides %}
-                                <div class="popup-adhesion-pill" role="listitem"
-                                     data-testid="popup-adhesion-row" style="--ordre:{{ forloop.counter }}">
-                                    <span class="popup-adhesion-check" aria-hidden="true">✓</span>
-                                    <span class="popup-adhesion-infos">
-                                        <span class="popup-adhesion-nom test-return-membership-item-name{{ forloop.counter }}">{{ adhesion.product_name }}</span>
-                                        {% if adhesion.member_name %}<span class="popup-adhesion-adherent">{{ adhesion.member_name }}</span>{% endif %}
-                                        {% if adhesion.price_name or adhesion.deadline_dt %}
-                                            <span class="popup-adhesion-meta">{% if adhesion.price_name %}{{ adhesion.price_name }}{% endif %}{% if adhesion.deadline_dt %}{% if adhesion.price_name %} · {% endif %}{% trans "valide jusqu’au" %} {{ adhesion.deadline_dt|date:"d/m/Y" }}{% endif %}</span>
-                                        {% endif %}
-                                    </span>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        {# Aucune adhesion valide (aucune, ou toutes expirees). #}
-                        <div class="popup-adhesion-aucune" data-testid="popup-adhesion-aucune">
-                            <span aria-hidden="true">⛔</span>
-                            <span>{% trans "Aucune adhésion valide" %}</span>
-                        </div>
-                    {% endif %}
-                </div>
-            {% elif tokens_membership %}
-                {# Fallback Fedow (pas de cle API Lespass / Lespass indispo) : presence + #}
-                {# date d'activation. / Fedow fallback (no Lespass key): presence + activation. #}
-                <div style="margin-top: 1em;">
-                    <p class="popup-row-header">
-                        <span>{% trans "Adhésions" %}</span>
-
-                        <span class="popup-total-value check-carte-ok-total-carte test-return-total-card">
-                        <span>{{ tokens_membership | length }}</span>
-                    </span>
-                    </p>
-                    {% for token in tokens_membership|dictsort:"name" %}
-                        <p class="popup-row membership-row">
-                            <span class="popup-row-name test-return-membership-item-name{{ forloop.counter }}">{{ token.name }}</span>
-                            <span class="popup-row-start test-return-membership-item-activation{{ forloop.counter }}" title="{% trans "Activation" %}">
-                        {{ token.start_membership_date | naturalday }}
-                    </span>
-                            <span class="popup-row-origin test-return-membership-item-place{{ forloop.counter }}" title="{% trans "Provenance" %}">
-                        {{ token.asset.place_origin.name }}
-                    </span>
-                        </p>
-                    {% endfor %}
-                </div>
-            {% endif %}
+            <div class="popup-retour-actions">
+                {% include "elements/bouton_return.html" %}
+            </div>
         </div>
     {% endif %}
-
-    <div class="popup-conteneur-bt-retour BF-col" style="margin: 10px 0;">
-        {% include "elements/bouton_return.html" %}
-    </div>
 
 </div>

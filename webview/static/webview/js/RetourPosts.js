@@ -52,10 +52,16 @@ async function showButtonPrintTicket(retour, options) {
     const btUuid = sys.uuidV4()
     window['xhValsAchats' + btUuid] = JSON.stringify(retour)
     // bt print
-    return `<bouton-basique traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="200px" height="86px" 
+    // Memes dimensions que le bouton RETOUR (400x120) pour un rendu homogene
+    // dans la zone d'actions. La couleur indigo reste propre au TICKET pour le
+    // distinguer du RETOUR (issue #104).
+    // / Same size as the RETURN button (400x120) for a homogeneous look in the
+    //   actions zone. The indigo color stays specific to TICKET to tell it apart
+    //   from RETURN (issue #104).
+    return `<bouton-basique traiter-texte="1" texte="TICKET|2rem" couleur-fond="#2d20e2" icon="fa-print||2.5rem" width="400px" height="120px"
       hx-post="/htmx/sales/print_ticket_purchases/" hx-trigger="click"
       hx-target="#print-ticket-status-${btUuid}" hx-swap="innerHTML"
-      hx-vals='${window['xhValsAchats' + btUuid]}' style="margin-top:8px;min-width:200px;">
+      hx-vals='${window['xhValsAchats' + btUuid]}'>
     </bouton-basique>
     <div id="print-ticket-status-${btUuid}"></div>`
   } else {
@@ -169,29 +175,49 @@ function sortAssets(a, b) {
 
 function messageRetourAssets(retour) {
   // console.log('-> fonction messageRetourAssets')
-  let assets, fragmentHtml = '', enumAssets = ''
-  if (retour.carte !== undefined) {
-    assets = retour.carte.assets
-  } else {
-    assets = retour.assets
-  }
-  // sys.logJson('assets = ', assets)
-  let valAssetsTest = 0
+  // Affiche le portefeuille de la carte en UNE carte dense : un en-tete
+  // (libelle + total) puis une ligne par monnaie, separees par de fins
+  // traits. Avant, chaque monnaie etait une grosse pastille independante,
+  // ce qui faisait deborder l'ecran et cachait le bouton Retour (issue #104).
+  // / Shows the card wallet as ONE dense card: a header (label + total) then
+  //   one row per currency, separated by hairlines. Previously each currency
+  //   was a big standalone pill that overflowed the screen and hid the Return
+  //   button (issue #104).
+  let assets = (retour.carte !== undefined) ? retour.carte.assets : retour.assets
+  const symboleMonnaie = getTranslate('currencySymbol', null, 'methodCurrency')
+
+  let lignesMonnaies = ''
+  let totalPortefeuille = new Big(0)
+  let auMoinsUneMonnaie = false
   for (let i = 0; i < assets.length; i++) {
     let valeurAsset = parseFloat(assets[i].qty)
     let nomAsset = assets[i].monnaie_name
     let categorie = assets[i].categorie.toLowerCase()
     if (valeurAsset > 0) {
-      valAssetsTest = 1
-      enumAssets += `<div class="popup-msg1 test-return-monnaie-${categorie}">- <span class="test-return-nom-monnaie nom-monnaie-item${i}">${nomAsset}</span> : <span class="test-return-valeur-monnaie valeur-monnaie-item${i}">${valeurAsset} </span><span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>`
+      auMoinsUneMonnaie = true
+      totalPortefeuille = totalPortefeuille.plus(assets[i].qty)
+      // Le montant (valeur + symbole) est insecable pour ne jamais wrapper.
+      // / The amount (value + symbol) is unbreakable so it never wraps.
+      lignesMonnaies += `<div class="popup-wallet-line test-return-monnaie-${categorie}">
+        <span class="popup-wallet-n test-return-nom-monnaie nom-monnaie-item${i}">${nomAsset}</span>
+        <span class="popup-wallet-v"><span class="test-return-valeur-monnaie valeur-monnaie-item${i}">${valeurAsset}</span> ${symboleMonnaie}</span>
+      </div>`
     }
   }
-  if (valAssetsTest === 1) {
-    // fragmentHtml = `<div class="popup-msg1"><span data-i8n="including">dont</span> :</div>`
-    fragmentHtml = `<div class="popup-msg1" style="margin-top: 1rem;"><span data-i8n="totalCardWallet">total portefeuille carte</span> :</div>`
+
+  // Aucune monnaie a afficher : on ne montre pas la carte du tout.
+  // / No currency to show: we don't display the wallet card at all.
+  if (!auMoinsUneMonnaie) {
+    return ''
   }
-  fragmentHtml += enumAssets + '<div style="margin-BOTTOM: 1rem;"></div>'
-  return fragmentHtml
+
+  return `<div class="popup-wallet" data-testid="popup-wallet">
+      <div class="popup-wallet-head">
+        <span data-i8n="totalCardWallet">total portefeuille carte</span>
+        <span class="popup-wallet-v">${totalPortefeuille.toString()} ${symboleMonnaie}</span>
+      </div>
+      ${lignesMonnaies}
+    </div>`
 }
 
 function messageRetourCarte(retour, options) {
@@ -521,8 +547,10 @@ async function afficherRetourVenteDirecte(retour, status, options) {
 
       // Nom du porteur affiche une seule fois, sous le titre (si carte nominative).
       // Evite de repeter le nom sur les lignes "carte avant/apres".
+      // "---" est la valeur des cartes anonymes : on ne l'affiche pas (issue #104).
       // / Card holder name shown once, under the title (avoids repeating it).
-      if (retour.carte && retour.carte.membre_name) {
+      //   "---" is the anonymous-card value: we don't display it (issue #104).
+      if (retour.carte && retour.carte.membre_name && retour.carte.membre_name !== '---') {
         msgDefaut += `<div class="popup-sous-titre-nom" data-testid="popup-nom-client">${echapperHtml(retour.carte.membre_name)}</div>`
       }
 
@@ -545,7 +573,12 @@ async function afficherRetourVenteDirecte(retour, status, options) {
           // total sur carte lors d'un achat de monnaies virtuelles
           if (options.methodes[0] === "AjoutMonnaieVirtuelle") {
             const surCarte = new Big(retour.carte.total_monnaie)
-            msgDefaut += `<div class="popup-msg1 test-return-total-carte">${retour.carte.membre_name} - <span data-i8n="card">carte</span> ${surCarte} <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>`
+            // Prefixe le nom du porteur seulement s'il est reel (pas "---"/vide).
+            // / Prefix the holder name only if it is real (not "---"/empty).
+            const nomPorteur = (retour.carte.membre_name && retour.carte.membre_name !== '---')
+              ? `${echapperHtml(retour.carte.membre_name)} - `
+              : ''
+            msgDefaut += `<div class="popup-msg1 test-return-total-carte">${nomPorteur}<span data-i8n="card">carte</span> ${surCarte} <span>${getTranslate('currencySymbol', null, 'methodCurrency')}</span></div>`
           }
 
           if (retour.carte) {
@@ -673,11 +706,19 @@ async function afficherRetourVenteDirecte(retour, status, options) {
       if (options.methodes[0] === "Adhesion") {
         let msgCotisation = ''
         if (retour.carte !== undefined && retour.carte !== null) {
+          // On affiche seulement le nom du membre. L'ancienne ligne de statut
+          // d'adhesion (cotisation_membre_a_jour) a ete retiree du serializer
+          // (webview/serializers.py) : elle valait "undefined" cote front. Le
+          // statut fiable est desormais affiche par le bloc adhesionsHtml
+          // (Adhesions valides / Aucune adhesion valide) via Lespass.
+          // / Show only the member name. The old membership-status line
+          //   (cotisation_membre_a_jour) was removed from the serializer and
+          //   rendered "undefined" on the front. The reliable status is now
+          //   shown by the adhesionsHtml block via Lespass.
           msgCotisation = `
             <div class="popup-msg1">
               <span data-i8n="member">membre</span> : <span class="test-return-membre-name">${retour.carte.membre_name}</span>
             </div>
-            <div class="popup-msg1 test-msg-adhesion-date">${retour.carte.cotisation_membre_a_jour}</div>
           `
         }
 
@@ -792,13 +833,25 @@ async function afficherRetourVenteDirecte(retour, status, options) {
         }
       }
 
-      msg = `<div class="BF-col-uniforme l100p h100p">
-          <div class="BF-col">
-            ${msgDefaut}
-            ${await showButtonPrintTicket(retour, options)}
+      // Mise en page responsive (issue #104) : infos transaction d'un cote,
+      // adhesions de l'autre (2 colonnes en paysage), et les boutons TICKET +
+      // RETOUR groupes dans une zone ancree en bas, toujours visible.
+      // / Responsive layout (#104): transaction infos on one side, memberships
+      //   on the other (2 columns in landscape); TICKET + RETURN buttons grouped
+      //   in a bottom-anchored zone that is always visible.
+      const boutonTicket = await showButtonPrintTicket(retour, options)
+      const colonneAdhesions = adhesionsHtml
+        ? `<div class="popup-retour-side">${adhesionsHtml}</div>`
+        : ''
+      msg = `<div class="popup-retour">
+          <div class="popup-retour-body">
+            <div class="popup-retour-infos">${msgDefaut}</div>
+            ${colonneAdhesions}
           </div>
-          ${adhesionsHtml}
-          <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
+          <div class="popup-retour-actions">
+            ${boutonTicket}
+            <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
+          </div>
         </div>`
       // affichage du popup (couleur = statut d'adhesion si fourni, sinon couleur du type)
       // / show popup (color = membership status if provided, else type color)
@@ -829,9 +882,13 @@ async function afficherRetourVenteDirecte(retour, status, options) {
     }
 
     msg = `
-      <div class="BF-col-uniforme l100p h100p">
-        ${msgs}
-        <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
+      <div class="popup-retour">
+        <div class="popup-retour-body">
+          <div class="popup-retour-infos">${msgs}</div>
+        </div>
+        <div class="popup-retour-actions">
+          <bouton-basique id="popup-retour" traiter-texte="1" texte="RETOUR|2rem||return-uppercase" couleur-fond="#3b567f" icon="fa-undo-alt||2.5rem" width="400px" height="120px" ${fonction}></bouton-basique>
+        </div>
       </div>
     `
     fn.popup({ message: msg, type: typeMsg })

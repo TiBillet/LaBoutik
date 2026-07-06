@@ -1465,12 +1465,14 @@ class ConfigurationAdmin(SingletonModelAdmin):
             from webview.adhesion import tester_connexion_lespass
             succes_lespass, message_lespass = tester_connexion_lespass(instance)
             if succes_lespass:
+                # Partie fixe traduisible + detail technique variable separe (pas de _(f"...")).
+                # / Translatable fixed part + separate variable detail (never _(f"...")).
                 messages.add_message(request, messages.SUCCESS,
-                                     _(f"Lespass : {message_lespass} Vérification d'adhésion activée."))
+                                     _("Vérification d'adhésion activée.") + f" Lespass : {message_lespass}")
             else:
                 instance.verifier_adhesion_paiement_nfc = False
                 messages.add_message(request, messages.WARNING,
-                                     _(f"Vérification d'adhésion NON activée — {message_lespass}"))
+                                     _("Vérification d'adhésion NON activée.") + f" {message_lespass}")
 
         super().save_model(request, instance, form, change)
 

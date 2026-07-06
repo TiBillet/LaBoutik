@@ -891,6 +891,176 @@
 		}
 	}
 
+	/* ============================================================ */
+	/* Redesign popup de retour de transaction (issue #104).        */
+	/* But : ecran toujours lisible, bouton RETOUR toujours visible. */
+	/* - portrait : tout empile, actions ancrees en bas             */
+	/* - paysage court (Sunmi D3 mini) : 2 colonnes (infos / adhesions) */
+	/* / Transaction return popup redesign (#104): always readable,  */
+	/*   RETURN button always visible; portrait stacked, short       */
+	/*   landscape splits into 2 columns.                            */
+	/* ============================================================ */
+
+	/* Conteneur du contenu de retour : occupe tout le popup. */
+	/* Return content container: fills the whole popup. */
+	.popup-retour {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		width: 100%;
+		height: 100%;
+		min-height: 0;
+	}
+
+	/* Corps : empile en portrait, passe en 2 colonnes en paysage court. */
+	/* Body: stacked in portrait, 2 columns in short landscape. */
+	.popup-retour-body {
+		flex: 1 1 auto;
+		width: 100%;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 1rem;
+		min-height: 0;
+	}
+
+	.popup-retour-infos,
+	.popup-retour-side {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		width: 100%;
+		max-width: 460px;
+		min-height: 0;
+	}
+
+	/* Zone d'actions : groupee, pleine largeur, ancree en bas, jamais coupee. */
+	/* Actions zone: grouped, full width, anchored at the bottom, never clipped. */
+	.popup-retour-actions {
+		margin-top: auto;
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: .8rem;
+		width: 100%;
+		flex-shrink: 0;
+	}
+
+	/* Carte portefeuille DENSE : une seule chip, lignes separees par hairlines. */
+	/* On remplace ainsi les N pastilles empilees (popup-msg1) qui faisaient  */
+	/* deborder l'ecran. / DENSE wallet card: one chip, hairline-separated     */
+	/* rows, replacing the N stacked pills that overflowed the screen.         */
+	.popup-wallet {
+		width: 100%;
+		max-width: 460px;
+		background-color: rgba(255, 255, 255, 0.12);
+		border-radius: 14px;
+		padding: .25rem 1rem .5rem;
+		box-shadow:
+			0 0 0 1px rgba(255, 255, 255, 0.10),
+			0 3px 8px rgba(0, 0, 0, 0.18);
+	}
+	.popup-wallet-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1rem;
+		padding: .6rem .2rem;
+		font-size: 1.25rem;
+		font-weight: bold;
+	}
+	.popup-wallet-line {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1rem;
+		padding: .4rem .2rem;
+		border-top: 1px solid rgba(255, 255, 255, 0.16);
+		font-size: 1.2rem;
+	}
+	.popup-wallet-n {
+		text-align: left;
+		opacity: .92;
+	}
+	/* Le montant ne se coupe jamais (valeur + symbole insecables). */
+	/* Amount never wraps (value + currency symbol unbreakable). */
+	.popup-wallet-v {
+		white-space: nowrap;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+	/* Provenance d'une monnaie (multi-lieux), discrete a cote du nom. */
+	/* Currency origin (multi-venue), subtle next to the name. */
+	.popup-wallet-origin {
+		font-size: .8em;
+		opacity: .7;
+		margin-left: .4rem;
+	}
+
+	/* Montants "heros" : pas de retour a la ligne entre le nombre et le symbole. */
+	/* "Hero" amounts: no line break between the number and the currency symbol. */
+	.popup-cashless-conteneur .test-return-total-achats,
+	.popup-cashless-conteneur .test-return-change,
+	.popup-cashless-conteneur .test-return-given-sum {
+		white-space: nowrap;
+	}
+
+	/* ----- Paysage court (Sunmi D3 mini ~854x480) : 2 colonnes. ----- */
+	/* On exploite la largeur : infos a gauche, adhesions a droite,    */
+	/* titre et chips reduits. / Short landscape: 2 columns (infos     */
+	/* left, memberships right), smaller title and chips.              */
+	@media (orientation: landscape) and (max-height: 600px) {
+		.popup-retour {
+			gap: .45rem;
+		}
+
+		.popup-cashless-conteneur .popup-titre1 {
+			font-size: 1.5rem;
+		}
+
+		.popup-retour-body {
+			flex-direction: row;
+			align-items: stretch;
+			gap: 1rem;
+		}
+
+		.popup-retour-infos,
+		.popup-retour-side {
+			max-width: none;
+			flex: 1 1 0;
+			justify-content: flex-start;
+			gap: .5rem;
+			/* Filet de securite : si une colonne est trop chargee, elle defile */
+			/* sans jamais pousser les boutons hors de l'ecran.                 */
+			/* Safety net: an overloaded column scrolls without pushing the     */
+			/* buttons off-screen.                                              */
+			overflow-y: auto;
+		}
+
+		.popup-wallet-head {
+			padding: .35rem .2rem;
+			font-size: 1.05rem;
+		}
+		.popup-wallet-line {
+			padding: .25rem .2rem;
+			font-size: 1rem;
+		}
+
+		.popup-cashless-conteneur .popup-msg1 {
+			margin: .2rem auto;
+			padding: .35rem .9rem;
+		}
+		.popup-adhesion-pill {
+			padding: .45rem .8rem;
+		}
+		.popup-adhesion-nom {
+			font-size: 1.1rem;
+		}
+	}
+
 	.popup-cashless-confirm-conteneur {
 		position: absolute;
 		top: 0;
