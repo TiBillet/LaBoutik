@@ -1004,7 +1004,7 @@ class Command(BaseCommand):
                     host=appareil,
                 )
                 prepa_cuisine = GroupementCategorie.objects.get(name="CUISINE")
-                prepa_cuisine.printer = tm20
+                prepa_cuisine.printer = tm20O
                 prepa_cuisine.save()
 
                 tm30, created = Printer.objects.get_or_create(
