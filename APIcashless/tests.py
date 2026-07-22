@@ -230,11 +230,8 @@ class CashlessTest(TiBilletTestCase):
 
         self.assertContains(response, '<span>Tirelire</span>')
 
-        try :
-            str_total = "0" if total == 0 else f"{(int(total)):.2f}"
-            self.assertContains(response, f'title="total">{str_total}</span>')
-        except :
-            import ipdb; ipdb.set_trace()
+        str_total = "0" if total == 0 else f"{(int(total)):.2f}"
+        self.assertContains(response, f'title="total">{str_total}</span>')
 
         carte.refresh_from_db()
         # Check la fonction interne total monnaie après un refresh from db
@@ -650,12 +647,14 @@ class CashlessTest(TiBilletTestCase):
                                     data=json.dumps(json_achats, cls=DjangoJSONEncoder),
                                     content_type="application/json",
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-        try :
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(carte.total_monnaie(), total)
-            self.assertIsNone(carte.membre)
-        except :
-            from ipdb import set_trace; set_trace()
+        if response.status_code != 200:
+            import ipdb;
+            ipdb.set_trace()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(carte.total_monnaie(), total)
+        self.assertIsNone(carte.membre)
+
         # TEST avec carte avec membre
         carte = CarteCashless.objects.filter(
             membre__isnull=False,
@@ -669,17 +668,15 @@ class CashlessTest(TiBilletTestCase):
                                     HTTP_X_REQUESTED_WITH='XMLHttpRequest')
 
         data_response = response.json()
-        try :
-            self.assertEqual(data_response.get('route'), f"transaction_ajout_monnaie_virtuelle")
-            self.assertEqual(data_response.get('somme_totale'), f"{total}")
-            carte_in_response = data_response.get('carte')
-            self.assertEqual(carte_in_response.get('tag_id'), carte.tag_id)
-            self.assertEqual(carte_in_response.get('number'), carte.number)
-            self.assertEqual(carte_in_response.get('uuid_qrcode'), f"{carte.uuid_qrcode}")
-            self.assertEqual(carte_in_response.get('membre_name'), carte.membre.name)
-            self.assertEqual(carte.total_monnaie(), total)
-        except :
-            from ipdb import set_trace; set_trace()
+        self.assertEqual(data_response.get('route'), f"transaction_ajout_monnaie_virtuelle")
+        self.assertEqual(data_response.get('somme_totale'), f"{total}")
+
+        carte_in_response = data_response.get('carte')
+        self.assertEqual(carte_in_response.get('tag_id'), carte.tag_id)
+        self.assertEqual(carte_in_response.get('number'), carte.number)
+        self.assertEqual(carte_in_response.get('uuid_qrcode'), f"{carte.uuid_qrcode}")
+        self.assertEqual(carte_in_response.get('membre_name'), carte.membre.name)
+        self.assertEqual(carte.total_monnaie(), total)
 
         assets_in_response = carte_in_response.get('assets')
         assets_db = carte.assets.all()
@@ -729,15 +726,12 @@ class CashlessTest(TiBilletTestCase):
         self.assertEqual(data_response_gift.get('route'), f"transaction_ajout_monnaie_virtuelle")
 
         carte_in_response_gift = data_response_gift.get('carte')
-        try :
-            self.assertEqual(carte_in_response_gift.get('tag_id'), carte2.tag_id)
-            self.assertEqual(carte_in_response_gift.get('number'), carte2.number)
-            self.assertEqual(carte_in_response_gift.get('uuid_qrcode'), f"{carte2.uuid_qrcode}")
-            self.assertEqual(carte_in_response_gift.get('membre_name'), '---')
-            self.assertEqual(carte_in_response_gift.get('total_monnaie'), f"{total_gift}")
-            self.assertEqual(carte2.total_monnaie(), total_gift)
-        except :
-            from ipdb import set_trace; set_trace()
+        self.assertEqual(carte_in_response_gift.get('tag_id'), carte2.tag_id)
+        self.assertEqual(carte_in_response_gift.get('number'), carte2.number)
+        self.assertEqual(carte_in_response_gift.get('uuid_qrcode'), f"{carte2.uuid_qrcode}")
+        self.assertEqual(carte_in_response_gift.get('membre_name'), '---')
+        self.assertEqual(carte_in_response_gift.get('total_monnaie'), f"{total_gift}")
+        self.assertEqual(carte2.total_monnaie(), total_gift)
 
         assets_in_response_gift = carte_in_response_gift.get('assets')
         assets_db_gift = carte2.assets.all()

@@ -5,6 +5,130 @@ Journal des changements notables. Le plus récent en haut.
 
 ---
 
+## 3. Borne kiosk TPE : plus jamais d'écran « Annulé » sans annulation réelle / Kiosk terminal: no "canceled" screen without a real cancellation
+
+**Date :** 2026-07-22
+
+**Quoi / What :** Quand la surveillance d'un paiement TPE se terminait sans succès ni
+annulation — délai de 120 s dépassé, ou Stripe injoignable — la borne affichait
+« Annulé » alors que **rien n'était annulé chez Stripe**. Le lecteur WisePOS restait
+armé. La tâche annule désormais réellement l'action du lecteur **et** l'intention de
+paiement, relit le statut chez Stripe, et choisit l'écran d'après ce statut : une carte
+présentée juste avant l'annulation affiche donc un vrai succès.
+/ When payment polling ended without a terminal status (120 s timeout, or Stripe
+unreachable), the kiosk showed "canceled" while nothing was actually canceled on
+Stripe — the reader stayed armed. The task now really cancels the reader action and
+the payment intent, re-reads the status, and picks the screen from it.
+
+**Pourquoi / Why :** Le lecteur resté armé accepte encore une carte. Le paiement était
+alors encaissé par Stripe et la carte créditée par Fedow (via son webhook), **derrière
+un écran affichant « Annulé »**. Trois conséquences sur le terrain : l'usager croit
+avoir échoué et recharge une seconde fois ; le client **suivant** peut taper sa carte
+et créditer celle du précédent ; et tant que `cancel_action` n'est pas appelé, le
+lecteur refuse la transaction d'après — borne bloquée jusqu'à intervention.
+/ An armed reader still charges a late tap: money taken and card credited behind a
+"canceled" screen, double top-ups, the next customer crediting the previous one's
+card, and a reader stuck until someone intervenes.
+
+### Fichiers modifiés / Modified files
+| Fichier / File | Changement / Change |
+|---|---|
+| `htmxview/tasks.py` | Nouvelle fonction `cancel_payment_on_stripe()` : annule l'action du lecteur **et** l'intention de paiement, puis relit le statut réel (persisté en base par `get_from_stripe()`). Appelée par **tous** les chemins de sortie non nominaux — c'est l'invariant : aucun écran « Annulé » ne part sans annulation tentée |
+| `htmxview/tasks.py` | L'écran final est choisi d'après le statut lu chez Stripe, jamais d'après la raison de sortie de boucle. `success.html` si le paiement a abouti pendant l'annulation |
+| `htmxview/tasks.py` | L'appel Stripe est protégé **itération par itération** (`MAX_CONSECUTIVE_STRIPE_ERRORS = 5`). Une coupure réseau d'une seconde ne fait plus sortir de la boucle en sautant l'envoi de l'écran final — cas courant sur le réseau d'un festival |
+| `htmxview/tasks.py` | Le `except` global pousse un écran final au lieu de retourner en silence, et passe à `logger.exception` pour conserver la stacktrace côté Sentry |
+| `htmxview/tasks.py` | Docstring de `poll_payment_intent_status` réécrite : l'ancienne annonçait un arrêt sur `REQUIRES_PAYMENT_METHOD` que le code n'a jamais fait |
+| `htmxview/consumers.py` | Le rejeu d'état lit avec `filter().first()` : `payment_intent_stripe_id` n'est ni `unique` ni indexé, et un `MultipleObjectsReturned` levé **après** `accept()` envoyait la borne en boucle de reconnexion |
+| `htmxview/consumers.py` | `ChatConsumer` et `HtmxConsumer` ferment le socket au lieu de lever, comme `PrintConsumer` et `TerminalConsumer` |
+| `APIcashless/tests.py` | Quatre blocs d'assertions avaient été enveloppés dans `try: … except: ipdb.set_trace()`. Un `except` nu avale l'`AssertionError` : ces tests passaient au vert quoi qu'il arrive. Retour au motif du projet — `if <anomalie>: set_trace()` **puis** l'assertion, qui survit |
+| `htmxview/tests.py` | **Nouveau.** Trois tests de `cancel_payment_on_stripe()` contre un lecteur **simulé** Stripe (`simulated_wisepos_e`), sans matériel. Ignorés (`skipUnless`) si `STRIPE_TEST_API_KEY` est absent ou n'est pas une clé `sk_test_` |
+
+### Migration
+- **Migration nécessaire / Migration required :** Non / No
+
+### Vérification faite / Verification performed
+La séquence d'annulation a été **exécutée contre l'API Stripe de test** avec un lecteur
+simulé. Résultats :
+- Après `process_payment_intent` sans carte présentée, le lecteur reste
+  `action.status = in_progress` : **le bug d'origine est reproduit**, le lecteur restait
+  bien armé derrière l'écran « Annulé ».
+- Après la séquence du correctif : lecteur au repos, PaymentIntent `canceled`.
+- Carte présentée juste avant l'annulation : Stripe **refuse** l'annulation
+  (`InvalidRequestError … status of succeeded`), le statut relu vaut `succeeded`, et
+  c'est bien `success.html` qui est choisi. C'est pourquoi les deux annulations sont
+  isolées chacune dans leur `try` et le statut relu **après**.
+/ The cancellation sequence was run against the Stripe test API with a simulated
+reader; the original bug (reader left armed) was reproduced, and both fixed paths
+verified.
+
+### Dette laissée en place / Known debt left as is
+- Les assertions fédération Fedow commentées dans `APIcashless/tests.py`
+  (`len(get_accepted_assets) == 9`, `assertIn('BDG', cats)`, bloc badgeuse/adhésions
+  en `"""`) sont **conservées telles quelles** : elles dépendent du contrat
+  Fedow/Lespass, c'est au mainteneur de trancher la valeur attendue.
+- `APIcashless/tests.py` porte un `ipdb.set_trace()` **inconditionnel** en fin de
+  `CashlessTest` (« TOUT PASSE ! On mets un ipdb pour s'amuser »). Il vient de `main`,
+  pas de cette branche, mais il fige la suite en exécution non interactive.
+- Aucun test automatique ne couvre encore la branche timeout ni le rejeu d'état WS.
+- `start_celery.sh` lance le worker sans `--concurrency` ni queue dédiée : chaque
+  paiement kiosk monopolise un process pendant jusqu'à 120 s de `time.sleep`, sur la
+  même file que l'impression de tickets. Saturation ⇒ `views.py` renvoie un 500 alors
+  que le lecteur est **déjà armé**. À traiter dans un chantier séparé.
+
+---
+
+## Comment tester (à la main) / Manual test
+
+### Test 1 — le timeout annule vraiment (le cas critique)
+1. Sur la borne kiosk, lancer une recharge (par ex. 10 €) vers le TPE WisePOS.
+2. **Ne rien faire** : ne pas présenter de carte, laisser passer les 120 s.
+3. Attendu à l'écran de la borne : « Annulé ».
+4. **Attendu sur le TPE : il est revenu au repos**, il n'affiche plus « présentez
+   votre carte ». C'est le point à vérifier en priorité.
+5. Présenter une carte bancaire sur le TPE : **rien ne doit être débité**.
+6. Dans le dashboard Stripe, le PaymentIntent doit être en `canceled`.
+7. Dans les logs : `Fin de polling sans statut terminal … -- annulation Stripe`.
+
+### Test 2 — paiement juste avant le timeout : c'est le succès qui gagne
+1. Lancer une recharge, attendre ~115 s, **puis** présenter la carte.
+2. Attendu : la borne affiche **« Réussite »**, jamais « Annulé », et la carte
+   cashless est bien créditée.
+3. Ce test vérifie que l'écran est choisi d'après Stripe et non d'après la sortie de
+   boucle. Le rejouer plusieurs fois : c'est une course, elle doit toujours tomber du
+   bon côté.
+
+### Test 3 — coupure réseau brève pendant le polling
+1. Lancer une recharge, puis couper l'accès Internet du serveur ~3 s, le rétablir.
+2. Attendu : le paiement se poursuit normalement, l'écran ne se fige pas.
+3. Logs attendus : `erreur Stripe 1/5`, `2/5`… puis reprise du polling normal.
+
+### Test 4 — coupure réseau de la borne (rejeu d'état)
+1. Lancer une recharge, présenter la carte, et **couper le wifi de la borne**
+   immédiatement après validation.
+2. Rétablir le wifi au bout de ~30 s.
+3. Attendu : à la reconnexion du websocket, la borne affiche l'écran final
+   (« Réussite ») au lieu de rester sur le spinner.
+4. Logs attendus : `Rejeu d'etat WS pour <payment_intent_id> -> kiosk/success.html`.
+
+### Test 5 — bouton ANNULER (non-régression)
+1. Lancer une recharge, cliquer sur **❌ ANNULER**.
+2. Attendu : TPE au repos, écran « Annulé », PaymentIntent `canceled` chez Stripe.
+
+### Vérif DB — aucun paiement ne doit rester bloqué en cours
+```python
+from APIcashless.models import PaymentsIntent
+from django.utils import timezone
+from datetime import timedelta
+# Intentions non terminales de plus de 5 minutes : il ne devrait plus y en avoir.
+bloquees = PaymentsIntent.objects.filter(
+    datetime__lt=timezone.now() - timedelta(minutes=5),
+).exclude(status__in=[PaymentsIntent.SUCCEEDED, PaymentsIntent.CANCELED])
+for p in bloquees:
+    print(p.pk, p.status, p.datetime, p.amount)
+```
+
+---
+
 ## 2. Adhésions : carte primaire refusée par Fedow / Memberships: primary card rejected by Fedow
 
 **Date :** 2026-07-22

@@ -116,8 +116,13 @@ class TerminalConsumer(AsyncWebsocketConsumer):
         #
         # Pour eviter ca : des qu'un client (re)connecte, on relit l'etat reel du
         # paiement en base. S'il est deja termine, on lui renvoie tout de suite le
-        # bon ecran. La tache Celery met l'etat a jour en base meme quand la borne
-        # est deconnectee, donc l'etat lu ici est fiable.
+        # bon ecran.
+        #
+        # CE REJEU NE VAUT QUE PARCE QUE la tache de polling persiste un statut
+        # terminal sur TOUS ses chemins de sortie, borne connectee ou non (timeout et
+        # erreur compris : voir `cancel_payment_on_stripe` dans htmxview/tasks.py).
+        # Si un chemin de sortie cessait de persister le statut, la borne resterait
+        # bloquee sur le spinner apres une coupure reseau.
         #
         # / The final payment result is pushed only once by the Celery task and can
         # be lost on a flaky network. On reconnect we re-read the real status from
@@ -136,9 +141,25 @@ class TerminalConsumer(AsyncWebsocketConsumer):
         (voir routing.py et kiosk/waiting_credit_card_terminal.html)
         """
         from APIcashless.models import PaymentsIntent
+        # filter().first() et non get() : `payment_intent_stripe_id` n'est ni unique ni
+        # indexe (APIcashless/models.py). Un get() pourrait lever MultipleObjectsReturned
+        # ICI, c'est-a-dire APRES accept() : Channels fermerait le socket, htmx-ws
+        # reconnecterait, et la borne partirait en boucle de reconnexion.
+        # / filter().first(), not get(): the field is neither unique nor indexed, and a
+        # raise after accept() would send the kiosk into a reconnection loop.
+        #
+        # Le rejeu est un CONFORT d'affichage : en cas de doute on ne renvoie rien, et
+        # c'est la tache de polling qui fait autorite.
+        # / Replay is a display comfort: when in doubt, return nothing.
         try:
-            payment_intent = PaymentsIntent.objects.get(payment_intent_stripe_id=self.room_name)
-        except PaymentsIntent.DoesNotExist:
+            payment_intent = PaymentsIntent.objects.filter(
+                payment_intent_stripe_id=self.room_name,
+            ).first()
+        except Exception as erreur_lecture:
+            logger.error(f"Rejeu d'etat WS : lecture impossible pour {self.room_name} -- {erreur_lecture}")
+            return None
+
+        if payment_intent is None:
             return None
 
         if payment_intent.status == PaymentsIntent.SUCCEEDED:
@@ -241,7 +262,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not settings.DEBUG:
             if not self.user.is_authenticated or not hasattr(self.user, 'appareil'):
                 logger.error(f"{self.room_name} {self.room_group_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
-                raise Exception(f"{self.room_name} {self.room_group_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
+                # On ferme proprement le websocket au lieu de lever une exception.
+                # / Cleanly close the socket instead of raising.
+                await self.close()
+                return
 
         logger.info(f"CONNECT ChatConsumer room_name / room_group_name: {self.room_name} / {self.room_group_name} \n"
                     f"self.user : {self.user} - authenticated : {self.user.is_authenticated}\n"
@@ -349,7 +373,10 @@ class HtmxConsumer(AsyncWebsocketConsumer):
         if not settings.DEBUG:
             if not self.user.is_authenticated or not hasattr(self.user, 'appareil'):
                 logger.error(f"{self.room_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
-                raise Exception(f"{self.room_name} {self.user} ERROR NOT AUTHENTICATED OR NOT APPAREIL")
+                # On ferme proprement le websocket au lieu de lever une exception.
+                # / Cleanly close the socket instead of raising.
+                await self.close()
+                return
 
         logger.info(f"{self.room_name} {self.user} connected")
 
