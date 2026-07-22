@@ -244,13 +244,29 @@ def index(request):
                 fedowApi = FedowAPI()
                 cm = fedowApi.NFCcard.retrieve(tag_id_cm) # tester la carte primaire coté fedow
                 if not cm.get('is_primary'):
-                    # En cas de carte perdu : vérification que la carte ne soit pas toujours primary dans LaBoutik
+                    # Fedow fait autorite sur le droit d'ouvrir la caisse. S'il ne
+                    # reconnait plus la carte comme primaire (carte declaree perdue,
+                    # remplacee, retiree par un VOID), LaBoutik ne doit pas continuer
+                    # a accorder le droit : on supprime la CarteMaitresse locale.
+                    # / Fedow is authoritative. If the card is no longer primary there,
+                    #   drop the local CarteMaitresse instead of keeping the right.
                     if CarteMaitresse.objects.filter(carte__tag_id=tag_id_cm).exists():
+                        logger.warning(
+                            f"Carte {tag_id_cm} non primaire chez Fedow : "
+                            f"suppression de la CarteMaitresse locale."
+                        )
                         CarteMaitresse.objects.get(carte__tag_id=tag_id_cm).delete()
                     return JsonResponse({"erreur": 1, "msg": "Carte perdue ? On passe en non primaire"})
 
                 carte_m = CarteMaitresse.objects.get(carte__tag_id=tag_id_cm)
             except Exception as e:
+                # Le message reste volontairement generique pour le gerant, mais la
+                # cause reelle doit etre tracee : Fedow injoignable, cle d'API
+                # refusee, carte absente de Fedow et CarteMaitresse introuvable
+                # aboutissent toutes ici, et sans ce log on ne peut pas les demeler.
+                # / Keep the message generic for the manager, but log the real cause:
+                #   Fedow down, API key refused and unknown card all land here.
+                logger.error(f"valider_carte_maitresse {tag_id_cm} : {type(e).__name__} - {e}")
                 return JsonResponse({"erreur": 1, "msg": "Carte non primaire"})
 
             else:
@@ -1297,7 +1313,6 @@ class Commande:
         total = round((article.prix * qty), 2)
         carte_db: CarteCashless = self.carte_db
         self.total_vente_article += total
-        primary_card_fisrtTagId = self.responsable.CarteCashless_Membre.first()
         if not carte_db:
             logger.error('methode_adhesion : Pas de carte')
             raise NotAcceptable(
@@ -1325,21 +1340,35 @@ class Commande:
                 amount=int(self.total_vente_article * 100),
                 article=article,
                 user_card_firstTagId=carte_db.tag_id,
-                primary_card_fisrtTagId=primary_card_fisrtTagId.tag_id
+                # On envoie la carte primaire de la caisse, comme toutes les autres
+                # ventes. Fedow exige une carte declaree primaire POUR CE LIEU : une
+                # carte quelconque du membre responsable ne l'est pas forcement, et
+                # l'adhesion part alors en « Carte primaire non valide ».
+                # / Send the till's primary card, like every other sale. Fedow requires
+                #   a card registered as primary FOR THIS PLACE.
+                primary_card_fisrtTagId=self.primary_card_fisrtTagId
             )
 
             if not adh['verify_hash']:
                 raise NotAcceptable(
-                    detail="Erreur fédération.\n"
-                           "Notez la transaction et contactez un administrateur.",
+                    detail=_("Erreur fédération.\n"
+                             "Notez la transaction et contactez un administrateur."),
                     code=None
                 )
+
+        except NotAcceptable:
+            # create_sub a deja formule un message comprehensible par la caisse
+            # (« Carte primaire non valide »). L'ecraser par le message generique
+            # priverait la personne qui encaisse de la seule information utile.
+            # / create_sub already produced a message the till can act on. Overwriting
+            #   it with the generic one would hide the only useful information.
+            raise
 
         except Exception as e:
             logger.error(f"methode_AD fedowAPI.subscription.create_sub : {e}")
             raise NotAcceptable(
-                detail="Erreur fédération.\n"
-                       "Notez la transaction et contactez un administrateur.",
+                detail=_("Erreur fédération.\n"
+                         "Notez la transaction et contactez un administrateur."),
                 code=None
             )
 

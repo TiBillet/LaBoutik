@@ -16,7 +16,7 @@ from django.conf import settings
 from django.utils import timezone
 from django.utils.timezone import localtime
 from django.core.cache import cache
-from APIcashless.models import CarteCashless, MoyenPaiement, Membre, ArticleVendu, Configuration, Wallet, Articles
+from APIcashless.models import CarteCashless, CarteMaitresse, MoyenPaiement, Membre, ArticleVendu, Configuration, Wallet, Articles
 from APIcashless.models import Wallet as WalletDb
 
 logger = logging.getLogger(__name__)
@@ -187,17 +187,33 @@ class Subscription():
 
         response_subscription = _post(self.config, 'transaction', subscription)
 
+        # En cas d'echec, on leve : l'appelant attend un dictionnaire de transaction.
+        # Lui rendre un code HTTP ou un dictionnaire d'erreurs le ferait planter plus
+        # loin sur une TypeError / KeyError, et la vraie cause serait perdue.
+        # / On failure, raise: the caller expects a transaction dict. Returning a
+        #   status code or an error dict would crash later and hide the real cause.
         if response_subscription.status_code == 201:
             serialized_transaction = TransactionValidator(data=response_subscription.json())
             if serialized_transaction.is_valid():
                 return serialized_transaction.validated_data
 
             logger.error(serialized_transaction.errors)
-            return serialized_transaction.errors
+            raise NotAcceptable(detail=f"{serialized_transaction.errors}",
+                                code=f"{response_subscription.status_code}")
 
         else:
-            logger.error(response_subscription.json())
-            return response_subscription.status_code
+            response_content = response_subscription.json()
+            logger.error(response_content)
+            # Fedow refuse la carte primaire quand elle n'est pas declaree primaire
+            # POUR CE LIEU. C'est le seul cas que la caisse peut resoudre elle-meme,
+            # il merite donc un message a part.
+            # / Fedow rejects the primary card when it is not primary FOR THIS PLACE.
+            #   The only case the till can fix by itself, so it gets its own message.
+            if 'primary_card_fisrtTagId' in response_content:
+                raise NotAcceptable(detail="Carte primaire non valide",
+                                    code=f"{response_subscription.status_code}")
+            raise NotAcceptable(detail=f"{response_content}",
+                                code=f"{response_subscription.status_code}")
 
     def retrieve(self, wallet: uuid4 = None):
         response_sub = _get(self.config, ['subscription', f"{UUID(wallet)}"])
@@ -218,9 +234,20 @@ class NFCCard():
             raise ValueError('data or article_vendu must be set')
 
         if article_vendu:
-            # On va chercher la carte du responsable
+            # On va chercher la carte primaire du responsable.
+            # Fedow exige une carte declaree primaire POUR CE LIEU. Une carte
+            # quelconque du membre ne l'est pas forcement : un responsable peut
+            # porter plusieurs cartes (sa carte de gerant, une carte perso). On
+            # passe donc par CarteMaitresse, comme les ventes en caisse.
+            # / Fedow requires a card registered as primary FOR THIS PLACE. A member
+            #   may hold several cards, so go through CarteMaitresse.
             responsable: Membre = article_vendu.responsable
-            primary_card_firstTagId = responsable.CarteCashless_Membre.first().tag_id
+            carte_maitresse_du_responsable = CarteMaitresse.objects.filter(
+                carte__membre=responsable).first()
+            if carte_maitresse_du_responsable:
+                primary_card_firstTagId = carte_maitresse_du_responsable.carte.tag_id
+            else:
+                primary_card_firstTagId = CarteMaitresse.objects.last().carte.tag_id
 
             # On va chercher l'uuid de l'asset
             article = article_vendu.article
@@ -497,13 +524,13 @@ class Transaction():
                 return validated_data
 
             logger.error(serialized_transaction.errors)
-            raise NotAcceptable(detail=f"{serialized_transaction.errors}", code=response_refill.status_code)
+            raise NotAcceptable(detail=f"{serialized_transaction.errors}", code=f"{response_refill.status_code}")
 
         else:
             response_content = response_refill.json()
             if 'primary_card_fisrtTagId' in response_content:
-                raise NotAcceptable(detail=f"Carte primaire non valide", code=response_refill.status_code)
-            raise NotAcceptable(detail=f"{response_content}", code=response_refill.status_code)
+                raise NotAcceptable(detail=f"Carte primaire non valide", code=f"{response_refill.status_code}")
+            raise NotAcceptable(detail=f"{response_content}", code=f"{response_refill.status_code}")
 
             # logger.error(response_refill.json())
             # return response_refill.json()
@@ -537,12 +564,12 @@ class Transaction():
                 return serialized_transaction.validated_data
 
             logger.error(serialized_transaction.errors)
-            raise NotAcceptable(detail=f"{serialized_transaction.errors}", code=response_w2w.status_code)
+            raise NotAcceptable(detail=f"{serialized_transaction.errors}", code=f"{response_w2w.status_code}")
 
         else:
             response_content = response_w2w.json()
             logger.error(response_w2w.json())
-            raise NotAcceptable(detail=f"{response_content}", code=response_w2w.status_code)
+            raise NotAcceptable(detail=f"{response_content}", code=f"{response_w2w.status_code}")
 
 
 
