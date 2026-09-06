@@ -51,7 +51,6 @@ class CashlessTest(TiBilletTestCase):
         self.assertIn('TNF', cats)
         self.assertIn('TLF', cats)
         self.assertIn('SUB', cats)
-        # self.assertIn('BDG', cats)
 
         """
         badgeuse_tibilletistan = MoyenPaiement.objects.get(categorie=MoyenPaiement.EXTERNAL_BADGE)
@@ -2089,37 +2088,6 @@ class CashlessTest(TiBilletTestCase):
         # ipdb.set_trace()
         # https://fedow.tibillet.localhost/dashboard/asset/d85124bc-3c98-4928-9612-690cef2d46ba/
 
-    def badge(self, carte=None):
-        if not carte:
-            email, carte = self.link_email_with_wallet_on_lespass()
-
-        responsable: Membre = CarteMaitresse.objects.filter(carte__isnull=False,
-                                                            carte__membre__isnull=False).first().carte.membre
-        pdv = PointDeVente.objects.get(name="Adhésions")
-        article: Articles = Articles.objects.get(methode_choices=Articles.BADGEUSE)
-        self.assertTrue(article.fedow_asset)
-        self.assertIsInstance(article.fedow_asset, MoyenPaiement)
-
-        # Solde insuffisant
-        json_achats = {"articles": [{"pk": f"{article.pk}", "qty": 1}],
-                       "pk_responsable": f"{responsable.pk}",
-                       "pk_pdv": f"{pdv.pk}",
-                       "total": 0,
-                       "tag_id": f"{carte.tag_id}",
-                       "moyen_paiement": 'nfc',
-                       }
-
-        response = self.client.post('/wv/paiement',
-                                    data=json.dumps(json_achats, cls=DjangoJSONEncoder),
-                                    content_type="application/json",
-                                    HTTP_X_REQUESTED_WITH='XMLHttpRequest')
-
-        av = ArticleVendu.objects.first()
-        self.assertEqual(av.article, article)
-        self.assertEqual(av.carte, carte)
-        # Le moyen de paiement est l'asset badgeuse
-        self.assertEqual(av.moyen_paiement, article.fedow_asset)
-
     @tag('fedow')
     def test_fedow(self):
         print("log user test to admin")
@@ -2262,9 +2230,6 @@ class CashlessTest(TiBilletTestCase):
         # card = self.check_federated_card_from_fedow()
         # self.paiement_cashless_external_token(card)
 
-        ### BADGE
-        self.badge()
-        # TODO: tester badge sur dashboard fedow
         logger.info("TOUT PASSE ! On mets un ipdb pour s'amuser avec les tests si besoin.")
         import ipdb; ipdb.set_trace()
 

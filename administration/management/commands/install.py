@@ -533,6 +533,24 @@ class Command(BaseCommand):
                                                   },
                                                   verify=bool(not settings.DEBUG))
 
+                # Lespass peut REFUSER le handshake : caisse V2 active sur le lieu
+                # (409 "module_caisse_actif"), lieu deja appaire, admin inconnu...
+                # Sans ce controle, la ligne suivante appelle .json() sur une reponse
+                # d'erreur et leve un JSONDecodeError qui ne dit rien de la cause reelle.
+                # / Lespass can REFUSE the handshake (V2 POS active on the venue, venue
+                #   already paired, unknown admin). Without this check, .json() below
+                #   raises an opaque JSONDecodeError.
+                if not handshake_lespass.ok:
+                    from django.core.management.base import CommandError
+                    try:
+                        raison = handshake_lespass.json().get('detail', handshake_lespass.text)
+                    except Exception:
+                        raison = handshake_lespass.text
+                    raise CommandError(
+                        f"Handshake Lespass refuse par {lespass_url} "
+                        f"(HTTP {handshake_lespass.status_code}) : {raison}"
+                    )
+
                 # Le serveur LesPass renvoie la clé pour se connecter à Fedow, chiffrée avec une clé Fernet aléatoire
                 # La clé fernet qui déchiffre le json :
                 handshake_lespass_data = handshake_lespass.json()
@@ -597,7 +615,19 @@ class Command(BaseCommand):
                     # On est en mode test, on va chercher une clé de test pour le handshake
                     # En mode demo/dev, cela se fait par le flush.sh
                     # Récupération d'une clé de test sur Fedow :
-                    name_enc = data_to_b64({'name': f'{config.structure}'})
+                    # On DECLARE a Fedow le Lespass auquel ce cashless est adosse.
+                    # Sans cette declaration, le lieu de test naît sans domaine cote Fedow,
+                    # qui retombe alors sur le lieu nomme 'Lespass'. Les webhooks du lieu —
+                    # la notification d'adhesion en particulier — partaient donc vers ce
+                    # Lespass-la, quel que soit le tenant configure ici. Une adhesion vendue
+                    # au comptoir arrivait sur le mauvais Lespass, sans le moindre message.
+                    # / DECLARE to Fedow which Lespass this cashless is paired with. Without
+                    #   it the test venue is born domain-less and Fedow falls back to the
+                    #   venue named 'Lespass', sending this venue's webhooks there instead.
+                    name_enc = data_to_b64({
+                        'name': f'{config.structure}',
+                        'lespass_domain': f'{config.billetterie_url}',
+                    })
                     url = f'{config.fedow_domain}get_new_place_token_for_test/{name_enc.decode("utf8")}/'
                     request = requests.get(url, verify=False, data={'name': f'{config.structure}'}, timeout=1)
                     if request.status_code != 200:
@@ -1004,7 +1034,7 @@ class Command(BaseCommand):
                     host=appareil,
                 )
                 prepa_cuisine = GroupementCategorie.objects.get(name="CUISINE")
-                prepa_cuisine.printer = tm20O
+                prepa_cuisine.printer = tm20
                 prepa_cuisine.save()
 
                 tm30, created = Printer.objects.get_or_create(

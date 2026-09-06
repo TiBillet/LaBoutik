@@ -37,7 +37,7 @@ from fedow_connect.fedow_api import FedowAPI
 from htmxview.validators import CashfloatChangeValidator, RefillWisePoseValidator, linkValidator
 from webview.serializers import debut_fin_journee, CarteCashlessSerializer
 
-from htmxview.tasks import poll_payment_intent_status
+from htmxview.tasks import poll_payment_intent_status, cancel_payment_on_stripe
 logger = logging.getLogger(__name__)
 
 
@@ -708,6 +708,29 @@ class Kiosk(viewsets.ViewSet):
 
         if poll_payment.status != 'STARTED':
             logger.error(f"WAIT POLLING PAYMENT INTENT STATUS {poll_payment.status} RESULT : {poll_payment.result}")
+
+            # send_to_terminal() a déjà armé le lecteur : sans tâche de polling, plus
+            # personne ne l'annulera. Le WisePOS resterait ARMÉ indéfiniment et
+            # encaisserait la prochaine carte présentée sur cette intention orpheline,
+            # dont les metadata signées désignent CET usager-ci : Fedow créditerait donc
+            # la mauvaise carte, derrière un écran parti en erreur.
+            # / The reader is already armed and no polling task will ever cancel it:
+            # cancel here, or the next card tapped is charged onto an orphaned intent
+            # whose signed Fedow metadata names the previous customer.
+            #
+            # L'appel est gardé : on arrive déjà ici parce que Celery ne répond pas, et
+            # cancel_payment_on_stripe programme une tâche de rattrapage. Si le broker
+            # est tombé, cet apply_async lève — sans ce garde, l'exception remplacerait
+            # la réponse 500 explicite par une 500 générique de DRF.
+            # / Guarded: we are here because Celery is unresponsive, and the cancellation
+            # schedules a catch-up task. A dead broker would turn our explicit 500 into a
+            # generic DRF one.
+            try:
+                cancel_payment_on_stripe(payment_intent)
+            except Exception as erreur_annulation:
+                logger.exception(f"Echec de l'annulation du paiement orphelin "
+                                 f"{payment_intent.pk} -- {erreur_annulation}")
+
             return Response(poll_payment.result, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         logger.info(f"END WAIT POLLING PAYMENT INTENT STATUS {poll_payment.status} RESULT : {poll_payment.result}")
