@@ -1,4 +1,4 @@
-FROM python:3.8-bullseye
+FROM python:3.8
 
 ## UPDATE
 RUN apt-get update && apt-get upgrade -y
